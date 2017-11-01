@@ -3,6 +3,7 @@ project(loxx)
 
 set(SRC
   Expressions.hpp
+  Generic.hpp
   logging.hpp
   Scanner.hpp
   Token.hpp
