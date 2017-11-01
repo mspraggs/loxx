@@ -58,6 +58,18 @@ namespace loxx
         : type_(typeid(T)), container_(new Container<T>(std::move(value)))
     {}
 
+    Generic(Generic&& generic) noexcept
+        : type_(generic.type_), container_(std::move(generic.container_))
+    {}
+
+    Generic& operator=(Generic&& generic) noexcept
+    {
+      type_ = generic.type_;
+      container_ = std::move(generic.container_);
+
+      return *this;
+    }
+
     template <typename T>
     const T& get() const
     {
