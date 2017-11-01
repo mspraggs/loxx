@@ -8,7 +8,8 @@ set(SRC
 
   logging.cpp
   main.cpp
-  Scanner.cpp Token.cpp)
+  Scanner.cpp
+  Token.cpp)
 
 add_executable(loxx ${SRC})
 target_link_libraries(loxx)
