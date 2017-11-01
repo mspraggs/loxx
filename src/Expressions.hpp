@@ -20,6 +20,7 @@
 #ifndef LOXX_EXPRESSIONS_HPP_HPP
 #define LOXX_EXPRESSIONS_HPP_HPP
 
+#include "Generic.hpp"
 #include "Token.hpp"
 
 
@@ -66,31 +67,17 @@ namespace loxx
   };
 
 
-  class StringLiteral : public Expr
+  class Literal : public Expr
   {
   public:
-    StringLiteral(std::string value)
+    Literal(Generic value)
         : value_(std::move(value))
     {}
 
-    const std::string& value() const { return value_; }
+    const Generic& value() const { return value_; }
 
   private:
-    std::string value_;
-  };
-
-
-  class NumberLiteral : public Expr
-  {
-  public:
-    NumberLiteral(double value)
-        : value_(std::move(value))
-    {}
-
-    const double& value() const { return value_; }
-
-  private:
-    double value_;
+    Generic value_;
   };
 
 

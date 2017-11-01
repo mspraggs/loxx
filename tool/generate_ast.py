@@ -59,6 +59,5 @@ if __name__ == "__main__":
         output_dir, "Expr",
         {"Binary": [("Expr", "left"), ("Token", "op"), ("Expr", "right")],
          "Grouping": [("Expr", "expression")],
-         "NumberLiteral": [("double", "value")],
-         "StringLiteral": [("std::string", "value")],
+         "Literal": [("Generic", "value")],
          "Unary": [("Token", "op"), ("Expr", "right")]})

@@ -20,6 +20,7 @@
 #ifndef LOXX_EXPRESSIONS_HPP_HPP
 #define LOXX_EXPRESSIONS_HPP_HPP
 
+#include "Generic.hpp"
 #include "Token.hpp"
 
 
