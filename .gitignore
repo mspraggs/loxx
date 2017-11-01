@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+# Out-of-source build files
+/build*
+
+# JetBrains directories
+/.idea
+/cmake-build-debug
