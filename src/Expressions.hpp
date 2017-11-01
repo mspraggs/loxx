@@ -26,10 +26,21 @@
 
 namespace loxx
 {
+  class Visitor
+  {
+  public:
+    virtual Generic visitUnaryExpr(const Unary& expr) = 0;
+    virtual Generic visitBinaryExpr(const Binary& expr) = 0;
+    virtual Generic visitLiteralExpr(const Literal& expr) = 0;
+    virtual Generic visitGroupingExpr(const Grouping& expr) = 0;
+  };
+
   class Expr
   {
   public:
     virtual ~Expr() = default;
+
+    virtual Generic accept(Visitor& visitor) const = 0;
   };
 
 
@@ -39,6 +50,9 @@ namespace loxx
     Unary(Token op, Expr right)
         : op_(std::move(op)), right_(std::move(right))
     {}
+
+    Generic accept(Visitor& visitor) const override
+    { return visitor.visitUnaryExpr(*this); }
 
     const Token& op() const { return op_; }
     const Expr& right() const { return right_; }
@@ -55,6 +69,9 @@ namespace loxx
     Binary(Expr left, Token op, Expr right)
         : left_(std::move(left)), op_(std::move(op)), right_(std::move(right))
     {}
+
+    Generic accept(Visitor& visitor) const override
+    { return visitor.visitBinaryExpr(*this); }
 
     const Expr& left() const { return left_; }
     const Token& op() const { return op_; }
@@ -74,6 +91,9 @@ namespace loxx
         : value_(std::move(value))
     {}
 
+    Generic accept(Visitor& visitor) const override
+    { return visitor.visitLiteralExpr(*this); }
+
     const Generic& value() const { return value_; }
 
   private:
@@ -87,6 +107,9 @@ namespace loxx
     Grouping(Expr expression)
         : expression_(std::move(expression))
     {}
+
+    Generic accept(Visitor& visitor) const override
+    { return visitor.visitGroupingExpr(*this); }
 
     const Expr& expression() const { return expression_; }
 

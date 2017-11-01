@@ -26,10 +26,18 @@
 
 namespace loxx
 {
+  class Visitor
+  {
+  public:{% for spec in class_specs %}
+    virtual Generic visit{{ spec.name }}{{ base_name }}(const {{ spec.name }}& expr) = 0;{% endfor %}
+  };
+
   class {{ base_name }}
   {
   public:
     virtual ~{{ base_name }}() = default;
+
+    virtual Generic accept(Visitor& visitor) const = 0;
   };
 {% for spec in class_specs %}
 
@@ -39,6 +47,9 @@ namespace loxx
     {{ spec.name }}({{ spec.arglist }})
         : {{ spec.initialisers }}
     {}
+
+    Generic accept(Visitor& visitor) const override
+    { return visitor.visit{{ spec.name }}{{ base_name }}(*this); }
 
     {{ spec.accessors }}
 
