@@ -57,7 +57,7 @@ namespace loxx
       scan_token();
     }
 
-    tokens_.emplace_back(TokenType::Eof, "", line_);
+    tokens_.emplace_back(TokenType::Eof, "", Generic(nullptr), line_);
     return tokens_;
   }
 
@@ -167,7 +167,9 @@ namespace loxx
 
     advance();
 
-    add_token(TokenType::String);
+    Generic literal(src_.substr(start_ + 1, current_ - start_ - 2));
+
+    add_token(TokenType::String, std::move(literal));
   }
 
 
@@ -185,7 +187,9 @@ namespace loxx
       }
     }
 
-    add_token(TokenType::Number);
+    Generic literal(std::stod(src_.substr(start_, current_ - start_)));
+
+    add_token(TokenType::Number, std::move(literal));
   }
 
 
@@ -233,6 +237,13 @@ namespace loxx
   void Scanner::add_token(const TokenType type)
   {
     auto substr = src_.substr(start_, current_ - start_);
-    tokens_.emplace_back(type, substr, line_);
+    tokens_.emplace_back(type, substr, Generic(nullptr), line_);
+  }
+
+
+  void Scanner::add_token(const TokenType type, Generic literal)
+  {
+    auto substr = src_.substr(start_, current_ - start_);
+    tokens_.emplace_back(type, substr, std::move(literal), line_);
   }
 }

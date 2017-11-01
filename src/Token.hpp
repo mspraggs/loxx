@@ -23,6 +23,8 @@
 #include <ostream>
 #include <string>
 
+#include "Generic.hpp"
+
 
 namespace loxx
 {
@@ -44,23 +46,22 @@ namespace loxx
   class Token
   {
   public:
-    Token(const TokenType type, std::string lexeme, const unsigned int line)
-        : type_(type), lexeme_(std::move(lexeme)), line_(line)
+    Token(const TokenType type, std::string lexeme, Generic literal,
+          const unsigned int line)
+        : type_(type), lexeme_(std::move(lexeme)), literal_(std::move(literal)),
+          line_(line)
     {}
 
     TokenType type() const { return type_; }
     const std::string& lexeme() const { return lexeme_; }
     unsigned int line() const { return line_; }
 
-    bool is_literal() const
-    { return type_ == TokenType::Number or type_ == TokenType::String; }
-
-    template <typename T>
-    T eval() const;
+    const Generic& literal() const { return literal_; }
 
   private:
     TokenType type_;
     std::string lexeme_;
+    Generic literal_;
     unsigned int line_;
   };
 

@@ -24,28 +24,6 @@
 
 namespace loxx
 {
-  template<>
-  double Token::eval() const
-  {
-    if (type_ != TokenType::Number) {
-      throw std::logic_error("Unable to evaluate token literal!");
-    }
-
-    return std::stod(lexeme_);
-  }
-
-
-  template<>
-  std::string Token::eval() const
-  {
-    if (type_ != TokenType::String) {
-      throw std::logic_error("Unable to evaluate token literal!");
-    }
-
-    return lexeme_;
-  }
-
-
   struct TokenTypeHasher
   {
     std::size_t operator()(TokenType type) const
@@ -106,11 +84,16 @@ namespace loxx
   std::ostream& operator<<(std::ostream& os, const Token& token)
   {
     std::string literal_string = "None";
-    if (token.is_literal()) {
-      literal_string = token.type() == TokenType::Number ?
-                       std::to_string(token.eval<double>()) :
-                       token.eval<std::string>();
+
+    const Generic& literal = token.literal();
+
+    if (token.type() == TokenType::Number) {
+      literal_string = std::to_string(literal.get<double>());
     }
+    else if (token.type() == TokenType::String) {
+      literal_string = literal.get<std::string>();
+    }
+
     os << token.type() << ' ' << token.lexeme() << ' ' << literal_string;
     return os;
   }

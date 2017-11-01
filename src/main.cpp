@@ -11,7 +11,7 @@ namespace loxx
   void run(const std::string& src)
   {
     Scanner scanner(src);
-    const auto tokens = scanner.scan_tokens();
+    const auto& tokens = scanner.scan_tokens();
 
     for (const auto& token : tokens) {
       std::cout << token << '\n';
