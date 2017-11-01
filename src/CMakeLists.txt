@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(loxx)
 
 set(SRC
+  Expressions.hpp
   logging.hpp
   Scanner.hpp
   Token.hpp
