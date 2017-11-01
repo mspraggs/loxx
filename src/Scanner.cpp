@@ -117,7 +117,6 @@ namespace loxx
       else {
         add_token(TokenType::Slash);
       }
-      add_token(match('/') ? TokenType::BangEqual : TokenType::Bang);
     }
     else if (c == ' ' or c == '\r' or c == '\t') {
 
