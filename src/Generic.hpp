@@ -36,19 +36,22 @@ namespace loxx
 
       virtual void* get_ptr() = 0;
       virtual const void* get_ptr() const = 0;
+      virtual std::type_index get_type_index() const = 0;
     };
 
     template <typename T>
     class Container : public ContainerBase
     {
     public:
-      Container(T value) : value_(std::move(value)) {}
+      Container(T value) : type_(typeid(T)), value_(std::move(value)) {}
 
       void* get_ptr() override { return reinterpret_cast<void*>(&value_); }
       const void* get_ptr() const override
       { return reinterpret_cast<const void*>(&value_); }
+      std::type_index get_type_index() const override { return type_; }
 
     private:
+      std::type_index type_;
       T value_;
     };
 
@@ -83,6 +86,8 @@ namespace loxx
       check_access<T>();
       return *reinterpret_cast<T*>(container_->get_ptr());
     }
+
+    std::type_index type() const { return container_->get_type_index(); }
 
   private:
     template <typename T>
