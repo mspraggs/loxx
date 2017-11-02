@@ -29,12 +29,19 @@ def define_ast(output_dir, base_name, types):
     class_specs = []
 
     for name, members in types.items():
-        arglist = ", ".join(" ".join(p) for p in members)
-        initialisers = ", ".join("{}_(std::move({}))".format(n, n)
-                                 for t, n in members)
-        member_vars = "\n    ".join("{} {}_;".format(*p) for p in members)
-        accessors = "\n    ".join("const {0}& {1}() const {{ return {1}_; }}"
-                                  .format(*p) for p in members)
+        arglist = ", ".join(
+            "std::unique_ptr<{}> {}".format(t, n) if i else "{} {}".format(t, n)
+            for t, n, i in members)
+        initialisers = ", ".join(
+            "{}_(std::move({}))".format(n, n)
+            for t, n, i in members)
+        member_vars = "\n    ".join(
+            "std::unique_ptr<{}> {}_;".format(t, n)
+            if i else "{} {}_;".format(t, n)
+            for t, n, i in members)
+        accessors = "\n    ".join(
+            "const {0}& {1}() const {{ return {2}{1}_; }}"
+            .format(t, n, '*' if i else '') for t, n, i in members)
 
         class_specs.append(dict(name=name, arglist=arglist,
                                 initialisers=initialisers, members=member_vars,
@@ -57,7 +64,8 @@ if __name__ == "__main__":
 
     define_ast(
         output_dir, "Expr",
-        {"Binary": [("Expr", "left"), ("Token", "op"), ("Expr", "right")],
-         "Grouping": [("Expr", "expression")],
-         "Literal": [("Generic", "value")],
-         "Unary": [("Token", "op"), ("Expr", "right")]})
+        {"Binary": [("Expr", "left", True), ("Token", "op", False),
+                    ("Expr", "right", True)],
+         "Grouping": [("Expr", "expression", True)],
+         "Literal": [("Generic", "value", False)],
+         "Unary": [("Token", "op", False), ("Expr", "right", True)]})

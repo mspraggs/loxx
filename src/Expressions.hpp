@@ -47,7 +47,7 @@ namespace loxx
   class Unary : public Expr
   {
   public:
-    Unary(Token op, Expr right)
+    Unary(Token op, std::unique_ptr<Expr> right)
         : op_(std::move(op)), right_(std::move(right))
     {}
 
@@ -55,32 +55,32 @@ namespace loxx
     { return visitor.visitUnaryExpr(*this); }
 
     const Token& op() const { return op_; }
-    const Expr& right() const { return right_; }
+    const Expr& right() const { return *right_; }
 
   private:
     Token op_;
-    Expr right_;
+    std::unique_ptr<Expr> right_;
   };
 
 
   class Binary : public Expr
   {
   public:
-    Binary(Expr left, Token op, Expr right)
+    Binary(std::unique_ptr<Expr> left, Token op, std::unique_ptr<Expr> right)
         : left_(std::move(left)), op_(std::move(op)), right_(std::move(right))
     {}
 
     Generic accept(Visitor& visitor) const override
     { return visitor.visitBinaryExpr(*this); }
 
-    const Expr& left() const { return left_; }
+    const Expr& left() const { return *left_; }
     const Token& op() const { return op_; }
-    const Expr& right() const { return right_; }
+    const Expr& right() const { return *right_; }
 
   private:
-    Expr left_;
+    std::unique_ptr<Expr> left_;
     Token op_;
-    Expr right_;
+    std::unique_ptr<Expr> right_;
   };
 
 
@@ -104,17 +104,17 @@ namespace loxx
   class Grouping : public Expr
   {
   public:
-    Grouping(Expr expression)
+    Grouping(std::unique_ptr<Expr> expression)
         : expression_(std::move(expression))
     {}
 
     Generic accept(Visitor& visitor) const override
     { return visitor.visitGroupingExpr(*this); }
 
-    const Expr& expression() const { return expression_; }
+    const Expr& expression() const { return *expression_; }
 
   private:
-    Expr expression_;
+    std::unique_ptr<Expr> expression_;
   };
 
 }
