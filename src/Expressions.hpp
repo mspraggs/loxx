@@ -26,6 +26,12 @@
 
 namespace loxx
 {
+
+  class Unary;
+  class Binary;
+  class Literal;
+  class Grouping;
+
   class Visitor
   {
   public:

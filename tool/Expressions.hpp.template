@@ -26,6 +26,9 @@
 
 namespace loxx
 {
+{% for spec in class_specs %}
+  class {{ spec.name }};{% endfor %}
+
   class Visitor
   {
   public:{% for spec in class_specs %}
