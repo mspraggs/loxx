@@ -35,10 +35,10 @@ namespace loxx
   class Visitor
   {
   public:
-    virtual Generic visitUnaryExpr(const Unary& expr) = 0;
-    virtual Generic visitBinaryExpr(const Binary& expr) = 0;
-    virtual Generic visitLiteralExpr(const Literal& expr) = 0;
-    virtual Generic visitGroupingExpr(const Grouping& expr) = 0;
+    virtual void visitUnaryExpr(const Unary& expr) = 0;
+    virtual void visitBinaryExpr(const Binary& expr) = 0;
+    virtual void visitLiteralExpr(const Literal& expr) = 0;
+    virtual void visitGroupingExpr(const Grouping& expr) = 0;
   };
 
   class Expr
@@ -46,7 +46,7 @@ namespace loxx
   public:
     virtual ~Expr() = default;
 
-    virtual Generic accept(Visitor& visitor) const = 0;
+    virtual void accept(Visitor& visitor) const = 0;
   };
 
 
@@ -57,8 +57,8 @@ namespace loxx
         : op_(std::move(op)), right_(std::move(right))
     {}
 
-    Generic accept(Visitor& visitor) const override
-    { return visitor.visitUnaryExpr(*this); }
+    void accept(Visitor& visitor) const override
+    { visitor.visitUnaryExpr(*this); }
 
     const Token& op() const { return op_; }
     const Expr& right() const { return *right_; }
@@ -76,8 +76,8 @@ namespace loxx
         : left_(std::move(left)), op_(std::move(op)), right_(std::move(right))
     {}
 
-    Generic accept(Visitor& visitor) const override
-    { return visitor.visitBinaryExpr(*this); }
+    void accept(Visitor& visitor) const override
+    { visitor.visitBinaryExpr(*this); }
 
     const Expr& left() const { return *left_; }
     const Token& op() const { return op_; }
@@ -97,8 +97,8 @@ namespace loxx
         : value_(std::move(value))
     {}
 
-    Generic accept(Visitor& visitor) const override
-    { return visitor.visitLiteralExpr(*this); }
+    void accept(Visitor& visitor) const override
+    { visitor.visitLiteralExpr(*this); }
 
     const Generic& value() const { return value_; }
 
@@ -114,8 +114,8 @@ namespace loxx
         : expression_(std::move(expression))
     {}
 
-    Generic accept(Visitor& visitor) const override
-    { return visitor.visitGroupingExpr(*this); }
+    void accept(Visitor& visitor) const override
+    { visitor.visitGroupingExpr(*this); }
 
     const Expr& expression() const { return *expression_; }
 
