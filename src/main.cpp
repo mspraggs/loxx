@@ -3,7 +3,9 @@
 #include <string>
 
 #include "logging.hpp"
+#include "Parser.hpp"
 #include "Scanner.hpp"
+#include "AstPrinter.hpp"
 
 
 namespace loxx
@@ -11,11 +13,22 @@ namespace loxx
   void run(const std::string& src)
   {
     Scanner scanner(src);
-    const auto& tokens = scanner.scan_tokens();
+    auto tokens = scanner.scan_tokens();
 
     for (const auto& token : tokens) {
       std::cout << token << '\n';
     }
+
+    Parser parser(std::move(tokens));
+    const auto expr = parser.parse();
+
+    if (had_error) {
+      return;
+    }
+
+    AstPrinter printer;
+
+    std::cout << printer.print(*expr) << std::endl;
   }
 
 
