@@ -6,12 +6,14 @@ set(SRC
   Expressions.hpp
   Generic.hpp
   logging.hpp
+  Parser.hpp
   Scanner.hpp
   Token.hpp
 
   AstPrinter.cpp
   logging.cpp
   main.cpp
+  Parser.cpp
   Scanner.cpp
   Token.cpp)
 
