@@ -25,13 +25,13 @@ namespace loxx
 {
   void AstPrinter::visitUnaryExpr(const Unary& expr)
   {
-    paranthesise(expr.op().lexeme(), expr.right());
+    paranthesise(expr.op().lexeme(), {&expr.right()});
   }
 
 
   void AstPrinter::visitBinaryExpr(const Binary& expr)
   {
-    paranthesise(expr.op().lexeme(), expr.left(), expr.right());
+    paranthesise(expr.op().lexeme(), {&expr.left(), &expr.right()});
   }
 
 
@@ -52,7 +52,7 @@ namespace loxx
 
   void AstPrinter::visitGroupingExpr(const Grouping& expr)
   {
-    paranthesise("group", expr.expression());
+    paranthesise("group", {&expr.expression()});
   }
 
 
@@ -60,5 +60,19 @@ namespace loxx
   {
     expr.accept(*this);
     return stream_.str();
+  }
+
+
+  void AstPrinter::paranthesise(const std::string& name,
+                                std::initializer_list<const Expr*> exprs)
+  {
+    stream_ << '(' << name;
+
+    for (const auto expr : exprs) {
+      stream_ << ' ';
+      expr->accept(*this);
+    }
+
+    stream_ << ')';
   }
 }

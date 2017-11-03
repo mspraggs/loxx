@@ -41,40 +41,11 @@ namespace loxx
     std::string print(const Expr& expr);
 
   private:
-    template <typename... Exprs>
-    void paranthesise(const std::string& name, const Exprs&... exprs);
-
-    template <typename... Exprs>
-    void iterate_exprs(const Expr& expr0, const Exprs&... exprs);
-
-    void iterate_exprs(const Expr& expr);
+    void paranthesise(const std::string& name,
+                      std::initializer_list<const Expr*> exprs);
 
     std::stringstream stream_;
   };
-
-
-  template<typename... Exprs>
-  void AstPrinter::paranthesise(const std::string& name, const Exprs& ... exprs)
-  {
-    stream_ << '(' << name;
-    iterate_exprs(exprs...);
-    stream_ << ')';
-  }
-
-
-  template<typename... Exprs>
-  void AstPrinter::iterate_exprs(const Expr& expr0, const Exprs&... exprs)
-  {
-    iterate_exprs(expr0);
-    iterate_exprs(exprs...);
-  }
-
-
-  void AstPrinter::iterate_exprs(const Expr& expr)
-  {
-    stream_ << ' ';
-    expr.accept(*this);
-  }
 }
 
 #endif //LOXX_ASTPRINTER_HPP
