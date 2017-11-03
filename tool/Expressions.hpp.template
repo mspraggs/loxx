@@ -40,7 +40,7 @@ namespace loxx
   public:
     virtual ~{{ base_name }}() = default;
 
-    virtual void accept(Visitor& visitor) const = 0;
+    virtual void accept(Visitor& visitor) const {}
   };
 {% for spec in class_specs %}
 

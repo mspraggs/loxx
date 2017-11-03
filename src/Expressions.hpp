@@ -46,7 +46,7 @@ namespace loxx
   public:
     virtual ~Expr() = default;
 
-    virtual void accept(Visitor& visitor) const = 0;
+    virtual void accept(Visitor& visitor) const {}
   };
 
 
