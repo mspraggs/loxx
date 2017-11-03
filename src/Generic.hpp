@@ -34,6 +34,8 @@ namespace loxx
     public:
       virtual ~ContainerBase() = default;
 
+      virtual std::unique_ptr<ContainerBase> clone() const = 0;
+
       virtual void* get_ptr() = 0;
       virtual const void* get_ptr() const = 0;
       virtual std::type_index get_type_index() const = 0;
@@ -44,6 +46,9 @@ namespace loxx
     {
     public:
       Container(T value) : type_(typeid(T)), value_(std::move(value)) {}
+
+      std::unique_ptr<ContainerBase> clone() const override
+      { return std::make_unique<Container>(value_); }
 
       void* get_ptr() override { return reinterpret_cast<void*>(&value_); }
       const void* get_ptr() const override
@@ -60,6 +65,20 @@ namespace loxx
     Generic(T value)
         : type_(typeid(T)), container_(new Container<T>(std::move(value)))
     {}
+
+    Generic(const Generic& generic)
+        : type_(generic.type_), container_(generic.container_->clone())
+    {}
+
+    Generic& operator=(const Generic& generic)
+    {
+      if (this != &generic) {
+        type_ = generic.type_;
+        container_ = generic.container_->clone();
+      }
+
+      return *this;
+    }
 
     Generic(Generic&& generic) noexcept
         : type_(generic.type_), container_(std::move(generic.container_))
