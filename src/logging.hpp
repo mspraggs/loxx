@@ -21,6 +21,7 @@
 #define LOXX_LOGGING_HPP
 
 #include <string>
+#include "Token.hpp"
 
 
 namespace loxx
@@ -33,6 +34,9 @@ namespace loxx
 
   void report(const unsigned int line, const std::string& where,
               const std::string& message);
+
+
+  void error(const Token& token, const std::string& message);
 }
 
 #endif //LOXX_LOGGING_HPP
