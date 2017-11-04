@@ -23,6 +23,13 @@
 
 namespace loxx
 {
+  std::unique_ptr<Expr> Parser::comma()
+  {
+    return binary([this] () { return equality(); },
+                  {TokenType::Comma});
+  }
+
+
   std::unique_ptr<Expr> Parser::equality()
   {
     return binary([this] () { return comparison(); },
