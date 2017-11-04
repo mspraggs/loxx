@@ -37,11 +37,10 @@ namespace loxx
 
   void AstPrinter::visitLiteralExpr(const Literal& expr)
   {
-    const auto type = expr.value().type();
-    if (type == std::type_index(typeid(double))) {
+    if (expr.value().has_type<double>()) {
       stream_ << expr.value().get<double>();
     }
-    else if (type == std::type_index(typeid(std::string))) {
+    else if (expr.value().has_type<std::string>()) {
       stream_ << expr.value().get<std::string>();
     }
     else {
