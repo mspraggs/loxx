@@ -31,7 +31,7 @@ namespace loxx
   enum class TokenType {
     // Single characters
     LeftParen, RightParen, LeftBrace, RightBrace, Comma, Dot, Minus, Plus,
-    SemiColon, Slash, Star,
+    SemiColon, Slash, Star, Question, Colon,
     // One or two character tokens
     Bang, BangEqual, Equal, EqualEqual, Greater, GreaterEqual, Less, LessEqual,
     // Literals

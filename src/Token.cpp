@@ -47,6 +47,8 @@ namespace loxx
         {TokenType::SemiColon, "SemiColon"},
         {TokenType::Slash, "Slash"},
         {TokenType::Star, "Star"},
+        {TokenType::Question, "Question"},
+        {TokenType::Colon, "Colon"},
         {TokenType::Bang, "Bang"},
         {TokenType::BangEqual, "BangEqual"},
         {TokenType::Equal, "Equal"},

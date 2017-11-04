@@ -93,6 +93,12 @@ namespace loxx
     else if (c == ';') {
       add_token(TokenType::SemiColon);
     }
+    else if (c == '?') {
+      add_token(TokenType::Question);
+    }
+    else if (c == ':') {
+      add_token(TokenType::Colon);
+    }
     else if (c == '*') {
       add_token(TokenType::Star);
     }
