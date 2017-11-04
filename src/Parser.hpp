@@ -61,6 +61,10 @@ namespace loxx
     std::unique_ptr<Expr> unary();
     std::unique_ptr<Expr> primary();
 
+    template <typename Fn>
+    std::unique_ptr<Expr> binary(
+        Fn fn, const std::initializer_list<TokenType>& tokens);
+
     bool match(std::initializer_list<TokenType> types);
     const Token& consume(const TokenType type, const std::string& message);
     bool check(const TokenType type) const;
@@ -74,6 +78,22 @@ namespace loxx
     unsigned int current_;
     std::vector<Token> tokens_;
   };
+
+
+  template<typename Fn>
+  std::unique_ptr<Expr> Parser::binary(
+      Fn fn, const std::initializer_list<TokenType>& tokens)
+  {
+    auto expr = fn();
+
+    while (match(tokens)) {
+      Token op = previous();
+      auto right = fn();
+      expr = std::make_unique<Binary>(std::move(expr), op, std::move(right));
+    }
+
+    return expr;
+  }
 }
 
 #endif //LOXX_PARSER_HPP

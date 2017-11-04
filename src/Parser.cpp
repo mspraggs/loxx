@@ -25,58 +25,30 @@ namespace loxx
 {
   std::unique_ptr<Expr> Parser::equality()
   {
-    auto expr = comparison();
-
-    while (match({TokenType::BangEqual, TokenType::EqualEqual})) {
-      Token op = previous();
-      auto right = comparison();
-      expr = std::make_unique<Binary>(std::move(expr), op, std::move(right));
-    }
-
-    return expr;
+    return binary([this] () { return comparison(); },
+                  {TokenType::BangEqual, TokenType::EqualEqual});
   }
 
 
   std::unique_ptr<Expr> Parser::comparison()
   {
-    auto expr = addition();
-
-    while (match({TokenType::Greater, TokenType::GreaterEqual,
-                  TokenType::Less, TokenType::LessEqual})) {
-      Token op = previous();
-      auto right = addition();
-      expr = std::make_unique<Binary>(std::move(expr), op, std::move(right));
-    }
-
-    return expr;
+    return binary([this] () { return addition(); },
+                  {TokenType::Greater, TokenType::GreaterEqual,
+                   TokenType::Less, TokenType::LessEqual});
   }
 
 
   std::unique_ptr<Expr> Parser::addition()
   {
-    auto expr = multiplication();
-
-    while (match({TokenType::Minus, TokenType::Plus})) {
-      Token op = previous();
-      auto right = multiplication();
-      expr = std::make_unique<Binary>(std::move(expr), op, std::move(right));
-    }
-
-    return expr;
+    return binary([this] () { return multiplication(); },
+                  {TokenType::Minus, TokenType::Plus});
   }
 
 
   std::unique_ptr<Expr> Parser::multiplication()
   {
-    auto expr = unary();
-
-    while (match({TokenType::Slash, TokenType::Star})) {
-      Token op = previous();
-      auto right = unary();
-      expr = std::make_unique<Binary>(std::move(expr), op, std::move(right));
-    }
-
-    return expr;
+    return binary([this] () { return unary(); },
+                  {TokenType::Slash, TokenType::Star});
   }
 
 
