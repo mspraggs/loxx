@@ -93,6 +93,15 @@ namespace loxx
     else if (token.type() == TokenType::String) {
       literal_string = literal.get<std::string>();
     }
+    else if (token.type() == TokenType::True) {
+      literal_string = "true";
+    }
+    else if (token.type() == TokenType::False) {
+      literal_string = "false";
+    }
+    else if (token.type() == TokenType::Nil) {
+      literal_string = "nil";
+    }
 
     os << token.type() << ' ' << token.lexeme() << ' ' << literal_string;
     return os;
