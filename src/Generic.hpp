@@ -108,11 +108,14 @@ namespace loxx
 
     std::type_index type() const { return container_->get_type_index(); }
 
+    template <typename T>
+    bool has_type() const { return std::type_index(typeid(T)) == type_; }
+
   private:
     template <typename T>
     void check_access() const
     {
-      if (std::type_index(typeid(T)) != type_) {
+      if (not has_type<T>()) {
         throw std::logic_error("Unable to get specified type from Generic!");
       }
     }
