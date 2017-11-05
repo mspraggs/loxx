@@ -148,7 +148,15 @@ namespace loxx
     const auto text = src_.substr(start_, current_ - start_);
     const TokenType type =
         keywords_.count(text) == 0 ? TokenType::Identifier : keywords_[text];
-    add_token(type);
+    if (type == TokenType::True) {
+      add_token(type, Generic(true));
+    }
+    else if (type == TokenType::False) {
+      add_token(type, Generic(false));
+    }
+    else {
+      add_token(type);
+    }
   }
 
 
