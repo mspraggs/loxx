@@ -83,6 +83,14 @@ namespace loxx
 
   std::unique_ptr<Expr> Parser::unary()
   {
+    if (match({TokenType::BangEqual, TokenType::EqualEqual,
+               TokenType::Greater, TokenType::GreaterEqual,
+               TokenType::Less, TokenType::LessEqual, TokenType::Plus,
+               TokenType::Slash, TokenType::Star}))
+    {
+      throw error(previous(), "Binary operator expects two operands");
+    }
+
     if (match({TokenType::Bang, TokenType::Minus})) {
       Token op = previous();
       auto right = unary();
