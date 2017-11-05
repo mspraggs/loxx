@@ -66,6 +66,8 @@ if __name__ == "__main__":
         output_dir, "Expr",
         {"Binary": [("Expr", "left", True), ("Token", "op", False),
                     ("Expr", "right", True)],
+         "Ternary": [("Expr", "first", True), ("Token", "op", False),
+                     ("Expr", "second", True), ("Expr", "third", True)],
          "Grouping": [("Expr", "expression", True)],
          "Literal": [("Generic", "value", False)],
          "Unary": [("Token", "op", False), ("Expr", "right", True)]})

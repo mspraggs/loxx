@@ -30,6 +30,7 @@ namespace loxx
   class Unary;
   class Binary;
   class Literal;
+  class Ternary;
   class Grouping;
 
   class Visitor
@@ -38,6 +39,7 @@ namespace loxx
     virtual void visitUnaryExpr(const Unary& expr) = 0;
     virtual void visitBinaryExpr(const Binary& expr) = 0;
     virtual void visitLiteralExpr(const Literal& expr) = 0;
+    virtual void visitTernaryExpr(const Ternary& expr) = 0;
     virtual void visitGroupingExpr(const Grouping& expr) = 0;
   };
 
@@ -104,6 +106,29 @@ namespace loxx
 
   private:
     Generic value_;
+  };
+
+
+  class Ternary : public Expr
+  {
+  public:
+    Ternary(std::unique_ptr<Expr> first, Token op, std::unique_ptr<Expr> second, std::unique_ptr<Expr> third)
+        : first_(std::move(first)), op_(std::move(op)), second_(std::move(second)), third_(std::move(third))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visitTernaryExpr(*this); }
+
+    const Expr& first() const { return *first_; }
+    const Token& op() const { return op_; }
+    const Expr& second() const { return *second_; }
+    const Expr& third() const { return *third_; }
+
+  private:
+    std::unique_ptr<Expr> first_;
+    Token op_;
+    std::unique_ptr<Expr> second_;
+    std::unique_ptr<Expr> third_;
   };
 
 

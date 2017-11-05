@@ -35,6 +35,13 @@ namespace loxx
   }
 
 
+  void AstPrinter::visitTernaryExpr(const Ternary& expr)
+  {
+    paranthesise(expr.op().lexeme(),
+                 {&expr.first(), &expr.second(), &expr.third()});
+  }
+
+
   void AstPrinter::visitLiteralExpr(const Literal& expr)
   {
     if (expr.value().has_type<double>()) {

@@ -36,6 +36,8 @@ namespace loxx
 
     void visitLiteralExpr(const Literal& expr) override;
 
+    virtual void visitTernaryExpr(const Ternary& expr) override;
+
     void visitGroupingExpr(const Grouping& expr) override;
 
     std::string print(const Expr& expr);
