@@ -43,6 +43,9 @@ namespace loxx
     else if (expr.value().has_type<std::string>()) {
       stream_ << expr.value().get<std::string>();
     }
+    else if (expr.value().has_type<bool>()) {
+      stream_ << (expr.value().get<bool>() ? "true" : "false");
+    }
     else {
       stream_ << "nil";
     }
