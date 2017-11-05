@@ -25,8 +25,30 @@ namespace loxx
 {
   std::unique_ptr<Expr> Parser::comma()
   {
-    return binary([this] () { return equality(); },
+    return binary([this] () { return ternary(); },
                   {TokenType::Comma});
+  }
+
+
+  std::unique_ptr<Expr> Parser::ternary()
+  {
+    auto first = equality();
+
+    if (match({TokenType::Question})) {
+      Token op = previous();
+      auto second = ternary();
+
+      if (match({TokenType::Colon})) {
+        auto third = ternary();
+
+        return std::make_unique<Ternary>(std::move(first), op,
+                                         std::move(second), std::move(third));
+      }
+
+      throw error(previous(), "Ternary expression expected ':'");
+    }
+
+    return first;
   }
 
 

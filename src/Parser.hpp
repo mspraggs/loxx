@@ -55,6 +55,7 @@ namespace loxx
 
     std::unique_ptr<Expr> expression() { return comma(); }
     std::unique_ptr<Expr> comma();
+    std::unique_ptr<Expr> ternary();
     std::unique_ptr<Expr> equality();
     std::unique_ptr<Expr> comparison();
     std::unique_ptr<Expr> addition();
