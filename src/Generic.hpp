@@ -34,6 +34,8 @@ namespace loxx
     public:
       virtual ~ContainerBase() = default;
 
+      virtual bool operator==(const ContainerBase& container) const = 0;
+
       virtual std::unique_ptr<ContainerBase> clone() const = 0;
 
       virtual void* get_ptr() = 0;
@@ -46,6 +48,15 @@ namespace loxx
     {
     public:
       Container(T value) : type_(typeid(T)), value_(std::move(value)) {}
+
+      bool operator==(const ContainerBase& container) const override
+      {
+        if (get_type_index() != get_type_index()) {
+          return false;
+        }
+
+        return value_ == dynamic_cast<const Container<T>&>(container).value_;
+      }
 
       std::unique_ptr<ContainerBase> clone() const override
       { return std::make_unique<Container>(value_); }
@@ -91,6 +102,9 @@ namespace loxx
 
       return *this;
     }
+
+    bool operator==(const Generic& generic) const
+    { return *container_ == *generic.container_; }
 
     template <typename T>
     const T& get() const
