@@ -6,6 +6,7 @@
 #include "Parser.hpp"
 #include "Scanner.hpp"
 #include "AstPrinter.hpp"
+#include "Interpreter.hpp"
 
 
 namespace loxx
@@ -29,6 +30,10 @@ namespace loxx
     AstPrinter printer;
 
     std::cout << printer.print(*expr) << std::endl;
+
+    static Interpreter interpreter;
+
+    interpreter.interpret(*expr);
   }
 
 
@@ -59,7 +64,10 @@ namespace loxx
     run(src);
 
     if (had_error) {
-      throw std::runtime_error("Error encountered when executing file!");
+      std::exit(65);
+    }
+    else if (had_runtime_error) {
+      std::exit(70);
     }
   }
 }

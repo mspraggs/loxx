@@ -5,12 +5,14 @@ set(SRC
   AstPrinter.hpp
   Expressions.hpp
   Generic.hpp
+  Interpreter.hpp
   logging.hpp
   Parser.hpp
   Scanner.hpp
   Token.hpp
 
   AstPrinter.cpp
+  Interpreter.cpp
   logging.cpp
   main.cpp
   Parser.cpp

@@ -21,12 +21,15 @@
 #define LOXX_LOGGING_HPP
 
 #include <string>
+
+#include "Interpreter.hpp"
 #include "Token.hpp"
 
 
 namespace loxx
 {
   static bool had_error = false;
+  static bool had_runtime_error = false;
 
 
   void error(const unsigned int line, const std::string& message);
@@ -37,6 +40,9 @@ namespace loxx
 
 
   void error(const Token& token, const std::string& message);
+
+
+  void runtime_error(const Interpreter::RuntimeError& error);
 }
 
 #endif //LOXX_LOGGING_HPP
