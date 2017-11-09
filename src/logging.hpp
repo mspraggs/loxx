@@ -28,8 +28,8 @@
 
 namespace loxx
 {
-  static bool had_error = false;
-  static bool had_runtime_error = false;
+  extern bool had_error;
+  extern bool had_runtime_error;
 
 
   void error(const unsigned int line, const std::string& message);
