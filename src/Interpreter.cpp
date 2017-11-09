@@ -139,6 +139,35 @@ namespace loxx
   }
 
 
+  void Interpreter::visitTernaryExpr(const Ternary& expr)
+  {
+    evaluate(expr.first());
+    const auto first = stack_.top();
+    stack_.pop();
+
+    evaluate(expr.second());
+    const auto second = stack_.top();
+    stack_.pop();
+
+    evaluate(expr.third());
+    const auto third = stack_.top();
+    stack_.pop();
+
+    switch (expr.op().type()) {
+    case TokenType::Question:
+      if (is_truthy(first)) {
+        stack_.push(second);
+      }
+      else {
+        stack_.push(third);
+      }
+      break;
+    default:
+      break;
+    }
+  }
+
+
   void Interpreter::evaluate(const Expr& expr)
   {
     expr.accept(*this);
