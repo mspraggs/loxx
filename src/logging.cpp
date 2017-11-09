@@ -47,4 +47,13 @@ namespace loxx
       report(token.line(), " at '" + token.lexeme() + "'", message);
     }
   }
+
+
+  void runtime_error(const Interpreter::RuntimeError& error)
+  {
+    std::cout << error.what() << "\n[line " << error.token().line() << ']'
+              << std::endl;
+
+    had_runtime_error = true;
+  }
 }
