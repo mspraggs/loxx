@@ -18,6 +18,10 @@ namespace loxx
     Scanner scanner(src);
     auto tokens = scanner.scan_tokens();
 
+    if (had_error) {
+      return;
+    }
+
     if (debug) {
       for (const auto& token : tokens) {
         std::cout << token << '\n';
