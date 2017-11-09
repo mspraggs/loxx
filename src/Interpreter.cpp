@@ -115,6 +115,11 @@ namespace loxx
       break;
     case TokenType::Slash:
       check_number_operands(expr.op(), left, right);
+
+      if (right.get<double>() == 0.0) {
+        throw RuntimeError(expr.op(), "Division by zero encountered.");
+      }
+
       stack_.push(Generic(left.get<double>() / right.get<double>()));
       break;
     case TokenType::Star:
