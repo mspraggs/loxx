@@ -195,9 +195,13 @@ namespace loxx
       }
     }
 
-    Generic literal(std::stod(src_.substr(start_, current_ - start_)));
-
-    add_token(TokenType::Number, std::move(literal));
+    try {
+      Generic literal(std::stod(src_.substr(start_, current_ - start_)));
+      add_token(TokenType::Number, std::move(literal));
+    }
+    catch (const std::out_of_range& e) {
+      error(line_, "Unable to parse number: out of range");
+    }
   }
 
 
