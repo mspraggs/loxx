@@ -24,6 +24,10 @@
 
 namespace loxx
 {
+  bool had_error = false;
+  bool had_runtime_error = false;
+
+
   void error(const unsigned int line, const std::string& message)
   {
     report(line, "", message);
