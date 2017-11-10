@@ -30,13 +30,13 @@ namespace loxx
   class AstPrinter : public Expr::Visitor
   {
   public:
-    void visitUnaryExpr(const Unary& expr) override;
+    void visit_unary_expr(const Unary& expr) override;
 
-    void visitBinaryExpr(const Binary& expr) override;
+    void visit_binary_expr(const Binary& expr) override;
 
-    void visitLiteralExpr(const Literal& expr) override;
+    void visit_literal_expr(const Literal& expr) override;
 
-    void visitGroupingExpr(const Grouping& expr) override;
+    void visit_grouping_expr(const Grouping& expr) override;
 
     std::string print(const Expr& expr);
 

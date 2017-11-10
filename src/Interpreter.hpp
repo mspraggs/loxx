@@ -33,10 +33,10 @@ namespace loxx
   public:
     void interpret(const Expr& expr);
 
-    void visitUnaryExpr(const Unary& expr) override;
-    void visitBinaryExpr(const Binary& expr) override;
-    void visitLiteralExpr(const Literal& expr) override;
-    void visitGroupingExpr(const Grouping& expr) override;
+    void visit_unary_expr(const Unary& expr) override;
+    void visit_binary_expr(const Binary& expr) override;
+    void visit_literal_expr(const Literal& expr) override;
+    void visit_grouping_expr(const Grouping& expr) override;
 
     class RuntimeError : public std::runtime_error
     {

@@ -38,7 +38,7 @@ namespace loxx
     class Visitor
     {
     public:{% for spec in class_specs %}
-      virtual void visit{{ spec.name }}{{ base_name }}(const {{ spec.name }}& expr) = 0;{% endfor %}
+      virtual void visit_{{ spec.name|lower }}_{{ base_name|lower }}(const {{ spec.name }}& expr) = 0;{% endfor %}
     };
 
     virtual void accept(Visitor& visitor) const {}
@@ -53,7 +53,7 @@ namespace loxx
     {}
 
     void accept(Visitor& visitor) const override
-    { visitor.visit{{ spec.name }}{{ base_name }}(*this); }
+    { visitor.visit_{{ spec.name|lower }}_{{ base_name|lower }}(*this); }
 
     {{ spec.accessors }}
 

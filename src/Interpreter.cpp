@@ -41,7 +41,7 @@ namespace loxx
   }
 
 
-  void Interpreter::visitUnaryExpr(const Unary& expr)
+  void Interpreter::visit_unary_expr(const Unary& expr)
   {
     evaluate(expr.right());
 
@@ -62,7 +62,7 @@ namespace loxx
   }
 
 
-  void Interpreter::visitBinaryExpr(const Binary& expr)
+  void Interpreter::visit_binary_expr(const Binary& expr)
   {
     evaluate(expr.left());
     const auto left = stack_.top();
@@ -127,13 +127,13 @@ namespace loxx
   }
 
 
-  void Interpreter::visitLiteralExpr(const Literal& expr)
+  void Interpreter::visit_literal_expr(const Literal& expr)
   {
     stack_.push(expr.value());
   }
 
 
-  void Interpreter::visitGroupingExpr(const Grouping& expr)
+  void Interpreter::visit_grouping_expr(const Grouping& expr)
   {
     evaluate(expr.expression());
   }

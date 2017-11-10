@@ -40,10 +40,10 @@ namespace loxx
     class Visitor
     {
     public:
-      virtual void visitUnaryExpr(const Unary& expr) = 0;
-      virtual void visitBinaryExpr(const Binary& expr) = 0;
-      virtual void visitLiteralExpr(const Literal& expr) = 0;
-      virtual void visitGroupingExpr(const Grouping& expr) = 0;
+      virtual void visit_unary_expr(const Unary& expr) = 0;
+      virtual void visit_binary_expr(const Binary& expr) = 0;
+      virtual void visit_literal_expr(const Literal& expr) = 0;
+      virtual void visit_grouping_expr(const Grouping& expr) = 0;
     };
 
     virtual void accept(Visitor& visitor) const {}
@@ -58,7 +58,7 @@ namespace loxx
     {}
 
     void accept(Visitor& visitor) const override
-    { visitor.visitUnaryExpr(*this); }
+    { visitor.visit_unary_expr(*this); }
 
     const Token& op() const { return op_; }
     const Expr& right() const { return *right_; }
@@ -77,7 +77,7 @@ namespace loxx
     {}
 
     void accept(Visitor& visitor) const override
-    { visitor.visitBinaryExpr(*this); }
+    { visitor.visit_binary_expr(*this); }
 
     const Expr& left() const { return *left_; }
     const Token& op() const { return op_; }
@@ -98,7 +98,7 @@ namespace loxx
     {}
 
     void accept(Visitor& visitor) const override
-    { visitor.visitLiteralExpr(*this); }
+    { visitor.visit_literal_expr(*this); }
 
     const Generic& value() const { return value_; }
 
@@ -115,7 +115,7 @@ namespace loxx
     {}
 
     void accept(Visitor& visitor) const override
-    { visitor.visitGroupingExpr(*this); }
+    { visitor.visit_grouping_expr(*this); }
 
     const Expr& expression() const { return *expression_; }
 

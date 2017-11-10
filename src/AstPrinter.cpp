@@ -23,19 +23,19 @@
 
 namespace loxx
 {
-  void AstPrinter::visitUnaryExpr(const Unary& expr)
+  void AstPrinter::visit_unary_expr(const Unary& expr)
   {
     paranthesise(expr.op().lexeme(), {&expr.right()});
   }
 
 
-  void AstPrinter::visitBinaryExpr(const Binary& expr)
+  void AstPrinter::visit_binary_expr(const Binary& expr)
   {
     paranthesise(expr.op().lexeme(), {&expr.left(), &expr.right()});
   }
 
 
-  void AstPrinter::visitLiteralExpr(const Literal& expr)
+  void AstPrinter::visit_literal_expr(const Literal& expr)
   {
     if (expr.value().has_type<double>()) {
       stream_ << expr.value().get<double>();
@@ -52,7 +52,7 @@ namespace loxx
   }
 
 
-  void AstPrinter::visitGroupingExpr(const Grouping& expr)
+  void AstPrinter::visit_grouping_expr(const Grouping& expr)
   {
     paranthesise("group", {&expr.expression()});
   }
