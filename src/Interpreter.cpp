@@ -31,8 +31,7 @@ namespace loxx
     try {
       evaluate(expr);
       if (stack_.size() > 0) {
-        std::cout << stringify(stack_.top()) << std::endl;
-        stack_.pop();
+        std::cout << stringify(pop_top()) << std::endl;
       }
     }
     catch (const RuntimeError& e) {
@@ -45,8 +44,7 @@ namespace loxx
   {
     evaluate(expr.right());
 
-    const auto value = stack_.top();
-    stack_.pop();
+    const auto value = pop_top();
 
     switch (expr.op().type()) {
     case TokenType::Bang:
@@ -65,12 +63,10 @@ namespace loxx
   void Interpreter::visit_binary_expr(const Binary& expr)
   {
     evaluate(expr.left());
-    const auto left = stack_.top();
-    stack_.pop();
+    const auto left = pop_top();
 
     evaluate(expr.right());
-    const auto right = stack_.top();
-    stack_.pop();
+    const auto right = pop_top();
 
     switch (expr.op().type()) {
     case TokenType::BangEqual:
@@ -207,5 +203,13 @@ namespace loxx
       return generic.get<std::string>();
     }
     return "";
+  }
+
+
+  Generic Interpreter::pop_top()
+  {
+    const auto ret = stack_.top();
+    stack_.pop();
+    return ret;
   }
 }
