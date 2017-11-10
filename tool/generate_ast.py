@@ -23,7 +23,7 @@ import sys
 import jinja2
 
 
-def define_ast(output_dir, base_name, types):
+def define_ast(output_dir, base_name, types, includes=[]):
     """Generate AST class definitions using specification and jinja2"""
 
     class_specs = []
@@ -51,7 +51,8 @@ def define_ast(output_dir, base_name, types):
         template = jinja2.Template(f.read())
 
     with open(os.path.join(output_dir, "{}.hpp".format(base_name)), 'w') as f:
-        f.write(template.render(base_name=base_name, class_specs=class_specs))
+        f.write(template.render(base_name=base_name, class_specs=class_specs,
+                                includes=includes))
 
 
 if __name__ == "__main__":

@@ -22,7 +22,8 @@
 
 #include "Generic.hpp"
 #include "Token.hpp"
-
+{% for inc in includes %}#include "{{ inc }}"
+{% endfor %}
 
 namespace loxx
 {
