@@ -27,7 +27,7 @@
 
 namespace loxx
 {
-  class AstPrinter : public Visitor
+  class AstPrinter : public Expr::Visitor
   {
   public:
     void visitUnaryExpr(const Unary& expr) override;

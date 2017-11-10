@@ -28,7 +28,7 @@
 
 namespace loxx
 {
-  class Interpreter : public Visitor
+  class Interpreter : public Expr::Visitor
   {
   public:
     void interpret(const Expr& expr);

@@ -32,19 +32,19 @@ namespace loxx
   class Literal;
   class Grouping;
 
-  class Visitor
-  {
-  public:
-    virtual void visitUnaryExpr(const Unary& expr) = 0;
-    virtual void visitBinaryExpr(const Binary& expr) = 0;
-    virtual void visitLiteralExpr(const Literal& expr) = 0;
-    virtual void visitGroupingExpr(const Grouping& expr) = 0;
-  };
-
   class Expr
   {
   public:
     virtual ~Expr() = default;
+
+    class Visitor
+    {
+    public:
+      virtual void visitUnaryExpr(const Unary& expr) = 0;
+      virtual void visitBinaryExpr(const Binary& expr) = 0;
+      virtual void visitLiteralExpr(const Literal& expr) = 0;
+      virtual void visitGroupingExpr(const Grouping& expr) = 0;
+    };
 
     virtual void accept(Visitor& visitor) const {}
   };

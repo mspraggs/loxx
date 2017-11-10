@@ -29,16 +29,16 @@ namespace loxx
 {% for spec in class_specs %}
   class {{ spec.name }};{% endfor %}
 
-  class Visitor
-  {
-  public:{% for spec in class_specs %}
-    virtual void visit{{ spec.name }}{{ base_name }}(const {{ spec.name }}& expr) = 0;{% endfor %}
-  };
-
   class {{ base_name }}
   {
   public:
     virtual ~{{ base_name }}() = default;
+
+    class Visitor
+    {
+    public:{% for spec in class_specs %}
+      virtual void visit{{ spec.name }}{{ base_name }}(const {{ spec.name }}& expr) = 0;{% endfor %}
+    };
 
     virtual void accept(Visitor& visitor) const {}
   };
