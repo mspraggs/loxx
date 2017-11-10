@@ -3,7 +3,7 @@ project(loxx)
 
 set(SRC
   AstPrinter.hpp
-  Expressions.hpp
+  Expr.hpp
   Generic.hpp
   Interpreter.hpp
   logging.hpp

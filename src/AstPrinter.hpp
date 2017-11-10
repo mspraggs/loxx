@@ -22,7 +22,7 @@
 
 #include <sstream>
 
-#include "Expressions.hpp"
+#include "Expr.hpp"
 
 
 namespace loxx

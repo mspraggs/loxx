@@ -50,7 +50,7 @@ def define_ast(output_dir, base_name, types):
     with open("ast_template.hpp") as f:
         template = jinja2.Template(f.read())
 
-    with open(os.path.join(output_dir, "Expressions.hpp"), 'w') as f:
+    with open(os.path.join(output_dir, "{}.hpp".format(base_name)), 'w') as f:
         f.write(template.render(base_name=base_name, class_specs=class_specs))
 
 

@@ -17,8 +17,8 @@
  * Created by Matt Spraggs on 01/11/17.
  */
 
-#ifndef LOXX_EXPRESSIONS_HPP_HPP
-#define LOXX_EXPRESSIONS_HPP_HPP
+#ifndef LOXX_{{ base_name|upper }}_HPP
+#define LOXX_{{ base_name|upper }}_HPP
 
 #include "Generic.hpp"
 #include "Token.hpp"
@@ -62,4 +62,4 @@ namespace loxx
 {% endfor %}
 }
 
-#endif //LOXX_EXPRESSIONS_HPP_HPP
+#endif //LOXX_{{ base_name|upper }}_HPP
