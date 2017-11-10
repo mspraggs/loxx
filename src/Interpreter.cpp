@@ -190,7 +190,7 @@ namespace loxx
     throw RuntimeError(op, "Binary operands must both be numbers.");
   }
 
-  std::string Interpreter::stringify(Generic& generic) const
+  std::string Interpreter::stringify(const Generic& generic) const
   {
     if (generic.has_type<std::nullptr_t>()) {
       return "nil";

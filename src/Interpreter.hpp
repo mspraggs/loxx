@@ -58,7 +58,7 @@ namespace loxx
     void check_number_operand(const Token& op, const Generic& value) const;
     void check_number_operands(const Token& op,
                                const Generic& left, const Generic& right) const;
-    std::string stringify(Generic& generic) const;
+    std::string stringify(const Generic& generic) const;
 
     std::stack<Generic, std::vector<Generic>> stack_;
   };
