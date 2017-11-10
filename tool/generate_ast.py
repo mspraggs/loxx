@@ -47,7 +47,7 @@ def define_ast(output_dir, base_name, types):
                                 initialisers=initialisers, members=member_vars,
                                 accessors=accessors))
 
-    with open("Expressions.hpp.template") as f:
+    with open("ast_template.hpp") as f:
         template = jinja2.Template(f.read())
 
     with open(os.path.join(output_dir, "Expressions.hpp"), 'w') as f:
