@@ -23,6 +23,31 @@
 
 namespace loxx
 {
+  std::unique_ptr<Stmt> Parser::statement()
+  {
+    if (match({TokenType::Print})) {
+      return print_statement();
+    }
+    return expression_statement();
+  }
+
+
+  std::unique_ptr<Stmt> Parser::print_statement()
+  {
+    auto expr = expression();
+    consume(TokenType::SemiColon, "Expect ';' after value.");
+    return std::make_unique<Print>(std::move(expr));
+  }
+
+
+  std::unique_ptr<Stmt> Parser::expression_statement()
+  {
+    auto expr = expression();
+    consume(TokenType::SemiColon, "Expxect ';' after expression");
+    return std::make_unique<Expression>(std::move(expr));
+  }
+
+
   std::unique_ptr<Expr> Parser::equality()
   {
     return binary([this] () { return comparison(); },

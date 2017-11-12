@@ -22,7 +22,7 @@
 
 #include <vector>
 
-#include "Expr.hpp"
+#include "Stmt.hpp"
 #include "Token.hpp"
 
 
@@ -37,13 +37,14 @@ namespace loxx
         : current_(0), tokens_(std::move(tokens))
     {}
 
-    std::unique_ptr<Expr> parse() {
-      try {
-        return expression();
+    std::vector<std::unique_ptr<Stmt>> parse() {
+      std::vector<std::unique_ptr<Stmt>> statements;
+
+      while (not is_at_end()) {
+        statements.emplace_back(statement());
       }
-      catch (const ParseError& e) {
-        return std::make_unique<Expr>();
-      }
+
+      return statements;
     }
 
   private:
@@ -52,6 +53,11 @@ namespace loxx
     public:
       ParseError() : std::runtime_error("") {}
     };
+
+    std::unique_ptr<Stmt> statement();
+
+    std::unique_ptr<Stmt> print_statement();
+    std::unique_ptr<Stmt> expression_statement();
 
     std::unique_ptr<Expr> expression() { return equality(); }
     std::unique_ptr<Expr> equality();
