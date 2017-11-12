@@ -29,7 +29,7 @@ namespace loxx
     }
 
     Parser parser(std::move(tokens));
-    const auto expr = parser.parse();
+    const auto statements = parser.parse();
 
     if (had_error) {
       return;
@@ -37,11 +37,11 @@ namespace loxx
 
     if (debug) {
       AstPrinter printer;
-      std::cout << printer.print(*expr) << std::endl;
+      //std::cout << printer.print(*expr) << std::endl;
     }
 
     static Interpreter interpreter;
-    interpreter.interpret(*expr);
+    interpreter.interpret(statements);
   }
 
 

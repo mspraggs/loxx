@@ -24,14 +24,18 @@
 #include <vector>
 
 #include "Expr.hpp"
+#include "Stmt.hpp"
 
 
 namespace loxx
 {
-  class Interpreter : public Expr::Visitor
+  class Interpreter : public Expr::Visitor, public Stmt::Visitor
   {
   public:
-    void interpret(const Expr& expr);
+    void interpret(const std::vector<std::unique_ptr<Stmt>>& statements);
+
+    void visit_expression_stmt(const Expression& stmt) override;
+    void visit_print_stmt(const Print& stmt) override;
 
     void visit_unary_expr(const Unary& expr) override;
     void visit_binary_expr(const Binary& expr) override;
@@ -53,6 +57,7 @@ namespace loxx
 
   private:
     void evaluate(const Expr& expr);
+    void execute(const Stmt& stmt);
     bool is_truthy(const Generic& value);
     bool is_equal(const Generic& left, const Generic& right);
     void check_number_operand(const Token& op, const Generic& value) const;

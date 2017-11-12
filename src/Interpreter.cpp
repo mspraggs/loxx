@@ -26,17 +26,31 @@
 
 namespace loxx
 {
-  void Interpreter::interpret(const Expr& expr)
+  void Interpreter::interpret(
+      const std::vector<std::unique_ptr<Stmt>>& statements)
   {
     try {
-      evaluate(expr);
-      if (stack_.size() > 0) {
-        std::cout << stringify(pop_top()) << std::endl;
+      for (const auto& stmt : statements) {
+        execute(*stmt);
       }
     }
     catch (const RuntimeError& e) {
       runtime_error(e);
     }
+  }
+
+
+  void Interpreter::visit_expression_stmt(const Expression& stmt)
+  {
+    evaluate(stmt.expression());
+    pop_top();
+  }
+
+
+  void Interpreter::visit_print_stmt(const Print& stmt)
+  {
+    evaluate(stmt.expression());
+    std::cout << stringify(pop_top()) << std::endl;
   }
 
 
@@ -138,6 +152,12 @@ namespace loxx
   void Interpreter::evaluate(const Expr& expr)
   {
     expr.accept(*this);
+  }
+
+
+  void Interpreter::execute(const Stmt& stmt)
+  {
+    stmt.accept(*this);
   }
 
 
