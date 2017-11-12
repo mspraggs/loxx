@@ -70,3 +70,9 @@ if __name__ == "__main__":
          "Grouping": [("Expr", "expression", True)],
          "Literal": [("Generic", "value", False)],
          "Unary": [("Token", "op", False), ("Expr", "right", True)]})
+
+    define_ast(
+        output_dir, "Stmt",
+        {"Expression": [("Expr", "expression", True)],
+         "Print": [("Expr", "expression", True)]},
+        ["Expr.hpp"])

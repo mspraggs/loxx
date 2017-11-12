@@ -9,6 +9,7 @@ set(SRC
   logging.hpp
   Parser.hpp
   Scanner.hpp
+  Stmt.hpp
   Token.hpp
 
   AstPrinter.cpp
