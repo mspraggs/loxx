@@ -30,6 +30,7 @@ namespace loxx
   class Unary;
   class Binary;
   class Literal;
+  class Variable;
   class Grouping;
 
   class Expr
@@ -43,6 +44,7 @@ namespace loxx
       virtual void visit_unary_expr(const Unary& expr) = 0;
       virtual void visit_binary_expr(const Binary& expr) = 0;
       virtual void visit_literal_expr(const Literal& expr) = 0;
+      virtual void visit_variable_expr(const Variable& expr) = 0;
       virtual void visit_grouping_expr(const Grouping& expr) = 0;
     };
 
@@ -104,6 +106,23 @@ namespace loxx
 
   private:
     Generic value_;
+  };
+
+
+  class Variable : public Expr
+  {
+  public:
+    Variable(Token name)
+        : name_(std::move(name))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_variable_expr(*this); }
+
+    const Token& name() const { return name_; }
+
+  private:
+    Token name_;
   };
 
 
