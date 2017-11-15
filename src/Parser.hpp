@@ -41,7 +41,7 @@ namespace loxx
       std::vector<std::unique_ptr<Stmt>> statements;
 
       while (not is_at_end()) {
-        statements.emplace_back(statement());
+        statements.emplace_back(declaration());
       }
 
       return statements;
@@ -54,9 +54,10 @@ namespace loxx
       ParseError() : std::runtime_error("") {}
     };
 
+    std::unique_ptr<Stmt> declaration();
     std::unique_ptr<Stmt> statement();
-
     std::unique_ptr<Stmt> print_statement();
+    std::unique_ptr<Stmt> var_declaration();
     std::unique_ptr<Stmt> expression_statement();
 
     std::unique_ptr<Expr> expression() { return equality(); }

@@ -23,6 +23,23 @@
 
 namespace loxx
 {
+  std::unique_ptr<Stmt> Parser::declaration()
+  {
+    try {
+      if (match({TokenType::Var})) {
+        return var_declaration();
+      }
+
+      return statement();
+    }
+    catch (const ParseError& e) {
+      synchronise();
+
+      return std::unique_ptr<Stmt>();
+    }
+  }
+
+
   std::unique_ptr<Stmt> Parser::statement()
   {
     if (match({TokenType::Print})) {
@@ -37,6 +54,18 @@ namespace loxx
     auto expr = expression();
     consume(TokenType::SemiColon, "Expect ';' after value.");
     return std::make_unique<Print>(std::move(expr));
+  }
+
+
+  std::unique_ptr<Stmt> Parser::var_declaration()
+  {
+    auto name = consume(TokenType::Identifier, "Expected variable name.");
+
+    auto initialiser =
+        match({TokenType::Equal}) ? expression() : std::unique_ptr<Expr>();
+
+    consume(TokenType::SemiColon, "Expected ';' after variable declaration.");
+    return std::make_unique<Var>(std::move(name), std::move(initialiser));
   }
 
 
@@ -109,6 +138,10 @@ namespace loxx
       auto expr = expression();
       consume(TokenType::RightParen, "Expect ')' after expression.");
       return std::make_unique<Grouping>(std::move(expr));
+    }
+
+    if (match({TokenType::Identifier})) {
+      return std::make_unique<Variable>(previous());
     }
 
     throw error(peek(), "Expected expression.");
