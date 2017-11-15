@@ -29,6 +29,7 @@ namespace loxx
 {
 
   class Print;
+  class Var;
   class Expression;
 
   class Stmt
@@ -40,6 +41,7 @@ namespace loxx
     {
     public:
       virtual void visit_print_stmt(const Print& expr) = 0;
+      virtual void visit_var_stmt(const Var& expr) = 0;
       virtual void visit_expression_stmt(const Expression& expr) = 0;
     };
 
@@ -61,6 +63,25 @@ namespace loxx
 
   private:
     std::unique_ptr<Expr> expression_;
+  };
+
+
+  class Var : public Stmt
+  {
+  public:
+    Var(Token name, std::unique_ptr<Expr> initialiser)
+        : name_(std::move(name)), initialiser_(std::move(initialiser))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_var_stmt(*this); }
+
+    const Token& name() const { return name_; }
+    const Expr& initialiser() const { return *initialiser_; }
+
+  private:
+    Token name_;
+    std::unique_ptr<Expr> initialiser_;
   };
 
 
