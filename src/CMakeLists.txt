@@ -3,6 +3,7 @@ project(loxx)
 
 set(SRC
   AstPrinter.hpp
+  Environment.hpp
   Expr.hpp
   Generic.hpp
   Interpreter.hpp
@@ -14,6 +15,7 @@ set(SRC
   Token.hpp
 
   AstPrinter.cpp
+  Environment.cpp
   Interpreter.cpp
   logging.cpp
   main.cpp
