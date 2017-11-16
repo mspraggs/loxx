@@ -58,9 +58,38 @@ namespace loxx
   }
 
 
-  std::string AstPrinter::print(const Expr& expr)
+  void AstPrinter::visit_variable_expr(const Variable& expr)
   {
-    expr.accept(*this);
+    paranthesise(expr.name().lexeme(), {});
+  }
+
+
+  void AstPrinter::visit_print_stmt(const Print& expr)
+  {
+    paranthesise("write-line", {&expr.expression()});
+  }
+
+
+  void AstPrinter::visit_var_stmt(const Var& expr)
+  {
+    const std::string name = "defvar " + expr.name().lexeme();
+    paranthesise(name, {&expr.initialiser()});
+  }
+
+
+  void AstPrinter::visit_expression_stmt(const Expression& expr)
+  {
+    expr.expression().accept(*this);
+  }
+
+
+  std::string AstPrinter::print(
+      const std::vector<std::unique_ptr<Stmt>>& statements)
+  {
+    for (const auto& stmt : statements) {
+      stmt->accept(*this);
+      stream_ << '\n';
+    }
     return stream_.str();
   }
 
