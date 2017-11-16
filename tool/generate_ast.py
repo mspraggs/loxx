@@ -28,6 +28,10 @@ def define_ast(output_dir, base_name, types, includes=[]):
 
     class_specs = []
 
+    ptr_check_str = (" if ({0}_ == nullptr) "
+                     "throw std::out_of_range(\"Member {0}_ "
+                     "contains nullptr!\");")
+
     for name, members in types.items():
         arglist = ", ".join(
             "std::unique_ptr<{}> {}".format(t, n) if i else "{} {}".format(t, n)
@@ -40,8 +44,10 @@ def define_ast(output_dir, base_name, types, includes=[]):
             if i else "{} {}_;".format(t, n)
             for t, n, i in members)
         accessors = "\n    ".join(
-            "const {0}& {1}() const {{ return {2}{1}_; }}"
-            .format(t, n, '*' if i else '') for t, n, i in members)
+            "const {0}& {1}() const {{{3} return {2}{1}_; }}"
+            .format(t, n, '*' if i else '',
+                    ptr_check_str.format(n) if i else "")
+            for t, n, i in members)
 
         class_specs.append(dict(name=name, arglist=arglist,
                                 initialisers=initialisers, members=member_vars,

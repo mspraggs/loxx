@@ -63,7 +63,7 @@ namespace loxx
     { visitor.visit_unary_expr(*this); }
 
     const Token& op() const { return op_; }
-    const Expr& right() const { return *right_; }
+    const Expr& right() const { if (right_ == nullptr) throw std::out_of_range("Member right_ contains nullptr!"); return *right_; }
 
   private:
     Token op_;
@@ -81,9 +81,9 @@ namespace loxx
     void accept(Visitor& visitor) const override
     { visitor.visit_binary_expr(*this); }
 
-    const Expr& left() const { return *left_; }
+    const Expr& left() const { if (left_ == nullptr) throw std::out_of_range("Member left_ contains nullptr!"); return *left_; }
     const Token& op() const { return op_; }
-    const Expr& right() const { return *right_; }
+    const Expr& right() const { if (right_ == nullptr) throw std::out_of_range("Member right_ contains nullptr!"); return *right_; }
 
   private:
     std::unique_ptr<Expr> left_;
@@ -136,7 +136,7 @@ namespace loxx
     void accept(Visitor& visitor) const override
     { visitor.visit_grouping_expr(*this); }
 
-    const Expr& expression() const { return *expression_; }
+    const Expr& expression() const { if (expression_ == nullptr) throw std::out_of_range("Member expression_ contains nullptr!"); return *expression_; }
 
   private:
     std::unique_ptr<Expr> expression_;

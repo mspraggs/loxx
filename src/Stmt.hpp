@@ -59,7 +59,7 @@ namespace loxx
     void accept(Visitor& visitor) const override
     { visitor.visit_print_stmt(*this); }
 
-    const Expr& expression() const { return *expression_; }
+    const Expr& expression() const { if (expression_ == nullptr) throw std::out_of_range("Member expression_ contains nullptr!"); return *expression_; }
 
   private:
     std::unique_ptr<Expr> expression_;
@@ -77,7 +77,7 @@ namespace loxx
     { visitor.visit_var_stmt(*this); }
 
     const Token& name() const { return name_; }
-    const Expr& initialiser() const { return *initialiser_; }
+    const Expr& initialiser() const { if (initialiser_ == nullptr) throw std::out_of_range("Member initialiser_ contains nullptr!"); return *initialiser_; }
 
   private:
     Token name_;
@@ -95,7 +95,7 @@ namespace loxx
     void accept(Visitor& visitor) const override
     { visitor.visit_expression_stmt(*this); }
 
-    const Expr& expression() const { return *expression_; }
+    const Expr& expression() const { if (expression_ == nullptr) throw std::out_of_range("Member expression_ contains nullptr!"); return *expression_; }
 
   private:
     std::unique_ptr<Expr> expression_;
