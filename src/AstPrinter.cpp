@@ -73,7 +73,13 @@ namespace loxx
   void AstPrinter::visit_var_stmt(const Var& expr)
   {
     const std::string name = "defvar " + expr.name().lexeme();
-    paranthesise(name, {&expr.initialiser()});
+
+    try {
+      paranthesise(name, {&expr.initialiser()});
+    }
+    catch (const std::out_of_range& e) {
+      paranthesise(name, {});
+    }
   }
 
 
