@@ -25,6 +25,7 @@
 
 #include "Environment.hpp"
 #include "Expr.hpp"
+#include "Stack.hpp"
 #include "Stmt.hpp"
 
 
@@ -33,6 +34,8 @@ namespace loxx
   class Interpreter : public Expr::Visitor, public Stmt::Visitor
   {
   public:
+    Interpreter();
+
     void interpret(const std::vector<std::unique_ptr<Stmt>>& statements);
 
     void visit_expression_stmt(const Expression& stmt) override;
@@ -54,9 +57,8 @@ namespace loxx
     void check_number_operands(const Token& op,
                                const Generic& left, const Generic& right) const;
     std::string stringify(const Generic& generic) const;
-    Generic pop_top();
 
-    std::stack<Generic, std::vector<Generic>> stack_;
+    Stack<Generic> stack_;
     Environment environment_;
   };
 }

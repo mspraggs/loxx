@@ -11,6 +11,7 @@ set(SRC
   Parser.hpp
   RuntimeError.hpp
   Scanner.hpp
+  Stack.hpp
   Stmt.hpp
   Token.hpp
 

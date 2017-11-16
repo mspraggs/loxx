@@ -26,6 +26,11 @@
 
 namespace loxx
 {
+  Interpreter::Interpreter() : stack_(4096)
+  {
+  }
+
+
   void Interpreter::interpret(
       const std::vector<std::unique_ptr<Stmt>>& statements)
   {
@@ -43,14 +48,14 @@ namespace loxx
   void Interpreter::visit_expression_stmt(const Expression& stmt)
   {
     evaluate(stmt.expression());
-    pop_top();
+    stack_.pop();
   }
 
 
   void Interpreter::visit_print_stmt(const Print& stmt)
   {
     evaluate(stmt.expression());
-    std::cout << stringify(pop_top()) << std::endl;
+    std::cout << stringify(stack_.pop()) << std::endl;
   }
 
 
@@ -59,7 +64,7 @@ namespace loxx
     auto value = [this, &stmt] () {
       try {
         evaluate(stmt.initialiser());
-        return pop_top();
+        return stack_.pop();
       }
       catch (const std::out_of_range& e) {
         return Generic(nullptr);
@@ -74,7 +79,7 @@ namespace loxx
   {
     evaluate(expr.right());
 
-    const auto value = pop_top();
+    const auto value = stack_.pop();
 
     switch (expr.op().type()) {
     case TokenType::Bang:
@@ -93,10 +98,10 @@ namespace loxx
   void Interpreter::visit_binary_expr(const Binary& expr)
   {
     evaluate(expr.left());
-    const auto left = pop_top();
+    const auto left = stack_.pop();
 
     evaluate(expr.right());
-    const auto right = pop_top();
+    const auto right = stack_.pop();
 
     switch (expr.op().type()) {
     case TokenType::BangEqual:
@@ -132,7 +137,8 @@ namespace loxx
         stack_.push(Generic(left.get<double>() + right.get<double>()));
       }
       else if (left.has_type<std::string>() and right.has_type<std::string>()) {
-        stack_.push(Generic(left.get<std::string>() + right.get<std::string>()));
+        stack_.push(Generic(left.get<std::string>() +
+                                     right.get<std::string>()));
       }
       else {
         throw RuntimeError(
@@ -245,13 +251,5 @@ namespace loxx
       return generic.get<std::string>();
     }
     return "";
-  }
-
-
-  Generic Interpreter::pop_top()
-  {
-    const auto ret = stack_.top();
-    stack_.pop();
-    return ret;
   }
 }
