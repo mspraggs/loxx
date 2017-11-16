@@ -54,6 +54,22 @@ namespace loxx
   }
 
 
+  void Interpreter::visit_var_stmt(const Var& stmt)
+  {
+    auto value = [this, &stmt] () {
+      try {
+        evaluate(stmt.initialiser());
+        return pop_top();
+      }
+      catch (const std::out_of_range& e) {
+        return Generic(nullptr);
+      }
+    }();
+
+    environment_.define(stmt.name().lexeme(), std::move(value));
+  }
+
+
   void Interpreter::visit_unary_expr(const Unary& expr)
   {
     evaluate(expr.right());
@@ -146,6 +162,12 @@ namespace loxx
   void Interpreter::visit_grouping_expr(const Grouping& expr)
   {
     evaluate(expr.expression());
+  }
+
+
+  void Interpreter::visit_variable_expr(const Variable& expr)
+  {
+    stack_.push(environment_.get(expr.name()));
   }
 
 
