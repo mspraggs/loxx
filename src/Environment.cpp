@@ -26,7 +26,7 @@ namespace loxx
   void Environment::define(std::string name, Generic value)
   {
     const bool first_value = value_map_.count(name) == 0;
-    const std::size_t index = first_value ? value_map_[name] : values_.size();
+    const std::size_t index = first_value ? values_.size() : value_map_[name];
 
     if (first_value) {
       values_.emplace_back(std::move(value));
