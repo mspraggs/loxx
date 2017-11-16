@@ -37,7 +37,7 @@ namespace loxx
 
     if (debug) {
       AstPrinter printer;
-      //std::cout << printer.print(*expr) << std::endl;
+      std::cout << printer.print(statements) << std::endl;
     }
 
     static Interpreter interpreter;
