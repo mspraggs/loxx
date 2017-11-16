@@ -8,6 +8,7 @@ set(SRC
   Interpreter.hpp
   logging.hpp
   Parser.hpp
+  RuntimeError.hpp
   Scanner.hpp
   Stmt.hpp
   Token.hpp

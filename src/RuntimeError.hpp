@@ -14,36 +14,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Created by Matt Spraggs on 31/10/17.
+ * Created by Matt Spraggs on 16/11/17.
  */
 
-#ifndef LOXX_LOGGING_HPP
-#define LOXX_LOGGING_HPP
+#ifndef LOXX_RUNTIMEERROR_HPP
+#define LOXX_RUNTIMEERROR_HPP
 
-#include <string>
+#include <stdexcept>
 
-#include "Interpreter.hpp"
-#include "RuntimeError.hpp"
 #include "Token.hpp"
 
 
 namespace loxx
 {
-  extern bool had_error;
-  extern bool had_runtime_error;
+  class RuntimeError : public std::runtime_error
+  {
+  public:
+    RuntimeError(Token token, const std::string& message)
+        : std::runtime_error(message), token_(std::move(token))
+    {}
 
+    const Token& token() const { return token_; }
 
-  void error(const unsigned int line, const std::string& message);
-
-
-  void report(const unsigned int line, const std::string& where,
-              const std::string& message);
-
-
-  void error(const Token& token, const std::string& message);
-
-
-  void runtime_error(const RuntimeError& error);
+  private:
+    Token token_;
+  };
 }
 
-#endif //LOXX_LOGGING_HPP
+#endif //LOXX_RUNTIMEERROR_HPP

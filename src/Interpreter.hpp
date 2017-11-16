@@ -42,19 +42,6 @@ namespace loxx
     void visit_literal_expr(const Literal& expr) override;
     void visit_grouping_expr(const Grouping& expr) override;
 
-    class RuntimeError : public std::runtime_error
-    {
-    public:
-      RuntimeError(Token token, const std::string& message)
-          : std::runtime_error(message), token_(std::move(token))
-      {}
-
-      const Token& token() const { return token_; }
-
-    private:
-      Token token_;
-    };
-
   private:
     void evaluate(const Expr& expr);
     void execute(const Stmt& stmt);
