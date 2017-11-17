@@ -27,10 +27,11 @@
 namespace loxx
 {
 
-  class Unary;
   class Binary;
+  class Unary;
   class Literal;
   class Variable;
+  class Assign;
   class Grouping;
 
   class Expr
@@ -41,33 +42,15 @@ namespace loxx
     class Visitor
     {
     public:
-      virtual void visit_unary_expr(const Unary& expr) = 0;
       virtual void visit_binary_expr(const Binary& expr) = 0;
+      virtual void visit_unary_expr(const Unary& expr) = 0;
       virtual void visit_literal_expr(const Literal& expr) = 0;
       virtual void visit_variable_expr(const Variable& expr) = 0;
+      virtual void visit_assign_expr(const Assign& expr) = 0;
       virtual void visit_grouping_expr(const Grouping& expr) = 0;
     };
 
     virtual void accept(Visitor& visitor) const {}
-  };
-
-
-  class Unary : public Expr
-  {
-  public:
-    Unary(Token op, std::unique_ptr<Expr> right)
-        : op_(std::move(op)), right_(std::move(right))
-    {}
-
-    void accept(Visitor& visitor) const override
-    { visitor.visit_unary_expr(*this); }
-
-    const Token& op() const { return op_; }
-    const Expr& right() const { if (right_ == nullptr) throw std::out_of_range("Member right_ contains nullptr!"); return *right_; }
-
-  private:
-    Token op_;
-    std::unique_ptr<Expr> right_;
   };
 
 
@@ -87,6 +70,25 @@ namespace loxx
 
   private:
     std::unique_ptr<Expr> left_;
+    Token op_;
+    std::unique_ptr<Expr> right_;
+  };
+
+
+  class Unary : public Expr
+  {
+  public:
+    Unary(Token op, std::unique_ptr<Expr> right)
+        : op_(std::move(op)), right_(std::move(right))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_unary_expr(*this); }
+
+    const Token& op() const { return op_; }
+    const Expr& right() const { if (right_ == nullptr) throw std::out_of_range("Member right_ contains nullptr!"); return *right_; }
+
+  private:
     Token op_;
     std::unique_ptr<Expr> right_;
   };
@@ -123,6 +125,25 @@ namespace loxx
 
   private:
     Token name_;
+  };
+
+
+  class Assign : public Expr
+  {
+  public:
+    Assign(Token name, std::unique_ptr<Expr> value)
+        : name_(std::move(name)), value_(std::move(value))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_assign_expr(*this); }
+
+    const Token& name() const { return name_; }
+    const Expr& value() const { if (value_ == nullptr) throw std::out_of_range("Member value_ contains nullptr!"); return *value_; }
+
+  private:
+    Token name_;
+    std::unique_ptr<Expr> value_;
   };
 
 

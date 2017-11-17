@@ -71,7 +71,8 @@ if __name__ == "__main__":
 
     define_ast(
         output_dir, "Expr",
-        {"Binary": [("Expr", "left", True), ("Token", "op", False),
+        {"Assign": [("Token", "name", False), ("Expr", "value", True)],
+         "Binary": [("Expr", "left", True), ("Token", "op", False),
                     ("Expr", "right", True)],
          "Grouping": [("Expr", "expression", True)],
          "Literal": [("Generic", "value", False)],
