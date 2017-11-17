@@ -46,4 +46,15 @@ namespace loxx
 
     throw RuntimeError(name, "Undefined variable '" + name.lexeme() + "'.");
   }
+
+
+  void Environment::assign(const Token& name, Generic value)
+  {
+    if (value_map_.count(name.lexeme())) {
+      values_[value_map_[name.lexeme()]] = std::move(value);
+      return;
+    }
+
+    throw RuntimeError(name, "Undefined variable '" + name.lexeme() + "'.");
+  }
 }

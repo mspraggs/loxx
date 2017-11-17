@@ -34,6 +34,7 @@ namespace loxx
   public:
     void define(std::string name, Generic value);
     const Generic& get(const Token& name) const;
+    void assign(const Token& name, Generic value);
 
   private:
     std::unordered_map<std::string, std::size_t> value_map_;
