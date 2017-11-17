@@ -29,6 +29,13 @@ namespace loxx
   }
 
 
+  void AstPrinter::visit_assign_expr(const Assign& expr)
+  {
+    const std::string name = "setq " + expr.name().lexeme();
+    paranthesise(name, {&expr.value()});
+  }
+
+
   void AstPrinter::visit_binary_expr(const Binary& expr)
   {
     paranthesise(expr.op().lexeme(), {&expr.left(), &expr.right()});

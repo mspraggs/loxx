@@ -33,6 +33,7 @@ namespace loxx
   public:
     void visit_unary_expr(const Unary& expr) override;
     void visit_binary_expr(const Binary& expr) override;
+    void visit_assign_expr(const Assign& expr) override;
     void visit_literal_expr(const Literal& expr) override;
     void visit_grouping_expr(const Grouping& expr) override;
     void visit_variable_expr(const Variable& expr) override;
