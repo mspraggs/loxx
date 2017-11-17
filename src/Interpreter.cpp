@@ -75,6 +75,14 @@ namespace loxx
   }
 
 
+  void Interpreter::visit_assign_expr(const Assign& expr)
+  {
+    evaluate(expr.value());
+
+    environment_.assign(expr.name(), stack_.top());
+  }
+
+
   void Interpreter::visit_unary_expr(const Unary& expr)
   {
     evaluate(expr.right());

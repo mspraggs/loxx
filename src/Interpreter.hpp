@@ -42,6 +42,7 @@ namespace loxx
     void visit_print_stmt(const Print& stmt) override;
     void visit_var_stmt(const Var& stmt) override;
 
+    void visit_assign_expr(const Assign& expr) override;
     void visit_unary_expr(const Unary& expr) override;
     void visit_binary_expr(const Binary& expr) override;
     void visit_literal_expr(const Literal& expr) override;
