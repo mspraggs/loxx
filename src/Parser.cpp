@@ -77,6 +77,26 @@ namespace loxx
   }
 
 
+  std::unique_ptr<Expr> Parser::assignment()
+  {
+    auto expr = equality();
+
+    if (match({TokenType::Equal})) {
+      auto equals = previous();
+      auto value = assignment();
+
+      if (typeid(*expr) == typeid(Variable)) {
+        Token name = static_cast<Variable*>(expr.get())->name();
+        return std::make_unique<Assign>(std::move(name), std::move(value));
+      }
+
+      error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
+  }
+
+
   std::unique_ptr<Expr> Parser::equality()
   {
     return binary([this] () { return comparison(); },

@@ -60,7 +60,8 @@ namespace loxx
     std::unique_ptr<Stmt> var_declaration();
     std::unique_ptr<Stmt> expression_statement();
 
-    std::unique_ptr<Expr> expression() { return equality(); }
+    std::unique_ptr<Expr> assignment();
+    std::unique_ptr<Expr> expression() { return assignment(); }
     std::unique_ptr<Expr> equality();
     std::unique_ptr<Expr> comparison();
     std::unique_ptr<Expr> addition();
