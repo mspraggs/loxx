@@ -23,10 +23,14 @@ import sys
 import jinja2
 
 
-def define_ast(output_dir, base_name, types):
+def define_ast(output_dir, base_name, types, includes=[]):
     """Generate AST class definitions using specification and jinja2"""
 
     class_specs = []
+
+    ptr_check_str = (" if ({0}_ == nullptr) "
+                     "throw std::out_of_range(\"Member {0}_ "
+                     "contains nullptr!\");")
 
     for name, members in types.items():
         arglist = ", ".join(
@@ -40,18 +44,21 @@ def define_ast(output_dir, base_name, types):
             if i else "{} {}_;".format(t, n)
             for t, n, i in members)
         accessors = "\n    ".join(
-            "const {0}& {1}() const {{ return {2}{1}_; }}"
-            .format(t, n, '*' if i else '') for t, n, i in members)
+            "const {0}& {1}() const {{{3} return {2}{1}_; }}"
+            .format(t, n, '*' if i else '',
+                    ptr_check_str.format(n) if i else "")
+            for t, n, i in members)
 
         class_specs.append(dict(name=name, arglist=arglist,
                                 initialisers=initialisers, members=member_vars,
                                 accessors=accessors))
 
-    with open("Expressions.hpp.template") as f:
+    with open("ast_template.hpp") as f:
         template = jinja2.Template(f.read())
 
-    with open(os.path.join(output_dir, "Expressions.hpp"), 'w') as f:
-        f.write(template.render(base_name=base_name, class_specs=class_specs))
+    with open(os.path.join(output_dir, "{}.hpp".format(base_name)), 'w') as f:
+        f.write(template.render(base_name=base_name, class_specs=class_specs,
+                                includes=includes))
 
 
 if __name__ == "__main__":
@@ -64,10 +71,20 @@ if __name__ == "__main__":
 
     define_ast(
         output_dir, "Expr",
-        {"Binary": [("Expr", "left", True), ("Token", "op", False),
+        {"Assign": [("Token", "name", False), ("Expr", "value", True)],
+         "Binary": [("Expr", "left", True), ("Token", "op", False),
                     ("Expr", "right", True)],
          "Ternary": [("Expr", "first", True), ("Token", "op", False),
                      ("Expr", "second", True), ("Expr", "third", True)],
          "Grouping": [("Expr", "expression", True)],
          "Literal": [("Generic", "value", False)],
-         "Unary": [("Token", "op", False), ("Expr", "right", True)]})
+         "Unary": [("Token", "op", False), ("Expr", "right", True)],
+         "Variable": [("Token", "name", False)]})
+
+    define_ast(
+        output_dir, "Stmt",
+        {"Block": [("std::vector<std::unique_ptr<Stmt>>", "statements", False)],
+         "Expression": [("Expr", "expression", True)],
+         "Print": [("Expr", "expression", True)],
+         "Var": [("Token", "name", False), ("Expr", "initialiser", True)]},
+        ["Expr.hpp"])

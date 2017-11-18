@@ -26,13 +26,17 @@
 
 namespace loxx
 {
-  void Interpreter::interpret(const Expr& expr)
+  Interpreter::Interpreter() : stack_(4096), environment_(new Environment)
+  {
+  }
+
+
+  void Interpreter::interpret(
+      const std::vector<std::unique_ptr<Stmt>>& statements)
   {
     try {
-      evaluate(expr);
-      if (stack_.size() > 0) {
-        std::cout << stringify(stack_.top()) << std::endl;
-        stack_.pop();
+      for (const auto& stmt : statements) {
+        execute(*stmt);
       }
     }
     catch (const RuntimeError& e) {
@@ -41,12 +45,63 @@ namespace loxx
   }
 
 
-  void Interpreter::visitUnaryExpr(const Unary& expr)
+  void Interpreter::visit_expression_stmt(const Expression& stmt)
+  {
+    evaluate(stmt.expression());
+    stack_.pop();
+  }
+
+
+  void Interpreter::visit_print_stmt(const Print& stmt)
+  {
+    evaluate(stmt.expression());
+    std::cout << stringify(stack_.pop()) << std::endl;
+  }
+
+
+  void Interpreter::visit_var_stmt(const Var& stmt)
+  {
+    auto value = [this, &stmt] () {
+      try {
+        evaluate(stmt.initialiser());
+        return stack_.pop();
+      }
+      catch (const std::out_of_range& e) {
+        return Generic(nullptr);
+      }
+    }();
+
+    environment_->define(stmt.name().lexeme(), std::move(value));
+  }
+
+
+  void Interpreter::visit_block_stmt(const Block& stmt)
+  {
+    environment_ = std::make_unique<Environment>(std::move(environment_));
+
+    try {
+      execute_block(stmt.statements());
+    }
+    catch (const RuntimeError& e) {
+    }
+
+    environment_ = environment_->release_enclosing();
+  }
+
+
+  void Interpreter::visit_assign_expr(const Assign& expr)
+  {
+    evaluate(expr.value());
+
+    environment_->assign(expr.name(), stack_.top());
+  }
+
+
+  void Interpreter::visit_unary_expr(const Unary& expr)
   {
     evaluate(expr.right());
 
-    const auto value = stack_.top();
-    stack_.pop();
+    const auto value = stack_.pop();
 
     switch (expr.op().type()) {
     case TokenType::Bang:
@@ -62,15 +117,13 @@ namespace loxx
   }
 
 
-  void Interpreter::visitBinaryExpr(const Binary& expr)
+  void Interpreter::visit_binary_expr(const Binary& expr)
   {
     evaluate(expr.left());
-    const auto left = stack_.top();
-    stack_.pop();
+    const auto left = stack_.pop();
 
     evaluate(expr.right());
-    const auto right = stack_.top();
-    stack_.pop();
+    const auto right = stack_.pop();
 
     switch (expr.op().type()) {
     case TokenType::BangEqual:
@@ -106,7 +159,8 @@ namespace loxx
         stack_.push(Generic(left.get<double>() + right.get<double>()));
       }
       else if (left.has_type<std::string>() and right.has_type<std::string>()) {
-        stack_.push(Generic(left.get<std::string>() + right.get<std::string>()));
+        stack_.push(Generic(left.get<std::string>() +
+                                     right.get<std::string>()));
       }
       else {
         throw RuntimeError(
@@ -132,19 +186,19 @@ namespace loxx
   }
 
 
-  void Interpreter::visitLiteralExpr(const Literal& expr)
+  void Interpreter::visit_literal_expr(const Literal& expr)
   {
     stack_.push(expr.value());
   }
 
 
-  void Interpreter::visitGroupingExpr(const Grouping& expr)
+  void Interpreter::visit_grouping_expr(const Grouping& expr)
   {
     evaluate(expr.expression());
   }
 
 
-  void Interpreter::visitTernaryExpr(const Ternary& expr)
+  void Interpreter::visit_ternary_expr(const Ternary& expr)
   {
     evaluate(expr.first());
     const auto first = stack_.top();
@@ -173,9 +227,30 @@ namespace loxx
   }
 
 
+  void Interpreter::visit_variable_expr(const Variable& expr)
+  {
+    stack_.push(environment_->get(expr.name()));
+  }
+
+
   void Interpreter::evaluate(const Expr& expr)
   {
     expr.accept(*this);
+  }
+
+
+  void Interpreter::execute(const Stmt& stmt)
+  {
+    stmt.accept(*this);
+  }
+
+
+  void Interpreter::execute_block(
+      const std::vector<std::unique_ptr<Stmt>>& statements)
+  {
+    for (const auto& stmt : statements) {
+      execute(*stmt);
+    }
   }
 
 
@@ -224,7 +299,7 @@ namespace loxx
     throw RuntimeError(op, "Binary operands must both be numbers.");
   }
 
-  std::string Interpreter::stringify(Generic& generic) const
+  std::string Interpreter::stringify(const Generic& generic) const
   {
     if (generic.has_type<std::nullptr_t>()) {
       return "nil";

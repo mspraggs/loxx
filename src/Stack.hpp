@@ -14,36 +14,49 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Created by Matt Spraggs on 31/10/17.
+ * Created by Matt Spraggs on 16/11/17.
  */
 
-#ifndef LOXX_LOGGING_HPP
-#define LOXX_LOGGING_HPP
+#ifndef LOXX_STACK_HPP
+#define LOXX_STACK_HPP
 
-#include <string>
-
-#include "Interpreter.hpp"
-#include "RuntimeError.hpp"
-#include "Token.hpp"
+#include <vector>
 
 
 namespace loxx
 {
-  extern bool had_error;
-  extern bool had_runtime_error;
+  template <typename T>
+  class Stack
+  {
+  public:
+    Stack(const std::size_t reserved_size = 4096)
+    {
+      stack_.reserve(reserved_size);
+    }
+
+    const T& top() const { return stack_.back(); }
+    void push(T value);
+    T pop();
+
+  private:
+    std::vector<T> stack_;
+  };
 
 
-  void error(const unsigned int line, const std::string& message);
+  template <typename T>
+  void Stack<T>::push(T value)
+  {
+    stack_.emplace_back(std::move(value));
+  }
 
 
-  void report(const unsigned int line, const std::string& where,
-              const std::string& message);
-
-
-  void error(const Token& token, const std::string& message);
-
-
-  void runtime_error(const RuntimeError& error);
+  template <typename T>
+  T Stack<T>::pop()
+  {
+    const auto value = std::move(stack_.back());
+    stack_.pop_back();
+    return value;
+  }
 }
 
-#endif //LOXX_LOGGING_HPP
+#endif //LOXX_STACK_HPP

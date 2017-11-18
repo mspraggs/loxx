@@ -17,28 +17,32 @@
  * Created by Matt Spraggs on 01/11/17.
  */
 
-#ifndef LOXX_EXPRESSIONS_HPP_HPP
-#define LOXX_EXPRESSIONS_HPP_HPP
+#ifndef LOXX_{{ base_name|upper }}_HPP
+#define LOXX_{{ base_name|upper }}_HPP
+
+#include <memory>
+#include <vector>
 
 #include "Generic.hpp"
 #include "Token.hpp"
-
+{% for inc in includes %}#include "{{ inc }}"
+{% endfor %}
 
 namespace loxx
 {
 {% for spec in class_specs %}
   class {{ spec.name }};{% endfor %}
 
-  class Visitor
-  {
-  public:{% for spec in class_specs %}
-    virtual void visit{{ spec.name }}{{ base_name }}(const {{ spec.name }}& expr) = 0;{% endfor %}
-  };
-
   class {{ base_name }}
   {
   public:
     virtual ~{{ base_name }}() = default;
+
+    class Visitor
+    {
+    public:{% for spec in class_specs %}
+      virtual void visit_{{ spec.name|lower }}_{{ base_name|lower }}(const {{ spec.name }}& {{ base_name|lower }}) = 0;{% endfor %}
+    };
 
     virtual void accept(Visitor& visitor) const {}
   };
@@ -52,7 +56,7 @@ namespace loxx
     {}
 
     void accept(Visitor& visitor) const override
-    { visitor.visit{{ spec.name }}{{ base_name }}(*this); }
+    { visitor.visit_{{ spec.name|lower }}_{{ base_name|lower }}(*this); }
 
     {{ spec.accessors }}
 
@@ -62,4 +66,4 @@ namespace loxx
 {% endfor %}
 }
 
-#endif //LOXX_EXPRESSIONS_HPP_HPP
+#endif //LOXX_{{ base_name|upper }}_HPP

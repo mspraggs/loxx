@@ -3,15 +3,20 @@ project(loxx)
 
 set(SRC
   AstPrinter.hpp
-  Expressions.hpp
+  Environment.hpp
+  Expr.hpp
   Generic.hpp
   Interpreter.hpp
   logging.hpp
   Parser.hpp
+  RuntimeError.hpp
   Scanner.hpp
+  Stack.hpp
+  Stmt.hpp
   Token.hpp
 
   AstPrinter.cpp
+  Environment.cpp
   Interpreter.cpp
   logging.cpp
   main.cpp

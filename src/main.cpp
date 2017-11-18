@@ -29,7 +29,7 @@ namespace loxx
     }
 
     Parser parser(std::move(tokens));
-    const auto expr = parser.parse();
+    const auto statements = parser.parse();
 
     if (had_error) {
       return;
@@ -37,11 +37,11 @@ namespace loxx
 
     if (debug) {
       AstPrinter printer;
-      std::cout << printer.print(*expr) << std::endl;
+      std::cout << printer.print(statements) << std::endl;
     }
 
     static Interpreter interpreter;
-    interpreter.interpret(*expr);
+    interpreter.interpret(statements);
   }
 
 
@@ -59,7 +59,7 @@ namespace loxx
 
   void run_file(const std::string& path, const bool debug)
   {
-    std::ifstream file(path);
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
     std::streamsize size = file.tellg();
 
     file.seekg(0, std::ios::beg);

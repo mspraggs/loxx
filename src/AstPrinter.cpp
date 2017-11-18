@@ -23,32 +23,39 @@
 
 namespace loxx
 {
-  void AstPrinter::visitUnaryExpr(const Unary& expr)
+  void AstPrinter::visit_unary_expr(const Unary& expr)
   {
     paranthesise(expr.op().lexeme(), {&expr.right()});
   }
 
 
-  void AstPrinter::visitBinaryExpr(const Binary& expr)
+  void AstPrinter::visit_assign_expr(const Assign& expr)
+  {
+    const std::string name = "setq " + expr.name().lexeme();
+    paranthesise(name, {&expr.value()});
+  }
+
+
+  void AstPrinter::visit_binary_expr(const Binary& expr)
   {
     paranthesise(expr.op().lexeme(), {&expr.left(), &expr.right()});
   }
 
 
-  void AstPrinter::visitTernaryExpr(const Ternary& expr)
+  void AstPrinter::visit_ternary_expr(const Ternary& expr)
   {
     paranthesise(expr.op().lexeme(),
                  {&expr.first(), &expr.second(), &expr.third()});
   }
 
 
-  void AstPrinter::visitLiteralExpr(const Literal& expr)
+  void AstPrinter::visit_literal_expr(const Literal& expr)
   {
     if (expr.value().has_type<double>()) {
       stream_ << expr.value().get<double>();
     }
     else if (expr.value().has_type<std::string>()) {
-      stream_ << expr.value().get<std::string>();
+      stream_ << '"' << expr.value().get<std::string>() << '"';
     }
     else if (expr.value().has_type<bool>()) {
       stream_ << (expr.value().get<bool>() ? "true" : "false");
@@ -59,15 +66,61 @@ namespace loxx
   }
 
 
-  void AstPrinter::visitGroupingExpr(const Grouping& expr)
+  void AstPrinter::visit_grouping_expr(const Grouping& expr)
   {
     paranthesise("group", {&expr.expression()});
   }
 
 
-  std::string AstPrinter::print(const Expr& expr)
+  void AstPrinter::visit_variable_expr(const Variable& expr)
   {
-    expr.accept(*this);
+    stream_ << expr.name().lexeme();
+  }
+
+
+  void AstPrinter::visit_print_stmt(const Print& stmt)
+  {
+    paranthesise("write-line", {&stmt.expression()});
+  }
+
+
+  void AstPrinter::visit_var_stmt(const Var& stmt)
+  {
+    const std::string name = "defvar " + stmt.name().lexeme();
+
+    try {
+      paranthesise(name, {&stmt.initialiser()});
+    }
+    catch (const std::out_of_range& e) {
+      paranthesise(name, {});
+    }
+  }
+
+
+  void AstPrinter::visit_expression_stmt(const Expression& stmt)
+  {
+    stmt.expression().accept(*this);
+  }
+
+
+  void AstPrinter::visit_block_stmt(const Block& stmt)
+  {
+    stream_ << "(block\n";
+    set_indent(indent_level_ + 1);
+    print(stmt.statements());
+    set_indent(indent_level_ - 1);
+    stream_ << indent_ << ')';
+  }
+
+
+  std::string AstPrinter::print(
+      const std::vector<std::unique_ptr<Stmt>>& statements)
+  {
+    for (const auto& stmt : statements) {
+      stream_ << indent_;
+      stmt->accept(*this);
+      stream_ << '\n';
+    }
     return stream_.str();
   }
 
@@ -83,5 +136,12 @@ namespace loxx
     }
 
     stream_ << ')';
+  }
+
+
+  void AstPrinter::set_indent(const unsigned int indent)
+  {
+    indent_level_ = indent;
+    indent_ = std::string(indent_level_ * 2, ' ');
   }
 }

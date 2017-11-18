@@ -23,45 +23,47 @@
 #include <stack>
 #include <vector>
 
-#include "Expressions.hpp"
+#include "Environment.hpp"
+#include "Expr.hpp"
+#include "Stack.hpp"
+#include "Stmt.hpp"
 
 
 namespace loxx
 {
-  class Interpreter : public Visitor
+  class Interpreter : public Expr::Visitor, public Stmt::Visitor
   {
   public:
-    void interpret(const Expr& expr);
+    Interpreter();
 
-    void visitUnaryExpr(const Unary& expr) override;
-    void visitBinaryExpr(const Binary& expr) override;
-    void visitLiteralExpr(const Literal& expr) override;
-    void visitTernaryExpr(const Ternary& expr) override;
-    void visitGroupingExpr(const Grouping& expr) override;
+    void interpret(const std::vector<std::unique_ptr<Stmt>>& statements);
 
-    class RuntimeError : public std::runtime_error
-    {
-    public:
-      RuntimeError(Token token, const std::string& message)
-          : std::runtime_error(message), token_(std::move(token))
-      {}
+    void visit_expression_stmt(const Expression& stmt) override;
+    void visit_print_stmt(const Print& stmt) override;
+    void visit_var_stmt(const Var& stmt) override;
+    void visit_block_stmt(const Block& stmt) override;
 
-      const Token& token() const { return token_; }
-
-    private:
-      Token token_;
-    };
+    void visit_assign_expr(const Assign& expr) override;
+    void visit_unary_expr(const Unary& expr) override;
+    void visit_binary_expr(const Binary& expr) override;
+    void visit_literal_expr(const Literal& expr) override;
+    void visit_grouping_expr(const Grouping& expr) override;
+    void visit_ternary_expr(const Ternary& expr) override;
+    void visit_variable_expr(const Variable& expr) override;
 
   private:
     void evaluate(const Expr& expr);
+    void execute(const Stmt& stmt);
+    void execute_block(const std::vector<std::unique_ptr<Stmt>>& statements);
     bool is_truthy(const Generic& value);
     bool is_equal(const Generic& left, const Generic& right);
     void check_number_operand(const Token& op, const Generic& value) const;
     void check_number_operands(const Token& op,
                                const Generic& left, const Generic& right) const;
-    std::string stringify(Generic& generic) const;
+    std::string stringify(const Generic& generic) const;
 
-    std::stack<Generic, std::vector<Generic>> stack_;
+    Stack<Generic> stack_;
+    std::unique_ptr<Environment> environment_;
   };
 }
 

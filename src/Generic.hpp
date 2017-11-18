@@ -51,7 +51,7 @@ namespace loxx
 
       bool operator==(const ContainerBase& container) const override
       {
-        if (get_type_index() != get_type_index()) {
+        if (get_type_index() != container.get_type_index()) {
           return false;
         }
 

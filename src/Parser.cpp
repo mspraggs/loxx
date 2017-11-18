@@ -23,6 +23,96 @@
 
 namespace loxx
 {
+  std::unique_ptr<Stmt> Parser::declaration()
+  {
+    try {
+      if (match({TokenType::Var})) {
+        return var_declaration();
+      }
+
+      return statement();
+    }
+    catch (const ParseError& e) {
+      synchronise();
+
+      return std::unique_ptr<Stmt>();
+    }
+  }
+
+
+  std::unique_ptr<Stmt> Parser::statement()
+  {
+    if (match({TokenType::Print})) {
+      return print_statement();
+    }
+    if (match({TokenType::LeftBrace})) {
+      return std::make_unique<Block>(block());
+    }
+    return expression_statement();
+  }
+
+
+  std::unique_ptr<Stmt> Parser::print_statement()
+  {
+    auto expr = expression();
+    consume(TokenType::SemiColon, "Expect ';' after value.");
+    return std::make_unique<Print>(std::move(expr));
+  }
+
+
+  std::unique_ptr<Stmt> Parser::var_declaration()
+  {
+    auto name = consume(TokenType::Identifier, "Expected variable name.");
+
+    auto initialiser =
+        match({TokenType::Equal}) ? expression() : std::unique_ptr<Expr>();
+
+    consume(TokenType::SemiColon, "Expected ';' after variable declaration.");
+    return std::make_unique<Var>(std::move(name), std::move(initialiser));
+  }
+
+
+  std::unique_ptr<Stmt> Parser::expression_statement()
+  {
+    auto expr = expression();
+    consume(TokenType::SemiColon, "Expxect ';' after expression");
+    return std::make_unique<Expression>(std::move(expr));
+  }
+
+
+  std::vector<std::unique_ptr<Stmt>> Parser::block()
+  {
+    std::vector<std::unique_ptr<Stmt>> statements;
+
+    while (not check(TokenType::RightBrace) and not is_at_end()) {
+      statements.push_back(declaration());
+    }
+
+    consume(TokenType::RightBrace, "Expected '}' after block.");
+    return statements;
+  }
+
+
+  std::unique_ptr<Expr> Parser::assignment()
+  {
+    auto expr = equality();
+
+    if (match({TokenType::Equal})) {
+      auto equals = previous();
+      auto value = assignment();
+
+      if (typeid(*expr) == typeid(Variable)) {
+        Token name = static_cast<Variable*>(expr.get())->name();
+        return std::make_unique<Assign>(std::move(name), std::move(value));
+      }
+
+      error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
+  }
+
+
   std::unique_ptr<Expr> Parser::comma()
   {
     return binary([this] () { return ternary(); },
@@ -121,6 +211,10 @@ namespace loxx
       auto expr = expression();
       consume(TokenType::RightParen, "Expect ')' after expression.");
       return std::make_unique<Grouping>(std::move(expr));
+    }
+
+    if (match({TokenType::Identifier})) {
+      return std::make_unique<Variable>(previous());
     }
 
     throw error(peek(), "Expected expression.");
