@@ -40,9 +40,10 @@ namespace loxx
     class Visitor
     {
     public:
-      virtual void visit_print_stmt(const Print& expr) = 0;
-      virtual void visit_var_stmt(const Var& expr) = 0;
-      virtual void visit_expression_stmt(const Expression& expr) = 0;
+      virtual void visit_print_stmt(const Print& stmt) = 0;
+      virtual void visit_var_stmt(const Var& stmt) = 0;
+      virtual void visit_expression_stmt(const Expression& stmt) = 0;
+      virtual void visit_block_stmt(const Block& stmt) = 0;
     };
 
     virtual void accept(Visitor& visitor) const {}

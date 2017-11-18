@@ -38,9 +38,9 @@ namespace loxx
     void visit_grouping_expr(const Grouping& expr) override;
     void visit_variable_expr(const Variable& expr) override;
 
-    void visit_print_stmt(const Print& expr) override;
-    void visit_var_stmt(const Var& expr) override;
-    void visit_expression_stmt(const Expression& expr) override;
+    void visit_print_stmt(const Print& stmt) override;
+    void visit_var_stmt(const Var& stmt) override;
+    void visit_expression_stmt(const Expression& stmt) override;
 
     std::string print(const std::vector<std::unique_ptr<Stmt>>& statements);
 

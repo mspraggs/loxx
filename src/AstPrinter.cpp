@@ -71,18 +71,18 @@ namespace loxx
   }
 
 
-  void AstPrinter::visit_print_stmt(const Print& expr)
+  void AstPrinter::visit_print_stmt(const Print& stmt)
   {
-    paranthesise("write-line", {&expr.expression()});
+    paranthesise("write-line", {&stmt.expression()});
   }
 
 
-  void AstPrinter::visit_var_stmt(const Var& expr)
+  void AstPrinter::visit_var_stmt(const Var& stmt)
   {
-    const std::string name = "defvar " + expr.name().lexeme();
+    const std::string name = "defvar " + stmt.name().lexeme();
 
     try {
-      paranthesise(name, {&expr.initialiser()});
+      paranthesise(name, {&stmt.initialiser()});
     }
     catch (const std::out_of_range& e) {
       paranthesise(name, {});
@@ -90,9 +90,9 @@ namespace loxx
   }
 
 
-  void AstPrinter::visit_expression_stmt(const Expression& expr)
+  void AstPrinter::visit_expression_stmt(const Expression& stmt)
   {
-    expr.expression().accept(*this);
+    stmt.expression().accept(*this);
   }
 
 
