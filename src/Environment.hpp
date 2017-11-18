@@ -33,7 +33,7 @@ namespace loxx
   {
   public:
     Environment() = default;
-    Environment(std::unique_ptr<Environment> enclosing)
+    explicit Environment(std::unique_ptr<Environment> enclosing)
         : enclosing_(std::move(enclosing))
     {}
 
