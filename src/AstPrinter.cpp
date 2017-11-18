@@ -67,7 +67,7 @@ namespace loxx
 
   void AstPrinter::visit_variable_expr(const Variable& expr)
   {
-    stream_ << expr.name().lexeme();
+    stream_ << indent_ << expr.name().lexeme();
   }
 
 
@@ -96,10 +96,21 @@ namespace loxx
   }
 
 
+  void AstPrinter::visit_block_stmt(const Block& stmt)
+  {
+    stream_ << "(block\n";
+    set_indent(indent_level_ + 1);
+    print(stmt.statements());
+    set_indent(indent_level_ - 1);
+    stream_ << indent_ << ')';
+  }
+
+
   std::string AstPrinter::print(
       const std::vector<std::unique_ptr<Stmt>>& statements)
   {
     for (const auto& stmt : statements) {
+      stream_ << indent_;
       stmt->accept(*this);
       stream_ << '\n';
     }
@@ -118,5 +129,12 @@ namespace loxx
     }
 
     stream_ << ')';
+  }
+
+
+  void AstPrinter::set_indent(const unsigned int indent)
+  {
+    indent_level_ = indent;
+    indent_ = std::string(indent_level_ * 2, ' ');
   }
 }

@@ -31,6 +31,8 @@ namespace loxx
   class AstPrinter : public Expr::Visitor, public Stmt::Visitor
   {
   public:
+    AstPrinter() : indent_level_(0) {}
+
     void visit_unary_expr(const Unary& expr) override;
     void visit_binary_expr(const Binary& expr) override;
     void visit_assign_expr(const Assign& expr) override;
@@ -41,13 +43,17 @@ namespace loxx
     void visit_print_stmt(const Print& stmt) override;
     void visit_var_stmt(const Var& stmt) override;
     void visit_expression_stmt(const Expression& stmt) override;
+    void visit_block_stmt(const Block& stmt) override;
 
     std::string print(const std::vector<std::unique_ptr<Stmt>>& statements);
 
   private:
     void paranthesise(const std::string& name,
                       std::initializer_list<const Expr*> exprs);
+    void set_indent(const unsigned int indent);
 
+    unsigned int indent_level_;
+    std::string indent_;
     std::stringstream stream_;
   };
 }
