@@ -59,6 +59,7 @@ namespace loxx
     std::unique_ptr<Stmt> print_statement();
     std::unique_ptr<Stmt> var_declaration();
     std::unique_ptr<Stmt> expression_statement();
+    std::vector<std::unique_ptr<Stmt>> block();
 
     std::unique_ptr<Expr> assignment();
     std::unique_ptr<Expr> expression() { return assignment(); }
