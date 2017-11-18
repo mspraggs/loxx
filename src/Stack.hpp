@@ -38,6 +38,8 @@ namespace loxx
     void push(T value);
     T pop();
 
+    std::size_t size() const { return stack_.size(); }
+
   private:
     std::vector<T> stack_;
   };
