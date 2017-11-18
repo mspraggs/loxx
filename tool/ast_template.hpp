@@ -20,6 +20,9 @@
 #ifndef LOXX_{{ base_name|upper }}_HPP
 #define LOXX_{{ base_name|upper }}_HPP
 
+#include <memory>
+#include <vector>
+
 #include "Generic.hpp"
 #include "Token.hpp"
 {% for inc in includes %}#include "{{ inc }}"

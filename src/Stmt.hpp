@@ -20,6 +20,9 @@
 #ifndef LOXX_STMT_HPP
 #define LOXX_STMT_HPP
 
+#include <memory>
+#include <vector>
+
 #include "Generic.hpp"
 #include "Token.hpp"
 #include "Expr.hpp"
