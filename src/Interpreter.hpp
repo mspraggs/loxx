@@ -41,6 +41,7 @@ namespace loxx
     void visit_expression_stmt(const Expression& stmt) override;
     void visit_print_stmt(const Print& stmt) override;
     void visit_var_stmt(const Var& stmt) override;
+    void visit_block_stmt(const Block& stmt) override;
 
     void visit_assign_expr(const Assign& expr) override;
     void visit_unary_expr(const Unary& expr) override;
@@ -52,6 +53,7 @@ namespace loxx
   private:
     void evaluate(const Expr& expr);
     void execute(const Stmt& stmt);
+    void execute_block(const std::vector<std::unique_ptr<Stmt>>& statements);
     bool is_truthy(const Generic& value);
     bool is_equal(const Generic& left, const Generic& right);
     void check_number_operand(const Token& op, const Generic& value) const;
@@ -60,7 +62,7 @@ namespace loxx
     std::string stringify(const Generic& generic) const;
 
     Stack<Generic> stack_;
-    Environment environment_;
+    std::unique_ptr<Environment> environment_;
   };
 }
 

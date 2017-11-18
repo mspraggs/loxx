@@ -26,7 +26,7 @@
 
 namespace loxx
 {
-  Interpreter::Interpreter() : stack_(4096)
+  Interpreter::Interpreter() : stack_(4096), environment_(new Environment)
   {
   }
 
@@ -71,7 +71,21 @@ namespace loxx
       }
     }();
 
-    environment_.define(stmt.name().lexeme(), std::move(value));
+    environment_->define(stmt.name().lexeme(), std::move(value));
+  }
+
+
+  void Interpreter::visit_block_stmt(const Block& stmt)
+  {
+    environment_ = std::make_unique<Environment>(std::move(environment_));
+
+    try {
+      execute_block(stmt.statements());
+    }
+    catch (const RuntimeError& e) {
+    }
+
+    environment_ = environment_->release_enclosing();
   }
 
 
@@ -79,7 +93,7 @@ namespace loxx
   {
     evaluate(expr.value());
 
-    environment_.assign(expr.name(), stack_.top());
+    environment_->assign(expr.name(), stack_.top());
   }
 
 
@@ -181,7 +195,7 @@ namespace loxx
 
   void Interpreter::visit_variable_expr(const Variable& expr)
   {
-    stack_.push(environment_.get(expr.name()));
+    stack_.push(environment_->get(expr.name()));
   }
 
 
@@ -194,6 +208,15 @@ namespace loxx
   void Interpreter::execute(const Stmt& stmt)
   {
     stmt.accept(*this);
+  }
+
+
+  void Interpreter::execute_block(
+      const std::vector<std::unique_ptr<Stmt>>& statements)
+  {
+    for (const auto& stmt : statements) {
+      execute(*stmt);
+    }
   }
 
 
