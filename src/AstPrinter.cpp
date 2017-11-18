@@ -67,7 +67,7 @@ namespace loxx
 
   void AstPrinter::visit_variable_expr(const Variable& expr)
   {
-    stream_ << indent_ << expr.name().lexeme();
+    stream_ << expr.name().lexeme();
   }
 
 
