@@ -48,7 +48,9 @@ namespace loxx
   void Interpreter::visit_expression_stmt(const Expression& stmt)
   {
     evaluate(stmt.expression());
-    stack_.pop();
+    if (stack_.size() > 0) {
+      stack_.pop();
+    }
   }
 
 

@@ -38,6 +38,8 @@ namespace loxx
     void push(T value);
     T pop();
 
+    std::size_t size() const { return stack_.size(); }
+
   private:
     std::vector<T> stack_;
   };
@@ -53,6 +55,10 @@ namespace loxx
   template <typename T>
   T Stack<T>::pop()
   {
+    if (stack_.size() < 1) {
+      throw std::logic_error("Cannot pop item off empty stack!");
+    }
+
     const auto value = std::move(stack_.back());
     stack_.pop_back();
     return value;
