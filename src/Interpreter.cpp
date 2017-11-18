@@ -182,6 +182,9 @@ namespace loxx
       check_number_operands(expr.op(), left, right);
       stack_.push(Generic(left.get<double>() * right.get<double>()));
       break;
+    case TokenType::Comma:
+      stack_.push(right);
+      break;
     default:
       break;
     }
