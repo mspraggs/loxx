@@ -41,6 +41,8 @@ namespace loxx
     const Generic& get(const Token& name) const;
     void assign(const Token& name, Generic value);
 
+    std::unique_ptr<Environment> release_enclosing();
+
   private:
     std::unique_ptr<Environment> enclosing_;
     std::unordered_map<std::string, std::size_t> value_map_;

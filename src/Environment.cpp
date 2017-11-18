@@ -67,4 +67,12 @@ namespace loxx
 
     throw RuntimeError(name, "Undefined variable '" + name.lexeme() + "'.");
   }
+
+
+  std::unique_ptr<Environment> Environment::release_enclosing()
+  {
+    std::unique_ptr<Environment> ret;
+    std::swap(enclosing_, ret);
+    return ret;
+  }
 }
