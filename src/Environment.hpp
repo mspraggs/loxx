@@ -32,11 +32,17 @@ namespace loxx
   class Environment
   {
   public:
+    Environment() = default;
+    Environment(std::unique_ptr<Environment> enclosing)
+        : enclosing_(std::move(enclosing))
+    {}
+
     void define(std::string name, Generic value);
     const Generic& get(const Token& name) const;
     void assign(const Token& name, Generic value);
 
   private:
+    std::unique_ptr<Environment> enclosing_;
     std::unordered_map<std::string, std::size_t> value_map_;
     std::vector<Generic> values_;
   };

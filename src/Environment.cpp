@@ -44,6 +44,11 @@ namespace loxx
       return values_[value_map_.at(name.lexeme())];
     }
 
+    if (enclosing_ != nullptr) {
+      return enclosing_->get(name);
+    }
+
+
     throw RuntimeError(name, "Undefined variable '" + name.lexeme() + "'.");
   }
 
@@ -52,6 +57,11 @@ namespace loxx
   {
     if (value_map_.count(name.lexeme())) {
       values_[value_map_[name.lexeme()]] = std::move(value);
+      return;
+    }
+
+    if (enclosing_ != nullptr) {
+      enclosing_->assign(name, std::move(value));
       return;
     }
 
