@@ -59,7 +59,7 @@ namespace loxx
 
   void run_file(const std::string& path, const bool debug)
   {
-    std::ifstream file(path);
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
     std::streamsize size = file.tellg();
 
     file.seekg(0, std::ios::beg);
