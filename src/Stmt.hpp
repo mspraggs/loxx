@@ -34,6 +34,7 @@ namespace loxx
   class Print;
   class Var;
   class Expression;
+  class Block;
 
   class Stmt
   {
@@ -103,6 +104,23 @@ namespace loxx
 
   private:
     std::unique_ptr<Expr> expression_;
+  };
+
+
+  class Block : public Stmt
+  {
+  public:
+    Block(std::vector<std::unique_ptr<Stmt>> statements)
+        : statements_(std::move(statements))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_block_stmt(*this); }
+
+    const std::vector<std::unique_ptr<Stmt>>& statements() const { return statements_; }
+
+  private:
+    std::vector<std::unique_ptr<Stmt>> statements_;
   };
 
 }

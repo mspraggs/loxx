@@ -81,7 +81,8 @@ if __name__ == "__main__":
 
     define_ast(
         output_dir, "Stmt",
-        {"Expression": [("Expr", "expression", True)],
+        {"Block": [("std::vector<std::unique_ptr<Stmt>>", "statements", False)],
+         "Expression": [("Expr", "expression", True)],
          "Print": [("Expr", "expression", True)],
          "Var": [("Token", "name", False), ("Expr", "initialiser", True)]},
         ["Expr.hpp"])
