@@ -61,9 +61,9 @@ namespace loxx
     std::unique_ptr<Stmt> expression_statement();
     std::vector<std::unique_ptr<Stmt>> block();
 
-    std::unique_ptr<Expr> assignment();
-    std::unique_ptr<Expr> expression() { return assignment(); }
+    std::unique_ptr<Expr> expression() { return comma(); }
     std::unique_ptr<Expr> comma();
+    std::unique_ptr<Expr> assignment();
     std::unique_ptr<Expr> ternary();
     std::unique_ptr<Expr> equality();
     std::unique_ptr<Expr> comparison();

@@ -93,9 +93,16 @@ namespace loxx
   }
 
 
+  std::unique_ptr<Expr> Parser::comma()
+  {
+    return binary([this] () { return assignment(); },
+                  {TokenType::Comma});
+  }
+
+
   std::unique_ptr<Expr> Parser::assignment()
   {
-    auto expr = equality();
+    auto expr = ternary();
 
     if (match({TokenType::Equal})) {
       auto equals = previous();
@@ -110,13 +117,6 @@ namespace loxx
     }
 
     return expr;
-  }
-
-
-  std::unique_ptr<Expr> Parser::comma()
-  {
-    return binary([this] () { return ternary(); },
-                  {TokenType::Comma});
   }
 
 
