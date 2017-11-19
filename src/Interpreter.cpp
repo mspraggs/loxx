@@ -57,6 +57,22 @@ namespace loxx
   }
 
 
+  void Interpreter::visit_if_stmt(const If& stmt)
+  {
+    evaluate(stmt.condition());
+    if (is_truthy(stack_.pop())) {
+      execute(stmt.then_branch());
+    }
+    else {
+      try {
+        execute(stmt.else_branch());
+      }
+      catch (const std::out_of_range& e) {
+      }
+    }
+  }
+
+
   void Interpreter::visit_print_stmt(const Print& stmt)
   {
     evaluate(stmt.expression());
