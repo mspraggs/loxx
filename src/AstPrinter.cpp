@@ -90,6 +90,22 @@ namespace loxx
   }
 
 
+  void AstPrinter::visit_if_stmt(const If& stmt)
+  {
+    stream_ << "(if ";
+    stmt.condition().accept(*this);
+    stream_ << ' ';
+    stmt.then_branch().accept(*this);
+    stream_ << ' ';
+    try {
+      stmt.else_branch().accept(*this);
+    }
+    catch (const std::out_of_range& e) {
+    }
+    stream_ << ')';
+  }
+
+
   void AstPrinter::visit_expression_stmt(const Expression& stmt)
   {
     stmt.expression().accept(*this);

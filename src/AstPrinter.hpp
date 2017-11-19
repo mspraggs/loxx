@@ -40,6 +40,7 @@ namespace loxx
     void visit_grouping_expr(const Grouping& expr) override;
     void visit_variable_expr(const Variable& expr) override;
 
+    void visit_if_stmt(const If& stmt) override;
     void visit_print_stmt(const Print& stmt) override;
     void visit_var_stmt(const Var& stmt) override;
     void visit_expression_stmt(const Expression& stmt) override;
