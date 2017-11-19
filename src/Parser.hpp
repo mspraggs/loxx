@@ -33,8 +33,8 @@ namespace loxx
     class ParseError;
 
   public:
-    explicit Parser(std::vector<Token> tokens)
-        : current_(0), tokens_(std::move(tokens))
+    explicit Parser(std::vector<Token> tokens, const bool in_repl = false)
+        : in_repl_(in_repl), current_(0), tokens_(std::move(tokens))
     {}
 
     std::vector<std::unique_ptr<Stmt>> parse() {
@@ -84,6 +84,7 @@ namespace loxx
     ParseError error(const Token& token, const std::string& message);
     void synchronise();
 
+    bool in_repl_;
     unsigned int current_;
     std::vector<Token> tokens_;
   };

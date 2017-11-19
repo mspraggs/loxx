@@ -75,7 +75,10 @@ namespace loxx
   std::unique_ptr<Stmt> Parser::expression_statement()
   {
     auto expr = expression();
-    consume(TokenType::SemiColon, "Expxect ';' after expression");
+
+    if (check(TokenType::SemiColon) or not in_repl_) {
+      consume(TokenType::SemiColon, "Expxect ';' after expression");
+    }
     return std::make_unique<Expression>(std::move(expr));
   }
 
