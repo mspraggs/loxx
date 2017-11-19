@@ -35,6 +35,7 @@ namespace loxx
   class Var;
   class Expression;
   class Block;
+  class If;
 
   class Stmt
   {
@@ -48,6 +49,7 @@ namespace loxx
       virtual void visit_var_stmt(const Var& stmt) = 0;
       virtual void visit_expression_stmt(const Expression& stmt) = 0;
       virtual void visit_block_stmt(const Block& stmt) = 0;
+      virtual void visit_if_stmt(const If& stmt) = 0;
     };
 
     virtual void accept(Visitor& visitor) const {}
@@ -121,6 +123,27 @@ namespace loxx
 
   private:
     std::vector<std::unique_ptr<Stmt>> statements_;
+  };
+
+
+  class If : public Stmt
+  {
+  public:
+    If(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> then_branch, std::unique_ptr<Stmt> else_branch)
+        : condition_(std::move(condition)), then_branch_(std::move(then_branch)), else_branch_(std::move(else_branch))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_if_stmt(*this); }
+
+    const Expr& condition() const { if (condition_ == nullptr) throw std::out_of_range("Member condition_ contains nullptr!"); return *condition_; }
+    const Stmt& then_branch() const { if (then_branch_ == nullptr) throw std::out_of_range("Member then_branch_ contains nullptr!"); return *then_branch_; }
+    const Stmt& else_branch() const { if (else_branch_ == nullptr) throw std::out_of_range("Member else_branch_ contains nullptr!"); return *else_branch_; }
+
+  private:
+    std::unique_ptr<Expr> condition_;
+    std::unique_ptr<Stmt> then_branch_;
+    std::unique_ptr<Stmt> else_branch_;
   };
 
 }

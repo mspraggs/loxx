@@ -83,6 +83,8 @@ if __name__ == "__main__":
         output_dir, "Stmt",
         {"Block": [("std::vector<std::unique_ptr<Stmt>>", "statements", False)],
          "Expression": [("Expr", "expression", True)],
+         "If": [("Expr", "condition", True), ("Stmt", "then_branch", True),
+                ("Stmt", "else_branch", True)],
          "Print": [("Expr", "expression", True)],
          "Var": [("Token", "name", False), ("Expr", "initialiser", True)]},
         ["Expr.hpp"])
