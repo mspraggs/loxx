@@ -40,7 +40,7 @@ namespace loxx
       std::cout << printer.print(statements) << std::endl;
     }
 
-    static Interpreter interpreter;
+    static Interpreter interpreter(in_repl);
     interpreter.interpret(statements);
   }
 
