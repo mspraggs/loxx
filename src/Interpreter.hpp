@@ -34,7 +34,7 @@ namespace loxx
   class Interpreter : public Expr::Visitor, public Stmt::Visitor
   {
   public:
-    Interpreter();
+    Interpreter(const bool in_repl = false);
 
     void interpret(const std::vector<std::unique_ptr<Stmt>>& statements);
 
@@ -62,6 +62,7 @@ namespace loxx
                                const Generic& left, const Generic& right) const;
     std::string stringify(const Generic& generic) const;
 
+    bool in_repl_;
     Stack<Generic> stack_;
     std::unique_ptr<Environment> environment_;
   };

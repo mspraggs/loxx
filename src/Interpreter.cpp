@@ -26,7 +26,8 @@
 
 namespace loxx
 {
-  Interpreter::Interpreter() : stack_(4096), environment_(new Environment)
+  Interpreter::Interpreter(const bool in_repl)
+      : in_repl_(in_repl), stack_(4096), environment_(new Environment)
   {
   }
 
@@ -48,7 +49,11 @@ namespace loxx
   void Interpreter::visit_expression_stmt(const Expression& stmt)
   {
     evaluate(stmt.expression());
-    stack_.pop();
+    const auto result = stack_.pop();
+
+    if (in_repl_) {
+      std::cout << "= " << stringify(result) << '\n';
+    }
   }
 
 

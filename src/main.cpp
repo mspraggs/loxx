@@ -13,7 +13,7 @@
 
 namespace loxx
 {
-  void run(const std::string& src, const bool debug)
+  void run(const std::string& src, const bool debug, const bool in_repl)
   {
     Scanner scanner(src);
     auto tokens = scanner.scan_tokens();
@@ -28,7 +28,7 @@ namespace loxx
       }
     }
 
-    Parser parser(std::move(tokens));
+    Parser parser(std::move(tokens), in_repl);
     const auto statements = parser.parse();
 
     if (had_error) {
@@ -40,7 +40,7 @@ namespace loxx
       std::cout << printer.print(statements) << std::endl;
     }
 
-    static Interpreter interpreter;
+    static Interpreter interpreter(in_repl);
     interpreter.interpret(statements);
   }
 
@@ -51,7 +51,7 @@ namespace loxx
       std::cout << "> ";
       std::string src;
       std::getline(std::cin, src);
-      run(src, debug);
+      run(src, debug, true);
       had_error = false;
     }
   }
@@ -69,7 +69,7 @@ namespace loxx
       throw std::ios_base::failure("Unable to read source file!");
     }
 
-    run(src, debug);
+    run(src, debug, false);
 
     if (had_error) {
       std::exit(65);
