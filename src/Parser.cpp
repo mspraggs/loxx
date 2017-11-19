@@ -42,6 +42,9 @@ namespace loxx
 
   std::unique_ptr<Stmt> Parser::statement()
   {
+    if (match({TokenType::If})) {
+      return if_statement();
+    }
     if (match({TokenType::Print})) {
       return print_statement();
     }
@@ -49,6 +52,21 @@ namespace loxx
       return std::make_unique<Block>(block());
     }
     return expression_statement();
+  }
+
+
+  std::unique_ptr<Stmt> Parser::if_statement()
+  {
+    consume(TokenType::LeftParen, "Expected '(' after 'if'.");
+    auto condition = expression();
+    consume(TokenType::RightParen, "Expected ')' after condition.");
+
+    auto then_branch = statement();
+    auto else_branch =
+        match({TokenType::Else}) ? statement() : std::unique_ptr<Stmt>();
+
+    return std::make_unique<If>(std::move(condition), std::move(then_branch),
+                                std::move(else_branch));
   }
 
 
