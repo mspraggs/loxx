@@ -208,6 +208,28 @@ namespace loxx
   }
 
 
+  void Interpreter::visit_logical_expr(const Logical& expr)
+  {
+    evaluate(expr.left());
+    auto left = stack_.pop();
+
+    if (expr.op().type() == TokenType::Or) {
+      if (is_truthy(left)) {
+        stack_.push(std::move(left));
+        return;
+      }
+    }
+    else {
+      if (not is_truthy(left)) {
+        stack_.push(std::move(left));
+        return;
+      }
+    }
+
+    evaluate(expr.right());
+  }
+
+
   void Interpreter::visit_grouping_expr(const Grouping& expr)
   {
     evaluate(expr.expression());
