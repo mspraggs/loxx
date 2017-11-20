@@ -116,7 +116,7 @@ namespace loxx
 
   std::unique_ptr<Expr> Parser::assignment()
   {
-    auto expr = equality();
+    auto expr = logical_or();
 
     if (match({TokenType::Equal})) {
       auto equals = previous();
@@ -128,6 +128,36 @@ namespace loxx
       }
 
       error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
+  }
+
+
+  std::unique_ptr<Expr> Parser::logical_or()
+  {
+    auto expr = logical_and();
+
+    while (match({TokenType::Or})) {
+      auto op = previous();
+      auto right = logical_and();
+      expr = std::make_unique<Logical>(std::move(expr), std::move(op),
+                                       std::move(right));
+    }
+
+    return expr;
+  }
+
+
+  std::unique_ptr<Expr> Parser::logical_and()
+  {
+    auto expr = equality();
+
+    while (match({TokenType::And})) {
+      auto op = previous();
+      auto right = equality();
+      expr = std::make_unique<Logical>(std::move(expr), std::move(op),
+                                       std::move(right));
     }
 
     return expr;

@@ -63,6 +63,8 @@ namespace loxx
     std::vector<std::unique_ptr<Stmt>> block();
 
     std::unique_ptr<Expr> assignment();
+    std::unique_ptr<Expr> logical_or();
+    std::unique_ptr<Expr> logical_and();
     std::unique_ptr<Expr> expression() { return assignment(); }
     std::unique_ptr<Expr> equality();
     std::unique_ptr<Expr> comparison();
