@@ -76,6 +76,8 @@ if __name__ == "__main__":
                     ("Expr", "right", True)],
          "Grouping": [("Expr", "expression", True)],
          "Literal": [("Generic", "value", False)],
+         "Logical": [("Expr", "left", True), ("Token", "op", False),
+                     ("Expr", "right", True)],
          "Unary": [("Token", "op", False), ("Expr", "right", True)],
          "Variable": [("Token", "name", False)]})
 

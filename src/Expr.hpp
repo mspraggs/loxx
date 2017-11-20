@@ -31,6 +31,7 @@ namespace loxx
 {
 
   class Binary;
+  class Logical;
   class Unary;
   class Literal;
   class Variable;
@@ -46,6 +47,7 @@ namespace loxx
     {
     public:
       virtual void visit_binary_expr(const Binary& expr) = 0;
+      virtual void visit_logical_expr(const Logical& expr) = 0;
       virtual void visit_unary_expr(const Unary& expr) = 0;
       virtual void visit_literal_expr(const Literal& expr) = 0;
       virtual void visit_variable_expr(const Variable& expr) = 0;
@@ -66,6 +68,27 @@ namespace loxx
 
     void accept(Visitor& visitor) const override
     { visitor.visit_binary_expr(*this); }
+
+    const Expr& left() const { if (left_ == nullptr) throw std::out_of_range("Member left_ contains nullptr!"); return *left_; }
+    const Token& op() const { return op_; }
+    const Expr& right() const { if (right_ == nullptr) throw std::out_of_range("Member right_ contains nullptr!"); return *right_; }
+
+  private:
+    std::unique_ptr<Expr> left_;
+    Token op_;
+    std::unique_ptr<Expr> right_;
+  };
+
+
+  class Logical : public Expr
+  {
+  public:
+    Logical(std::unique_ptr<Expr> left, Token op, std::unique_ptr<Expr> right)
+        : left_(std::move(left)), op_(std::move(op)), right_(std::move(right))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_logical_expr(*this); }
 
     const Expr& left() const { if (left_ == nullptr) throw std::out_of_range("Member left_ contains nullptr!"); return *left_; }
     const Token& op() const { return op_; }
