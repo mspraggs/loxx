@@ -59,6 +59,13 @@ namespace loxx
   }
 
 
+  void AstPrinter::visit_logical_expr(const Logical& expr)
+  {
+    const std::string name = expr.op().type() == TokenType::Or ? "or" : "and";
+    paranthesise(name, {&expr.left(), &expr.right()});
+  }
+
+
   void AstPrinter::visit_grouping_expr(const Grouping& expr)
   {
     paranthesise("group", {&expr.expression()});
