@@ -88,5 +88,6 @@ if __name__ == "__main__":
          "If": [("Expr", "condition", True), ("Stmt", "then_branch", True),
                 ("Stmt", "else_branch", True)],
          "Print": [("Expr", "expression", True)],
-         "Var": [("Token", "name", False), ("Expr", "initialiser", True)]},
+         "Var": [("Token", "name", False), ("Expr", "initialiser", True)],
+         "While": [("Expr", "condition", True), ("Stmt", "body", True)]},
         ["Expr.hpp"])

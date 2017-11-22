@@ -31,8 +31,9 @@
 namespace loxx
 {
 
-  class Print;
   class Var;
+  class While;
+  class Print;
   class Expression;
   class Block;
   class If;
@@ -45,31 +46,15 @@ namespace loxx
     class Visitor
     {
     public:
-      virtual void visit_print_stmt(const Print& stmt) = 0;
       virtual void visit_var_stmt(const Var& stmt) = 0;
+      virtual void visit_while_stmt(const While& stmt) = 0;
+      virtual void visit_print_stmt(const Print& stmt) = 0;
       virtual void visit_expression_stmt(const Expression& stmt) = 0;
       virtual void visit_block_stmt(const Block& stmt) = 0;
       virtual void visit_if_stmt(const If& stmt) = 0;
     };
 
     virtual void accept(Visitor& visitor) const {}
-  };
-
-
-  class Print : public Stmt
-  {
-  public:
-    Print(std::unique_ptr<Expr> expression)
-        : expression_(std::move(expression))
-    {}
-
-    void accept(Visitor& visitor) const override
-    { visitor.visit_print_stmt(*this); }
-
-    const Expr& expression() const { if (expression_ == nullptr) throw std::out_of_range("Member expression_ contains nullptr!"); return *expression_; }
-
-  private:
-    std::unique_ptr<Expr> expression_;
   };
 
 
@@ -89,6 +74,42 @@ namespace loxx
   private:
     Token name_;
     std::unique_ptr<Expr> initialiser_;
+  };
+
+
+  class While : public Stmt
+  {
+  public:
+    While(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body)
+        : condition_(std::move(condition)), body_(std::move(body))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_while_stmt(*this); }
+
+    const Expr& condition() const { if (condition_ == nullptr) throw std::out_of_range("Member condition_ contains nullptr!"); return *condition_; }
+    const Stmt& body() const { if (body_ == nullptr) throw std::out_of_range("Member body_ contains nullptr!"); return *body_; }
+
+  private:
+    std::unique_ptr<Expr> condition_;
+    std::unique_ptr<Stmt> body_;
+  };
+
+
+  class Print : public Stmt
+  {
+  public:
+    Print(std::unique_ptr<Expr> expression)
+        : expression_(std::move(expression))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_print_stmt(*this); }
+
+    const Expr& expression() const { if (expression_ == nullptr) throw std::out_of_range("Member expression_ contains nullptr!"); return *expression_; }
+
+  private:
+    std::unique_ptr<Expr> expression_;
   };
 
 
