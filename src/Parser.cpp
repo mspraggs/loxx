@@ -51,6 +51,9 @@ namespace loxx
     if (match({TokenType::LeftBrace})) {
       return std::make_unique<Block>(block());
     }
+    if (match({TokenType::While})) {
+      return while_statement();
+    }
     return expression_statement();
   }
 
@@ -87,6 +90,17 @@ namespace loxx
 
     consume(TokenType::SemiColon, "Expected ';' after variable declaration.");
     return std::make_unique<Var>(std::move(name), std::move(initialiser));
+  }
+
+
+  std::unique_ptr<Stmt> Parser::while_statement()
+  {
+    consume(TokenType::LeftParen, "Expected '(' after 'while'.");
+    auto condition = expression();
+    consume(TokenType::RightParen, "Expected ')' after condition.");
+    auto body = statement();
+
+    return std::make_unique<While>(std::move(condition), std::move(body));
   }
 
 
