@@ -97,6 +97,16 @@ namespace loxx
   }
 
 
+  void AstPrinter::visit_while_stmt(const While& stmt)
+  {
+    stream_ << "(while ";
+    stmt.condition().accept(*this);
+    stream_ << ' ';
+    stmt.body().accept(*this);
+    stream_ << ')';
+  }
+
+
   void AstPrinter::visit_if_stmt(const If& stmt)
   {
     stream_ << "(if ";
