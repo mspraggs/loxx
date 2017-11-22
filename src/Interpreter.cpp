@@ -96,6 +96,17 @@ namespace loxx
   }
 
 
+  void Interpreter::visit_while_stmt(const While& stmt)
+  {
+    evaluate(stmt.condition());
+
+    while (is_truthy(stack_.pop())) {
+      execute(stmt.body());
+      evaluate(stmt.condition());
+    }
+  }
+
+
   void Interpreter::visit_block_stmt(const Block& stmt)
   {
     environment_ = std::make_unique<Environment>(std::move(environment_));
