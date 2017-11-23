@@ -44,6 +44,7 @@ namespace loxx
     void visit_var_stmt(const Var& stmt) override;
     void visit_while_stmt(const While& stmt) override;
     void visit_block_stmt(const Block& stmt) override;
+    void visit_break_stmt(const Break& stmt) override;
 
     void visit_assign_expr(const Assign& expr) override;
     void visit_unary_expr(const Unary& expr) override;
@@ -55,6 +56,12 @@ namespace loxx
     void visit_variable_expr(const Variable& expr) override;
 
   private:
+    class BreakError : public std::runtime_error
+    {
+    public:
+      BreakError() : std::runtime_error("") {}
+    };
+
     void evaluate(const Expr& expr);
     void execute(const Stmt& stmt);
     void execute_block(const std::vector<std::unique_ptr<Stmt>>& statements);

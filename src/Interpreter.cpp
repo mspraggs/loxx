@@ -106,7 +106,12 @@ namespace loxx
     evaluate(stmt.condition());
 
     while (is_truthy(stack_.pop())) {
-      execute(stmt.body());
+      try {
+        execute(stmt.body());
+      }
+      catch (const BreakError& e) {
+        break;
+      }
       evaluate(stmt.condition());
     }
   }
@@ -123,6 +128,12 @@ namespace loxx
     }
 
     environment_ = environment_->release_enclosing();
+  }
+
+
+  void Interpreter::visit_break_stmt(const Break& stmt)
+  {
+    throw BreakError();
   }
 
 
