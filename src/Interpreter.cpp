@@ -27,7 +27,8 @@
 namespace loxx
 {
   Interpreter::Interpreter(const bool in_repl)
-      : in_repl_(in_repl), stack_(4096), environment_(new Environment)
+      : in_repl_(in_repl), print_result_(false), stack_(4096),
+        environment_(new Environment)
   {
   }
 
@@ -36,6 +37,10 @@ namespace loxx
       const std::vector<std::unique_ptr<Stmt>>& statements)
   {
     try {
+      bool single_expr = statements.size() == 1 and
+                         typeid(*statements[0]) == typeid(Expression);
+      print_result_ = single_expr and in_repl_;
+
       for (const auto& stmt : statements) {
         execute(*stmt);
       }
@@ -51,8 +56,24 @@ namespace loxx
     evaluate(stmt.expression());
     const auto result = stack_.pop();
 
-    if (in_repl_) {
+    if (print_result_) {
       std::cout << "= " << stringify(result) << '\n';
+    }
+  }
+
+
+  void Interpreter::visit_if_stmt(const If& stmt)
+  {
+    evaluate(stmt.condition());
+    if (is_truthy(stack_.pop())) {
+      execute(stmt.then_branch());
+    }
+    else {
+      try {
+        execute(stmt.else_branch());
+      }
+      catch (const std::out_of_range& e) {
+      }
     }
   }
 
@@ -77,6 +98,17 @@ namespace loxx
     }();
 
     environment_->define(stmt.name().lexeme(), std::move(value));
+  }
+
+
+  void Interpreter::visit_while_stmt(const While& stmt)
+  {
+    evaluate(stmt.condition());
+
+    while (is_truthy(stack_.pop())) {
+      execute(stmt.body());
+      evaluate(stmt.condition());
+    }
   }
 
 
@@ -197,6 +229,28 @@ namespace loxx
   void Interpreter::visit_literal_expr(const Literal& expr)
   {
     stack_.push(expr.value());
+  }
+
+
+  void Interpreter::visit_logical_expr(const Logical& expr)
+  {
+    evaluate(expr.left());
+    auto left = stack_.pop();
+
+    if (expr.op().type() == TokenType::Or) {
+      if (is_truthy(left)) {
+        stack_.push(std::move(left));
+        return;
+      }
+    }
+    else {
+      if (not is_truthy(left)) {
+        stack_.push(std::move(left));
+        return;
+      }
+    }
+
+    evaluate(expr.right());
   }
 
 

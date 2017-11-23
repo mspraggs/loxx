@@ -42,13 +42,37 @@ namespace loxx
 
   std::unique_ptr<Stmt> Parser::statement()
   {
+    if (match({TokenType::If})) {
+      return if_statement();
+    }
     if (match({TokenType::Print})) {
       return print_statement();
     }
     if (match({TokenType::LeftBrace})) {
       return std::make_unique<Block>(block());
     }
+    if (match({TokenType::While})) {
+      return while_statement();
+    }
+    if (match({TokenType::For})) {
+      return for_statement();
+    }
     return expression_statement();
+  }
+
+
+  std::unique_ptr<Stmt> Parser::if_statement()
+  {
+    consume(TokenType::LeftParen, "Expected '(' after 'if'.");
+    auto condition = expression();
+    consume(TokenType::RightParen, "Expected ')' after condition.");
+
+    auto then_branch = statement();
+    auto else_branch =
+        match({TokenType::Else}) ? statement() : std::unique_ptr<Stmt>();
+
+    return std::make_unique<If>(std::move(condition), std::move(then_branch),
+                                std::move(else_branch));
   }
 
 
@@ -69,6 +93,70 @@ namespace loxx
 
     consume(TokenType::SemiColon, "Expected ';' after variable declaration.");
     return std::make_unique<Var>(std::move(name), std::move(initialiser));
+  }
+
+
+  std::unique_ptr<Stmt> Parser::while_statement()
+  {
+    consume(TokenType::LeftParen, "Expected '(' after 'while'.");
+    auto condition = expression();
+    consume(TokenType::RightParen, "Expected ')' after condition.");
+    auto body = statement();
+
+    return std::make_unique<While>(std::move(condition), std::move(body));
+  }
+
+
+  std::unique_ptr<Stmt> Parser::for_statement()
+  {
+    consume(TokenType::LeftParen, "Expected '(' after 'for'.");
+
+    std::unique_ptr<Stmt> initialiser;
+    if (match({TokenType::SemiColon})) {
+    }
+    else if (match({TokenType::Var})) {
+      initialiser = var_declaration();
+    }
+    else {
+      initialiser = expression_statement();
+    }
+
+    std::unique_ptr<Expr> condition;
+    if (not check(TokenType::SemiColon)) {
+      condition = expression();
+    }
+    consume(TokenType::SemiColon, "Expected ';' after for-loop condition.");
+
+    std::unique_ptr<Expr> increment;
+    if (not check(TokenType::RightParen)) {
+      increment = expression();
+    }
+    consume(TokenType::RightParen, "Expected ')' after for-loop clauses.");
+
+    auto body = statement();
+
+    using StmtList = std::vector<std::unique_ptr<Stmt>>;
+
+    if (increment != nullptr) {
+      StmtList stmts(2);
+      stmts[0] = std::move(body);
+      stmts[1] = std::make_unique<Expression>(std::move(increment));
+      body = std::make_unique<Block>(std::move(stmts));
+    }
+
+    if (condition == nullptr) {
+      condition = std::make_unique<Literal>(Generic(true));
+    }
+    body = std::make_unique<While>(std::move(condition), std::move(body));
+
+    if (initialiser != nullptr) {
+      StmtList stmts(2);
+      stmts[0] = std::move(initialiser);
+      stmts[1] = std::move(body);
+      body = std::make_unique<Block>(std::move(stmts));
+    }
+
+    return body;
   }
 
 
@@ -125,7 +213,7 @@ namespace loxx
 
   std::unique_ptr<Expr> Parser::ternary()
   {
-    auto first = equality();
+    auto first = logical_or();
 
     if (match({TokenType::Question})) {
       Token op = previous();
@@ -142,6 +230,36 @@ namespace loxx
     }
 
     return first;
+  }
+
+
+  std::unique_ptr<Expr> Parser::logical_or()
+  {
+    auto expr = logical_and();
+
+    while (match({TokenType::Or})) {
+      auto op = previous();
+      auto right = logical_and();
+      expr = std::make_unique<Logical>(std::move(expr), std::move(op),
+                                       std::move(right));
+    }
+
+    return expr;
+  }
+
+
+  std::unique_ptr<Expr> Parser::logical_and()
+  {
+    auto expr = equality();
+
+    while (match({TokenType::And})) {
+      auto op = previous();
+      auto right = equality();
+      expr = std::make_unique<Logical>(std::move(expr), std::move(op),
+                                       std::move(right));
+    }
+
+    return expr;
   }
 
 

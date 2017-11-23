@@ -66,6 +66,13 @@ namespace loxx
   }
 
 
+  void AstPrinter::visit_logical_expr(const Logical& expr)
+  {
+    const std::string name = expr.op().type() == TokenType::Or ? "or" : "and";
+    paranthesise(name, {&expr.left(), &expr.right()});
+  }
+
+
   void AstPrinter::visit_grouping_expr(const Grouping& expr)
   {
     paranthesise("group", {&expr.expression()});
@@ -94,6 +101,32 @@ namespace loxx
     catch (const std::out_of_range& e) {
       paranthesise(name, {});
     }
+  }
+
+
+  void AstPrinter::visit_while_stmt(const While& stmt)
+  {
+    stream_ << "(while ";
+    stmt.condition().accept(*this);
+    stream_ << ' ';
+    stmt.body().accept(*this);
+    stream_ << ')';
+  }
+
+
+  void AstPrinter::visit_if_stmt(const If& stmt)
+  {
+    stream_ << "(if ";
+    stmt.condition().accept(*this);
+    stream_ << ' ';
+    stmt.then_branch().accept(*this);
+    stream_ << ' ';
+    try {
+      stmt.else_branch().accept(*this);
+    }
+    catch (const std::out_of_range& e) {
+    }
+    stream_ << ')';
   }
 
 

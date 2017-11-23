@@ -78,6 +78,8 @@ if __name__ == "__main__":
                      ("Expr", "second", True), ("Expr", "third", True)],
          "Grouping": [("Expr", "expression", True)],
          "Literal": [("Generic", "value", False)],
+         "Logical": [("Expr", "left", True), ("Token", "op", False),
+                     ("Expr", "right", True)],
          "Unary": [("Token", "op", False), ("Expr", "right", True)],
          "Variable": [("Token", "name", False)]})
 
@@ -85,6 +87,9 @@ if __name__ == "__main__":
         output_dir, "Stmt",
         {"Block": [("std::vector<std::unique_ptr<Stmt>>", "statements", False)],
          "Expression": [("Expr", "expression", True)],
+         "If": [("Expr", "condition", True), ("Stmt", "then_branch", True),
+                ("Stmt", "else_branch", True)],
          "Print": [("Expr", "expression", True)],
-         "Var": [("Token", "name", False), ("Expr", "initialiser", True)]},
+         "Var": [("Token", "name", False), ("Expr", "initialiser", True)],
+         "While": [("Expr", "condition", True), ("Stmt", "body", True)]},
         ["Expr.hpp"])

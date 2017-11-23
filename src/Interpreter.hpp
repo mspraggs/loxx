@@ -39,14 +39,17 @@ namespace loxx
     void interpret(const std::vector<std::unique_ptr<Stmt>>& statements);
 
     void visit_expression_stmt(const Expression& stmt) override;
+    void visit_if_stmt(const If& stmt) override;
     void visit_print_stmt(const Print& stmt) override;
     void visit_var_stmt(const Var& stmt) override;
+    void visit_while_stmt(const While& stmt) override;
     void visit_block_stmt(const Block& stmt) override;
 
     void visit_assign_expr(const Assign& expr) override;
     void visit_unary_expr(const Unary& expr) override;
     void visit_binary_expr(const Binary& expr) override;
     void visit_literal_expr(const Literal& expr) override;
+    void visit_logical_expr(const Logical& expr) override;
     void visit_grouping_expr(const Grouping& expr) override;
     void visit_ternary_expr(const Ternary& expr) override;
     void visit_variable_expr(const Variable& expr) override;
@@ -62,7 +65,7 @@ namespace loxx
                                const Generic& left, const Generic& right) const;
     std::string stringify(const Generic& generic) const;
 
-    bool in_repl_;
+    bool in_repl_, print_result_;
     Stack<Generic> stack_;
     std::unique_ptr<Environment> environment_;
   };
