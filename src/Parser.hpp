@@ -54,6 +54,18 @@ namespace loxx
       ParseError() : std::runtime_error("") {}
     };
 
+    template <typename T>
+    class VariableScoper
+    {
+    public:
+      VariableScoper(T& variable, T new_value);
+      ~VariableScoper();
+
+    private:
+      T* ptr_;
+      T old_value_;
+    };
+
     std::unique_ptr<Stmt> declaration();
     std::unique_ptr<Stmt> statement();
     std::unique_ptr<Stmt> if_statement();
@@ -110,6 +122,21 @@ namespace loxx
     }
 
     return expr;
+  }
+
+
+  template <typename T>
+  Parser::VariableScoper<T>::VariableScoper(T& variable, T new_value)
+      : ptr_(&variable), old_value_(variable)
+  {
+    *ptr_ = new_value;
+  }
+
+
+  template <typename T>
+  Parser::VariableScoper<T>::~VariableScoper()
+  {
+    *ptr_ = old_value_;
   }
 }
 
