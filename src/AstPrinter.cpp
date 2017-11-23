@@ -146,6 +146,12 @@ namespace loxx
   }
 
 
+  void AstPrinter::visit_break_stmt(const Break& stmt)
+  {
+    stream_ << "break";
+  }
+
+
   std::string AstPrinter::print(
       const std::vector<std::unique_ptr<Stmt>>& statements)
   {
