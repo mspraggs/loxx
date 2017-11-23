@@ -54,6 +54,9 @@ namespace loxx
     if (match({TokenType::While})) {
       return while_statement();
     }
+    if (match({TokenType::For})) {
+      return for_statement();
+    }
     return expression_statement();
   }
 
@@ -101,6 +104,59 @@ namespace loxx
     auto body = statement();
 
     return std::make_unique<While>(std::move(condition), std::move(body));
+  }
+
+
+  std::unique_ptr<Stmt> Parser::for_statement()
+  {
+    consume(TokenType::LeftParen, "Expected '(' after 'for'.");
+
+    std::unique_ptr<Stmt> initialiser;
+    if (match({TokenType::SemiColon})) {
+    }
+    else if (match({TokenType::Var})) {
+      initialiser = var_declaration();
+    }
+    else {
+      initialiser = expression_statement();
+    }
+
+    std::unique_ptr<Expr> condition;
+    if (not check(TokenType::SemiColon)) {
+      condition = expression();
+    }
+    consume(TokenType::SemiColon, "Expected ';' after for-loop condition.");
+
+    std::unique_ptr<Expr> increment;
+    if (not check(TokenType::RightParen)) {
+      increment = expression();
+    }
+    consume(TokenType::RightParen, "Expected ')' after for-loop clauses.");
+
+    auto body = statement();
+
+    using StmtList = std::vector<std::unique_ptr<Stmt>>;
+
+    if (increment != nullptr) {
+      StmtList stmts(2);
+      stmts[0] = std::move(body);
+      stmts[1] = std::make_unique<Expression>(std::move(increment));
+      body = std::make_unique<Block>(std::move(stmts));
+    }
+
+    if (condition == nullptr) {
+      condition = std::make_unique<Literal>(Generic(true));
+    }
+    body = std::make_unique<While>(std::move(condition), std::move(body));
+
+    if (initialiser != nullptr) {
+      StmtList stmts(2);
+      stmts[0] = std::move(initialiser);
+      stmts[1] = std::move(body);
+      body = std::make_unique<Block>(std::move(stmts));
+    }
+
+    return body;
   }
 
 
