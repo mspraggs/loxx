@@ -51,8 +51,8 @@ namespace loxx
   class {{ spec.name }} : public {{ base_name }}
   {
   public:
-    {{ spec.name }}({{ spec.arglist }})
-        : {{ spec.initialisers }}
+    {{ spec.name }}({{ spec.arglist }}){% if spec.initialisers %}
+        : {{ spec.initialisers }}{% endif %}
     {}
 
     void accept(Visitor& visitor) const override
