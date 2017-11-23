@@ -64,7 +64,7 @@ namespace loxx
                                const Generic& left, const Generic& right) const;
     std::string stringify(const Generic& generic) const;
 
-    bool in_repl_;
+    bool in_repl_, print_result_;
     Stack<Generic> stack_;
     std::unique_ptr<Environment> environment_;
   };
