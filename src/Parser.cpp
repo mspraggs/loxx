@@ -57,6 +57,9 @@ namespace loxx
     if (match({TokenType::For})) {
       return for_statement();
     }
+    if (match({TokenType::Break})) {
+      return break_statement();
+    }
     return expression_statement();
   }
 
@@ -98,6 +101,8 @@ namespace loxx
 
   std::unique_ptr<Stmt> Parser::while_statement()
   {
+    VariableScoper<bool> loop_parse_flag_handler(parsing_loop_, true);
+
     consume(TokenType::LeftParen, "Expected '(' after 'while'.");
     auto condition = expression();
     consume(TokenType::RightParen, "Expected ')' after condition.");
@@ -109,6 +114,8 @@ namespace loxx
 
   std::unique_ptr<Stmt> Parser::for_statement()
   {
+    VariableScoper<bool> loop_parse_flag_handler(parsing_loop_, true);
+
     consume(TokenType::LeftParen, "Expected '(' after 'for'.");
 
     std::unique_ptr<Stmt> initialiser;
@@ -157,6 +164,17 @@ namespace loxx
     }
 
     return body;
+  }
+
+
+  std::unique_ptr<Stmt> Parser::break_statement()
+  {
+    if (not parsing_loop_) {
+      error(previous(), "Unexpected 'break' statement outside loop construct.");
+    }
+
+    consume(TokenType::SemiColon, "Expected ';' after 'break' statement.");
+    return std::make_unique<Break>();
   }
 
 

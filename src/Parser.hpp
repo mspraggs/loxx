@@ -34,7 +34,8 @@ namespace loxx
 
   public:
     explicit Parser(std::vector<Token> tokens, const bool in_repl = false)
-        : in_repl_(in_repl), current_(0), tokens_(std::move(tokens))
+        : in_repl_(in_repl), parsing_loop_(false), current_(0),
+          tokens_(std::move(tokens))
     {}
 
     std::vector<std::unique_ptr<Stmt>> parse() {
@@ -73,6 +74,7 @@ namespace loxx
     std::unique_ptr<Stmt> var_declaration();
     std::unique_ptr<Stmt> while_statement();
     std::unique_ptr<Stmt> for_statement();
+    std::unique_ptr<Stmt> break_statement();
     std::unique_ptr<Stmt> expression_statement();
     std::vector<std::unique_ptr<Stmt>> block();
 
@@ -103,7 +105,7 @@ namespace loxx
     ParseError error(const Token& token, const std::string& message);
     void synchronise();
 
-    bool in_repl_;
+    bool in_repl_, parsing_loop_;
     unsigned int current_;
     std::vector<Token> tokens_;
   };
