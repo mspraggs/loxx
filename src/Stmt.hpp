@@ -31,6 +31,7 @@
 namespace loxx
 {
 
+  class Break;
   class Var;
   class While;
   class Print;
@@ -46,6 +47,7 @@ namespace loxx
     class Visitor
     {
     public:
+      virtual void visit_break_stmt(const Break& stmt) = 0;
       virtual void visit_var_stmt(const Var& stmt) = 0;
       virtual void visit_while_stmt(const While& stmt) = 0;
       virtual void visit_print_stmt(const Print& stmt) = 0;
@@ -55,6 +57,22 @@ namespace loxx
     };
 
     virtual void accept(Visitor& visitor) const {}
+  };
+
+
+  class Break : public Stmt
+  {
+  public:
+    Break()
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_break_stmt(*this); }
+
+    
+
+  private:
+    
   };
 
 
