@@ -31,6 +31,7 @@ namespace loxx
   {
     keywords_ =
         {{"and",    TokenType::And},
+         {"break",  TokenType::Break},
          {"class",  TokenType::Class},
          {"else",   TokenType::Else},
          {"false",  TokenType::False},

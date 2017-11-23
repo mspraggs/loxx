@@ -37,7 +37,7 @@ namespace loxx
     // Literals
     Identifier, String, Number,
     // Keywords
-    And, Class, Else, False, Fun, For, If, Nil, Or, Print, Return,
+    And, Break, Class, Else, False, Fun, For, If, Nil, Or, Print, Return,
     Super, This, True, Var, While,
     // End of file
     Eof

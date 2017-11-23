@@ -61,6 +61,7 @@ namespace loxx
         {TokenType::String, "String"},
         {TokenType::Number, "Number"},
         {TokenType::And, "And"},
+        {TokenType::Break, "Break"},
         {TokenType::Class, "Class"},
         {TokenType::Else, "Else"},
         {TokenType::False, "False"},
