@@ -73,6 +73,8 @@ namespace loxx
     std::unique_ptr<Expr> addition();
     std::unique_ptr<Expr> multiplication();
     std::unique_ptr<Expr> unary();
+    std::unique_ptr<Expr> finish_call(std::unique_ptr<Expr> callee);
+    std::unique_ptr<Expr> call();
     std::unique_ptr<Expr> primary();
 
     template <typename Fn>

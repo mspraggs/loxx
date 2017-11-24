@@ -271,7 +271,44 @@ namespace loxx
       return std::make_unique<Unary>(op, std::move(right));
     }
 
-    return primary();
+    return call();
+  }
+
+
+  std::unique_ptr<Expr> Parser::finish_call(std::unique_ptr<Expr> callee)
+  {
+    std::vector<std::unique_ptr<Expr>> arguments;
+
+    if (not check(TokenType::RightParen)) {
+      do {
+        if (arguments.size() >= 8) {
+          error(peek(), "Cannot have more than eight function arguments.");
+        }
+        arguments.push_back(expression());
+      } while (match({TokenType::Comma}));
+    }
+
+    auto paren = consume(TokenType::RightParen, "Expected ')' after arguments.");
+
+    return std::make_unique<Call>(std::move(callee), std::move(paren),
+                                  std::move(arguments));
+  }
+
+
+  std::unique_ptr<Expr> Parser::call()
+  {
+    auto expr = primary();
+
+    while (true) {
+      if (match({TokenType::LeftParen})) {
+        expr = finish_call(std::move(expr));
+      }
+      else {
+        break;
+      }
+    }
+
+    return expr;
   }
 
 
