@@ -74,6 +74,8 @@ if __name__ == "__main__":
         {"Assign": [("Token", "name", False), ("Expr", "value", True)],
          "Binary": [("Expr", "left", True), ("Token", "op", False),
                     ("Expr", "right", True)],
+         "Call": [("Expr", "callee", True), ("Token", "paren", False),
+                  ("std::vector<std::unique_ptr<Expr>>", "arguments", False)],
          "Grouping": [("Expr", "expression", True)],
          "Literal": [("Generic", "value", False)],
          "Logical": [("Expr", "left", True), ("Token", "op", False),
