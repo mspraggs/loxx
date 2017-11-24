@@ -55,7 +55,7 @@ namespace loxx
           return false;
         }
 
-        return value_ == dynamic_cast<const Container<T>&>(container).value_;
+        return value_ == static_cast<const Container<T>&>(container).value_;
       }
 
       std::unique_ptr<ContainerBase> clone() const override
