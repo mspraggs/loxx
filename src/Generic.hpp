@@ -62,12 +62,36 @@ namespace loxx
       T value_;
     };
 
+    template <typename T>
+    class PtrContainer : public ContainerBase
+    {
+    public:
+      PtrContainer(T* ptr);
+      PtrContainer(std::unique_ptr<T> ptr);
+
+      bool operator==(const ContainerBase& container) const override;
+
+      std::unique_ptr<ContainerBase> clone() const override;
+
+      inline void* get_ptr() override;
+      inline const void* get_ptr() const override;
+      std::type_index get_type_index() const override { return type_; }
+
+    private:
+      std::type_index type_;
+      std::unique_ptr<T> ptr_;
+    };
+
   public:
     template <typename T,
         typename = std::enable_if_t<not std::is_pointer<T>::value, void>>
     Generic(T value);
 
+    template <typename T>
+    Generic(std::unique_ptr<T> ptr);
 
+    template <typename T>
+    Generic(T* ptr);
 
     Generic(const Generic& generic);
     Generic(Generic&& generic) noexcept;
@@ -176,6 +200,54 @@ namespace loxx
   const void* Generic::ValueContainer<T>::get_ptr() const
   {
     return reinterpret_cast<const void*>(&value_);
+  }
+
+
+  template <typename T>
+  Generic::PtrContainer<T>::PtrContainer(T* ptr)
+      : type_(typeid(T)), ptr_(ptr)
+  {
+  }
+
+
+  template <typename T>
+  Generic::PtrContainer<T>::PtrContainer(std::unique_ptr<T> ptr)
+      : type_(typeid(T)), ptr_(std::move(ptr))
+  {
+  }
+
+
+  template <typename T>
+  bool Generic::PtrContainer<T>::operator==(
+      const Generic::ContainerBase& container) const
+  {
+    if (get_type_index() != container.get_type_index()) {
+      return false;
+    }
+
+    return *ptr_ == *static_cast<const PtrContainer<T>&>(container).ptr_;
+  }
+
+
+  template <typename T>
+  std::unique_ptr<Generic::ContainerBase>
+  Generic::PtrContainer<T>::clone() const
+  {
+    return std::make_unique<PtrContainer>(new T(*ptr_));
+  }
+
+
+  template <typename T>
+  void* Generic::PtrContainer<T>::get_ptr()
+  {
+    return reinterpret_cast<void*>(ptr_.get());
+  }
+
+
+  template <typename T>
+  const void* Generic::PtrContainer<T>::get_ptr() const
+  {
+    return reinterpret_cast<void*>(ptr_.get());
   }
 }
 
