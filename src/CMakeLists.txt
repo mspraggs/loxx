@@ -3,6 +3,7 @@ project(loxx)
 
 set(SRC
   AstPrinter.hpp
+  Callable.hpp
   Environment.hpp
   Expr.hpp
   Generic.hpp
