@@ -27,6 +27,38 @@
 
 namespace loxx
 {
+  namespace detail
+  {
+    template <typename T>
+    class Comparable
+    {
+      template <typename C>
+      static char test(typeof(&C::operator==));
+      template <typename C>
+      static long test(...);
+
+    public:
+      constexpr static bool value = sizeof(test<T>(0)) == sizeof(char);
+    };
+
+
+    template <typename T, typename U,
+        typename = std::enable_if_t<Comparable<T>::value and
+            Comparable<U>::value>>
+    bool compare(const T& lhs, const U& rhs)
+    {
+      return lhs == rhs;
+    }
+
+
+    template <typename T, typename U>
+    bool compare (const T& lhs, const U& rhs)
+    {
+      return false;
+    }
+  }
+
+
   class Generic
   {
     class ContainerBase
@@ -67,7 +99,7 @@ namespace loxx
     {
     public:
       PtrContainer(T* ptr);
-      PtrContainer(std::unique_ptr<T> ptr);
+      PtrContainer(std::shared_ptr<T> ptr);
 
       bool operator==(const ContainerBase& container) const override;
 
@@ -79,7 +111,7 @@ namespace loxx
 
     private:
       std::type_index type_;
-      std::unique_ptr<T> ptr_;
+      std::shared_ptr<T> ptr_;
     };
 
   public:
@@ -88,7 +120,7 @@ namespace loxx
     Generic(T value);
 
     template <typename T>
-    Generic(std::unique_ptr<T> ptr);
+    Generic(std::shared_ptr<T> ptr);
 
     template <typename T>
     Generic(T* ptr);
@@ -133,7 +165,7 @@ namespace loxx
 
 
   template <typename T>
-  Generic::Generic(std::unique_ptr<T> ptr)
+  Generic::Generic(std::shared_ptr<T> ptr)
       : type_(typeid(T)), container_(new PtrContainer<T>(std::move(ptr)))
   {
   }
@@ -211,7 +243,7 @@ namespace loxx
 
 
   template <typename T>
-  Generic::PtrContainer<T>::PtrContainer(std::unique_ptr<T> ptr)
+  Generic::PtrContainer<T>::PtrContainer(std::shared_ptr<T> ptr)
       : type_(typeid(T)), ptr_(std::move(ptr))
   {
   }
@@ -221,11 +253,13 @@ namespace loxx
   bool Generic::PtrContainer<T>::operator==(
       const Generic::ContainerBase& container) const
   {
+    using namespace detail;
+
     if (get_type_index() != container.get_type_index()) {
       return false;
     }
 
-    return *ptr_ == *static_cast<const PtrContainer<T>&>(container).ptr_;
+    return compare(*ptr_, *static_cast<const PtrContainer<T>&>(container).ptr_);
   }
 
 
@@ -233,7 +267,7 @@ namespace loxx
   std::unique_ptr<Generic::ContainerBase>
   Generic::PtrContainer<T>::clone() const
   {
-    return std::make_unique<PtrContainer>(new T(*ptr_));
+    return std::make_unique<PtrContainer>(ptr_);
   }
 
 
