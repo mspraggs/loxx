@@ -17,6 +17,7 @@ set(SRC
 
   AstPrinter.cpp
   Environment.cpp
+  Generic.cpp
   Interpreter.cpp
   logging.cpp
   main.cpp
