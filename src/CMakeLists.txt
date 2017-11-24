@@ -9,6 +9,7 @@ set(SRC
   Generic.hpp
   Interpreter.hpp
   logging.hpp
+  NativeCallable.hpp
   Parser.hpp
   RuntimeError.hpp
   Scanner.hpp
