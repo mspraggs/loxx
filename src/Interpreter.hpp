@@ -57,6 +57,8 @@ namespace loxx
     void execute_block(const std::vector<std::unique_ptr<Stmt>>& statements,
                        std::shared_ptr<Environment> environment);
 
+    std::shared_ptr<Environment> get_global_env() const { return globals_; }
+
   private:
     void evaluate(const Expr& expr);
     void execute(const Stmt& stmt);
