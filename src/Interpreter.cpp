@@ -20,6 +20,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "Callable.hpp"
 #include "Interpreter.hpp"
 #include "logging.hpp"
 
@@ -211,6 +212,32 @@ namespace loxx
     default:
       break;
     }
+  }
+
+
+  void Interpreter::visit_call_expr(const Call& expr)
+  {
+    evaluate(expr.callee());
+    auto callee = stack_.pop();
+
+    std::vector<Generic> arguments;
+    for (const auto& argument : expr.arguments()) {
+      evaluate(*argument);
+      arguments.push_back(std::move(stack_.pop()));
+    }
+
+    if (not callee.has_type<Callable>()) {
+      throw RuntimeError(expr.paren(), "Can only call functions and classes.");
+    }
+
+    auto& function = callee.get<Callable>();
+    if (arguments.size() != function.arity()) {
+      std::stringstream ss;
+      ss << "Expected " << function.arity() << " arguments but got "
+         << arguments.size() << '.';
+      throw RuntimeError(expr.paren(), ss.str());
+    }
+    stack_.push(function.call(*this, arguments));
   }
 
 
