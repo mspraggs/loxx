@@ -78,6 +78,20 @@ namespace loxx
   }
 
 
+  void AstPrinter::visit_call_expr(const Call& expr)
+  {
+    stream_ << '(';
+    expr.callee().accept(*this);
+
+    for (const auto& arg : expr.arguments()) {
+      stream_ << ' ';
+      arg->accept(*this);
+    }
+
+    stream_ << ')';
+  }
+
+
   void AstPrinter::visit_print_stmt(const Print& stmt)
   {
     paranthesise("write-line", {&stmt.expression()});
