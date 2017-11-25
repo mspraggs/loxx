@@ -6,6 +6,7 @@ set(SRC
   Callable.hpp
   Environment.hpp
   Expr.hpp
+  FuncCallable.hpp
   Generic.hpp
   Interpreter.hpp
   logging.hpp
@@ -19,6 +20,7 @@ set(SRC
 
   AstPrinter.cpp
   Environment.cpp
+  FuncCallable.cpp
   Generic.cpp
   Interpreter.cpp
   logging.cpp
