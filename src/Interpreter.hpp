@@ -39,6 +39,7 @@ namespace loxx
     void interpret(const std::vector<std::unique_ptr<Stmt>>& statements);
 
     void visit_expression_stmt(const Expression& stmt) override;
+    void visit_function_stmt(const Function& stmt) override;
     void visit_if_stmt(const If& stmt) override;
     void visit_print_stmt(const Print& stmt) override;
     void visit_var_stmt(const Var& stmt) override;

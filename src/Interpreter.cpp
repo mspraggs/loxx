@@ -22,6 +22,7 @@
 #include <sstream>
 
 #include "Callable.hpp"
+#include "FuncCallable.hpp"
 #include "Interpreter.hpp"
 #include "logging.hpp"
 #include "NativeCallable.hpp"
@@ -76,6 +77,13 @@ namespace loxx
     if (print_result_) {
       std::cout << "= " << stringify(result) << '\n';
     }
+  }
+
+
+  void Interpreter::visit_function_stmt(const Function& stmt)
+  {
+    std::shared_ptr<Callable> func = std::make_shared<FuncCallable>(stmt);
+    environment_->define(stmt.name().lexeme(), Generic(func));
   }
 
 
