@@ -53,10 +53,12 @@ namespace loxx
     void visit_grouping_expr(const Grouping& expr) override;
     void visit_variable_expr(const Variable& expr) override;
 
+    void execute_block(const std::vector<std::unique_ptr<Stmt>>& statements,
+                       std::shared_ptr<Environment> environment);
+
   private:
     void evaluate(const Expr& expr);
     void execute(const Stmt& stmt);
-    void execute_block(const std::vector<std::unique_ptr<Stmt>>& statements);
     bool is_truthy(const Generic& value);
     bool is_equal(const Generic& left, const Generic& right);
     void check_number_operand(const Token& op, const Generic& value) const;
