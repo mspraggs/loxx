@@ -17,12 +17,14 @@
  * Created by Matt Spraggs on 05/11/17.
  */
 
+#include <chrono>
 #include <iostream>
 #include <sstream>
 
 #include "Callable.hpp"
 #include "Interpreter.hpp"
 #include "logging.hpp"
+#include "NativeCallable.hpp"
 
 
 namespace loxx
@@ -31,6 +33,20 @@ namespace loxx
       : in_repl_(in_repl), print_result_(false), stack_(4096),
         environment_(new Environment), globals_(environment_)
   {
+    using Fn = Generic (*) (const Interpreter&, const std::vector<Generic>&);
+    Fn fn = [] (const Interpreter&, const std::vector<Generic>&) {
+      using namespace std::chrono;
+      const auto millis =
+          system_clock::now().time_since_epoch() / milliseconds(1);
+
+      return Generic(static_cast<double>(millis) / 1000.0);
+    };
+
+    globals_->define(
+        "clock",
+        Generic(std::shared_ptr<Callable>(
+            new NativeCallable<Fn>(std::move(fn), 0)))
+    );
   }
 
 
