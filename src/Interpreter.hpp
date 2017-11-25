@@ -68,7 +68,7 @@ namespace loxx
 
     bool in_repl_, print_result_;
     Stack<Generic> stack_;
-    std::shared_ptr<Environment> environment_;
+    std::shared_ptr<Environment> environment_, globals_;
   };
 }
 

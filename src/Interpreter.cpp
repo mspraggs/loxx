@@ -28,7 +28,7 @@ namespace loxx
 {
   Interpreter::Interpreter(const bool in_repl)
       : in_repl_(in_repl), print_result_(false), stack_(4096),
-        environment_(new Environment)
+        environment_(new Environment), globals_(environment_)
   {
   }
 
