@@ -29,7 +29,7 @@ namespace loxx
     const std::size_t index = first_value ? values_.size() : value_map_[name];
 
     if (first_value) {
-      values_.emplace_back(std::move(value));
+      values_.push_back(std::move(value));
       value_map_[name] = index;
     }
     else {
@@ -69,9 +69,9 @@ namespace loxx
   }
 
 
-  std::unique_ptr<Environment> Environment::release_enclosing()
+  std::shared_ptr<Environment> Environment::release_enclosing()
   {
-    std::unique_ptr<Environment> ret;
+    std::shared_ptr<Environment> ret;
     std::swap(enclosing_, ret);
     return ret;
   }

@@ -33,7 +33,7 @@ namespace loxx
   {
   public:
     Environment() = default;
-    explicit Environment(std::unique_ptr<Environment> enclosing)
+    explicit Environment(std::shared_ptr<Environment> enclosing)
         : enclosing_(std::move(enclosing))
     {}
 
@@ -41,10 +41,10 @@ namespace loxx
     const Generic& get(const Token& name) const;
     void assign(const Token& name, Generic value);
 
-    std::unique_ptr<Environment> release_enclosing();
+    std::shared_ptr<Environment> release_enclosing();
 
   private:
-    std::unique_ptr<Environment> enclosing_;
+    std::shared_ptr<Environment> enclosing_;
     std::unordered_map<std::string, std::size_t> value_map_;
     std::vector<Generic> values_;
   };

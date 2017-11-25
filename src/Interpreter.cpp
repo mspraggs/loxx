@@ -114,7 +114,7 @@ namespace loxx
 
   void Interpreter::visit_block_stmt(const Block& stmt)
   {
-    environment_ = std::make_unique<Environment>(std::move(environment_));
+    environment_ = std::make_shared<Environment>(std::move(environment_));
 
     try {
       execute_block(stmt.statements());
