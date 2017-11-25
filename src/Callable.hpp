@@ -34,7 +34,7 @@ namespace loxx
   public:
     virtual unsigned int arity() const = 0;
 
-    virtual Generic call(const Interpreter& interpreter,
+    virtual Generic call(Interpreter& interpreter,
                          const std::vector<Generic>& arguments) = 0;
   };
 }

@@ -35,7 +35,7 @@ namespace loxx
 
     unsigned int arity() const override { return arity_; }
 
-    Generic call(const Interpreter& interpreter,
+    Generic call(Interpreter& interpreter,
                  const std::vector<Generic>& arguments) override
     {
       return func_(interpreter, arguments);
