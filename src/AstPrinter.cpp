@@ -143,6 +143,21 @@ namespace loxx
   }
 
 
+  void AstPrinter::visit_function_stmt(const Function& func)
+  {
+    stream_ << "(defun " << func.name().lexeme() << " ( ";
+
+    for (const auto& arg : func.parameters()) {
+      stream_ << arg.lexeme() << ' ';
+    }
+    stream_ << ") (block\n";
+    set_indent(indent_level_ + 1);
+    print(func.body());
+    set_indent(indent_level_ - 1);
+    stream_ << ')';
+  }
+
+
   void AstPrinter::visit_block_stmt(const Block& stmt)
   {
     stream_ << "(block\n";

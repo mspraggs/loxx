@@ -47,6 +47,7 @@ namespace loxx
     void visit_var_stmt(const Var& stmt) override;
     void visit_while_stmt(const While& stmt) override;
     void visit_expression_stmt(const Expression& stmt) override;
+    void visit_function_stmt(const Function& func) override;
     void visit_block_stmt(const Block& stmt) override;
 
     std::string print(const std::vector<std::unique_ptr<Stmt>>& statements);
