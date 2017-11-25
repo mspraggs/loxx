@@ -62,6 +62,7 @@ namespace loxx
     std::unique_ptr<Stmt> while_statement();
     std::unique_ptr<Stmt> for_statement();
     std::unique_ptr<Stmt> expression_statement();
+    std::unique_ptr<Stmt> function(const std::string& kind);
     std::vector<std::unique_ptr<Stmt>> block();
 
     std::unique_ptr<Expr> assignment();

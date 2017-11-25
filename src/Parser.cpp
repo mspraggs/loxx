@@ -26,6 +26,9 @@ namespace loxx
   std::unique_ptr<Stmt> Parser::declaration()
   {
     try {
+      if (match({TokenType::Fun})) {
+        return function("function");
+      }
       if (match({TokenType::Var})) {
         return var_declaration();
       }
@@ -181,6 +184,31 @@ namespace loxx
 
     consume(TokenType::RightBrace, "Expected '}' after block.");
     return statements;
+  }
+
+
+  std::unique_ptr<Stmt> Parser::function(const std::string& kind)
+  {
+    auto name = consume(TokenType::Identifier, "Expected " + kind + " name.");
+    consume(TokenType::LeftParen, "Expected '(' after " + kind + " name.");
+
+    std::vector<Token> parameters;
+
+    if (not check(TokenType::RightParen)) {
+      do {
+        if (parameters.size() >= 8) {
+          error(peek(), "Cannot have more than eight function parameters.");
+        }
+        parameters.push_back(consume(TokenType::Identifier,
+                                     "Expected parameter name."));
+      } while (match({TokenType::Comma}));
+    }
+    consume(TokenType::RightParen, "Expected ')' after parameters.");
+
+    consume(TokenType::LeftBrace, "Expected '{' before " + kind + " body.");
+    auto body = block();
+    return std::make_unique<Function>(std::move(name), std::move(parameters),
+                                      std::move(body));
   }
 
 
