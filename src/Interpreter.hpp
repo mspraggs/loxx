@@ -42,6 +42,7 @@ namespace loxx
     void visit_function_stmt(const Function& stmt) override;
     void visit_if_stmt(const If& stmt) override;
     void visit_print_stmt(const Print& stmt) override;
+    void visit_return_stmt(const Return& stmt) override;
     void visit_var_stmt(const Var& stmt) override;
     void visit_while_stmt(const While& stmt) override;
     void visit_block_stmt(const Block& stmt) override;

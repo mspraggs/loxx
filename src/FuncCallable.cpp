@@ -40,7 +40,12 @@ namespace loxx
       environment->define(declaration_->parameters()[i].lexeme(), arguments[i]);
     }
 
-    interpreter.execute_block(declaration_->body(), environment);
+    try {
+      interpreter.execute_block(declaration_->body(), environment);
+    }
+    catch (const Interpreter::Returner& e) {
+      return e.value();
+    }
 
     return Generic(nullptr);
   }

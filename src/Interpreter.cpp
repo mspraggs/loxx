@@ -110,6 +110,22 @@ namespace loxx
   }
 
 
+  void Interpreter::visit_return_stmt(const Return& stmt)
+  {
+    auto value = [this, &stmt] () {
+      try {
+        evaluate(stmt.value());
+        return stack_.pop();
+      }
+      catch (const std::out_of_range& e) {
+        return Generic(nullptr);
+      }
+    }();
+
+    throw Returner(std::move(value));
+  }
+
+
   void Interpreter::visit_var_stmt(const Var& stmt)
   {
     auto value = [this, &stmt] () {
