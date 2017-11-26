@@ -140,7 +140,8 @@ namespace loxx
   void Interpreter::visit_block_stmt(const Block& stmt)
   {
     try {
-      execute_block(stmt.statements(), std::move(environment_));
+      execute_block(stmt.statements(),
+                    std::make_shared<Environment>(environment_));
     }
     catch (const RuntimeError& e) {
     }
@@ -321,13 +322,25 @@ namespace loxx
       const std::vector<std::unique_ptr<Stmt>>& statements,
       std::shared_ptr<Environment> environment)
   {
-    environment_ = std::make_shared<Environment>(std::move(environment));
+    auto previous = environment_;
+    environment_ = std::move(environment);
 
-    for (const auto& stmt : statements) {
-      execute(*stmt);
+    std::exception_ptr exception;
+
+    try {
+      for (const auto& stmt : statements) {
+        execute(*stmt);
+      }
+    }
+    catch (const std::exception& e) {
+      exception = std::current_exception();
     }
 
-    environment_ = environment_->release_enclosing();
+    environment_ = previous;
+
+    if (exception) {
+      std::rethrow_exception(exception);
+    }
   }
 
 
