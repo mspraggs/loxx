@@ -51,6 +51,9 @@ namespace loxx
     if (match({TokenType::Print})) {
       return print_statement();
     }
+    if (match({TokenType::Return})) {
+      return return_statement();
+    }
     if (match({TokenType::LeftBrace})) {
       return std::make_unique<Block>(block());
     }
@@ -84,6 +87,17 @@ namespace loxx
     auto expr = expression();
     consume(TokenType::SemiColon, "Expect ';' after value.");
     return std::make_unique<Print>(std::move(expr));
+  }
+
+
+  std::unique_ptr<Stmt> Parser::return_statement()
+  {
+    auto keyword = previous();
+    auto value = not check(TokenType::SemiColon) ?
+                 expression() : std::unique_ptr<Expr>();
+
+    consume(TokenType::SemiColon, "Expected ';' after return value.");
+    return std::make_unique<Return>(std::move(keyword), std::move(value));
   }
 
 

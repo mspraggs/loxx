@@ -58,6 +58,7 @@ namespace loxx
     std::unique_ptr<Stmt> statement();
     std::unique_ptr<Stmt> if_statement();
     std::unique_ptr<Stmt> print_statement();
+    std::unique_ptr<Stmt> return_statement();
     std::unique_ptr<Stmt> var_declaration();
     std::unique_ptr<Stmt> while_statement();
     std::unique_ptr<Stmt> for_statement();
