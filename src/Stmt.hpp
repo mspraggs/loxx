@@ -34,6 +34,7 @@ namespace loxx
   class Function;
   class Var;
   class While;
+  class Return;
   class Print;
   class Expression;
   class Block;
@@ -50,6 +51,7 @@ namespace loxx
       virtual void visit_function_stmt(const Function& stmt) = 0;
       virtual void visit_var_stmt(const Var& stmt) = 0;
       virtual void visit_while_stmt(const While& stmt) = 0;
+      virtual void visit_return_stmt(const Return& stmt) = 0;
       virtual void visit_print_stmt(const Print& stmt) = 0;
       virtual void visit_expression_stmt(const Expression& stmt) = 0;
       virtual void visit_block_stmt(const Block& stmt) = 0;
@@ -116,6 +118,25 @@ namespace loxx
   private:
     std::unique_ptr<Expr> condition_;
     std::unique_ptr<Stmt> body_;
+  };
+
+
+  class Return : public Stmt
+  {
+  public:
+    Return(Token keyword, std::unique_ptr<Expr> value)
+        : keyword_(std::move(keyword)), value_(std::move(value))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_return_stmt(*this); }
+
+    const Token& keyword() const { return keyword_; }
+    const Expr& value() const { if (value_ == nullptr) throw std::out_of_range("Member value_ contains nullptr!"); return *value_; }
+
+  private:
+    Token keyword_;
+    std::unique_ptr<Expr> value_;
   };
 
 
