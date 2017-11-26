@@ -60,6 +60,19 @@ namespace loxx
 
     std::shared_ptr<Environment> get_global_env() const { return globals_; }
 
+    class Returner : public std::runtime_error
+    {
+    public:
+      explicit Returner(Generic value)
+          : std::runtime_error(""), value_(std::move(value))
+      {}
+
+      const Generic& value() const { return value_; }
+
+    private:
+      Generic value_;
+    };
+
   private:
     void evaluate(const Expr& expr);
     void execute(const Stmt& stmt);
