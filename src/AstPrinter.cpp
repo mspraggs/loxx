@@ -98,6 +98,12 @@ namespace loxx
   }
 
 
+  void AstPrinter::visit_return_stmt(const Return& stmt)
+  {
+    paranthesise("return", {&stmt.value()});
+  }
+
+
   void AstPrinter::visit_var_stmt(const Var& stmt)
   {
     const std::string name = "defvar " + stmt.name().lexeme();
