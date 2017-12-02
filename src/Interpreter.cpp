@@ -202,11 +202,9 @@ namespace loxx
 
     switch (expr.op().type()) {
     case TokenType::BangEqual:
-      check_number_operands(expr.op(), left, right);
       stack_.push(Generic(not is_equal(left, right)));
       break;
     case TokenType::EqualEqual:
-      check_number_operands(expr.op(), left, right);
       stack_.push(Generic(is_equal(left, right)));
       break;
     case TokenType::Greater:
