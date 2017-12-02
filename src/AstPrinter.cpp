@@ -85,9 +85,29 @@ namespace loxx
   }
 
 
+  void AstPrinter::visit_call_expr(const Call& expr)
+  {
+    stream_ << '(';
+    expr.callee().accept(*this);
+
+    for (const auto& arg : expr.arguments()) {
+      stream_ << ' ';
+      arg->accept(*this);
+    }
+
+    stream_ << ')';
+  }
+
+
   void AstPrinter::visit_print_stmt(const Print& stmt)
   {
     paranthesise("write-line", {&stmt.expression()});
+  }
+
+
+  void AstPrinter::visit_return_stmt(const Return& stmt)
+  {
+    paranthesise("return", {&stmt.value()});
   }
 
 
@@ -133,6 +153,21 @@ namespace loxx
   void AstPrinter::visit_expression_stmt(const Expression& stmt)
   {
     stmt.expression().accept(*this);
+  }
+
+
+  void AstPrinter::visit_function_stmt(const Function& func)
+  {
+    stream_ << "(defun " << func.name().lexeme() << " ( ";
+
+    for (const auto& arg : func.parameters()) {
+      stream_ << arg.lexeme() << ' ';
+    }
+    stream_ << ") (block\n";
+    set_indent(indent_level_ + 1);
+    print(func.body());
+    set_indent(indent_level_ - 1);
+    stream_ << ')';
   }
 
 

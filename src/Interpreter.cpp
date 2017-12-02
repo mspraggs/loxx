@@ -17,19 +17,37 @@
  * Created by Matt Spraggs on 05/11/17.
  */
 
+#include <chrono>
 #include <iostream>
 #include <sstream>
 
+#include "Callable.hpp"
+#include "FuncCallable.hpp"
 #include "Interpreter.hpp"
 #include "logging.hpp"
+#include "NativeCallable.hpp"
 
 
 namespace loxx
 {
   Interpreter::Interpreter(const bool in_repl)
       : in_repl_(in_repl), print_result_(false), stack_(4096),
-        environment_(new Environment)
+        environment_(new Environment), globals_(environment_)
   {
+    using Fn = Generic (*) (const Interpreter&, const std::vector<Generic>&);
+    Fn fn = [] (const Interpreter&, const std::vector<Generic>&) {
+      using namespace std::chrono;
+      const auto millis =
+          system_clock::now().time_since_epoch() / milliseconds(1);
+
+      return Generic(static_cast<double>(millis) / 1000.0);
+    };
+
+    globals_->define(
+        "clock",
+        Generic(std::shared_ptr<Callable>(
+            new NativeCallable<Fn>(std::move(fn), 0)))
+    );
   }
 
 
@@ -62,6 +80,14 @@ namespace loxx
   }
 
 
+  void Interpreter::visit_function_stmt(const Function& stmt)
+  {
+    std::shared_ptr<Callable> func =
+        std::make_shared<FuncCallable>(stmt, environment_);
+    environment_->define(stmt.name().lexeme(), Generic(func));
+  }
+
+
   void Interpreter::visit_if_stmt(const If& stmt)
   {
     evaluate(stmt.condition());
@@ -82,6 +108,22 @@ namespace loxx
   {
     evaluate(stmt.expression());
     std::cout << stringify(stack_.pop()) << std::endl;
+  }
+
+
+  void Interpreter::visit_return_stmt(const Return& stmt)
+  {
+    auto value = [this, &stmt] () {
+      try {
+        evaluate(stmt.value());
+        return stack_.pop();
+      }
+      catch (const std::out_of_range& e) {
+        return Generic(nullptr);
+      }
+    }();
+
+    throw Returner(std::move(value));
   }
 
 
@@ -119,15 +161,12 @@ namespace loxx
 
   void Interpreter::visit_block_stmt(const Block& stmt)
   {
-    environment_ = std::make_unique<Environment>(std::move(environment_));
-
     try {
-      execute_block(stmt.statements());
+      execute_block(stmt.statements(),
+                    std::make_shared<Environment>(environment_));
     }
     catch (const RuntimeError& e) {
     }
-
-    environment_ = environment_->release_enclosing();
   }
 
 
@@ -175,11 +214,9 @@ namespace loxx
 
     switch (expr.op().type()) {
     case TokenType::BangEqual:
-      check_number_operands(expr.op(), left, right);
       stack_.push(Generic(not is_equal(left, right)));
       break;
     case TokenType::EqualEqual:
-      check_number_operands(expr.op(), left, right);
       stack_.push(Generic(is_equal(left, right)));
       break;
     case TokenType::Greater:
@@ -234,6 +271,32 @@ namespace loxx
     default:
       break;
     }
+  }
+
+
+  void Interpreter::visit_call_expr(const Call& expr)
+  {
+    evaluate(expr.callee());
+    auto callee = stack_.pop();
+
+    std::vector<Generic> arguments;
+    for (const auto& argument : expr.arguments()) {
+      evaluate(*argument);
+      arguments.push_back(std::move(stack_.pop()));
+    }
+
+    if (not callee.has_type<Callable>()) {
+      throw RuntimeError(expr.paren(), "Can only call functions and classes.");
+    }
+
+    auto& function = callee.get<Callable>();
+    if (arguments.size() != function.arity()) {
+      std::stringstream ss;
+      ss << "Expected " << function.arity() << " arguments but got "
+         << arguments.size() << '.';
+      throw RuntimeError(expr.paren(), ss.str());
+    }
+    stack_.push(function.call(*this, arguments));
   }
 
 
@@ -319,10 +382,27 @@ namespace loxx
 
 
   void Interpreter::execute_block(
-      const std::vector<std::unique_ptr<Stmt>>& statements)
+      const std::vector<std::unique_ptr<Stmt>>& statements,
+      std::shared_ptr<Environment> environment)
   {
-    for (const auto& stmt : statements) {
-      execute(*stmt);
+    auto previous = environment_;
+    environment_ = std::move(environment);
+
+    std::exception_ptr exception;
+
+    try {
+      for (const auto& stmt : statements) {
+        execute(*stmt);
+      }
+    }
+    catch (const std::exception& e) {
+      exception = std::current_exception();
+    }
+
+    environment_ = previous;
+
+    if (exception) {
+      std::rethrow_exception(exception);
     }
   }
 

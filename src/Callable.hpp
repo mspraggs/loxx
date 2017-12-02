@@ -14,40 +14,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Created by Matt Spraggs on 16/11/17.
+ * Created by Matt Spraggs on 23/11/17.
  */
 
-#ifndef LOXX_ENVIRONMENT_HPP
-#define LOXX_ENVIRONMENT_HPP
+#ifndef LOXX_CALLABLE_HPP
+#define LOXX_CALLABLE_HPP
 
-#include <unordered_map>
 #include <vector>
 
 #include "Generic.hpp"
-#include "Token.hpp"
 
 
 namespace loxx
 {
-  class Environment
+  class Interpreter;
+
+  class Callable
   {
   public:
-    Environment() = default;
-    explicit Environment(std::shared_ptr<Environment> enclosing)
-        : enclosing_(std::move(enclosing))
-    {}
+    virtual unsigned int arity() const = 0;
 
-    void define(std::string name, Generic value);
-    const Generic& get(const Token& name) const;
-    void assign(const Token& name, Generic value);
-
-    std::shared_ptr<Environment> release_enclosing();
-
-  private:
-    std::shared_ptr<Environment> enclosing_;
-    std::unordered_map<std::string, std::size_t> value_map_;
-    std::vector<Generic> values_;
+    virtual Generic call(Interpreter& interpreter,
+                         const std::vector<Generic>& arguments) = 0;
   };
 }
 
-#endif //LOXX_ENVIRONMENT_HPP
+#endif //LOXX_CALLABLE_HPP

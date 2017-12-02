@@ -26,6 +26,9 @@ namespace loxx
   std::unique_ptr<Stmt> Parser::declaration()
   {
     try {
+      if (match({TokenType::Fun})) {
+        return function("function");
+      }
       if (match({TokenType::Var})) {
         return var_declaration();
       }
@@ -47,6 +50,9 @@ namespace loxx
     }
     if (match({TokenType::Print})) {
       return print_statement();
+    }
+    if (match({TokenType::Return})) {
+      return return_statement();
     }
     if (match({TokenType::LeftBrace})) {
       return std::make_unique<Block>(block());
@@ -84,6 +90,17 @@ namespace loxx
     auto expr = expression();
     consume(TokenType::SemiColon, "Expect ';' after value.");
     return std::make_unique<Print>(std::move(expr));
+  }
+
+
+  std::unique_ptr<Stmt> Parser::return_statement()
+  {
+    auto keyword = previous();
+    auto value = not check(TokenType::SemiColon) ?
+                 expression() : std::unique_ptr<Expr>();
+
+    consume(TokenType::SemiColon, "Expected ';' after return value.");
+    return std::make_unique<Return>(std::move(keyword), std::move(value));
   }
 
 
@@ -199,6 +216,31 @@ namespace loxx
 
     consume(TokenType::RightBrace, "Expected '}' after block.");
     return statements;
+  }
+
+
+  std::unique_ptr<Stmt> Parser::function(const std::string& kind)
+  {
+    auto name = consume(TokenType::Identifier, "Expected " + kind + " name.");
+    consume(TokenType::LeftParen, "Expected '(' after " + kind + " name.");
+
+    std::vector<Token> parameters;
+
+    if (not check(TokenType::RightParen)) {
+      do {
+        if (parameters.size() >= 8) {
+          error(peek(), "Cannot have more than eight function parameters.");
+        }
+        parameters.push_back(consume(TokenType::Identifier,
+                                     "Expected parameter name."));
+      } while (match({TokenType::Comma}));
+    }
+    consume(TokenType::RightParen, "Expected ')' after parameters.");
+
+    consume(TokenType::LeftBrace, "Expected '{' before " + kind + " body.");
+    auto body = block();
+    return std::make_unique<Function>(std::move(name), std::move(parameters),
+                                      std::move(body));
   }
 
 
@@ -326,7 +368,44 @@ namespace loxx
       return std::make_unique<Unary>(op, std::move(right));
     }
 
-    return primary();
+    return call();
+  }
+
+
+  std::unique_ptr<Expr> Parser::finish_call(std::unique_ptr<Expr> callee)
+  {
+    std::vector<std::unique_ptr<Expr>> arguments;
+
+    if (not check(TokenType::RightParen)) {
+      do {
+        if (arguments.size() >= 8) {
+          error(peek(), "Cannot have more than eight function arguments.");
+        }
+        arguments.push_back(expression());
+      } while (match({TokenType::Comma}));
+    }
+
+    auto paren = consume(TokenType::RightParen, "Expected ')' after arguments.");
+
+    return std::make_unique<Call>(std::move(callee), std::move(paren),
+                                  std::move(arguments));
+  }
+
+
+  std::unique_ptr<Expr> Parser::call()
+  {
+    auto expr = primary();
+
+    while (true) {
+      if (match({TokenType::LeftParen})) {
+        expr = finish_call(std::move(expr));
+      }
+      else {
+        break;
+      }
+    }
+
+    return expr;
   }
 
 

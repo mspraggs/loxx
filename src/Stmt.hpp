@@ -31,9 +31,11 @@
 namespace loxx
 {
 
+  class Function;
   class Break;
   class Var;
   class While;
+  class Return;
   class Print;
   class Expression;
   class Block;
@@ -47,9 +49,11 @@ namespace loxx
     class Visitor
     {
     public:
+      virtual void visit_function_stmt(const Function& stmt) = 0;
       virtual void visit_break_stmt(const Break& stmt) = 0;
       virtual void visit_var_stmt(const Var& stmt) = 0;
       virtual void visit_while_stmt(const While& stmt) = 0;
+      virtual void visit_return_stmt(const Return& stmt) = 0;
       virtual void visit_print_stmt(const Print& stmt) = 0;
       virtual void visit_expression_stmt(const Expression& stmt) = 0;
       virtual void visit_block_stmt(const Block& stmt) = 0;
@@ -57,6 +61,27 @@ namespace loxx
     };
 
     virtual void accept(Visitor& visitor) const {}
+  };
+
+
+  class Function : public Stmt
+  {
+  public:
+    Function(Token name, std::vector<Token> parameters, std::vector<std::unique_ptr<Stmt>> body)
+        : name_(std::move(name)), parameters_(std::move(parameters)), body_(std::move(body))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_function_stmt(*this); }
+
+    const Token& name() const { return name_; }
+    const std::vector<Token>& parameters() const { return parameters_; }
+    const std::vector<std::unique_ptr<Stmt>>& body() const { return body_; }
+
+  private:
+    Token name_;
+    std::vector<Token> parameters_;
+    std::vector<std::unique_ptr<Stmt>> body_;
   };
 
 
@@ -111,6 +136,25 @@ namespace loxx
   private:
     std::unique_ptr<Expr> condition_;
     std::unique_ptr<Stmt> body_;
+  };
+
+
+  class Return : public Stmt
+  {
+  public:
+    Return(Token keyword, std::unique_ptr<Expr> value)
+        : keyword_(std::move(keyword)), value_(std::move(value))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_return_stmt(*this); }
+
+    const Token& keyword() const { return keyword_; }
+    const Expr& value() const { if (value_ == nullptr) throw std::out_of_range("Member value_ contains nullptr!"); return *value_; }
+
+  private:
+    Token keyword_;
+    std::unique_ptr<Expr> value_;
   };
 
 

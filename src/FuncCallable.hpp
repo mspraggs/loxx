@@ -14,40 +14,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Created by Matt Spraggs on 16/11/17.
+ * Created by Matt Spraggs on 25/11/17.
  */
 
-#ifndef LOXX_ENVIRONMENT_HPP
-#define LOXX_ENVIRONMENT_HPP
+#ifndef LOXX_FUNCCALLABLE_HPP
+#define LOXX_FUNCCALLABLE_HPP
 
-#include <unordered_map>
-#include <vector>
-
-#include "Generic.hpp"
-#include "Token.hpp"
+#include "Callable.hpp"
+#include "Environment.hpp"
+#include "Stmt.hpp"
 
 
 namespace loxx
 {
-  class Environment
+  class FuncCallable : public Callable
   {
   public:
-    Environment() = default;
-    explicit Environment(std::shared_ptr<Environment> enclosing)
-        : enclosing_(std::move(enclosing))
+    FuncCallable(const Function& declaration,
+                 std::shared_ptr<Environment> closure)
+        : declaration_(&declaration), closure_(std::move(closure))
     {}
 
-    void define(std::string name, Generic value);
-    const Generic& get(const Token& name) const;
-    void assign(const Token& name, Generic value);
+    Generic call(Interpreter& interpreter,
+                 const std::vector<Generic>& arguments) override;
 
-    std::shared_ptr<Environment> release_enclosing();
+    unsigned int arity() const override;
 
   private:
-    std::shared_ptr<Environment> enclosing_;
-    std::unordered_map<std::string, std::size_t> value_map_;
-    std::vector<Generic> values_;
+    const Function* declaration_;
+    std::shared_ptr<Environment> closure_;
   };
 }
 
-#endif //LOXX_ENVIRONMENT_HPP
+#endif //LOXX_FUNCCALLABLE_HPP

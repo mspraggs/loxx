@@ -27,6 +27,38 @@
 
 namespace loxx
 {
+  namespace detail
+  {
+    template <typename T>
+    class Comparable
+    {
+      template <typename C>
+      static char test(typeof(&C::operator==));
+      template <typename C>
+      static long test(...);
+
+    public:
+      constexpr static bool value = sizeof(test<T>(0)) == sizeof(char);
+    };
+
+
+    template <typename T, typename U,
+        typename = std::enable_if_t<Comparable<T>::value and
+            Comparable<U>::value>>
+    bool compare(const T& lhs, const U& rhs)
+    {
+      return lhs == rhs;
+    }
+
+
+    template <typename T, typename U>
+    bool compare (const T& lhs, const U& rhs)
+    {
+      return false;
+    }
+  }
+
+
   class Generic
   {
     class ContainerBase
@@ -44,26 +76,17 @@ namespace loxx
     };
 
     template <typename T>
-    class Container : public ContainerBase
+    class ValueContainer : public ContainerBase
     {
     public:
-      Container(T value) : type_(typeid(T)), value_(std::move(value)) {}
+      ValueContainer(T value);
 
-      bool operator==(const ContainerBase& container) const override
-      {
-        if (get_type_index() != container.get_type_index()) {
-          return false;
-        }
+      bool operator==(const ContainerBase& container) const override;
 
-        return value_ == dynamic_cast<const Container<T>&>(container).value_;
-      }
+      std::unique_ptr<ContainerBase> clone() const override;
 
-      std::unique_ptr<ContainerBase> clone() const override
-      { return std::make_unique<Container>(value_); }
-
-      void* get_ptr() override { return reinterpret_cast<void*>(&value_); }
-      const void* get_ptr() const override
-      { return reinterpret_cast<const void*>(&value_); }
+      inline void* get_ptr() override;
+      inline const void* get_ptr() const override;
       std::type_index get_type_index() const override { return type_; }
 
     private:
@@ -71,54 +94,49 @@ namespace loxx
       T value_;
     };
 
+    template <typename T>
+    class PtrContainer : public ContainerBase
+    {
+    public:
+      PtrContainer(T* ptr);
+      PtrContainer(std::shared_ptr<T> ptr);
+
+      bool operator==(const ContainerBase& container) const override;
+
+      std::unique_ptr<ContainerBase> clone() const override;
+
+      inline void* get_ptr() override;
+      inline const void* get_ptr() const override;
+      std::type_index get_type_index() const override { return type_; }
+
+    private:
+      std::type_index type_;
+      std::shared_ptr<T> ptr_;
+    };
+
   public:
-    template <typename T>
-    Generic(T value)
-        : type_(typeid(T)), container_(new Container<T>(std::move(value)))
-    {}
-
-    Generic(const Generic& generic)
-        : type_(generic.type_), container_(generic.container_->clone())
-    {}
-
-    Generic& operator=(const Generic& generic)
-    {
-      if (this != &generic) {
-        type_ = generic.type_;
-        container_ = generic.container_->clone();
-      }
-
-      return *this;
-    }
-
-    Generic(Generic&& generic) noexcept
-        : type_(generic.type_), container_(std::move(generic.container_))
-    {}
-
-    Generic& operator=(Generic&& generic) noexcept
-    {
-      type_ = generic.type_;
-      container_ = std::move(generic.container_);
-
-      return *this;
-    }
-
-    bool operator==(const Generic& generic) const
-    { return *container_ == *generic.container_; }
+    template <typename T,
+        typename = std::enable_if_t<not std::is_pointer<T>::value, void>>
+    Generic(T value);
 
     template <typename T>
-    const T& get() const
-    {
-      check_access<T>();
-      return *reinterpret_cast<const T*>(container_->get_ptr());
-    }
+    Generic(std::shared_ptr<T> ptr);
 
     template <typename T>
-    T& get()
-    {
-      check_access<T>();
-      return *reinterpret_cast<T*>(container_->get_ptr());
-    }
+    Generic(T* ptr);
+
+    Generic(const Generic& generic);
+    Generic(Generic&& generic) noexcept;
+
+    Generic& operator=(const Generic& generic);
+    Generic& operator=(Generic&& generic) noexcept;
+
+    bool operator==(const Generic& generic) const;
+
+    template <typename T>
+    inline const T& get() const;
+    template <typename T>
+    inline T& get();
 
     std::type_index type() const { return container_->get_type_index(); }
 
@@ -137,6 +155,134 @@ namespace loxx
     std::type_index type_;
     std::unique_ptr<ContainerBase> container_;
   };
+
+
+  template <typename T, typename>
+  Generic::Generic(T value)
+      : type_(typeid(T)), container_(new ValueContainer<T>(std::move(value)))
+  {
+  }
+
+
+  template <typename T>
+  Generic::Generic(std::shared_ptr<T> ptr)
+      : type_(typeid(T)), container_(new PtrContainer<T>(std::move(ptr)))
+  {
+  }
+
+
+  template <typename T>
+  Generic::Generic(T* ptr)
+      : type_(typeid(T)), container_(new PtrContainer<T>(ptr))
+  {
+  }
+
+
+  template<typename T>
+  const T& Generic::get() const
+  {
+    check_access<T>();
+    return *reinterpret_cast<const T*>(container_->get_ptr());
+  }
+
+
+  template<typename T>
+  T& Generic::get()
+  {
+    check_access<T>();
+    return *reinterpret_cast<T*>(container_->get_ptr());
+  }
+
+
+  template <typename T>
+  Generic::ValueContainer<T>::ValueContainer(T value)
+      : type_(typeid(T)), value_(std::move(value))
+  {
+  }
+
+
+  template <typename T>
+  bool Generic::ValueContainer<T>::operator==(
+      const ContainerBase& container) const
+  {
+    if (get_type_index() != container.get_type_index()) {
+      return false;
+    }
+
+    return value_ == static_cast<const ValueContainer<T>&>(container).value_;
+  }
+
+
+  template <typename T>
+  std::unique_ptr<Generic::ContainerBase>
+  Generic::ValueContainer<T>::clone() const
+  {
+    return std::make_unique<ValueContainer>(value_);
+  }
+
+
+  template <typename T>
+  void* Generic::ValueContainer<T>::get_ptr()
+  {
+    return reinterpret_cast<void*>(&value_);
+  }
+
+
+  template <typename T>
+  const void* Generic::ValueContainer<T>::get_ptr() const
+  {
+    return reinterpret_cast<const void*>(&value_);
+  }
+
+
+  template <typename T>
+  Generic::PtrContainer<T>::PtrContainer(T* ptr)
+      : type_(typeid(T)), ptr_(ptr)
+  {
+  }
+
+
+  template <typename T>
+  Generic::PtrContainer<T>::PtrContainer(std::shared_ptr<T> ptr)
+      : type_(typeid(T)), ptr_(std::move(ptr))
+  {
+  }
+
+
+  template <typename T>
+  bool Generic::PtrContainer<T>::operator==(
+      const Generic::ContainerBase& container) const
+  {
+    using namespace detail;
+
+    if (get_type_index() != container.get_type_index()) {
+      return false;
+    }
+
+    return compare(*ptr_, *static_cast<const PtrContainer<T>&>(container).ptr_);
+  }
+
+
+  template <typename T>
+  std::unique_ptr<Generic::ContainerBase>
+  Generic::PtrContainer<T>::clone() const
+  {
+    return std::make_unique<PtrContainer>(ptr_);
+  }
+
+
+  template <typename T>
+  void* Generic::PtrContainer<T>::get_ptr()
+  {
+    return reinterpret_cast<void*>(ptr_.get());
+  }
+
+
+  template <typename T>
+  const void* Generic::PtrContainer<T>::get_ptr() const
+  {
+    return reinterpret_cast<void*>(ptr_.get());
+  }
 }
 
 #endif //LOXX_GENERIC_HPP

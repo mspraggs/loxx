@@ -39,8 +39,10 @@ namespace loxx
     void interpret(const std::vector<std::unique_ptr<Stmt>>& statements);
 
     void visit_expression_stmt(const Expression& stmt) override;
+    void visit_function_stmt(const Function& stmt) override;
     void visit_if_stmt(const If& stmt) override;
     void visit_print_stmt(const Print& stmt) override;
+    void visit_return_stmt(const Return& stmt) override;
     void visit_var_stmt(const Var& stmt) override;
     void visit_while_stmt(const While& stmt) override;
     void visit_block_stmt(const Block& stmt) override;
@@ -49,11 +51,30 @@ namespace loxx
     void visit_assign_expr(const Assign& expr) override;
     void visit_unary_expr(const Unary& expr) override;
     void visit_binary_expr(const Binary& expr) override;
+    void visit_call_expr(const Call& expr) override;
     void visit_literal_expr(const Literal& expr) override;
     void visit_logical_expr(const Logical& expr) override;
     void visit_grouping_expr(const Grouping& expr) override;
     void visit_ternary_expr(const Ternary& expr) override;
     void visit_variable_expr(const Variable& expr) override;
+
+    void execute_block(const std::vector<std::unique_ptr<Stmt>>& statements,
+                       std::shared_ptr<Environment> environment);
+
+    std::shared_ptr<Environment> get_global_env() const { return globals_; }
+
+    class Returner : public std::runtime_error
+    {
+    public:
+      explicit Returner(Generic value)
+          : std::runtime_error(""), value_(std::move(value))
+      {}
+
+      const Generic& value() const { return value_; }
+
+    private:
+      Generic value_;
+    };
 
   private:
     class BreakError : public std::runtime_error
@@ -64,7 +85,6 @@ namespace loxx
 
     void evaluate(const Expr& expr);
     void execute(const Stmt& stmt);
-    void execute_block(const std::vector<std::unique_ptr<Stmt>>& statements);
     bool is_truthy(const Generic& value);
     bool is_equal(const Generic& left, const Generic& right);
     void check_number_operand(const Token& op, const Generic& value) const;
@@ -74,7 +94,7 @@ namespace loxx
 
     bool in_repl_, print_result_;
     Stack<Generic> stack_;
-    std::unique_ptr<Environment> environment_;
+    std::shared_ptr<Environment> environment_, globals_;
   };
 }
 

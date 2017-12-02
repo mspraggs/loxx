@@ -3,11 +3,14 @@ project(loxx)
 
 set(SRC
   AstPrinter.hpp
+  Callable.hpp
   Environment.hpp
   Expr.hpp
+  FuncCallable.hpp
   Generic.hpp
   Interpreter.hpp
   logging.hpp
+  NativeCallable.hpp
   Parser.hpp
   RuntimeError.hpp
   Scanner.hpp
@@ -17,6 +20,8 @@ set(SRC
 
   AstPrinter.cpp
   Environment.cpp
+  FuncCallable.cpp
+  Generic.cpp
   Interpreter.cpp
   logging.cpp
   main.cpp

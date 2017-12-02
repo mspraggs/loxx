@@ -14,40 +14,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Created by Matt Spraggs on 16/11/17.
+ * Created by Matt Spraggs on 24/11/17.
  */
 
-#ifndef LOXX_ENVIRONMENT_HPP
-#define LOXX_ENVIRONMENT_HPP
+#ifndef LOXX_NATIVECALLABLE_HPP
+#define LOXX_NATIVECALLABLE_HPP
 
-#include <unordered_map>
-#include <vector>
-
-#include "Generic.hpp"
-#include "Token.hpp"
+#include "Callable.hpp"
 
 
 namespace loxx
 {
-  class Environment
+  template <typename Fn>
+  class NativeCallable : public Callable
   {
   public:
-    Environment() = default;
-    explicit Environment(std::shared_ptr<Environment> enclosing)
-        : enclosing_(std::move(enclosing))
+    NativeCallable(Fn func, unsigned int arity)
+        : func_(std::move(func)), arity_(arity)
     {}
 
-    void define(std::string name, Generic value);
-    const Generic& get(const Token& name) const;
-    void assign(const Token& name, Generic value);
+    unsigned int arity() const override { return arity_; }
 
-    std::shared_ptr<Environment> release_enclosing();
+    Generic call(Interpreter& interpreter,
+                 const std::vector<Generic>& arguments) override
+    {
+      return func_(interpreter, arguments);
+    }
 
   private:
-    std::shared_ptr<Environment> enclosing_;
-    std::unordered_map<std::string, std::size_t> value_map_;
-    std::vector<Generic> values_;
+    Fn func_;
+    unsigned int arity_;
   };
 }
 
-#endif //LOXX_ENVIRONMENT_HPP
+#endif //LOXX_NATIVECALLABLE_HPP

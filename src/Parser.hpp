@@ -71,11 +71,13 @@ namespace loxx
     std::unique_ptr<Stmt> statement();
     std::unique_ptr<Stmt> if_statement();
     std::unique_ptr<Stmt> print_statement();
+    std::unique_ptr<Stmt> return_statement();
     std::unique_ptr<Stmt> var_declaration();
     std::unique_ptr<Stmt> while_statement();
     std::unique_ptr<Stmt> for_statement();
     std::unique_ptr<Stmt> break_statement();
     std::unique_ptr<Stmt> expression_statement();
+    std::unique_ptr<Stmt> function(const std::string& kind);
     std::vector<std::unique_ptr<Stmt>> block();
 
     std::unique_ptr<Expr> expression() { return comma(); }
@@ -89,6 +91,8 @@ namespace loxx
     std::unique_ptr<Expr> addition();
     std::unique_ptr<Expr> multiplication();
     std::unique_ptr<Expr> unary();
+    std::unique_ptr<Expr> finish_call(std::unique_ptr<Expr> callee);
+    std::unique_ptr<Expr> call();
     std::unique_ptr<Expr> primary();
 
     template <typename Fn>
