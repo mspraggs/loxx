@@ -34,7 +34,7 @@ namespace loxx
                             const std::vector<Generic>& arguments)
   {
     auto environment =
-        std::make_shared<Environment>(interpreter.get_global_env());
+        std::make_shared<Environment>(closure_);
 
     for (unsigned int i = 0; i < declaration_->parameters().size(); ++i) {
       environment->define(declaration_->parameters()[i].lexeme(), arguments[i]);

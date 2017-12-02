@@ -82,7 +82,8 @@ namespace loxx
 
   void Interpreter::visit_function_stmt(const Function& stmt)
   {
-    std::shared_ptr<Callable> func = std::make_shared<FuncCallable>(stmt);
+    std::shared_ptr<Callable> func =
+        std::make_shared<FuncCallable>(stmt, environment_);
     environment_->define(stmt.name().lexeme(), Generic(func));
   }
 
