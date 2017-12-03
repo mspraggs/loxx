@@ -53,7 +53,7 @@ namespace loxx
     void visit_block_stmt(const Block& stmt) override;
     void visit_break_stmt(const Break& stmt) override;
 
-    std::string print(const std::vector<std::unique_ptr<Stmt>>& statements);
+    std::string print(const std::vector<std::shared_ptr<Stmt>>& statements);
 
   private:
     void paranthesise(const std::string& name,

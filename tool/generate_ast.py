@@ -34,13 +34,13 @@ def define_ast(output_dir, base_name, types, includes=[]):
 
     for name, members in types.items():
         arglist = ", ".join(
-            "std::unique_ptr<{}> {}".format(t, n) if i else "{} {}".format(t, n)
+            "std::shared_ptr<{}> {}".format(t, n) if i else "{} {}".format(t, n)
             for t, n, i in members)
         initialisers = ", ".join(
             "{}_(std::move({}))".format(n, n)
             for t, n, i in members)
         member_vars = "\n    ".join(
-            "std::unique_ptr<{}> {}_;".format(t, n)
+            "std::shared_ptr<{}> {}_;".format(t, n)
             if i else "{} {}_;".format(t, n)
             for t, n, i in members)
         accessors = "\n    ".join(
@@ -77,7 +77,7 @@ if __name__ == "__main__":
          "Ternary": [("Expr", "first", True), ("Token", "op", False),
                      ("Expr", "second", True), ("Expr", "third", True)],
          "Call": [("Expr", "callee", True), ("Token", "paren", False),
-                  ("std::vector<std::unique_ptr<Expr>>", "arguments", False)],
+                  ("std::vector<std::shared_ptr<Expr>>", "arguments", False)],
          "Grouping": [("Expr", "expression", True)],
          "Literal": [("Generic", "value", False)],
          "Logical": [("Expr", "left", True), ("Token", "op", False),
@@ -87,12 +87,12 @@ if __name__ == "__main__":
 
     define_ast(
         output_dir, "Stmt",
-        {"Block": [("std::vector<std::unique_ptr<Stmt>>", "statements", False)],
+        {"Block": [("std::vector<std::shared_ptr<Stmt>>", "statements", False)],
          "Break": [],
          "Expression": [("Expr", "expression", True)],
          "Function": [("Token", "name", False),
                       ("std::vector<Token>", "parameters", False),
-                      ("std::vector<std::unique_ptr<Stmt>>", "body", False)],
+                      ("std::vector<std::shared_ptr<Stmt>>", "body", False)],
          "If": [("Expr", "condition", True), ("Stmt", "then_branch", True),
                 ("Stmt", "else_branch", True)],
          "Print": [("Expr", "expression", True)],

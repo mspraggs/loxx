@@ -44,7 +44,7 @@ namespace loxx
       virtual void visit_{{ spec.name|lower }}_{{ base_name|lower }}(const {{ spec.name }}& {{ base_name|lower }}) = 0;{% endfor %}
     };
 
-    virtual void accept(Visitor& visitor) const {}
+    virtual void accept(Visitor&) const {}
   };
 {% for spec in class_specs %}
 

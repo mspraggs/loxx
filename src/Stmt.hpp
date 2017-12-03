@@ -31,11 +31,11 @@
 namespace loxx
 {
 
-  class Function;
   class Break;
-  class Var;
+  class Function;
   class While;
   class Return;
+  class Var;
   class Print;
   class Expression;
   class Block;
@@ -49,39 +49,18 @@ namespace loxx
     class Visitor
     {
     public:
-      virtual void visit_function_stmt(const Function& stmt) = 0;
       virtual void visit_break_stmt(const Break& stmt) = 0;
-      virtual void visit_var_stmt(const Var& stmt) = 0;
+      virtual void visit_function_stmt(const Function& stmt) = 0;
       virtual void visit_while_stmt(const While& stmt) = 0;
       virtual void visit_return_stmt(const Return& stmt) = 0;
+      virtual void visit_var_stmt(const Var& stmt) = 0;
       virtual void visit_print_stmt(const Print& stmt) = 0;
       virtual void visit_expression_stmt(const Expression& stmt) = 0;
       virtual void visit_block_stmt(const Block& stmt) = 0;
       virtual void visit_if_stmt(const If& stmt) = 0;
     };
 
-    virtual void accept(Visitor& visitor) const {}
-  };
-
-
-  class Function : public Stmt
-  {
-  public:
-    Function(Token name, std::vector<Token> parameters, std::vector<std::unique_ptr<Stmt>> body)
-        : name_(std::move(name)), parameters_(std::move(parameters)), body_(std::move(body))
-    {}
-
-    void accept(Visitor& visitor) const override
-    { visitor.visit_function_stmt(*this); }
-
-    const Token& name() const { return name_; }
-    const std::vector<Token>& parameters() const { return parameters_; }
-    const std::vector<std::unique_ptr<Stmt>>& body() const { return body_; }
-
-  private:
-    Token name_;
-    std::vector<Token> parameters_;
-    std::vector<std::unique_ptr<Stmt>> body_;
+    virtual void accept(Visitor&) const {}
   };
 
 
@@ -101,29 +80,31 @@ namespace loxx
   };
 
 
-  class Var : public Stmt
+  class Function : public Stmt
   {
   public:
-    Var(Token name, std::unique_ptr<Expr> initialiser)
-        : name_(std::move(name)), initialiser_(std::move(initialiser))
+    Function(Token name, std::vector<Token> parameters, std::vector<std::shared_ptr<Stmt>> body)
+        : name_(std::move(name)), parameters_(std::move(parameters)), body_(std::move(body))
     {}
 
     void accept(Visitor& visitor) const override
-    { visitor.visit_var_stmt(*this); }
+    { visitor.visit_function_stmt(*this); }
 
     const Token& name() const { return name_; }
-    const Expr& initialiser() const { if (initialiser_ == nullptr) throw std::out_of_range("Member initialiser_ contains nullptr!"); return *initialiser_; }
+    const std::vector<Token>& parameters() const { return parameters_; }
+    const std::vector<std::shared_ptr<Stmt>>& body() const { return body_; }
 
   private:
     Token name_;
-    std::unique_ptr<Expr> initialiser_;
+    std::vector<Token> parameters_;
+    std::vector<std::shared_ptr<Stmt>> body_;
   };
 
 
   class While : public Stmt
   {
   public:
-    While(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body)
+    While(std::shared_ptr<Expr> condition, std::shared_ptr<Stmt> body)
         : condition_(std::move(condition)), body_(std::move(body))
     {}
 
@@ -134,15 +115,15 @@ namespace loxx
     const Stmt& body() const { if (body_ == nullptr) throw std::out_of_range("Member body_ contains nullptr!"); return *body_; }
 
   private:
-    std::unique_ptr<Expr> condition_;
-    std::unique_ptr<Stmt> body_;
+    std::shared_ptr<Expr> condition_;
+    std::shared_ptr<Stmt> body_;
   };
 
 
   class Return : public Stmt
   {
   public:
-    Return(Token keyword, std::unique_ptr<Expr> value)
+    Return(Token keyword, std::shared_ptr<Expr> value)
         : keyword_(std::move(keyword)), value_(std::move(value))
     {}
 
@@ -154,14 +135,33 @@ namespace loxx
 
   private:
     Token keyword_;
-    std::unique_ptr<Expr> value_;
+    std::shared_ptr<Expr> value_;
+  };
+
+
+  class Var : public Stmt
+  {
+  public:
+    Var(Token name, std::shared_ptr<Expr> initialiser)
+        : name_(std::move(name)), initialiser_(std::move(initialiser))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_var_stmt(*this); }
+
+    const Token& name() const { return name_; }
+    const Expr& initialiser() const { if (initialiser_ == nullptr) throw std::out_of_range("Member initialiser_ contains nullptr!"); return *initialiser_; }
+
+  private:
+    Token name_;
+    std::shared_ptr<Expr> initialiser_;
   };
 
 
   class Print : public Stmt
   {
   public:
-    Print(std::unique_ptr<Expr> expression)
+    Print(std::shared_ptr<Expr> expression)
         : expression_(std::move(expression))
     {}
 
@@ -171,14 +171,14 @@ namespace loxx
     const Expr& expression() const { if (expression_ == nullptr) throw std::out_of_range("Member expression_ contains nullptr!"); return *expression_; }
 
   private:
-    std::unique_ptr<Expr> expression_;
+    std::shared_ptr<Expr> expression_;
   };
 
 
   class Expression : public Stmt
   {
   public:
-    Expression(std::unique_ptr<Expr> expression)
+    Expression(std::shared_ptr<Expr> expression)
         : expression_(std::move(expression))
     {}
 
@@ -188,31 +188,31 @@ namespace loxx
     const Expr& expression() const { if (expression_ == nullptr) throw std::out_of_range("Member expression_ contains nullptr!"); return *expression_; }
 
   private:
-    std::unique_ptr<Expr> expression_;
+    std::shared_ptr<Expr> expression_;
   };
 
 
   class Block : public Stmt
   {
   public:
-    Block(std::vector<std::unique_ptr<Stmt>> statements)
+    Block(std::vector<std::shared_ptr<Stmt>> statements)
         : statements_(std::move(statements))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_block_stmt(*this); }
 
-    const std::vector<std::unique_ptr<Stmt>>& statements() const { return statements_; }
+    const std::vector<std::shared_ptr<Stmt>>& statements() const { return statements_; }
 
   private:
-    std::vector<std::unique_ptr<Stmt>> statements_;
+    std::vector<std::shared_ptr<Stmt>> statements_;
   };
 
 
   class If : public Stmt
   {
   public:
-    If(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> then_branch, std::unique_ptr<Stmt> else_branch)
+    If(std::shared_ptr<Expr> condition, std::shared_ptr<Stmt> then_branch, std::shared_ptr<Stmt> else_branch)
         : condition_(std::move(condition)), then_branch_(std::move(then_branch)), else_branch_(std::move(else_branch))
     {}
 
@@ -224,9 +224,9 @@ namespace loxx
     const Stmt& else_branch() const { if (else_branch_ == nullptr) throw std::out_of_range("Member else_branch_ contains nullptr!"); return *else_branch_; }
 
   private:
-    std::unique_ptr<Expr> condition_;
-    std::unique_ptr<Stmt> then_branch_;
-    std::unique_ptr<Stmt> else_branch_;
+    std::shared_ptr<Expr> condition_;
+    std::shared_ptr<Stmt> then_branch_;
+    std::shared_ptr<Stmt> else_branch_;
   };
 
 }

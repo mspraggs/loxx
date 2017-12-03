@@ -188,7 +188,7 @@ namespace loxx
 
 
   std::string AstPrinter::print(
-      const std::vector<std::unique_ptr<Stmt>>& statements)
+      const std::vector<std::shared_ptr<Stmt>>& statements)
   {
     for (const auto& stmt : statements) {
       stream_ << indent_;

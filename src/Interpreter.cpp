@@ -52,7 +52,7 @@ namespace loxx
 
 
   void Interpreter::interpret(
-      const std::vector<std::unique_ptr<Stmt>>& statements)
+      const std::vector<std::shared_ptr<Stmt>>& statements)
   {
     try {
       bool single_expr = statements.size() == 1 and
@@ -382,7 +382,7 @@ namespace loxx
 
 
   void Interpreter::execute_block(
-      const std::vector<std::unique_ptr<Stmt>>& statements,
+      const std::vector<std::shared_ptr<Stmt>>& statements,
       std::shared_ptr<Environment> environment)
   {
     auto previous = environment_;

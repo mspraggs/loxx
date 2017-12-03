@@ -59,14 +59,14 @@ namespace loxx
       virtual void visit_grouping_expr(const Grouping& expr) = 0;
     };
 
-    virtual void accept(Visitor& visitor) const {}
+    virtual void accept(Visitor&) const {}
   };
 
 
   class Unary : public Expr
   {
   public:
-    Unary(Token op, std::unique_ptr<Expr> right)
+    Unary(Token op, std::shared_ptr<Expr> right)
         : op_(std::move(op)), right_(std::move(right))
     {}
 
@@ -78,14 +78,14 @@ namespace loxx
 
   private:
     Token op_;
-    std::unique_ptr<Expr> right_;
+    std::shared_ptr<Expr> right_;
   };
 
 
   class Binary : public Expr
   {
   public:
-    Binary(std::unique_ptr<Expr> left, Token op, std::unique_ptr<Expr> right)
+    Binary(std::shared_ptr<Expr> left, Token op, std::shared_ptr<Expr> right)
         : left_(std::move(left)), op_(std::move(op)), right_(std::move(right))
     {}
 
@@ -97,9 +97,9 @@ namespace loxx
     const Expr& right() const { if (right_ == nullptr) throw std::out_of_range("Member right_ contains nullptr!"); return *right_; }
 
   private:
-    std::unique_ptr<Expr> left_;
+    std::shared_ptr<Expr> left_;
     Token op_;
-    std::unique_ptr<Expr> right_;
+    std::shared_ptr<Expr> right_;
   };
 
 
@@ -123,7 +123,7 @@ namespace loxx
   class Call : public Expr
   {
   public:
-    Call(std::unique_ptr<Expr> callee, Token paren, std::vector<std::unique_ptr<Expr>> arguments)
+    Call(std::shared_ptr<Expr> callee, Token paren, std::vector<std::shared_ptr<Expr>> arguments)
         : callee_(std::move(callee)), paren_(std::move(paren)), arguments_(std::move(arguments))
     {}
 
@@ -132,19 +132,19 @@ namespace loxx
 
     const Expr& callee() const { if (callee_ == nullptr) throw std::out_of_range("Member callee_ contains nullptr!"); return *callee_; }
     const Token& paren() const { return paren_; }
-    const std::vector<std::unique_ptr<Expr>>& arguments() const { return arguments_; }
+    const std::vector<std::shared_ptr<Expr>>& arguments() const { return arguments_; }
 
   private:
-    std::unique_ptr<Expr> callee_;
+    std::shared_ptr<Expr> callee_;
     Token paren_;
-    std::vector<std::unique_ptr<Expr>> arguments_;
+    std::vector<std::shared_ptr<Expr>> arguments_;
   };
 
 
   class Ternary : public Expr
   {
   public:
-    Ternary(std::unique_ptr<Expr> first, Token op, std::unique_ptr<Expr> second, std::unique_ptr<Expr> third)
+    Ternary(std::shared_ptr<Expr> first, Token op, std::shared_ptr<Expr> second, std::shared_ptr<Expr> third)
         : first_(std::move(first)), op_(std::move(op)), second_(std::move(second)), third_(std::move(third))
     {}
 
@@ -157,10 +157,10 @@ namespace loxx
     const Expr& third() const { if (third_ == nullptr) throw std::out_of_range("Member third_ contains nullptr!"); return *third_; }
 
   private:
-    std::unique_ptr<Expr> first_;
+    std::shared_ptr<Expr> first_;
     Token op_;
-    std::unique_ptr<Expr> second_;
-    std::unique_ptr<Expr> third_;
+    std::shared_ptr<Expr> second_;
+    std::shared_ptr<Expr> third_;
   };
 
 
@@ -184,7 +184,7 @@ namespace loxx
   class Assign : public Expr
   {
   public:
-    Assign(Token name, std::unique_ptr<Expr> value)
+    Assign(Token name, std::shared_ptr<Expr> value)
         : name_(std::move(name)), value_(std::move(value))
     {}
 
@@ -196,14 +196,14 @@ namespace loxx
 
   private:
     Token name_;
-    std::unique_ptr<Expr> value_;
+    std::shared_ptr<Expr> value_;
   };
 
 
   class Logical : public Expr
   {
   public:
-    Logical(std::unique_ptr<Expr> left, Token op, std::unique_ptr<Expr> right)
+    Logical(std::shared_ptr<Expr> left, Token op, std::shared_ptr<Expr> right)
         : left_(std::move(left)), op_(std::move(op)), right_(std::move(right))
     {}
 
@@ -215,16 +215,16 @@ namespace loxx
     const Expr& right() const { if (right_ == nullptr) throw std::out_of_range("Member right_ contains nullptr!"); return *right_; }
 
   private:
-    std::unique_ptr<Expr> left_;
+    std::shared_ptr<Expr> left_;
     Token op_;
-    std::unique_ptr<Expr> right_;
+    std::shared_ptr<Expr> right_;
   };
 
 
   class Grouping : public Expr
   {
   public:
-    Grouping(std::unique_ptr<Expr> expression)
+    Grouping(std::shared_ptr<Expr> expression)
         : expression_(std::move(expression))
     {}
 
@@ -234,7 +234,7 @@ namespace loxx
     const Expr& expression() const { if (expression_ == nullptr) throw std::out_of_range("Member expression_ contains nullptr!"); return *expression_; }
 
   private:
-    std::unique_ptr<Expr> expression_;
+    std::shared_ptr<Expr> expression_;
   };
 
 }

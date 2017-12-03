@@ -26,7 +26,7 @@ namespace loxx
 {
   unsigned int FuncCallable::arity() const
   {
-    return static_cast<unsigned int>(declaration_->parameters().size());
+    return static_cast<unsigned int>(declaration_.parameters().size());
   }
 
 
@@ -36,12 +36,12 @@ namespace loxx
     auto environment =
         std::make_shared<Environment>(closure_);
 
-    for (unsigned int i = 0; i < declaration_->parameters().size(); ++i) {
-      environment->define(declaration_->parameters()[i].lexeme(), arguments[i]);
+    for (unsigned int i = 0; i < declaration_.parameters().size(); ++i) {
+      environment->define(declaration_.parameters()[i].lexeme(), arguments[i]);
     }
 
     try {
-      interpreter.execute_block(declaration_->body(), environment);
+      interpreter.execute_block(declaration_.body(), environment);
     }
     catch (const Interpreter::Returner& e) {
       return e.value();

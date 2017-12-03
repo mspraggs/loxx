@@ -27,7 +27,7 @@ namespace loxx
 {
 
   Scanner::Scanner(std::string src)
-      : start_(0), current_(0), line_(0), src_(std::move(src))
+      : start_(0), current_(0), line_(1), src_(std::move(src))
   {
     keywords_ =
         {{"and",    TokenType::And},
