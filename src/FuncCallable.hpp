@@ -28,12 +28,11 @@
 
 namespace loxx
 {
-  class FuncCallable : public Callable
+  class FuncCallableImpl : public Callable
   {
   public:
-    FuncCallable(Function declaration,
-                 std::shared_ptr<Environment> closure)
-        : declaration_(std::move(declaration)), closure_(std::move(closure))
+    FuncCallableImpl(std::shared_ptr<Environment> closure)
+        : closure_(std::move(closure))
     {}
 
     Generic call(Interpreter& interpreter,
@@ -41,9 +40,31 @@ namespace loxx
 
     unsigned int arity() const override;
 
+    virtual const std::vector<Token>& params() const = 0;
+    virtual const std::vector<std::shared_ptr<Stmt>>& body() const = 0;
+
   private:
-    Function declaration_;
     std::shared_ptr<Environment> closure_;
+  };
+
+
+  template <typename T>
+  class FuncCallable : public FuncCallableImpl
+  {
+  public:
+    FuncCallable(T declaration, std::shared_ptr<Environment> closure)
+        : FuncCallableImpl(std::move(closure)),
+          declaration_(std::move(declaration))
+    {}
+
+    const std::vector<Token>& params() const override
+    { return declaration_.parameters(); }
+
+    const std::vector<std::shared_ptr<Stmt>>& body() const override
+    { return declaration_.body(); }
+
+  private:
+    T declaration_;
   };
 }
 
