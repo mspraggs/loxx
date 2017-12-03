@@ -152,7 +152,7 @@ namespace loxx
 
     auto body = statement();
 
-    using StmtList = std::vector<std::unique_ptr<Stmt>>;
+    using StmtList = std::vector<std::shared_ptr<Stmt>>;
 
     if (increment != nullptr) {
       StmtList stmts(2);
@@ -188,9 +188,9 @@ namespace loxx
   }
 
 
-  std::vector<std::unique_ptr<Stmt>> Parser::block()
+  std::vector<std::shared_ptr<Stmt>> Parser::block()
   {
-    std::vector<std::unique_ptr<Stmt>> statements;
+    std::vector<std::shared_ptr<Stmt>> statements;
 
     while (not check(TokenType::RightBrace) and not is_at_end()) {
       statements.push_back(declaration());
@@ -319,7 +319,7 @@ namespace loxx
 
   std::unique_ptr<Expr> Parser::finish_call(std::unique_ptr<Expr> callee)
   {
-    std::vector<std::unique_ptr<Expr>> arguments;
+    std::vector<std::shared_ptr<Expr>> arguments;
 
     if (not check(TokenType::RightParen)) {
       do {

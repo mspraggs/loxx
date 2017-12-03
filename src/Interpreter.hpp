@@ -36,7 +36,7 @@ namespace loxx
   public:
     Interpreter(const bool in_repl = false);
 
-    void interpret(const std::vector<std::unique_ptr<Stmt>>& statements);
+    void interpret(const std::vector<std::shared_ptr<Stmt>>& statements);
 
     void visit_expression_stmt(const Expression& stmt) override;
     void visit_function_stmt(const Function& stmt) override;
@@ -56,7 +56,7 @@ namespace loxx
     void visit_grouping_expr(const Grouping& expr) override;
     void visit_variable_expr(const Variable& expr) override;
 
-    void execute_block(const std::vector<std::unique_ptr<Stmt>>& statements,
+    void execute_block(const std::vector<std::shared_ptr<Stmt>>& statements,
                        std::shared_ptr<Environment> environment);
 
     std::shared_ptr<Environment> get_global_env() const { return globals_; }
