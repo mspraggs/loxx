@@ -94,10 +94,13 @@ namespace loxx
     std::unique_ptr<Expr> finish_call(std::unique_ptr<Expr> callee);
     std::unique_ptr<Expr> call();
     std::unique_ptr<Expr> primary();
+    std::unique_ptr<Expr> lambda();
 
     template <typename Fn>
     std::unique_ptr<Expr> binary(
         Fn fn, const std::initializer_list<TokenType>& tokens);
+
+    std::vector<Token> parse_parameters();
 
     bool match(std::initializer_list<TokenType> types);
     const Token& consume(const TokenType type, const std::string& message);

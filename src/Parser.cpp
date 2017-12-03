@@ -223,19 +223,7 @@ namespace loxx
   {
     auto name = consume(TokenType::Identifier, "Expected " + kind + " name.");
     consume(TokenType::LeftParen, "Expected '(' after " + kind + " name.");
-
-    std::vector<Token> parameters;
-
-    if (not check(TokenType::RightParen)) {
-      do {
-        if (parameters.size() >= 8) {
-          error(peek(), "Cannot have more than eight function parameters.");
-        }
-        parameters.push_back(consume(TokenType::Identifier,
-                                     "Expected parameter name."));
-      } while (match({TokenType::Comma}));
-    }
-    consume(TokenType::RightParen, "Expected ')' after parameters.");
+    std::vector<Token> parameters = parse_parameters();
 
     consume(TokenType::LeftBrace, "Expected '{' before " + kind + " body.");
     auto body = block();
@@ -435,7 +423,43 @@ namespace loxx
       return std::make_unique<Variable>(previous());
     }
 
+    if (match({TokenType::Fun})) {
+      return lambda();
+    }
+
     throw error(peek(), "Expected expression.");
+  }
+
+
+  std::unique_ptr<Expr> Parser::lambda()
+  {
+    auto decl = previous();
+    consume(TokenType::LeftParen,
+            "Expected '(' after 'fun' in lambda declaration.");
+    std::vector<Token> parameters = parse_parameters();
+
+    consume(TokenType::LeftBrace, "Expected '{' before lambda body.");
+    auto body = block();
+    return std::make_unique<Lambda>(std::move(decl), std::move(parameters),
+                                    std::move(body));
+  }
+
+
+  std::vector<Token> Parser::parse_parameters()
+  {
+    std::vector<Token> parameters;
+
+    if (not check(TokenType::RightParen)) {
+      do {
+        if (parameters.size() >= 8) {
+          error(peek(), "Cannot have more than eight function parameters.");
+        }
+        parameters.push_back(consume(TokenType::Identifier,
+                                     "Expected parameter name."));
+      } while (match({TokenType::Comma}));
+    }
+    consume(TokenType::RightParen, "Expected ')' after parameters.");
+    return parameters;
   }
 
 
