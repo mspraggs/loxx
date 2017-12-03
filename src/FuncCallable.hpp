@@ -21,6 +21,7 @@
 #define LOXX_FUNCCALLABLE_HPP
 
 #include "Callable.hpp"
+
 #include "Environment.hpp"
 #include "Stmt.hpp"
 
@@ -30,9 +31,9 @@ namespace loxx
   class FuncCallable : public Callable
   {
   public:
-    FuncCallable(const Function& declaration,
+    FuncCallable(Function declaration,
                  std::shared_ptr<Environment> closure)
-        : declaration_(&declaration), closure_(std::move(closure))
+        : declaration_(std::move(declaration)), closure_(std::move(closure))
     {}
 
     Generic call(Interpreter& interpreter,
@@ -41,7 +42,7 @@ namespace loxx
     unsigned int arity() const override;
 
   private:
-    const Function* declaration_;
+    Function declaration_;
     std::shared_ptr<Environment> closure_;
   };
 }
