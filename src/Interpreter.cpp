@@ -83,7 +83,7 @@ namespace loxx
   void Interpreter::visit_function_stmt(const Function& stmt)
   {
     std::shared_ptr<Callable> func =
-        std::make_shared<FuncCallable>(stmt, environment_);
+        std::make_shared<FuncCallable<Function>>(stmt, environment_);
     environment_->define(stmt.name().lexeme(), Generic(func));
   }
 
@@ -369,6 +369,14 @@ namespace loxx
   }
 
 
+  void Interpreter::visit_lambda_expr(const Lambda& expr)
+  {
+    std::shared_ptr<Callable> func =
+        std::make_shared<FuncCallable<Lambda>>(expr, environment_);
+    stack_.push(Generic(func));
+  }
+
+
   void Interpreter::evaluate(const Expr& expr)
   {
     expr.accept(*this);
@@ -451,6 +459,7 @@ namespace loxx
     }
     throw RuntimeError(op, "Binary operands must both be numbers.");
   }
+
 
   std::string Interpreter::stringify(const Generic& generic) const
   {

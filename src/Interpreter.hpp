@@ -37,6 +37,7 @@ namespace loxx
     Interpreter(const bool in_repl = false);
 
     void interpret(const std::vector<std::shared_ptr<Stmt>>& statements);
+    void visit_lambda_expr(const Lambda& expr) override;
 
     void visit_expression_stmt(const Expression& stmt) override;
     void visit_function_stmt(const Function& stmt) override;
