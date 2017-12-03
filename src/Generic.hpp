@@ -52,7 +52,7 @@ namespace loxx
 
 
     template <typename T, typename U>
-    bool compare (const T& lhs, const U& rhs)
+    bool compare (const T&, const U&)
     {
       return false;
     }
