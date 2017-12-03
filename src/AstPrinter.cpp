@@ -99,6 +99,22 @@ namespace loxx
   }
 
 
+  void AstPrinter::visit_lambda_expr(const Lambda& lambda)
+  {
+    stream_ << "(lambda (";
+
+    for (const auto& param : lambda.parameters()) {
+      stream_ << ' ';
+      stream_ << param.lexeme();
+    }
+    stream_ << ") (block\n";
+    set_indent(indent_level_ + 1);
+    print(lambda.body());
+    set_indent(indent_level_ - 1);
+    stream_ << ')';
+  }
+
+
   void AstPrinter::visit_print_stmt(const Print& stmt)
   {
     paranthesise("write-line", {&stmt.expression()});
