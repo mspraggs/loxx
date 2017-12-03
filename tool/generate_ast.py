@@ -23,7 +23,7 @@ import sys
 import jinja2
 
 
-def define_ast(output_dir, base_name, types, includes=[]):
+def define_ast(output_dir, base_name, types, includes=[], forward_decls=[]):
     """Generate AST class definitions using specification and jinja2"""
 
     class_specs = []
@@ -58,7 +58,7 @@ def define_ast(output_dir, base_name, types, includes=[]):
 
     with open(os.path.join(output_dir, "{}.hpp".format(base_name)), 'w') as f:
         f.write(template.render(base_name=base_name, class_specs=class_specs,
-                                includes=includes))
+                                includes=includes, forward_decls=forward_decls))
 
 
 if __name__ == "__main__":
@@ -74,16 +74,20 @@ if __name__ == "__main__":
         {"Assign": [("Token", "name", False), ("Expr", "value", True)],
          "Binary": [("Expr", "left", True), ("Token", "op", False),
                     ("Expr", "right", True)],
-         "Ternary": [("Expr", "first", True), ("Token", "op", False),
-                     ("Expr", "second", True), ("Expr", "third", True)],
          "Call": [("Expr", "callee", True), ("Token", "paren", False),
                   ("std::vector<std::shared_ptr<Expr>>", "arguments", False)],
          "Grouping": [("Expr", "expression", True)],
+         "Lambda": [("Token", "start", False),
+                    ("std::vector<Token>", "parameters", False),
+                    ("std::vector<std::shared_ptr<Stmt>>", "body", False)],
          "Literal": [("Generic", "value", False)],
          "Logical": [("Expr", "left", True), ("Token", "op", False),
                      ("Expr", "right", True)],
+         "Ternary": [("Expr", "first", True), ("Token", "op", False),
+                     ("Expr", "second", True), ("Expr", "third", True)],
          "Unary": [("Token", "op", False), ("Expr", "right", True)],
-         "Variable": [("Token", "name", False)]})
+         "Variable": [("Token", "name", False)]},
+        forward_decls=["class Stmt"])
 
     define_ast(
         output_dir, "Stmt",

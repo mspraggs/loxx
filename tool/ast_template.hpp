@@ -30,6 +30,8 @@
 
 namespace loxx
 {
+{% for decl in forward_decls %}
+  {{ decl }};{% endfor %}
 {% for spec in class_specs %}
   class {{ spec.name }};{% endfor %}
 

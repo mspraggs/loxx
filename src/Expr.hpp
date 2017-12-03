@@ -30,12 +30,15 @@
 namespace loxx
 {
 
+  class Stmt;
+
   class Unary;
   class Binary;
   class Literal;
   class Call;
   class Ternary;
   class Variable;
+  class Lambda;
   class Assign;
   class Logical;
   class Grouping;
@@ -54,6 +57,7 @@ namespace loxx
       virtual void visit_call_expr(const Call& expr) = 0;
       virtual void visit_ternary_expr(const Ternary& expr) = 0;
       virtual void visit_variable_expr(const Variable& expr) = 0;
+      virtual void visit_lambda_expr(const Lambda& expr) = 0;
       virtual void visit_assign_expr(const Assign& expr) = 0;
       virtual void visit_logical_expr(const Logical& expr) = 0;
       virtual void visit_grouping_expr(const Grouping& expr) = 0;
@@ -178,6 +182,27 @@ namespace loxx
 
   private:
     Token name_;
+  };
+
+
+  class Lambda : public Expr
+  {
+  public:
+    Lambda(Token start, std::vector<Token> parameters, std::vector<std::shared_ptr<Stmt>> body)
+        : start_(std::move(start)), parameters_(std::move(parameters)), body_(std::move(body))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_lambda_expr(*this); }
+
+    const Token& start() const { return start_; }
+    const std::vector<Token>& parameters() const { return parameters_; }
+    const std::vector<std::shared_ptr<Stmt>>& body() const { return body_; }
+
+  private:
+    Token start_;
+    std::vector<Token> parameters_;
+    std::vector<std::shared_ptr<Stmt>> body_;
   };
 
 
