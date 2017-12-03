@@ -57,7 +57,7 @@ namespace loxx
       virtual void visit_grouping_expr(const Grouping& expr) = 0;
     };
 
-    virtual void accept(Visitor& visitor) const {}
+    virtual void accept(Visitor&) const {}
   };
 
 

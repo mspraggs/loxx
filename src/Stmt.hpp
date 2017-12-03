@@ -58,7 +58,7 @@ namespace loxx
       virtual void visit_if_stmt(const If& stmt) = 0;
     };
 
-    virtual void accept(Visitor& visitor) const {}
+    virtual void accept(Visitor&) const {}
   };
 
 
