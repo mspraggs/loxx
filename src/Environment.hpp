@@ -42,6 +42,7 @@ namespace loxx
     const Generic& get_at(const std::size_t distance,
                           const std::string& name) const;
     void assign(const Token& name, Generic value);
+    void assign_at(const std::size_t distance, const Token& name, Generic value);
 
     std::shared_ptr<Environment> release_enclosing();
 

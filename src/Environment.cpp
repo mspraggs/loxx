@@ -77,6 +77,14 @@ namespace loxx
   }
 
 
+  void Environment::assign_at(const std::size_t distance, const Token& name,
+                              Generic value)
+  {
+    Environment& env = ancestor(distance);
+    env.values_[env.value_map_.at(name.lexeme())] = std::move(value);
+  }
+
+
   std::shared_ptr<Environment> Environment::release_enclosing()
   {
     std::shared_ptr<Environment> ret;
