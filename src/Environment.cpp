@@ -75,4 +75,26 @@ namespace loxx
     std::swap(enclosing_, ret);
     return ret;
   }
+
+
+  const Environment& Environment::ancestor(const std::size_t distance) const
+  {
+    const Environment* environment = this;
+    for (std::size_t i = 0; i < distance; ++i) {
+      environment = environment->enclosing_.get();
+    }
+
+    return *environment;
+  }
+
+
+  Environment& Environment::ancestor(const std::size_t distance)
+  {
+    Environment* environment = this;
+    for (std::size_t i = 0; i < distance; ++i) {
+      environment = environment->enclosing_.get();
+    }
+
+    return *environment;
+  }
 }

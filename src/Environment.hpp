@@ -44,6 +44,9 @@ namespace loxx
     std::shared_ptr<Environment> release_enclosing();
 
   private:
+    const Environment& ancestor(const std::size_t distance) const;
+    Environment& ancestor(const std::size_t distance);
+
     std::shared_ptr<Environment> enclosing_;
     std::unordered_map<std::string, std::size_t> value_map_;
     std::vector<Generic> values_;
