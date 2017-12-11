@@ -34,7 +34,10 @@ namespace loxx
       stack_.reserve(reserved_size);
     }
 
+    T& top() { return stack_.back(); }
     const T& top() const { return stack_.back(); }
+    T& get(const std::size_t idx) { return stack_[idx]; }
+    const T& get(const std::size_t idx) const { return stack_[idx]; }
     void push(T value);
     T pop();
 
