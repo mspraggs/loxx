@@ -59,6 +59,8 @@ namespace loxx
     void execute_block(const std::vector<std::shared_ptr<Stmt>>& statements,
                        std::shared_ptr<Environment> environment);
 
+    void resolve(const Expr& expr, const std::size_t depth);
+
     std::shared_ptr<Environment> get_global_env() const { return globals_; }
 
     class Returner : public std::runtime_error
@@ -83,10 +85,12 @@ namespace loxx
     void check_number_operands(const Token& op,
                                const Generic& left, const Generic& right) const;
     std::string stringify(const Generic& generic) const;
+    Generic lookup_variable(const Token& name, const Expr& expr) const;
 
     bool in_repl_, print_result_;
     Stack<Generic> stack_;
     std::shared_ptr<Environment> environment_, globals_;
+    std::unordered_map<const Expr*, std::size_t> locals_;
   };
 }
 
