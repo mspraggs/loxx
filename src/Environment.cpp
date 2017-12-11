@@ -53,6 +53,14 @@ namespace loxx
   }
 
 
+  const Generic& Environment::get_at(const std::size_t distance,
+                                     const std::string& name) const
+  {
+    const Environment& env = ancestor(distance);
+    return env.values_[env.value_map_.at(name)];
+  }
+
+
   void Environment::assign(const Token& name, Generic value)
   {
     if (value_map_.count(name.lexeme())) {
