@@ -115,6 +115,14 @@ namespace loxx
   }
 
 
+  void Resolver::visit_ternary_expr(const Ternary& expr)
+  {
+    resolve(expr.first());
+    resolve(expr.second());
+    resolve(expr.third());
+  }
+
+
   void Resolver::visit_binary_expr(const Binary& expr)
   {
     resolve(expr.left());
@@ -148,6 +156,12 @@ namespace loxx
   void Resolver::visit_unary_expr(const Unary& expr)
   {
     resolve(expr.right());
+  }
+
+
+  void Resolver::visit_lambda_expr(const Lambda& expr)
+  {
+    resolve_lambda(expr);
   }
 
 
@@ -186,6 +200,24 @@ namespace loxx
     }
 
     resolve(function.body());
+    end_scope();
+    current_function_ = enclosing_function;
+  }
+
+
+  void Resolver::resolve_lambda(const Lambda& lambda)
+  {
+    FunctionType enclosing_function = current_function_;
+    current_function_ = FunctionType::Lambda;
+
+    begin_scope();
+
+    for (const auto& param : lambda.parameters()) {
+      declare(param);
+      define(param);
+    }
+
+    resolve(lambda.body());
     end_scope();
     current_function_ = enclosing_function;
   }

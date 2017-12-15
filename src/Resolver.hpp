@@ -46,24 +46,28 @@ namespace loxx
     void visit_print_stmt(const Print& stmt) override;
     void visit_var_stmt(const Var& stmt) override;
     void visit_while_stmt(const While& stmt) override;
+    void visit_break_stmt(const Break& stmt) override {}
 
     void visit_variable_expr(const Variable& expr) override;
     void visit_assign_expr(const Assign& expr) override;
+    void visit_ternary_expr(const Ternary& expr) override;
     void visit_binary_expr(const Binary& expr) override;
     void visit_call_expr(const Call& expr) override;
     void visit_grouping_expr(const Grouping& expr) override;
     void visit_literal_expr(const Literal& expr) override {}
     void visit_logical_expr(const Logical& expr) override;
     void visit_unary_expr(const Unary& expr) override;
+    void visit_lambda_expr(const Lambda& expr) override;
 
     void resolve(const std::vector<std::shared_ptr<Stmt>>& statements);
 
   private:
-    enum class FunctionType { None, Function };
+    enum class FunctionType { None, Function, Lambda };
 
     void resolve(const Stmt& stmt);
     void resolve(const Expr& expr);
     void resolve_function(const Function& function, const FunctionType type);
+    void resolve_lambda(const Lambda& lambda);
     void begin_scope();
     void end_scope();
     void declare(const Token& name);
