@@ -180,7 +180,15 @@ namespace loxx
   {
     evaluate(expr.value());
 
-    environment_->assign(expr.name(), stack_.top());
+    const bool have_distance = locals_.count(&expr) != 0;
+
+    if (have_distance) {
+      const std::size_t distance = locals_[&expr];
+      environment_->assign_at(distance, expr.name(), stack_.top());
+    }
+    else {
+      globals_->assign(expr.name(), stack_.top());
+    }
   }
 
 
@@ -365,7 +373,7 @@ namespace loxx
 
   void Interpreter::visit_variable_expr(const Variable& expr)
   {
-    stack_.push(environment_->get(expr.name()));
+    stack_.push(std::move(lookup_variable(expr.name(), expr)));
   }
 
 
@@ -386,6 +394,12 @@ namespace loxx
   void Interpreter::execute(const Stmt& stmt)
   {
     stmt.accept(*this);
+  }
+
+
+  void Interpreter::resolve(const Expr& expr, const std::size_t depth)
+  {
+    locals_[&expr] = depth;
   }
 
 
@@ -478,5 +492,19 @@ namespace loxx
       return generic.get<std::string>();
     }
     return "";
+  }
+
+
+  Generic Interpreter::lookup_variable(const Token& name,
+                                       const Expr& expr) const
+  {
+    const bool have_distance = locals_.count(&expr) != 0;
+
+    if (have_distance) {
+      return environment_->get_at(locals_.at(&expr), name.lexeme());
+    }
+    else {
+      return globals_->get(name);
+    }
   }
 }

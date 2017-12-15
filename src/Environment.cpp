@@ -53,6 +53,14 @@ namespace loxx
   }
 
 
+  const Generic& Environment::get_at(const std::size_t distance,
+                                     const std::string& name) const
+  {
+    const Environment& env = ancestor(distance);
+    return env.values_[env.value_map_.at(name)];
+  }
+
+
   void Environment::assign(const Token& name, Generic value)
   {
     if (value_map_.count(name.lexeme())) {
@@ -69,10 +77,40 @@ namespace loxx
   }
 
 
+  void Environment::assign_at(const std::size_t distance, const Token& name,
+                              Generic value)
+  {
+    Environment& env = ancestor(distance);
+    env.values_[env.value_map_.at(name.lexeme())] = std::move(value);
+  }
+
+
   std::shared_ptr<Environment> Environment::release_enclosing()
   {
     std::shared_ptr<Environment> ret;
     std::swap(enclosing_, ret);
     return ret;
+  }
+
+
+  const Environment& Environment::ancestor(const std::size_t distance) const
+  {
+    const Environment* environment = this;
+    for (std::size_t i = 0; i < distance; ++i) {
+      environment = environment->enclosing_.get();
+    }
+
+    return *environment;
+  }
+
+
+  Environment& Environment::ancestor(const std::size_t distance)
+  {
+    Environment* environment = this;
+    for (std::size_t i = 0; i < distance; ++i) {
+      environment = environment->enclosing_.get();
+    }
+
+    return *environment;
   }
 }

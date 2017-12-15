@@ -12,6 +12,7 @@ set(SRC
   logging.hpp
   NativeCallable.hpp
   Parser.hpp
+  Resolver.hpp
   RuntimeError.hpp
   Scanner.hpp
   Stack.hpp
@@ -26,6 +27,7 @@ set(SRC
   logging.cpp
   main.cpp
   Parser.cpp
+  Resolver.cpp
   Scanner.cpp
   Token.cpp)
 

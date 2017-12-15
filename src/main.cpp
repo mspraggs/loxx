@@ -4,11 +4,12 @@
 
 #include <ezOptionParser.hpp>
 
-#include "logging.hpp"
-#include "Parser.hpp"
-#include "Scanner.hpp"
 #include "AstPrinter.hpp"
 #include "Interpreter.hpp"
+#include "logging.hpp"
+#include "Parser.hpp"
+#include "Resolver.hpp"
+#include "Scanner.hpp"
 
 
 namespace loxx
@@ -41,6 +42,14 @@ namespace loxx
     }
 
     static Interpreter interpreter(in_repl);
+
+    Resolver resolver(interpreter);
+    resolver.resolve(statements);
+
+    if (had_error) {
+      return;
+    }
+
     interpreter.interpret(statements);
   }
 
