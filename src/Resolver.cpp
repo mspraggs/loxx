@@ -100,7 +100,7 @@ namespace loxx
   {
     if (scopes_.size() != 0 and
         scopes_.top().count(expr.name().lexeme()) != 0 and
-        not scopes_.top()[expr.name().lexeme()]) {
+        not std::get<0>(scopes_.top()[expr.name().lexeme()])) {
       error(expr.name(), "Cannot read local variable in its own initialiser.");
     }
 
@@ -225,13 +225,20 @@ namespace loxx
 
   void Resolver::begin_scope()
   {
-    scopes_.push(std::unordered_map<std::string, bool>());
+    scopes_.push(StackElem());
   }
 
 
   void Resolver::end_scope()
   {
-    scopes_.pop();
+    const auto scope = std::move(scopes_.pop());
+
+    for (const auto& var_state : scope) {
+      if (not std::get<1>(var_state.second)) {
+        error(std::get<2>(var_state.second),
+              "Variable '" + var_state.first + "' is unused.");
+      }
+    }
   }
 
 
@@ -244,7 +251,7 @@ namespace loxx
       error(name, "Variable with this name already declared in this scope.");
     }
 
-    scopes_.top()[name.lexeme()] = false;
+    scopes_.top()[name.lexeme()] = std::make_tuple(false, false, name.line());
   }
 
 
@@ -254,7 +261,7 @@ namespace loxx
       return;
     }
 
-    scopes_.top()[name.lexeme()] = true;
+    std::get<0>(scopes_.top()[name.lexeme()]) = true;
   }
 
 
@@ -262,6 +269,7 @@ namespace loxx
   {
     for (int i = static_cast<int>(scopes_.size()) - 1; i >= 0; i--) {
       if (scopes_.get(i).count(name.lexeme()) > 0) {
+        std::get<1>(scopes_.get(i)[name.lexeme()]) = true;
         interpreter_->resolve(expr, scopes_.size() - 1 - i);
       }
     }

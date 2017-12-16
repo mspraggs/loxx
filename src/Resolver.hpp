@@ -62,6 +62,9 @@ namespace loxx
     void resolve(const std::vector<std::shared_ptr<Stmt>>& statements);
 
   private:
+    using StackElem =
+        std::unordered_map<std::string, std::tuple<bool, bool, unsigned int>>;
+
     enum class FunctionType { None, Function, Lambda };
 
     void resolve(const Stmt& stmt);
@@ -75,7 +78,7 @@ namespace loxx
     void resolve_local(const Expr& expr, const Token& name);
 
     Interpreter* interpreter_;
-    Stack<std::unordered_map<std::string, bool>> scopes_;
+    Stack<StackElem> scopes_;
     FunctionType current_function_;
   };
 }
