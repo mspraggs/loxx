@@ -62,7 +62,10 @@ namespace loxx
     void execute_block(const std::vector<std::shared_ptr<Stmt>>& statements,
                        std::shared_ptr<Environment> environment);
 
-    void resolve(const Expr& expr, const std::size_t depth);
+    void resolve(const Expr& expr, const std::size_t depth,
+                 const std::size_t idx);
+    void resolve(const Stmt& stmt, const std::size_t depth,
+                 const std::size_t idx);
 
     std::shared_ptr<Environment> get_global_env() const { return globals_; }
 
@@ -86,6 +89,8 @@ namespace loxx
       BreakError() : std::runtime_error("") {}
     };
 
+    using LocalsValue = std::pair<std::size_t, std::size_t>;
+
     void evaluate(const Expr& expr);
     void execute(const Stmt& stmt);
     bool is_truthy(const Generic& value);
@@ -99,7 +104,8 @@ namespace loxx
     bool in_repl_, print_result_;
     Stack<Generic> stack_;
     std::shared_ptr<Environment> environment_, globals_;
-    std::unordered_map<const Expr*, std::size_t> locals_;
+    std::unordered_map<const Expr*, LocalsValue> local_vars_;
+    std::unordered_map<const Stmt*, LocalsValue> local_funcs_;
   };
 }
 

@@ -62,8 +62,9 @@ namespace loxx
     void resolve(const std::vector<std::shared_ptr<Stmt>>& statements);
 
   private:
+    using StackElemValue = std::tuple<bool, bool, unsigned int, std::size_t>;
     using StackElem =
-        std::unordered_map<std::string, std::tuple<bool, bool, unsigned int>>;
+        std::unordered_map<std::string, StackElemValue>;
 
     enum class FunctionType { None, Function, Lambda };
 
@@ -75,12 +76,33 @@ namespace loxx
     void end_scope();
     void declare(const Token& name);
     void define(const Token& name);
-    void resolve_local(const Expr& expr, const Token& name);
+    void resolve_local(const Expr& expr, const Token& name)
+    { resolve_local_impl(expr, name); }
+    void resolve_local(const Stmt& stmt, const Token& name)
+    { resolve_local_impl(stmt, name); }
+    template <typename T>
+    void resolve_local_impl(const T& node, const Token& name);
 
     Interpreter* interpreter_;
     Stack<StackElem> scopes_;
     FunctionType current_function_;
   };
+
+
+  template <typename T>
+  void Resolver::resolve_local_impl(const T& node, const Token& name)
+  {
+    for (int i = static_cast<int>(scopes_.size()) - 1; i >= 0; i--) {
+      if (scopes_.get(i).count(name.lexeme()) > 0) {
+        auto& scope_data = scopes_.get(i)[name.lexeme()];
+
+        std::get<1>(scope_data) = true;
+        const std::size_t index = std::get<3>(scope_data);
+
+        interpreter_->resolve(node, scopes_.size() - 1 - i, index);
+      }
+    }
+  }
 }
 
 #endif //LOXX_RESOLVER_HPP

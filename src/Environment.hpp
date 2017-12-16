@@ -38,11 +38,18 @@ namespace loxx
     {}
 
     void define(std::string name, Generic value);
+    void define(const std::size_t index, Generic value);
     const Generic& get(const Token& name) const;
+    const Generic& get(const std::size_t index) const;
     const Generic& get_at(const std::size_t distance,
                           const std::string& name) const;
+    const Generic& get_at(const std::size_t distance,
+                          const std::size_t index) const;
     void assign(const Token& name, Generic value);
+    void assign(const std::size_t index, Generic value);
     void assign_at(const std::size_t distance, const Token& name, Generic value);
+    void assign_at(const std::size_t distance, const std::size_t index,
+                   Generic value);
 
     std::shared_ptr<Environment> release_enclosing();
 
@@ -53,6 +60,7 @@ namespace loxx
     std::shared_ptr<Environment> enclosing_;
     std::unordered_map<std::string, std::size_t> value_map_;
     std::vector<Generic> values_;
+    std::vector<bool> is_defined_;
   };
 }
 

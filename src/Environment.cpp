@@ -30,11 +30,24 @@ namespace loxx
 
     if (first_value) {
       values_.push_back(std::move(value));
+      is_defined_.push_back(true);
       value_map_[name] = index;
     }
     else {
       values_[index] = std::move(value);
+      is_defined_[index] = true;
     }
+  }
+
+
+  void Environment::define(const std::size_t index, Generic value)
+  {
+    if (index >= values_.size()) {
+      values_.resize(index + 1, Generic(nullptr));
+      is_defined_.resize(index + 1, false);
+    }
+    values_[index] = std::move(value);
+    is_defined_[index] = true;
   }
 
 
@@ -53,11 +66,28 @@ namespace loxx
   }
 
 
+  const Generic& Environment::get(const std::size_t index) const
+  {
+    if (is_defined_.at(index)) {
+      return values_[index];
+    }
+    throw std::out_of_range("Variable undefined!");
+  }
+
+
   const Generic& Environment::get_at(const std::size_t distance,
                                      const std::string& name) const
   {
     const Environment& env = ancestor(distance);
     return env.values_[env.value_map_.at(name)];
+  }
+
+
+  const Generic& Environment::get_at(const std::size_t distance,
+                                     const std::size_t index) const
+  {
+    const Environment& env = ancestor(distance);
+    return env.values_.at(index);
   }
 
 
@@ -82,6 +112,14 @@ namespace loxx
   {
     Environment& env = ancestor(distance);
     env.values_[env.value_map_.at(name.lexeme())] = std::move(value);
+  }
+
+
+  void Environment::assign_at(const std::size_t distance,
+                              const std::size_t index, Generic value)
+  {
+    Environment& env = ancestor(distance);
+    env.values_[index] = std::move(value);
   }
 
 

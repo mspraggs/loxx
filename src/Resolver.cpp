@@ -202,6 +202,7 @@ namespace loxx
     resolve(function.body());
     end_scope();
     current_function_ = enclosing_function;
+    resolve_local(function, function.name());
   }
 
 
@@ -251,7 +252,9 @@ namespace loxx
       error(name, "Variable with this name already declared in this scope.");
     }
 
-    scopes_.top()[name.lexeme()] = std::make_tuple(false, false, name.line());
+    const std::size_t var_idx = scopes_.top().size();
+    scopes_.top()[name.lexeme()] =
+        std::make_tuple(false, false, name.line(), var_idx);
   }
 
 
@@ -262,16 +265,5 @@ namespace loxx
     }
 
     std::get<0>(scopes_.top()[name.lexeme()]) = true;
-  }
-
-
-  void Resolver::resolve_local(const Expr& expr, const Token& name)
-  {
-    for (int i = static_cast<int>(scopes_.size()) - 1; i >= 0; i--) {
-      if (scopes_.get(i).count(name.lexeme()) > 0) {
-        std::get<1>(scopes_.get(i)[name.lexeme()]) = true;
-        interpreter_->resolve(expr, scopes_.size() - 1 - i);
-      }
-    }
   }
 }

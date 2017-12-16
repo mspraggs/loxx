@@ -84,7 +84,13 @@ namespace loxx
   {
     std::shared_ptr<Callable> func =
         std::make_shared<FuncCallable<Function>>(stmt, environment_);
-    environment_->define(stmt.name().lexeme(), Generic(func));
+    if (local_funcs_.count(&stmt) == 0) {
+      environment_->define(stmt.name().lexeme(), Generic(func));
+    }
+    else {
+      const std::size_t index = std::get<1>(local_funcs_[&stmt]);
+      environment_->define(index, Generic(func));
+    }
   }
 
 
@@ -180,11 +186,12 @@ namespace loxx
   {
     evaluate(expr.value());
 
-    const bool have_distance = locals_.count(&expr) != 0;
+    const bool have_distance = local_vars_.count(&expr) != 0;
 
     if (have_distance) {
-      const std::size_t distance = locals_[&expr];
-      environment_->assign_at(distance, expr.name(), stack_.top());
+      const std::size_t distance = std::get<0>(local_vars_[&expr]);
+      const std::size_t index = std::get<1>(local_vars_[&expr]);
+      environment_->assign_at(distance, index, stack_.top());
     }
     else {
       globals_->assign(expr.name(), stack_.top());
@@ -397,9 +404,17 @@ namespace loxx
   }
 
 
-  void Interpreter::resolve(const Expr& expr, const std::size_t depth)
+  void Interpreter::resolve(const Expr& expr, const std::size_t depth,
+                            const std::size_t idx)
   {
-    locals_[&expr] = depth;
+    local_vars_[&expr] = std::make_pair(depth, idx);
+  }
+
+
+  void Interpreter::resolve(const Stmt& stmt, const std::size_t depth,
+                            const std::size_t idx)
+  {
+    local_funcs_[&stmt] = std::make_pair(depth, idx);
   }
 
 
@@ -498,10 +513,11 @@ namespace loxx
   Generic Interpreter::lookup_variable(const Token& name,
                                        const Expr& expr) const
   {
-    const bool have_distance = locals_.count(&expr) != 0;
+    const bool have_distance = local_vars_.count(&expr) != 0;
 
     if (have_distance) {
-      return environment_->get_at(locals_.at(&expr), name.lexeme());
+      return environment_->get_at(std::get<0>(local_vars_.at(&expr)),
+                                  std::get<1>(local_vars_.at(&expr)));
     }
     else {
       return globals_->get(name);
