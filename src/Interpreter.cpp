@@ -71,7 +71,7 @@ namespace loxx
 
   void Interpreter::visit_expression_stmt(const Expression& stmt)
   {
-    evaluate(stmt.expression());
+    evaluate(*stmt.expression);
     const auto result = stack_.pop();
 
     if (print_result_) {
@@ -84,19 +84,19 @@ namespace loxx
   {
     std::shared_ptr<Callable> func =
         std::make_shared<FuncCallable>(stmt, environment_);
-    environment_->define(stmt.name().lexeme(), Generic(func));
+    environment_->define(stmt.name.lexeme(), Generic(func));
   }
 
 
   void Interpreter::visit_if_stmt(const If& stmt)
   {
-    evaluate(stmt.condition());
+    evaluate(*stmt.condition);
     if (is_truthy(stack_.pop())) {
-      execute(stmt.then_branch());
+      execute(*stmt.then_branch);
     }
     else {
       try {
-        execute(stmt.else_branch());
+        execute(*stmt.else_branch);
       }
       catch (const std::out_of_range& e) {
       }
@@ -106,7 +106,7 @@ namespace loxx
 
   void Interpreter::visit_print_stmt(const Print& stmt)
   {
-    evaluate(stmt.expression());
+    evaluate(*stmt.expression);
     std::cout << stringify(stack_.pop()) << std::endl;
   }
 
@@ -115,7 +115,7 @@ namespace loxx
   {
     auto value = [this, &stmt] () {
       try {
-        evaluate(stmt.value());
+        evaluate(*stmt.value);
         return stack_.pop();
       }
       catch (const std::out_of_range& e) {
@@ -131,7 +131,7 @@ namespace loxx
   {
     auto value = [this, &stmt] () {
       try {
-        evaluate(stmt.initialiser());
+        evaluate(*stmt.initialiser);
         return stack_.pop();
       }
       catch (const std::out_of_range& e) {
@@ -139,17 +139,17 @@ namespace loxx
       }
     }();
 
-    environment_->define(stmt.name().lexeme(), std::move(value));
+    environment_->define(stmt.name.lexeme(), std::move(value));
   }
 
 
   void Interpreter::visit_while_stmt(const While& stmt)
   {
-    evaluate(stmt.condition());
+    evaluate(*stmt.condition);
 
     while (is_truthy(stack_.pop())) {
-      execute(stmt.body());
-      evaluate(stmt.condition());
+      execute(*stmt.body);
+      evaluate(*stmt.condition);
     }
   }
 
@@ -157,7 +157,7 @@ namespace loxx
   void Interpreter::visit_block_stmt(const Block& stmt)
   {
     try {
-      execute_block(stmt.statements(),
+      execute_block(stmt.statements,
                     std::make_shared<Environment>(environment_));
     }
     catch (const RuntimeError& e) {
@@ -167,32 +167,32 @@ namespace loxx
 
   void Interpreter::visit_assign_expr(const Assign& expr)
   {
-    evaluate(expr.value());
+    evaluate(*expr.value);
 
     const bool have_distance = locals_.count(&expr) != 0;
 
     if (have_distance) {
       const std::size_t distance = locals_[&expr];
-      environment_->assign_at(distance, expr.name(), stack_.top());
+      environment_->assign_at(distance, expr.name, stack_.top());
     }
     else {
-      globals_->assign(expr.name(), stack_.top());
+      globals_->assign(expr.name, stack_.top());
     }
   }
 
 
   void Interpreter::visit_unary_expr(const Unary& expr)
   {
-    evaluate(expr.right());
+    evaluate(*expr.right);
 
     const auto value = stack_.pop();
 
-    switch (expr.op().type()) {
+    switch (expr.op.type()) {
     case TokenType::Bang:
       stack_.push(Generic(not is_truthy(value)));
       break;
     case TokenType::Minus:
-      check_number_operand(expr.op(), value);
+      check_number_operand(expr.op, value);
       stack_.push(Generic(-value.get<double>()));
       break;
     default:
@@ -203,13 +203,13 @@ namespace loxx
 
   void Interpreter::visit_binary_expr(const Binary& expr)
   {
-    evaluate(expr.left());
+    evaluate(*expr.left);
     const auto left = stack_.pop();
 
-    evaluate(expr.right());
+    evaluate(*expr.right);
     const auto right = stack_.pop();
 
-    switch (expr.op().type()) {
+    switch (expr.op.type()) {
     case TokenType::BangEqual:
       stack_.push(Generic(not is_equal(left, right)));
       break;
@@ -217,23 +217,23 @@ namespace loxx
       stack_.push(Generic(is_equal(left, right)));
       break;
     case TokenType::Greater:
-      check_number_operands(expr.op(), left, right);
+      check_number_operands(expr.op, left, right);
       stack_.push(Generic(left.get<double>() > right.get<double>()));
       break;
     case TokenType::GreaterEqual:
-      check_number_operands(expr.op(), left, right);
+      check_number_operands(expr.op, left, right);
       stack_.push(Generic(left.get<double>() >= right.get<double>()));
       break;
     case TokenType::Less:
-      check_number_operands(expr.op(), left, right);
+      check_number_operands(expr.op, left, right);
       stack_.push(Generic(left.get<double>() < right.get<double>()));
       break;
     case TokenType::LessEqual:
-      check_number_operands(expr.op(), left, right);
+      check_number_operands(expr.op, left, right);
       stack_.push(Generic(left.get<double>() <= right.get<double>()));
       break;
     case TokenType::Minus:
-      check_number_operands(expr.op(), left, right);
+      check_number_operands(expr.op, left, right);
       stack_.push(Generic(left.get<double>() - right.get<double>()));
       break;
     case TokenType::Plus:
@@ -246,15 +246,15 @@ namespace loxx
       }
       else {
         throw RuntimeError(
-            expr.op(), "Binary operands must be two numbers or two strings.");
+            expr.op, "Binary operands must be two numbers or two strings.");
       }
       break;
     case TokenType::Slash:
-      check_number_operands(expr.op(), left, right);
+      check_number_operands(expr.op, left, right);
       stack_.push(Generic(left.get<double>() / right.get<double>()));
       break;
     case TokenType::Star:
-      check_number_operands(expr.op(), left, right);
+      check_number_operands(expr.op, left, right);
       stack_.push(Generic(left.get<double>() * right.get<double>()));
       break;
     default:
@@ -265,17 +265,17 @@ namespace loxx
 
   void Interpreter::visit_call_expr(const Call& expr)
   {
-    evaluate(expr.callee());
+    evaluate(*expr.callee);
     auto callee = stack_.pop();
 
     std::vector<Generic> arguments;
-    for (const auto& argument : expr.arguments()) {
+    for (const auto& argument : expr.arguments) {
       evaluate(*argument);
       arguments.push_back(std::move(stack_.pop()));
     }
 
     if (not callee.has_type<Callable>()) {
-      throw RuntimeError(expr.paren(), "Can only call functions and classes.");
+      throw RuntimeError(expr.paren, "Can only call functions and classes.");
     }
 
     auto& function = callee.get<Callable>();
@@ -283,7 +283,7 @@ namespace loxx
       std::stringstream ss;
       ss << "Expected " << function.arity() << " arguments but got "
          << arguments.size() << '.';
-      throw RuntimeError(expr.paren(), ss.str());
+      throw RuntimeError(expr.paren, ss.str());
     }
     stack_.push(function.call(*this, arguments));
   }
@@ -291,16 +291,16 @@ namespace loxx
 
   void Interpreter::visit_literal_expr(const Literal& expr)
   {
-    stack_.push(expr.value());
+    stack_.push(expr.value);
   }
 
 
   void Interpreter::visit_logical_expr(const Logical& expr)
   {
-    evaluate(expr.left());
+    evaluate(*expr.left);
     auto left = stack_.pop();
 
-    if (expr.op().type() == TokenType::Or) {
+    if (expr.op.type() == TokenType::Or) {
       if (is_truthy(left)) {
         stack_.push(std::move(left));
         return;
@@ -313,19 +313,19 @@ namespace loxx
       }
     }
 
-    evaluate(expr.right());
+    evaluate(*expr.right);
   }
 
 
   void Interpreter::visit_grouping_expr(const Grouping& expr)
   {
-    evaluate(expr.expression());
+    evaluate(*expr.expression);
   }
 
 
   void Interpreter::visit_variable_expr(const Variable& expr)
   {
-    stack_.push(std::move(lookup_variable(expr.name(), expr)));
+    stack_.push(std::move(lookup_variable(expr.name, expr)));
   }
 
 

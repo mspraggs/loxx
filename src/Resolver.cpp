@@ -26,21 +26,21 @@ namespace loxx
   void Resolver::visit_block_stmt(const Block& stmt)
   {
     begin_scope();
-    resolve(stmt.statements());
+    resolve(stmt.statements);
     end_scope();
   }
 
 
   void Resolver::visit_expression_stmt(const Expression& stmt)
   {
-    resolve(stmt.expression());
+    resolve(*stmt.expression);
   }
 
 
   void Resolver::visit_function_stmt(const Function& stmt)
   {
-    declare(stmt.name());
-    define(stmt.name());
+    declare(stmt.name);
+    define(stmt.name);
 
     resolve_function(stmt, FunctionType::Function);
   }
@@ -48,11 +48,11 @@ namespace loxx
 
   void Resolver::visit_if_stmt(const If& stmt)
   {
-    resolve(stmt.condition());
-    resolve(stmt.then_branch());
+    resolve(*stmt.condition);
+    resolve(*stmt.then_branch);
 
     try {
-      resolve(stmt.else_branch());
+      resolve(*stmt.else_branch);
     }
     catch (const std::out_of_range& e) {}
   }
@@ -60,17 +60,17 @@ namespace loxx
 
   void Resolver::visit_print_stmt(const Print& stmt)
   {
-    resolve(stmt.expression());
+    resolve(*stmt.expression);
   }
 
 
   void Resolver::visit_return_stmt(const Return& stmt)
   {
     if (current_function_ == FunctionType::None) {
-      error(stmt.keyword(), "Cannot return from top-level code.");
+      error(stmt.keyword, "Cannot return from top-level code.");
     }
     try {
-      resolve(stmt.value());
+      resolve(*stmt.value);
     }
     catch (const std::out_of_range& e) {}
   }
@@ -78,55 +78,55 @@ namespace loxx
 
   void Resolver::visit_var_stmt(const Var& stmt)
   {
-    declare(stmt.name());
+    declare(stmt.name);
 
     try {
-      resolve(stmt.initialiser());
+      resolve(*stmt.initialiser);
     }
     catch (const std::out_of_range& e) {}
 
-    define(stmt.name());
+    define(stmt.name);
   }
 
 
   void Resolver::visit_while_stmt(const While& stmt)
   {
-    resolve(stmt.condition());
-    resolve(stmt.body());
+    resolve(*stmt.condition);
+    resolve(*stmt.body);
   }
 
 
   void Resolver::visit_variable_expr(const Variable& expr)
   {
     if (scopes_.size() != 0 and
-        scopes_.top().count(expr.name().lexeme()) != 0 and
-        not scopes_.top()[expr.name().lexeme()]) {
-      error(expr.name(), "Cannot read local variable in its own initialiser.");
+        scopes_.top().count(expr.name.lexeme()) != 0 and
+        not scopes_.top()[expr.name.lexeme()]) {
+      error(expr.name, "Cannot read local variable in its own initialiser.");
     }
 
-    resolve_local(expr, expr.name());
+    resolve_local(expr, expr.name);
   }
 
 
   void Resolver::visit_assign_expr(const Assign& expr)
   {
-    resolve(expr.value());
-    resolve_local(expr, expr.name());
+    resolve(*expr.value);
+    resolve_local(expr, expr.name);
   }
 
 
   void Resolver::visit_binary_expr(const Binary& expr)
   {
-    resolve(expr.left());
-    resolve(expr.right());
+    resolve(*expr.left);
+    resolve(*expr.right);
   }
 
 
   void Resolver::visit_call_expr(const Call& expr)
   {
-    resolve(expr.callee());
+    resolve(*expr.callee);
 
-    for (const auto& arg : expr.arguments()) {
+    for (const auto& arg : expr.arguments) {
       resolve(*arg);
     }
   }
@@ -134,20 +134,20 @@ namespace loxx
 
   void Resolver::visit_grouping_expr(const Grouping& expr)
   {
-    resolve(expr.expression());
+    resolve(*expr.expression);
   }
 
 
   void Resolver::visit_logical_expr(const Logical& expr)
   {
-    resolve(expr.left());
-    resolve(expr.right());
+    resolve(*expr.left);
+    resolve(*expr.right);
   }
 
 
   void Resolver::visit_unary_expr(const Unary& expr)
   {
-    resolve(expr.right());
+    resolve(*expr.right);
   }
 
 
@@ -180,12 +180,12 @@ namespace loxx
 
     begin_scope();
 
-    for (const auto& param : function.parameters()) {
+    for (const auto& param : function.parameters) {
       declare(param);
       define(param);
     }
 
-    resolve(function.body());
+    resolve(function.body);
     end_scope();
     current_function_ = enclosing_function;
   }

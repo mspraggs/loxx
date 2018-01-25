@@ -28,30 +28,21 @@ def define_ast(output_dir, base_name, types, includes=[]):
 
     class_specs = []
 
-    ptr_check_str = (" if ({0}_ == nullptr) "
-                     "throw std::out_of_range(\"Member {0}_ "
-                     "contains nullptr!\");")
-
     for name, members in types.items():
         arglist = ", ".join(
-            "std::shared_ptr<{}> {}".format(t, n) if i else "{} {}".format(t, n)
+            "std::shared_ptr<{}> {}_arg".format(t, n)
+            if i else "{} {}_arg".format(t, n)
             for t, n, i in members)
         initialisers = ", ".join(
-            "{}_(std::move({}))".format(n, n)
+            "{}(std::move({}_arg))".format(n, n)
             for t, n, i in members)
         member_vars = "\n    ".join(
-            "std::shared_ptr<{}> {}_;".format(t, n)
-            if i else "{} {}_;".format(t, n)
-            for t, n, i in members)
-        accessors = "\n    ".join(
-            "const {0}& {1}() const {{{3} return {2}{1}_; }}"
-            .format(t, n, '*' if i else '',
-                    ptr_check_str.format(n) if i else "")
+            "std::shared_ptr<{}> {};".format(t, n)
+            if i else "{} {};".format(t, n)
             for t, n, i in members)
 
         class_specs.append(dict(name=name, arglist=arglist,
-                                initialisers=initialisers, members=member_vars,
-                                accessors=accessors))
+                                initialisers=initialisers, members=member_vars))
 
     with open("ast_template.hpp") as f:
         template = jinja2.Template(f.read())

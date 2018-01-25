@@ -235,7 +235,7 @@ namespace loxx
       auto value = assignment();
 
       if (typeid(*expr) == typeid(Variable)) {
-        Token name = static_cast<Variable*>(expr.get())->name();
+        Token name = static_cast<Variable*>(expr.get())->name;
         return std::make_unique<Assign>(std::move(name), std::move(value));
       }
 

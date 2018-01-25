@@ -18,6 +18,7 @@
  */
 
 #include <iostream>
+
 #include "AstPrinter.hpp"
 
 
@@ -25,33 +26,33 @@ namespace loxx
 {
   void AstPrinter::visit_unary_expr(const Unary& expr)
   {
-    paranthesise(expr.op().lexeme(), {&expr.right()});
+    paranthesise(expr.op.lexeme(), {expr.right.get()});
   }
 
 
   void AstPrinter::visit_assign_expr(const Assign& expr)
   {
-    const std::string name = "setq " + expr.name().lexeme();
-    paranthesise(name, {&expr.value()});
+    const std::string name = "setq " + expr.name.lexeme();
+    paranthesise(name, {expr.value.get()});
   }
 
 
   void AstPrinter::visit_binary_expr(const Binary& expr)
   {
-    paranthesise(expr.op().lexeme(), {&expr.left(), &expr.right()});
+    paranthesise(expr.op.lexeme(), {expr.left.get(), expr.right.get()});
   }
 
 
   void AstPrinter::visit_literal_expr(const Literal& expr)
   {
-    if (expr.value().has_type<double>()) {
-      stream_ << expr.value().get<double>();
+    if (expr.value.has_type<double>()) {
+      stream_ << expr.value.get<double>();
     }
-    else if (expr.value().has_type<std::string>()) {
-      stream_ << '"' << expr.value().get<std::string>() << '"';
+    else if (expr.value.has_type<std::string>()) {
+      stream_ << '"' << expr.value.get<std::string>() << '"';
     }
-    else if (expr.value().has_type<bool>()) {
-      stream_ << (expr.value().get<bool>() ? "true" : "false");
+    else if (expr.value.has_type<bool>()) {
+      stream_ << (expr.value.get<bool>() ? "true" : "false");
     }
     else {
       stream_ << "nil";
@@ -61,29 +62,29 @@ namespace loxx
 
   void AstPrinter::visit_logical_expr(const Logical& expr)
   {
-    const std::string name = expr.op().type() == TokenType::Or ? "or" : "and";
-    paranthesise(name, {&expr.left(), &expr.right()});
+    const std::string name = expr.op.type() == TokenType::Or ? "or" : "and";
+    paranthesise(name, {expr.left.get(), expr.right.get()});
   }
 
 
   void AstPrinter::visit_grouping_expr(const Grouping& expr)
   {
-    paranthesise("group", {&expr.expression()});
+    paranthesise("group", {expr.expression.get()});
   }
 
 
   void AstPrinter::visit_variable_expr(const Variable& expr)
   {
-    stream_ << expr.name().lexeme();
+    stream_ << expr.name.lexeme();
   }
 
 
   void AstPrinter::visit_call_expr(const Call& expr)
   {
     stream_ << '(';
-    expr.callee().accept(*this);
+    expr.callee->accept(*this);
 
-    for (const auto& arg : expr.arguments()) {
+    for (const auto& arg : expr.arguments) {
       stream_ << ' ';
       arg->accept(*this);
     }
@@ -94,22 +95,22 @@ namespace loxx
 
   void AstPrinter::visit_print_stmt(const Print& stmt)
   {
-    paranthesise("write-line", {&stmt.expression()});
+    paranthesise("write-line", {stmt.expression.get()});
   }
 
 
   void AstPrinter::visit_return_stmt(const Return& stmt)
   {
-    paranthesise("return", {&stmt.value()});
+    paranthesise("return", {stmt.value.get()});
   }
 
 
   void AstPrinter::visit_var_stmt(const Var& stmt)
   {
-    const std::string name = "defvar " + stmt.name().lexeme();
+    const std::string name = "defvar " + stmt.name.lexeme();
 
     try {
-      paranthesise(name, {&stmt.initialiser()});
+      paranthesise(name, {stmt.initialiser.get()});
     }
     catch (const std::out_of_range& e) {
       paranthesise(name, {});
@@ -120,9 +121,9 @@ namespace loxx
   void AstPrinter::visit_while_stmt(const While& stmt)
   {
     stream_ << "(while ";
-    stmt.condition().accept(*this);
+    stmt.condition->accept(*this);
     stream_ << ' ';
-    stmt.body().accept(*this);
+    stmt.body->accept(*this);
     stream_ << ')';
   }
 
@@ -130,12 +131,12 @@ namespace loxx
   void AstPrinter::visit_if_stmt(const If& stmt)
   {
     stream_ << "(if ";
-    stmt.condition().accept(*this);
+    stmt.condition->accept(*this);
     stream_ << ' ';
-    stmt.then_branch().accept(*this);
+    stmt.then_branch->accept(*this);
     stream_ << ' ';
     try {
-      stmt.else_branch().accept(*this);
+      stmt.else_branch->accept(*this);
     }
     catch (const std::out_of_range& e) {
     }
@@ -145,20 +146,20 @@ namespace loxx
 
   void AstPrinter::visit_expression_stmt(const Expression& stmt)
   {
-    stmt.expression().accept(*this);
+    stmt.expression->accept(*this);
   }
 
 
   void AstPrinter::visit_function_stmt(const Function& func)
   {
-    stream_ << "(defun " << func.name().lexeme() << " ( ";
+    stream_ << "(defun " << func.name.lexeme() << " ( ";
 
-    for (const auto& arg : func.parameters()) {
+    for (const auto& arg : func.parameters) {
       stream_ << arg.lexeme() << ' ';
     }
     stream_ << ") (block\n";
     set_indent(indent_level_ + 1);
-    print(func.body());
+    print(func.body);
     set_indent(indent_level_ - 1);
     stream_ << ')';
   }
@@ -168,7 +169,7 @@ namespace loxx
   {
     stream_ << "(block\n";
     set_indent(indent_level_ + 1);
-    print(stmt.statements());
+    print(stmt.statements);
     set_indent(indent_level_ - 1);
     stream_ << indent_ << ')';
   }
