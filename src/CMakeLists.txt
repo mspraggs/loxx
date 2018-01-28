@@ -5,6 +5,7 @@ set(SRC
   AstPrinter.hpp
   Callable.hpp
   ClassDef.hpp
+  ClassInstance.hpp
   Environment.hpp
   Expr.hpp
   FuncCallable.hpp
@@ -22,6 +23,7 @@ set(SRC
 
   AstPrinter.cpp
   ClassDef.cpp
+  ClassInstance.cpp
   Environment.cpp
   FuncCallable.cpp
   Generic.cpp
