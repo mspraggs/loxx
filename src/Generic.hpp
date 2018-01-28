@@ -72,7 +72,7 @@ namespace loxx
 
       virtual void* get_ptr() = 0;
       virtual const void* get_ptr() const = 0;
-      virtual std::type_index get_type_index() const = 0;
+      virtual const std::type_index& get_type_index() const = 0;
     };
 
     template <typename T>
@@ -87,7 +87,7 @@ namespace loxx
 
       inline void* get_ptr() override;
       inline const void* get_ptr() const override;
-      std::type_index get_type_index() const override { return type_; }
+      const std::type_index& get_type_index() const override { return type_; }
 
     private:
       std::type_index type_;
@@ -107,7 +107,7 @@ namespace loxx
 
       inline void* get_ptr() override;
       inline const void* get_ptr() const override;
-      std::type_index get_type_index() const override { return type_; }
+      const std::type_index& get_type_index() const override { return type_; }
 
     private:
       std::type_index type_;
@@ -133,21 +133,21 @@ namespace loxx
 
     bool operator==(const Generic& generic) const;
 
-    template <typename T>
-    inline const T& get() const;
-    template <typename T>
-    inline T& get();
+    template <typename T, typename U = T>
+    inline const U& get() const;
+    template <typename T, typename U = T>
+    inline U& get();
 
-    std::type_index type() const { return container_->get_type_index(); }
+    const std::type_index& type() const { return container_->get_type_index(); }
 
     template <typename T>
     bool has_type() const { return std::type_index(typeid(T)) == type(); }
 
   private:
-    template <typename T>
+    template <typename T, typename U>
     void check_access() const
     {
-      if (not has_type<T>()) {
+      if (not has_type<T>() and not std::is_convertible<T*, U*>()) {
         throw std::logic_error("Unable to get specified type from Generic!");
       }
     }
@@ -177,18 +177,18 @@ namespace loxx
   }
 
 
-  template<typename T>
-  const T& Generic::get() const
+  template<typename T, typename U>
+  const U& Generic::get() const
   {
-    check_access<T>();
+    check_access<T, U>();
     return *reinterpret_cast<const T*>(container_->get_ptr());
   }
 
 
-  template<typename T>
-  T& Generic::get()
+  template<typename T, typename U>
+  U& Generic::get()
   {
-    check_access<T>();
+    check_access<T, U>();
     return *reinterpret_cast<T*>(container_->get_ptr());
   }
 
