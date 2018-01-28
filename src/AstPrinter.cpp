@@ -131,7 +131,7 @@ namespace loxx
     set_indent(indent_level_ + 1);
     print(lambda.body);
     set_indent(indent_level_ - 1);
-    stream_ << ')';
+    stream_ << indent_ << ')';
   }
 
 
