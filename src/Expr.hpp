@@ -30,11 +30,14 @@
 namespace loxx
 {
 
-  struct Assign;
   struct Binary;
-  struct Call;
-  struct Grouping;
+  struct This;
   struct Literal;
+  struct Call;
+  struct Assign;
+  struct Grouping;
+  struct Set;
+  struct Get;
   struct Logical;
   struct Unary;
   struct Variable;
@@ -46,31 +49,20 @@ namespace loxx
     class Visitor
     {
     public:
-      virtual void visit_assign_expr(const Assign& expr) = 0;
       virtual void visit_binary_expr(const Binary& expr) = 0;
-      virtual void visit_call_expr(const Call& expr) = 0;
-      virtual void visit_grouping_expr(const Grouping& expr) = 0;
+      virtual void visit_this_expr(const This& expr) = 0;
       virtual void visit_literal_expr(const Literal& expr) = 0;
+      virtual void visit_call_expr(const Call& expr) = 0;
+      virtual void visit_assign_expr(const Assign& expr) = 0;
+      virtual void visit_grouping_expr(const Grouping& expr) = 0;
+      virtual void visit_set_expr(const Set& expr) = 0;
+      virtual void visit_get_expr(const Get& expr) = 0;
       virtual void visit_logical_expr(const Logical& expr) = 0;
       virtual void visit_unary_expr(const Unary& expr) = 0;
       virtual void visit_variable_expr(const Variable& expr) = 0;
     };
 
     virtual void accept(Visitor&) const {}
-  };
-
-
-  struct Assign : public Expr
-  {
-    Assign(Token name_arg, std::shared_ptr<Expr> value_arg)
-        : name(std::move(name_arg)), value(std::move(value_arg))
-    {}
-
-    void accept(Visitor& visitor) const override
-    { visitor.visit_assign_expr(*this); }
-
-    Token name;
-    std::shared_ptr<Expr> value;
   };
 
 
@@ -89,6 +81,32 @@ namespace loxx
   };
 
 
+  struct This : public Expr
+  {
+    This(Token keyword_arg)
+        : keyword(std::move(keyword_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_this_expr(*this); }
+
+    Token keyword;
+  };
+
+
+  struct Literal : public Expr
+  {
+    Literal(Generic value_arg)
+        : value(std::move(value_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_literal_expr(*this); }
+
+    Generic value;
+  };
+
+
   struct Call : public Expr
   {
     Call(std::shared_ptr<Expr> callee_arg, Token paren_arg, std::vector<std::shared_ptr<Expr>> arguments_arg)
@@ -101,6 +119,20 @@ namespace loxx
     std::shared_ptr<Expr> callee;
     Token paren;
     std::vector<std::shared_ptr<Expr>> arguments;
+  };
+
+
+  struct Assign : public Expr
+  {
+    Assign(Token name_arg, std::shared_ptr<Expr> value_arg)
+        : name(std::move(name_arg)), value(std::move(value_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_assign_expr(*this); }
+
+    Token name;
+    std::shared_ptr<Expr> value;
   };
 
 
@@ -117,16 +149,32 @@ namespace loxx
   };
 
 
-  struct Literal : public Expr
+  struct Set : public Expr
   {
-    Literal(Generic value_arg)
-        : value(std::move(value_arg))
+    Set(std::shared_ptr<Expr> object_arg, Token name_arg, std::shared_ptr<Expr> value_arg)
+        : object(std::move(object_arg)), name(std::move(name_arg)), value(std::move(value_arg))
     {}
 
     void accept(Visitor& visitor) const override
-    { visitor.visit_literal_expr(*this); }
+    { visitor.visit_set_expr(*this); }
 
-    Generic value;
+    std::shared_ptr<Expr> object;
+    Token name;
+    std::shared_ptr<Expr> value;
+  };
+
+
+  struct Get : public Expr
+  {
+    Get(std::shared_ptr<Expr> object_arg, Token name_arg)
+        : object(std::move(object_arg)), name(std::move(name_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_get_expr(*this); }
+
+    std::shared_ptr<Expr> object;
+    Token name;
   };
 
 

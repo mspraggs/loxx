@@ -67,10 +67,14 @@ if __name__ == "__main__":
                     ("Expr", "right", True)],
          "Call": [("Expr", "callee", True), ("Token", "paren", False),
                   ("std::vector<std::shared_ptr<Expr>>", "arguments", False)],
+         "Get": [("Expr", "object", True), ("Token", "name", False)],
          "Grouping": [("Expr", "expression", True)],
          "Literal": [("Generic", "value", False)],
          "Logical": [("Expr", "left", True), ("Token", "op", False),
                      ("Expr", "right", True)],
+         "Set": [("Expr", "object", True), ("Token", "name", False),
+                 ("Expr", "value", True)],
+         "This": [("Token", "keyword", False)],
          "Unary": [("Token", "op", False), ("Expr", "right", True)],
          "Variable": [("Token", "name", False)]})
 
