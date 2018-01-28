@@ -47,14 +47,18 @@ namespace loxx
     void visit_var_stmt(const Var& stmt) override;
     void visit_while_stmt(const While& stmt) override;
     void visit_block_stmt(const Block& stmt) override;
+    void visit_class_stmt(const Class& stmt) override;
     void visit_break_stmt(const Break& stmt) override;
 
     void visit_assign_expr(const Assign& expr) override;
     void visit_unary_expr(const Unary& expr) override;
     void visit_binary_expr(const Binary& expr) override;
     void visit_call_expr(const Call& expr) override;
+    void visit_get_expr(const Get& expr) override;
     void visit_literal_expr(const Literal& expr) override;
     void visit_logical_expr(const Logical& expr) override;
+    void visit_set_expr(const Set& expr) override;
+    void visit_this_expr(const This& expr) override;
     void visit_grouping_expr(const Grouping& expr) override;
     void visit_ternary_expr(const Ternary& expr) override;
     void visit_variable_expr(const Variable& expr) override;

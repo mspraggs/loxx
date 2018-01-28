@@ -33,11 +33,10 @@ namespace loxx
 {% for decl in forward_decls %}
   {{ decl }};{% endfor %}
 {% for spec in class_specs %}
-  class {{ spec.name }};{% endfor %}
+  struct {{ spec.name }};{% endfor %}
 
-  class {{ base_name }}
+  struct {{ base_name }}
   {
-  public:
     virtual ~{{ base_name }}() = default;
 
     class Visitor
@@ -50,9 +49,8 @@ namespace loxx
   };
 {% for spec in class_specs %}
 
-  class {{ spec.name }} : public {{ base_name }}
+  struct {{ spec.name }} : public {{ base_name }}
   {
-  public:
     {{ spec.name }}({{ spec.arglist }}){% if spec.initialisers %}
         : {{ spec.initialisers }}{% endif %}
     {}
@@ -60,9 +58,6 @@ namespace loxx
     void accept(Visitor& visitor) const override
     { visitor.visit_{{ spec.name|lower }}_{{ base_name|lower }}(*this); }
 
-    {{ spec.accessors }}
-
-  private:
     {{ spec.members }}
   };
 {% endfor %}

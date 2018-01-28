@@ -42,6 +42,9 @@ namespace loxx
     void visit_grouping_expr(const Grouping& expr) override;
     void visit_variable_expr(const Variable& expr) override;
     void visit_call_expr(const Call& expr) override;
+    void visit_get_expr(const Get& expr) override;
+    void visit_set_expr(const Set& expr) override;
+    void visit_this_expr(const This& expr) override;
     void visit_lambda_expr(const Lambda& lambda) override;
 
     void visit_if_stmt(const If& stmt) override;
@@ -52,9 +55,11 @@ namespace loxx
     void visit_expression_stmt(const Expression& stmt) override;
     void visit_function_stmt(const Function& func) override;
     void visit_block_stmt(const Block& stmt) override;
+    void visit_class_stmt(const Class& stmt) override;
     void visit_break_stmt(const Break& stmt) override;
 
-    std::string print(const std::vector<std::shared_ptr<Stmt>>& statements);
+    template <typename T>
+    std::string print(const std::vector<std::shared_ptr<T>>& statements);
 
   private:
     void paranthesise(const std::string& name,
@@ -65,6 +70,19 @@ namespace loxx
     std::string indent_;
     std::stringstream stream_;
   };
+
+
+  template <typename T>
+  std::string AstPrinter::print(
+      const std::vector<std::shared_ptr<T>>& statements)
+  {
+    for (const auto& stmt : statements) {
+      stream_ << indent_;
+      stmt->accept(*this);
+      stream_ << '\n';
+    }
+    return stream_.str();
+  }
 }
 
 #endif //LOXX_ASTPRINTER_HPP

@@ -72,7 +72,7 @@ namespace loxx
 
       virtual void* get_ptr() = 0;
       virtual const void* get_ptr() const = 0;
-      virtual std::type_index get_type_index() const = 0;
+      virtual const std::type_index& get_type_index() const = 0;
     };
 
     template <typename T>
@@ -87,7 +87,7 @@ namespace loxx
 
       inline void* get_ptr() override;
       inline const void* get_ptr() const override;
-      std::type_index get_type_index() const override { return type_; }
+      const std::type_index& get_type_index() const override { return type_; }
 
     private:
       std::type_index type_;
@@ -107,7 +107,7 @@ namespace loxx
 
       inline void* get_ptr() override;
       inline const void* get_ptr() const override;
-      std::type_index get_type_index() const override { return type_; }
+      const std::type_index& get_type_index() const override { return type_; }
 
     private:
       std::type_index type_;
@@ -138,10 +138,15 @@ namespace loxx
     template <typename T>
     inline T& get();
 
-    std::type_index type() const { return container_->get_type_index(); }
+    template <typename T, typename U>
+    inline const U& get() const;
+    template <typename T, typename U>
+    inline U& get();
+
+    const std::type_index& type() const { return container_->get_type_index(); }
 
     template <typename T>
-    bool has_type() const { return std::type_index(typeid(T)) == type_; }
+    bool has_type() const { return std::type_index(typeid(T)) == type(); }
 
   private:
     template <typename T>
@@ -152,33 +157,32 @@ namespace loxx
       }
     }
 
-    std::type_index type_;
     std::unique_ptr<ContainerBase> container_;
   };
 
 
   template <typename T, typename>
   Generic::Generic(T value)
-      : type_(typeid(T)), container_(new ValueContainer<T>(std::move(value)))
+      : container_(new ValueContainer<T>(std::move(value)))
   {
   }
 
 
   template <typename T>
   Generic::Generic(std::shared_ptr<T> ptr)
-      : type_(typeid(T)), container_(new PtrContainer<T>(std::move(ptr)))
+      : container_(new PtrContainer<T>(std::move(ptr)))
   {
   }
 
 
   template <typename T>
   Generic::Generic(T* ptr)
-      : type_(typeid(T)), container_(new PtrContainer<T>(ptr))
+      : container_(new PtrContainer<T>(ptr))
   {
   }
 
 
-  template<typename T>
+  template <typename T>
   const T& Generic::get() const
   {
     check_access<T>();
@@ -186,11 +190,37 @@ namespace loxx
   }
 
 
-  template<typename T>
+  template <typename T>
   T& Generic::get()
   {
     check_access<T>();
     return *reinterpret_cast<T*>(container_->get_ptr());
+  }
+
+
+  template <typename T, typename U>
+  const U& Generic::get() const
+  {
+    check_access<T>();
+    auto ptr = dynamic_cast<U*>(reinterpret_cast<T*>(container_->get_ptr()));
+
+    if (ptr != nullptr) {
+      return *ptr;
+    }
+    throw std::logic_error("Unable to cast type to that specified");
+  }
+
+
+  template <typename T, typename U>
+  U& Generic::get()
+  {
+    check_access<T>();
+    auto ptr = dynamic_cast<U*>(reinterpret_cast<T*>(container_->get_ptr()));
+
+    if (ptr != nullptr) {
+      return *ptr;
+    }
+    throw std::logic_error("Unable to cast type to that specified");
   }
 
 

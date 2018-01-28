@@ -32,19 +32,19 @@ namespace loxx
 {
 
 
-  class Break;
-  class Function;
-  class While;
-  class Return;
-  class Var;
-  class Print;
-  class Expression;
-  class Block;
-  class If;
+  struct Break;
+  struct Function;
+  struct While;
+  struct Return;
+  struct Var;
+  struct Print;
+  struct Expression;
+  struct Class;
+  struct Block;
+  struct If;
 
-  class Stmt
+  struct Stmt
   {
-  public:
     virtual ~Stmt() = default;
 
     class Visitor
@@ -57,6 +57,7 @@ namespace loxx
       virtual void visit_var_stmt(const Var& stmt) = 0;
       virtual void visit_print_stmt(const Print& stmt) = 0;
       virtual void visit_expression_stmt(const Expression& stmt) = 0;
+      virtual void visit_class_stmt(const Class& stmt) = 0;
       virtual void visit_block_stmt(const Block& stmt) = 0;
       virtual void visit_if_stmt(const If& stmt) = 0;
     };
@@ -65,9 +66,8 @@ namespace loxx
   };
 
 
-  class Break : public Stmt
+  struct Break : public Stmt
   {
-  public:
     Break()
     {}
 
@@ -75,159 +75,131 @@ namespace loxx
     { visitor.visit_break_stmt(*this); }
 
     
-
-  private:
-    
   };
 
 
-  class Function : public Stmt
+  struct Function : public Stmt
   {
-  public:
-    Function(Token name, std::vector<Token> parameters, std::vector<std::shared_ptr<Stmt>> body)
-        : name_(std::move(name)), parameters_(std::move(parameters)), body_(std::move(body))
+    Function(Token name_arg, std::vector<Token> parameters_arg, std::vector<std::shared_ptr<Stmt>> body_arg)
+        : name(std::move(name_arg)), parameters(std::move(parameters_arg)), body(std::move(body_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_function_stmt(*this); }
 
-    const Token& name() const { return name_; }
-    const std::vector<Token>& parameters() const { return parameters_; }
-    const std::vector<std::shared_ptr<Stmt>>& body() const { return body_; }
-
-  private:
-    Token name_;
-    std::vector<Token> parameters_;
-    std::vector<std::shared_ptr<Stmt>> body_;
+    Token name;
+    std::vector<Token> parameters;
+    std::vector<std::shared_ptr<Stmt>> body;
   };
 
 
-  class While : public Stmt
+  struct While : public Stmt
   {
-  public:
-    While(std::shared_ptr<Expr> condition, std::shared_ptr<Stmt> body)
-        : condition_(std::move(condition)), body_(std::move(body))
+    While(std::shared_ptr<Expr> condition_arg, std::shared_ptr<Stmt> body_arg)
+        : condition(std::move(condition_arg)), body(std::move(body_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_while_stmt(*this); }
 
-    const Expr& condition() const { if (condition_ == nullptr) throw std::out_of_range("Member condition_ contains nullptr!"); return *condition_; }
-    const Stmt& body() const { if (body_ == nullptr) throw std::out_of_range("Member body_ contains nullptr!"); return *body_; }
-
-  private:
-    std::shared_ptr<Expr> condition_;
-    std::shared_ptr<Stmt> body_;
+    std::shared_ptr<Expr> condition;
+    std::shared_ptr<Stmt> body;
   };
 
 
-  class Return : public Stmt
+  struct Return : public Stmt
   {
-  public:
-    Return(Token keyword, std::shared_ptr<Expr> value)
-        : keyword_(std::move(keyword)), value_(std::move(value))
+    Return(Token keyword_arg, std::shared_ptr<Expr> value_arg)
+        : keyword(std::move(keyword_arg)), value(std::move(value_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_return_stmt(*this); }
 
-    const Token& keyword() const { return keyword_; }
-    const Expr& value() const { if (value_ == nullptr) throw std::out_of_range("Member value_ contains nullptr!"); return *value_; }
-
-  private:
-    Token keyword_;
-    std::shared_ptr<Expr> value_;
+    Token keyword;
+    std::shared_ptr<Expr> value;
   };
 
 
-  class Var : public Stmt
+  struct Var : public Stmt
   {
-  public:
-    Var(Token name, std::shared_ptr<Expr> initialiser)
-        : name_(std::move(name)), initialiser_(std::move(initialiser))
+    Var(Token name_arg, std::shared_ptr<Expr> initialiser_arg)
+        : name(std::move(name_arg)), initialiser(std::move(initialiser_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_var_stmt(*this); }
 
-    const Token& name() const { return name_; }
-    const Expr& initialiser() const { if (initialiser_ == nullptr) throw std::out_of_range("Member initialiser_ contains nullptr!"); return *initialiser_; }
-
-  private:
-    Token name_;
-    std::shared_ptr<Expr> initialiser_;
+    Token name;
+    std::shared_ptr<Expr> initialiser;
   };
 
 
-  class Print : public Stmt
+  struct Print : public Stmt
   {
-  public:
-    Print(std::shared_ptr<Expr> expression)
-        : expression_(std::move(expression))
+    Print(std::shared_ptr<Expr> expression_arg)
+        : expression(std::move(expression_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_print_stmt(*this); }
 
-    const Expr& expression() const { if (expression_ == nullptr) throw std::out_of_range("Member expression_ contains nullptr!"); return *expression_; }
-
-  private:
-    std::shared_ptr<Expr> expression_;
+    std::shared_ptr<Expr> expression;
   };
 
 
-  class Expression : public Stmt
+  struct Expression : public Stmt
   {
-  public:
-    Expression(std::shared_ptr<Expr> expression)
-        : expression_(std::move(expression))
+    Expression(std::shared_ptr<Expr> expression_arg)
+        : expression(std::move(expression_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_expression_stmt(*this); }
 
-    const Expr& expression() const { if (expression_ == nullptr) throw std::out_of_range("Member expression_ contains nullptr!"); return *expression_; }
-
-  private:
-    std::shared_ptr<Expr> expression_;
+    std::shared_ptr<Expr> expression;
   };
 
 
-  class Block : public Stmt
+  struct Class : public Stmt
   {
-  public:
-    Block(std::vector<std::shared_ptr<Stmt>> statements)
-        : statements_(std::move(statements))
+    Class(Token name_arg, std::vector<std::shared_ptr<Function>> methods_arg)
+        : name(std::move(name_arg)), methods(std::move(methods_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_class_stmt(*this); }
+
+    Token name;
+    std::vector<std::shared_ptr<Function>> methods;
+  };
+
+
+  struct Block : public Stmt
+  {
+    Block(std::vector<std::shared_ptr<Stmt>> statements_arg)
+        : statements(std::move(statements_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_block_stmt(*this); }
 
-    const std::vector<std::shared_ptr<Stmt>>& statements() const { return statements_; }
-
-  private:
-    std::vector<std::shared_ptr<Stmt>> statements_;
+    std::vector<std::shared_ptr<Stmt>> statements;
   };
 
 
-  class If : public Stmt
+  struct If : public Stmt
   {
-  public:
-    If(std::shared_ptr<Expr> condition, std::shared_ptr<Stmt> then_branch, std::shared_ptr<Stmt> else_branch)
-        : condition_(std::move(condition)), then_branch_(std::move(then_branch)), else_branch_(std::move(else_branch))
+    If(std::shared_ptr<Expr> condition_arg, std::shared_ptr<Stmt> then_branch_arg, std::shared_ptr<Stmt> else_branch_arg)
+        : condition(std::move(condition_arg)), then_branch(std::move(then_branch_arg)), else_branch(std::move(else_branch_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_if_stmt(*this); }
 
-    const Expr& condition() const { if (condition_ == nullptr) throw std::out_of_range("Member condition_ contains nullptr!"); return *condition_; }
-    const Stmt& then_branch() const { if (then_branch_ == nullptr) throw std::out_of_range("Member then_branch_ contains nullptr!"); return *then_branch_; }
-    const Stmt& else_branch() const { if (else_branch_ == nullptr) throw std::out_of_range("Member else_branch_ contains nullptr!"); return *else_branch_; }
-
-  private:
-    std::shared_ptr<Expr> condition_;
-    std::shared_ptr<Stmt> then_branch_;
-    std::shared_ptr<Stmt> else_branch_;
+    std::shared_ptr<Expr> condition;
+    std::shared_ptr<Stmt> then_branch;
+    std::shared_ptr<Stmt> else_branch;
   };
 
 }

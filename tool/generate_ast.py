@@ -28,30 +28,21 @@ def define_ast(output_dir, base_name, types, includes=[], forward_decls=[]):
 
     class_specs = []
 
-    ptr_check_str = (" if ({0}_ == nullptr) "
-                     "throw std::out_of_range(\"Member {0}_ "
-                     "contains nullptr!\");")
-
     for name, members in types.items():
         arglist = ", ".join(
-            "std::shared_ptr<{}> {}".format(t, n) if i else "{} {}".format(t, n)
+            "std::shared_ptr<{}> {}_arg".format(t, n)
+            if i else "{} {}_arg".format(t, n)
             for t, n, i in members)
         initialisers = ", ".join(
-            "{}_(std::move({}))".format(n, n)
+            "{}(std::move({}_arg))".format(n, n)
             for t, n, i in members)
         member_vars = "\n    ".join(
-            "std::shared_ptr<{}> {}_;".format(t, n)
-            if i else "{} {}_;".format(t, n)
-            for t, n, i in members)
-        accessors = "\n    ".join(
-            "const {0}& {1}() const {{{3} return {2}{1}_; }}"
-            .format(t, n, '*' if i else '',
-                    ptr_check_str.format(n) if i else "")
+            "std::shared_ptr<{}> {};".format(t, n)
+            if i else "{} {};".format(t, n)
             for t, n, i in members)
 
         class_specs.append(dict(name=name, arglist=arglist,
-                                initialisers=initialisers, members=member_vars,
-                                accessors=accessors))
+                                initialisers=initialisers, members=member_vars))
 
     with open("ast_template.hpp") as f:
         template = jinja2.Template(f.read())
@@ -76,6 +67,7 @@ if __name__ == "__main__":
                     ("Expr", "right", True)],
          "Call": [("Expr", "callee", True), ("Token", "paren", False),
                   ("std::vector<std::shared_ptr<Expr>>", "arguments", False)],
+         "Get": [("Expr", "object", True), ("Token", "name", False)],
          "Grouping": [("Expr", "expression", True)],
          "Lambda": [("Token", "start", False),
                     ("std::vector<Token>", "parameters", False),
@@ -83,8 +75,11 @@ if __name__ == "__main__":
          "Literal": [("Generic", "value", False)],
          "Logical": [("Expr", "left", True), ("Token", "op", False),
                      ("Expr", "right", True)],
+         "Set": [("Expr", "object", True), ("Token", "name", False),
+                 ("Expr", "value", True)],
          "Ternary": [("Expr", "first", True), ("Token", "op", False),
                      ("Expr", "second", True), ("Expr", "third", True)],
+         "This": [("Token", "keyword", False)],
          "Unary": [("Token", "op", False), ("Expr", "right", True)],
          "Variable": [("Token", "name", False)]},
         forward_decls=["class Stmt"])
@@ -93,6 +88,8 @@ if __name__ == "__main__":
         output_dir, "Stmt",
         {"Block": [("std::vector<std::shared_ptr<Stmt>>", "statements", False)],
          "Break": [],
+         "Class": [("Token", "name", False),
+                   ("std::vector<std::shared_ptr<Function>>", "methods", False)],
          "Expression": [("Expr", "expression", True)],
          "Function": [("Token", "name", False),
                       ("std::vector<Token>", "parameters", False),

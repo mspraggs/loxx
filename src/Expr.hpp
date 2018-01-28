@@ -32,34 +32,39 @@ namespace loxx
 
   class Stmt;
 
-  class Unary;
-  class Binary;
-  class Literal;
-  class Call;
-  class Ternary;
-  class Variable;
-  class Lambda;
-  class Assign;
-  class Logical;
-  class Grouping;
+  struct Binary;
+  struct This;
+  struct Literal;
+  struct Call;
+  struct Ternary;
+  struct Assign;
+  struct Lambda;
+  struct Set;
+  struct Get;
+  struct Logical;
+  struct Unary;
+  struct Variable;
+  struct Grouping;
 
-  class Expr
+  struct Expr
   {
-  public:
     virtual ~Expr() = default;
 
     class Visitor
     {
     public:
-      virtual void visit_unary_expr(const Unary& expr) = 0;
       virtual void visit_binary_expr(const Binary& expr) = 0;
+      virtual void visit_this_expr(const This& expr) = 0;
       virtual void visit_literal_expr(const Literal& expr) = 0;
       virtual void visit_call_expr(const Call& expr) = 0;
       virtual void visit_ternary_expr(const Ternary& expr) = 0;
-      virtual void visit_variable_expr(const Variable& expr) = 0;
-      virtual void visit_lambda_expr(const Lambda& expr) = 0;
       virtual void visit_assign_expr(const Assign& expr) = 0;
+      virtual void visit_lambda_expr(const Lambda& expr) = 0;
+      virtual void visit_set_expr(const Set& expr) = 0;
+      virtual void visit_get_expr(const Get& expr) = 0;
       virtual void visit_logical_expr(const Logical& expr) = 0;
+      virtual void visit_unary_expr(const Unary& expr) = 0;
+      virtual void visit_variable_expr(const Variable& expr) = 0;
       virtual void visit_grouping_expr(const Grouping& expr) = 0;
     };
 
@@ -67,199 +72,188 @@ namespace loxx
   };
 
 
-  class Unary : public Expr
+  struct Binary : public Expr
   {
-  public:
-    Unary(Token op, std::shared_ptr<Expr> right)
-        : op_(std::move(op)), right_(std::move(right))
-    {}
-
-    void accept(Visitor& visitor) const override
-    { visitor.visit_unary_expr(*this); }
-
-    const Token& op() const { return op_; }
-    const Expr& right() const { if (right_ == nullptr) throw std::out_of_range("Member right_ contains nullptr!"); return *right_; }
-
-  private:
-    Token op_;
-    std::shared_ptr<Expr> right_;
-  };
-
-
-  class Binary : public Expr
-  {
-  public:
-    Binary(std::shared_ptr<Expr> left, Token op, std::shared_ptr<Expr> right)
-        : left_(std::move(left)), op_(std::move(op)), right_(std::move(right))
+    Binary(std::shared_ptr<Expr> left_arg, Token op_arg, std::shared_ptr<Expr> right_arg)
+        : left(std::move(left_arg)), op(std::move(op_arg)), right(std::move(right_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_binary_expr(*this); }
 
-    const Expr& left() const { if (left_ == nullptr) throw std::out_of_range("Member left_ contains nullptr!"); return *left_; }
-    const Token& op() const { return op_; }
-    const Expr& right() const { if (right_ == nullptr) throw std::out_of_range("Member right_ contains nullptr!"); return *right_; }
-
-  private:
-    std::shared_ptr<Expr> left_;
-    Token op_;
-    std::shared_ptr<Expr> right_;
+    std::shared_ptr<Expr> left;
+    Token op;
+    std::shared_ptr<Expr> right;
   };
 
 
-  class Literal : public Expr
+  struct This : public Expr
   {
-  public:
-    Literal(Generic value)
-        : value_(std::move(value))
+    This(Token keyword_arg)
+        : keyword(std::move(keyword_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_this_expr(*this); }
+
+    Token keyword;
+  };
+
+
+  struct Literal : public Expr
+  {
+    Literal(Generic value_arg)
+        : value(std::move(value_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_literal_expr(*this); }
 
-    const Generic& value() const { return value_; }
-
-  private:
-    Generic value_;
+    Generic value;
   };
 
 
-  class Call : public Expr
+  struct Call : public Expr
   {
-  public:
-    Call(std::shared_ptr<Expr> callee, Token paren, std::vector<std::shared_ptr<Expr>> arguments)
-        : callee_(std::move(callee)), paren_(std::move(paren)), arguments_(std::move(arguments))
+    Call(std::shared_ptr<Expr> callee_arg, Token paren_arg, std::vector<std::shared_ptr<Expr>> arguments_arg)
+        : callee(std::move(callee_arg)), paren(std::move(paren_arg)), arguments(std::move(arguments_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_call_expr(*this); }
 
-    const Expr& callee() const { if (callee_ == nullptr) throw std::out_of_range("Member callee_ contains nullptr!"); return *callee_; }
-    const Token& paren() const { return paren_; }
-    const std::vector<std::shared_ptr<Expr>>& arguments() const { return arguments_; }
-
-  private:
-    std::shared_ptr<Expr> callee_;
-    Token paren_;
-    std::vector<std::shared_ptr<Expr>> arguments_;
+    std::shared_ptr<Expr> callee;
+    Token paren;
+    std::vector<std::shared_ptr<Expr>> arguments;
   };
 
 
-  class Ternary : public Expr
+  struct Ternary : public Expr
   {
-  public:
-    Ternary(std::shared_ptr<Expr> first, Token op, std::shared_ptr<Expr> second, std::shared_ptr<Expr> third)
-        : first_(std::move(first)), op_(std::move(op)), second_(std::move(second)), third_(std::move(third))
+    Ternary(std::shared_ptr<Expr> first_arg, Token op_arg, std::shared_ptr<Expr> second_arg, std::shared_ptr<Expr> third_arg)
+        : first(std::move(first_arg)), op(std::move(op_arg)), second(std::move(second_arg)), third(std::move(third_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_ternary_expr(*this); }
 
-    const Expr& first() const { if (first_ == nullptr) throw std::out_of_range("Member first_ contains nullptr!"); return *first_; }
-    const Token& op() const { return op_; }
-    const Expr& second() const { if (second_ == nullptr) throw std::out_of_range("Member second_ contains nullptr!"); return *second_; }
-    const Expr& third() const { if (third_ == nullptr) throw std::out_of_range("Member third_ contains nullptr!"); return *third_; }
-
-  private:
-    std::shared_ptr<Expr> first_;
-    Token op_;
-    std::shared_ptr<Expr> second_;
-    std::shared_ptr<Expr> third_;
+    std::shared_ptr<Expr> first;
+    Token op;
+    std::shared_ptr<Expr> second;
+    std::shared_ptr<Expr> third;
   };
 
 
-  class Variable : public Expr
+  struct Assign : public Expr
   {
-  public:
-    Variable(Token name)
-        : name_(std::move(name))
-    {}
-
-    void accept(Visitor& visitor) const override
-    { visitor.visit_variable_expr(*this); }
-
-    const Token& name() const { return name_; }
-
-  private:
-    Token name_;
-  };
-
-
-  class Lambda : public Expr
-  {
-  public:
-    Lambda(Token start, std::vector<Token> parameters, std::vector<std::shared_ptr<Stmt>> body)
-        : start_(std::move(start)), parameters_(std::move(parameters)), body_(std::move(body))
-    {}
-
-    void accept(Visitor& visitor) const override
-    { visitor.visit_lambda_expr(*this); }
-
-    const Token& start() const { return start_; }
-    const std::vector<Token>& parameters() const { return parameters_; }
-    const std::vector<std::shared_ptr<Stmt>>& body() const { return body_; }
-
-  private:
-    Token start_;
-    std::vector<Token> parameters_;
-    std::vector<std::shared_ptr<Stmt>> body_;
-  };
-
-
-  class Assign : public Expr
-  {
-  public:
-    Assign(Token name, std::shared_ptr<Expr> value)
-        : name_(std::move(name)), value_(std::move(value))
+    Assign(Token name_arg, std::shared_ptr<Expr> value_arg)
+        : name(std::move(name_arg)), value(std::move(value_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_assign_expr(*this); }
 
-    const Token& name() const { return name_; }
-    const Expr& value() const { if (value_ == nullptr) throw std::out_of_range("Member value_ contains nullptr!"); return *value_; }
-
-  private:
-    Token name_;
-    std::shared_ptr<Expr> value_;
+    Token name;
+    std::shared_ptr<Expr> value;
   };
 
 
-  class Logical : public Expr
+  struct Lambda : public Expr
   {
-  public:
-    Logical(std::shared_ptr<Expr> left, Token op, std::shared_ptr<Expr> right)
-        : left_(std::move(left)), op_(std::move(op)), right_(std::move(right))
+    Lambda(Token start_arg, std::vector<Token> parameters_arg, std::vector<std::shared_ptr<Stmt>> body_arg)
+        : start(std::move(start_arg)), parameters(std::move(parameters_arg)), body(std::move(body_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_lambda_expr(*this); }
+
+    Token start;
+    std::vector<Token> parameters;
+    std::vector<std::shared_ptr<Stmt>> body;
+  };
+
+
+  struct Set : public Expr
+  {
+    Set(std::shared_ptr<Expr> object_arg, Token name_arg, std::shared_ptr<Expr> value_arg)
+        : object(std::move(object_arg)), name(std::move(name_arg)), value(std::move(value_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_set_expr(*this); }
+
+    std::shared_ptr<Expr> object;
+    Token name;
+    std::shared_ptr<Expr> value;
+  };
+
+
+  struct Get : public Expr
+  {
+    Get(std::shared_ptr<Expr> object_arg, Token name_arg)
+        : object(std::move(object_arg)), name(std::move(name_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_get_expr(*this); }
+
+    std::shared_ptr<Expr> object;
+    Token name;
+  };
+
+
+  struct Logical : public Expr
+  {
+    Logical(std::shared_ptr<Expr> left_arg, Token op_arg, std::shared_ptr<Expr> right_arg)
+        : left(std::move(left_arg)), op(std::move(op_arg)), right(std::move(right_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_logical_expr(*this); }
 
-    const Expr& left() const { if (left_ == nullptr) throw std::out_of_range("Member left_ contains nullptr!"); return *left_; }
-    const Token& op() const { return op_; }
-    const Expr& right() const { if (right_ == nullptr) throw std::out_of_range("Member right_ contains nullptr!"); return *right_; }
-
-  private:
-    std::shared_ptr<Expr> left_;
-    Token op_;
-    std::shared_ptr<Expr> right_;
+    std::shared_ptr<Expr> left;
+    Token op;
+    std::shared_ptr<Expr> right;
   };
 
 
-  class Grouping : public Expr
+  struct Unary : public Expr
   {
-  public:
-    Grouping(std::shared_ptr<Expr> expression)
-        : expression_(std::move(expression))
+    Unary(Token op_arg, std::shared_ptr<Expr> right_arg)
+        : op(std::move(op_arg)), right(std::move(right_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_unary_expr(*this); }
+
+    Token op;
+    std::shared_ptr<Expr> right;
+  };
+
+
+  struct Variable : public Expr
+  {
+    Variable(Token name_arg)
+        : name(std::move(name_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_variable_expr(*this); }
+
+    Token name;
+  };
+
+
+  struct Grouping : public Expr
+  {
+    Grouping(std::shared_ptr<Expr> expression_arg)
+        : expression(std::move(expression_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_grouping_expr(*this); }
 
-    const Expr& expression() const { if (expression_ == nullptr) throw std::out_of_range("Member expression_ contains nullptr!"); return *expression_; }
-
-  private:
-    std::shared_ptr<Expr> expression_;
+    std::shared_ptr<Expr> expression;
   };
 
 }

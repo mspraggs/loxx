@@ -17,8 +17,9 @@
  * Created by Matt Spraggs on 25/11/17.
  */
 
-#include "Environment.hpp"
-#include "FuncCallable.hpp"
+#include <utility>
+
+#include "ClassInstance.hpp"
 #include "Interpreter.hpp"
 
 
@@ -27,6 +28,15 @@ namespace loxx
   unsigned int FuncCallableImpl::arity() const
   {
     return static_cast<unsigned int>(params().size());
+  }
+
+
+  std::shared_ptr<FuncCallableImpl> FuncCallableImpl::bind(
+      std::shared_ptr<ClassInstance> instance) const
+  {
+    auto environment = std::make_shared<Environment>(closure_);
+    environment->define("this", Generic(std::move(instance)));
+    return wrap_environment(environment);
   }
 
 
@@ -44,6 +54,10 @@ namespace loxx
     }
     catch (const Interpreter::Returner& e) {
       return e.value();
+    }
+
+    if (is_initialiser_) {
+      return closure_->get_at(0, "this");
     }
 
     return Generic(nullptr);

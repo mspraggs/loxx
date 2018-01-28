@@ -14,46 +14,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Created by Matt Spraggs on 24/11/17.
+ * Created by Matt Spraggs on 24/01/2018.
  */
 
+#ifndef LOXX_CLASSINSTANCE_HPP
+#define LOXX_CLASSINSTANCE_HPP
+
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+
+#include "ClassDef.hpp"
 #include "Generic.hpp"
+#include "Token.hpp"
 
 
 namespace loxx
 {
-  Generic::Generic(const Generic& generic)
-      : container_(generic.container_->clone())
+  class ClassInstance : public std::enable_shared_from_this<ClassInstance>
   {
-  }
+  public:
+    explicit ClassInstance(std::shared_ptr<ClassDef> cls)
+        : cls_(std::move(cls))
+    {}
 
+    const ClassDef& cls() const { return *cls_; }
 
-  Generic::Generic(Generic&& generic) noexcept
-      : container_(std::move(generic.container_))
-  {
-  }
-
-
-  Generic& Generic::operator=(const Generic& generic)
-  {
-    if (this != &generic) {
-      container_ = generic.container_->clone();
-    }
-
-    return *this;
-  }
-
-
-  Generic& Generic::operator=(Generic&& generic) noexcept
-  {
-    container_ = std::move(generic.container_);
-
-    return *this;
-  }
-
-
-  bool Generic::operator==(const Generic& generic) const
-  {
-    return *container_ == *generic.container_;
-  }
+    Generic get(const Token& name) const;
+    void set(const Token& name, Generic value);
+    
+  private:
+    std::shared_ptr<ClassDef> cls_;
+    std::unordered_map<std::string, Generic> fields_;
+  };
 }
+
+#endif // LOXX_CLASSINSTANCE_HPP

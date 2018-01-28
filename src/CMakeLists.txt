@@ -4,6 +4,8 @@ project(loxx)
 set(SRC
   AstPrinter.hpp
   Callable.hpp
+  ClassDef.hpp
+  ClassInstance.hpp
   Environment.hpp
   Expr.hpp
   FuncCallable.hpp
@@ -20,6 +22,8 @@ set(SRC
   Token.hpp
 
   AstPrinter.cpp
+  ClassDef.cpp
+  ClassInstance.cpp
   Environment.cpp
   FuncCallable.cpp
   Generic.cpp

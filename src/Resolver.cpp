@@ -26,21 +26,46 @@ namespace loxx
   void Resolver::visit_block_stmt(const Block& stmt)
   {
     begin_scope();
-    resolve(stmt.statements());
+    resolve(stmt.statements);
+    end_scope();
+  }
+
+
+  void Resolver::visit_class_stmt(const Class& stmt)
+  {
+    declare(stmt.name);
+    define(stmt.name);
+    const auto enclosing_class = current_class_;
+    current_class_ = ClassType::Class;
+
+    begin_scope();
+    std::get<0>(scopes_.top()["this"]) = true;
+
+    for (const auto& method : stmt.methods) {
+      auto declaration = FunctionType::Method;
+
+      if (method->name.lexeme() == "init") {
+        declaration = FunctionType::Initialiser;
+      }
+
+      resolve_function(*method, declaration);
+    }
+
+    current_class_ = enclosing_class;
     end_scope();
   }
 
 
   void Resolver::visit_expression_stmt(const Expression& stmt)
   {
-    resolve(stmt.expression());
+    resolve(*stmt.expression);
   }
 
 
   void Resolver::visit_function_stmt(const Function& stmt)
   {
-    declare(stmt.name());
-    define(stmt.name());
+    declare(stmt.name);
+    define(stmt.name);
 
     resolve_function(stmt, FunctionType::Function);
   }
@@ -48,114 +73,138 @@ namespace loxx
 
   void Resolver::visit_if_stmt(const If& stmt)
   {
-    resolve(stmt.condition());
-    resolve(stmt.then_branch());
+    resolve(*stmt.condition);
+    resolve(*stmt.then_branch);
 
-    try {
-      resolve(stmt.else_branch());
+    if (stmt.else_branch != nullptr) {
+      resolve(*stmt.else_branch);
     }
-    catch (const std::out_of_range& e) {}
   }
 
 
   void Resolver::visit_print_stmt(const Print& stmt)
   {
-    resolve(stmt.expression());
+    resolve(*stmt.expression);
   }
 
 
   void Resolver::visit_return_stmt(const Return& stmt)
   {
     if (current_function_ == FunctionType::None) {
-      error(stmt.keyword(), "Cannot return from top-level code.");
+      error(stmt.keyword, "Cannot return from top-level code.");
     }
-    try {
-      resolve(stmt.value());
+
+    if (current_function_ == FunctionType::Initialiser) {
+      error(stmt.keyword, "Cannot return a value from an initialiser.");
     }
-    catch (const std::out_of_range& e) {}
+
+    if (stmt.value != nullptr) {
+      resolve(*stmt.value);
+    }
   }
 
 
   void Resolver::visit_var_stmt(const Var& stmt)
   {
-    declare(stmt.name());
+    declare(stmt.name);
 
-    try {
-      resolve(stmt.initialiser());
+    if (stmt.initialiser != nullptr) {
+      resolve(*stmt.initialiser);
     }
-    catch (const std::out_of_range& e) {}
 
-    define(stmt.name());
+    define(stmt.name);
   }
 
 
   void Resolver::visit_while_stmt(const While& stmt)
   {
-    resolve(stmt.condition());
-    resolve(stmt.body());
+    resolve(*stmt.condition);
+    resolve(*stmt.body);
   }
 
 
   void Resolver::visit_variable_expr(const Variable& expr)
   {
     if (scopes_.size() != 0 and
-        scopes_.top().count(expr.name().lexeme()) != 0 and
-        not std::get<0>(scopes_.top()[expr.name().lexeme()])) {
-      error(expr.name(), "Cannot read local variable in its own initialiser.");
+        scopes_.top().count(expr.name.lexeme()) != 0 and
+        not std::get<0>(scopes_.top()[expr.name.lexeme()])) {
+      error(expr.name, "Cannot read local variable in its own initialiser.");
     }
 
-    resolve_local(expr, expr.name());
+    resolve_local(expr, expr.name);
   }
 
 
   void Resolver::visit_assign_expr(const Assign& expr)
   {
-    resolve(expr.value());
-    resolve_local(expr, expr.name());
+    resolve(*expr.value);
+    resolve_local(expr, expr.name);
   }
 
 
   void Resolver::visit_ternary_expr(const Ternary& expr)
   {
-    resolve(expr.first());
-    resolve(expr.second());
-    resolve(expr.third());
+    resolve(*expr.first);
+    resolve(*expr.second);
+    resolve(*expr.third);
   }
 
 
   void Resolver::visit_binary_expr(const Binary& expr)
   {
-    resolve(expr.left());
-    resolve(expr.right());
+    resolve(*expr.left);
+    resolve(*expr.right);
   }
 
 
   void Resolver::visit_call_expr(const Call& expr)
   {
-    resolve(expr.callee());
+    resolve(*expr.callee);
 
-    for (const auto& arg : expr.arguments()) {
+    for (const auto& arg : expr.arguments) {
       resolve(*arg);
     }
   }
 
 
+  void Resolver::visit_get_expr(const Get& expr)
+  {
+    resolve(*expr.object);
+  }
+
+
   void Resolver::visit_grouping_expr(const Grouping& expr)
   {
-    resolve(expr.expression());
+    resolve(*expr.expression);
   }
 
 
   void Resolver::visit_logical_expr(const Logical& expr)
   {
-    resolve(expr.left());
-    resolve(expr.right());
+    resolve(*expr.left);
+    resolve(*expr.right);
+  }
+
+
+  void Resolver::visit_set_expr(const Set& expr)
+  {
+    resolve(*expr.value);
+    resolve(*expr.object);
+  }
+
+
+  void Resolver::visit_this_expr(const This& expr)
+  {
+    if (current_class_ == ClassType::None) {
+      error(expr.keyword, "Cannot use 'this' outside of a class.");
+    }
+    resolve_local(expr, expr.keyword);
   }
 
 
   void Resolver::visit_unary_expr(const Unary& expr)
   {
-    resolve(expr.right());
+    resolve(*expr.right);
   }
 
 
@@ -194,15 +243,15 @@ namespace loxx
 
     begin_scope();
 
-    for (const auto& param : function.parameters()) {
+    for (const auto& param : function.parameters) {
       declare(param);
       define(param);
     }
 
-    resolve(function.body());
+    resolve(function.body);
     end_scope();
     current_function_ = enclosing_function;
-    resolve_local(function, function.name());
+    resolve_local(function, function.name);
   }
 
 
@@ -213,12 +262,12 @@ namespace loxx
 
     begin_scope();
 
-    for (const auto& param : lambda.parameters()) {
+    for (const auto& param : lambda.parameters) {
       declare(param);
       define(param);
     }
 
-    resolve(lambda.body());
+    resolve(lambda.body);
     end_scope();
     current_function_ = enclosing_function;
   }
