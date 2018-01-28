@@ -29,7 +29,7 @@ namespace loxx
 {
   class Interpreter;
 
-  class Callable
+  class Callable : public std::enable_shared_from_this<Callable>
   {
   public:
     virtual unsigned int arity() const = 0;
