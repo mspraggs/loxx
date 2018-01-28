@@ -141,7 +141,7 @@ namespace loxx
     std::type_index type() const { return container_->get_type_index(); }
 
     template <typename T>
-    bool has_type() const { return std::type_index(typeid(T)) == type_; }
+    bool has_type() const { return std::type_index(typeid(T)) == type(); }
 
   private:
     template <typename T>
@@ -152,28 +152,27 @@ namespace loxx
       }
     }
 
-    std::type_index type_;
     std::unique_ptr<ContainerBase> container_;
   };
 
 
   template <typename T, typename>
   Generic::Generic(T value)
-      : type_(typeid(T)), container_(new ValueContainer<T>(std::move(value)))
+      : container_(new ValueContainer<T>(std::move(value)))
   {
   }
 
 
   template <typename T>
   Generic::Generic(std::shared_ptr<T> ptr)
-      : type_(typeid(T)), container_(new PtrContainer<T>(std::move(ptr)))
+      : container_(new PtrContainer<T>(std::move(ptr)))
   {
   }
 
 
   template <typename T>
   Generic::Generic(T* ptr)
-      : type_(typeid(T)), container_(new PtrContainer<T>(ptr))
+      : container_(new PtrContainer<T>(ptr))
   {
   }
 

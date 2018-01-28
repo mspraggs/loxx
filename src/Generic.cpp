@@ -23,13 +23,13 @@
 namespace loxx
 {
   Generic::Generic(const Generic& generic)
-      : type_(generic.type_), container_(generic.container_->clone())
+      : container_(generic.container_->clone())
   {
   }
 
 
   Generic::Generic(Generic&& generic) noexcept
-      : type_(generic.type_), container_(std::move(generic.container_))
+      : container_(std::move(generic.container_))
   {
   }
 
@@ -37,7 +37,6 @@ namespace loxx
   Generic& Generic::operator=(const Generic& generic)
   {
     if (this != &generic) {
-      type_ = generic.type_;
       container_ = generic.container_->clone();
     }
 
@@ -47,7 +46,6 @@ namespace loxx
 
   Generic& Generic::operator=(Generic&& generic) noexcept
   {
-    type_ = generic.type_;
     container_ = std::move(generic.container_);
 
     return *this;
