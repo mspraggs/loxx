@@ -77,6 +77,8 @@ if __name__ == "__main__":
     define_ast(
         output_dir, "Stmt",
         {"Block": [("std::vector<std::shared_ptr<Stmt>>", "statements", False)],
+         "Class": [("Token", "name", False),
+                   ("std::vector<std::shared_ptr<Function>>", "methods", False)],
          "Expression": [("Expr", "expression", True)],
          "Function": [("Token", "name", False),
                       ("std::vector<Token>", "parameters", False),
