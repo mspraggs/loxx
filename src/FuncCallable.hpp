@@ -21,19 +21,22 @@
 #define LOXX_FUNCCALLABLE_HPP
 
 #include "Callable.hpp"
-
 #include "Environment.hpp"
 #include "Stmt.hpp"
 
 
 namespace loxx
 {
+  class ClassInstance;
+
+
   class FuncCallable : public Callable
   {
   public:
-    FuncCallable(Function declaration,
-                 std::shared_ptr<Environment> closure)
-        : declaration_(std::move(declaration)), closure_(std::move(closure))
+    FuncCallable(Function declaration, std::shared_ptr<Environment> closure,
+                 const bool is_initialiser)
+        : is_initialiser_(is_initialiser), declaration_(std::move(declaration)),
+          closure_(std::move(closure))
     {}
 
     std::shared_ptr<FuncCallable> bind(
@@ -45,6 +48,7 @@ namespace loxx
     unsigned int arity() const override;
 
   private:
+    bool is_initialiser_;
     Function declaration_;
     std::shared_ptr<Environment> closure_;
   };

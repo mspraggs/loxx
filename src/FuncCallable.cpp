@@ -17,8 +17,9 @@
  * Created by Matt Spraggs on 25/11/17.
  */
 
-#include "Environment.hpp"
-#include "FuncCallable.hpp"
+#include <utility>
+
+#include "ClassInstance.hpp"
 #include "Interpreter.hpp"
 
 
@@ -43,8 +44,7 @@ namespace loxx
   Generic FuncCallable::call(Interpreter& interpreter,
                             const std::vector<Generic>& arguments)
   {
-    auto environment =
-        std::make_shared<Environment>(closure_);
+    auto environment = std::make_shared<Environment>(closure_);
 
     for (unsigned int i = 0; i < declaration_.parameters.size(); ++i) {
       environment->define(declaration_.parameters[i].lexeme(), arguments[i]);
@@ -55,6 +55,10 @@ namespace loxx
     }
     catch (const Interpreter::Returner& e) {
       return e.value();
+    }
+
+    if (is_initialiser_) {
+      return closure_->get_at(0, "this");
     }
 
     return Generic(nullptr);
