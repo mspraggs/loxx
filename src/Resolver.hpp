@@ -35,10 +35,12 @@ namespace loxx
   {
   public:
     explicit Resolver(Interpreter& interpreter)
-        : interpreter_(&interpreter), current_function_(FunctionType::None)
+        : interpreter_(&interpreter), current_function_(FunctionType::None),
+          current_class_(ClassType::None)
     {}
 
     void visit_block_stmt(const Block& stmt) override;
+    void visit_class_stmt(const Class& stmt) override;
     void visit_expression_stmt(const Expression& stmt) override;
     void visit_function_stmt(const Function& stmt) override;
     void visit_if_stmt(const If& stmt) override;
@@ -51,15 +53,19 @@ namespace loxx
     void visit_assign_expr(const Assign& expr) override;
     void visit_binary_expr(const Binary& expr) override;
     void visit_call_expr(const Call& expr) override;
+    void visit_get_expr(const Get& expr) override;
     void visit_grouping_expr(const Grouping& expr) override;
     void visit_literal_expr(const Literal& expr) override {}
     void visit_logical_expr(const Logical& expr) override;
+    void visit_set_expr(const Set& expr) override;
+    void visit_this_expr(const This& expr) override;
     void visit_unary_expr(const Unary& expr) override;
 
     void resolve(const std::vector<std::shared_ptr<Stmt>>& statements);
 
   private:
-    enum class FunctionType { None, Function };
+    enum class FunctionType { None, Function, Initialiser, Method };
+    enum class ClassType { None, Class };
 
     void resolve(const Stmt& stmt);
     void resolve(const Expr& expr);
@@ -73,6 +79,7 @@ namespace loxx
     Interpreter* interpreter_;
     Stack<std::unordered_map<std::string, bool>> scopes_;
     FunctionType current_function_;
+    ClassType current_class_;
   };
 }
 

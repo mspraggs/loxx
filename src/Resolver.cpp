@@ -31,6 +31,31 @@ namespace loxx
   }
 
 
+  void Resolver::visit_class_stmt(const Class& stmt)
+  {
+    declare(stmt.name);
+    define(stmt.name);
+    const auto enclosing_class = current_class_;
+    current_class_ = ClassType::Class;
+
+    begin_scope();
+    scopes_.top()["this"] = true;
+
+    for (const auto& method : stmt.methods) {
+      auto declaration = FunctionType::Method;
+
+      if (method->name.lexeme() == "init") {
+        declaration = FunctionType::Initialiser;
+      }
+
+      resolve_function(*method, declaration);
+    }
+
+    current_class_ = enclosing_class;
+    end_scope();
+  }
+
+
   void Resolver::visit_expression_stmt(const Expression& stmt)
   {
     resolve(*stmt.expression);
@@ -51,10 +76,9 @@ namespace loxx
     resolve(*stmt.condition);
     resolve(*stmt.then_branch);
 
-    try {
+    if (stmt.else_branch != nullptr) {
       resolve(*stmt.else_branch);
     }
-    catch (const std::out_of_range& e) {}
   }
 
 
@@ -69,10 +93,14 @@ namespace loxx
     if (current_function_ == FunctionType::None) {
       error(stmt.keyword, "Cannot return from top-level code.");
     }
-    try {
+
+    if (current_function_ == FunctionType::Initialiser) {
+      error(stmt.keyword, "Cannot return a value from an initialiser.");
+    }
+
+    if (stmt.value != nullptr) {
       resolve(*stmt.value);
     }
-    catch (const std::out_of_range& e) {}
   }
 
 
@@ -80,10 +108,9 @@ namespace loxx
   {
     declare(stmt.name);
 
-    try {
+    if (stmt.initialiser != nullptr) {
       resolve(*stmt.initialiser);
     }
-    catch (const std::out_of_range& e) {}
 
     define(stmt.name);
   }
@@ -132,6 +159,12 @@ namespace loxx
   }
 
 
+  void Resolver::visit_get_expr(const Get& expr)
+  {
+    resolve(*expr.object);
+  }
+
+
   void Resolver::visit_grouping_expr(const Grouping& expr)
   {
     resolve(*expr.expression);
@@ -142,6 +175,22 @@ namespace loxx
   {
     resolve(*expr.left);
     resolve(*expr.right);
+  }
+
+
+  void Resolver::visit_set_expr(const Set& expr)
+  {
+    resolve(*expr.value);
+    resolve(*expr.object);
+  }
+
+
+  void Resolver::visit_this_expr(const This& expr)
+  {
+    if (current_class_ == ClassType::None) {
+      error(expr.keyword, "Cannot use 'this' outside of a class.");
+    }
+    resolve_local(expr, expr.keyword);
   }
 
 
