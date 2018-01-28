@@ -133,9 +133,14 @@ namespace loxx
 
     bool operator==(const Generic& generic) const;
 
-    template <typename T, typename U = T>
+    template <typename T>
+    inline const T& get() const;
+    template <typename T>
+    inline T& get();
+
+    template <typename T, typename U>
     inline const U& get() const;
-    template <typename T, typename U = T>
+    template <typename T, typename U>
     inline U& get();
 
     const std::type_index& type() const { return container_->get_type_index(); }
@@ -144,10 +149,10 @@ namespace loxx
     bool has_type() const { return std::type_index(typeid(T)) == type(); }
 
   private:
-    template <typename T, typename U>
+    template <typename T>
     void check_access() const
     {
-      if (not has_type<T>() and not std::is_convertible<T*, U*>()) {
+      if (not has_type<T>()) {
         throw std::logic_error("Unable to get specified type from Generic!");
       }
     }
@@ -177,19 +182,45 @@ namespace loxx
   }
 
 
-  template<typename T, typename U>
-  const U& Generic::get() const
+  template <typename T>
+  const T& Generic::get() const
   {
-    check_access<T, U>();
+    check_access<T>();
     return *reinterpret_cast<const T*>(container_->get_ptr());
   }
 
 
-  template<typename T, typename U>
+  template <typename T>
+  T& Generic::get()
+  {
+    check_access<T>();
+    return *reinterpret_cast<T*>(container_->get_ptr());
+  }
+
+
+  template <typename T, typename U>
+  const U& Generic::get() const
+  {
+    check_access<T>();
+    auto ptr = dynamic_cast<U*>(reinterpret_cast<T*>(container_->get_ptr()));
+
+    if (ptr != nullptr) {
+      return *ptr;
+    }
+    throw std::logic_error("Unable to cast type to that specified");
+  }
+
+
+  template <typename T, typename U>
   U& Generic::get()
   {
-    check_access<T, U>();
-    return *reinterpret_cast<T*>(container_->get_ptr());
+    check_access<T>();
+    auto ptr = dynamic_cast<U*>(reinterpret_cast<T*>(container_->get_ptr()));
+
+    if (ptr != nullptr) {
+      return *ptr;
+    }
+    throw std::logic_error("Unable to cast type to that specified");
   }
 
 
