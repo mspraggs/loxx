@@ -93,6 +93,25 @@ namespace loxx
   }
 
 
+  void AstPrinter::visit_get_expr(const Get& expr)
+  {
+    paranthesise("get " + expr.name.lexeme(), {expr.object.get()});
+  }
+
+
+  void AstPrinter::visit_set_expr(const Set& expr)
+  {
+    paranthesise("set " + expr.name.lexeme(),
+                 {expr.object.get(), expr.value.get()});
+  }
+
+
+  void AstPrinter::visit_this_expr(const This& expr)
+  {
+    stream_ << "this";
+  }
+
+
   void AstPrinter::visit_print_stmt(const Print& stmt)
   {
     paranthesise("write-line", {stmt.expression.get()});
@@ -109,10 +128,10 @@ namespace loxx
   {
     const std::string name = "defvar " + stmt.name.lexeme();
 
-    try {
+    if (stmt.initialiser != nullptr) {
       paranthesise(name, {stmt.initialiser.get()});
     }
-    catch (const std::out_of_range& e) {
+    else {
       paranthesise(name, {});
     }
   }
@@ -135,10 +154,8 @@ namespace loxx
     stream_ << ' ';
     stmt.then_branch->accept(*this);
     stream_ << ' ';
-    try {
+    if (stmt.else_branch != nullptr) {
       stmt.else_branch->accept(*this);
-    }
-    catch (const std::out_of_range& e) {
     }
     stream_ << ')';
   }
@@ -161,7 +178,7 @@ namespace loxx
     set_indent(indent_level_ + 1);
     print(func.body);
     set_indent(indent_level_ - 1);
-    stream_ << ')';
+    stream_ << indent_ << ')';
   }
 
 
@@ -175,15 +192,13 @@ namespace loxx
   }
 
 
-  std::string AstPrinter::print(
-      const std::vector<std::shared_ptr<Stmt>>& statements)
+  void AstPrinter::visit_class_stmt(const Class& stmt)
   {
-    for (const auto& stmt : statements) {
-      stream_ << indent_;
-      stmt->accept(*this);
-      stream_ << '\n';
-    }
-    return stream_.str();
+    stream_ << "(declass " << stmt.name.lexeme() << " (\n";
+    set_indent(indent_level_ + 1);
+    print(stmt.methods);
+    set_indent(indent_level_ - 1);
+    stream_ << indent_ << ')';
   }
 
 
