@@ -55,6 +55,7 @@ namespace loxx
     };
 
     std::unique_ptr<Stmt> declaration();
+    std::unique_ptr<Stmt> class_declaration();
     std::unique_ptr<Stmt> statement();
     std::unique_ptr<Stmt> if_statement();
     std::unique_ptr<Stmt> print_statement();

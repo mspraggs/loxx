@@ -26,6 +26,9 @@ namespace loxx
   std::unique_ptr<Stmt> Parser::declaration()
   {
     try {
+      if (match({TokenType::Class})) {
+	return class_declaration();
+      }
       if (match({TokenType::Fun})) {
         return function("function");
       }
@@ -40,6 +43,23 @@ namespace loxx
 
       return std::unique_ptr<Stmt>();
     }
+  }
+
+
+  std::unique_ptr<Stmt> Parser::class_declaration()
+  {
+    auto name = consume(TokenType::Identifier, "Expected class name.");
+    consume(TokenType::LeftBrace, "Expected '{' before class body.");
+
+    std::vector<std::shared_ptr<Function>> methods;
+    while (not check(TokenType::RightBrace) and not is_at_end()) {
+      const std::shared_ptr<Stmt> ptr = function("method");
+      methods.push_back(std::static_pointer_cast<Function>(ptr));
+    }
+
+    consume(TokenType::RightBrace, "Expected '}' after class body.");
+
+    return std::make_unique<Class>(std::move(name), std::move(methods));
   }
 
 
@@ -238,6 +258,10 @@ namespace loxx
         Token name = static_cast<Variable*>(expr.get())->name;
         return std::make_unique<Assign>(std::move(name), std::move(value));
       }
+      if (typeid(*expr) == typeid(Get)) {
+	auto get = static_cast<Get*>(expr.get());
+	return std::make_unique<Set>(get->object, get->name, std::move(value));
+      }
 
       error(equals, "Invalid assignment target.");
     }
@@ -345,6 +369,11 @@ namespace loxx
       if (match({TokenType::LeftParen})) {
         expr = finish_call(std::move(expr));
       }
+      else if (match({TokenType::Dot})) {
+	auto name = consume(TokenType::Identifier,
+			    "Expected property name after '.'.");
+	expr = std::make_unique<Get>(std::move(expr), std::move(name));
+      }
       else {
         break;
       }
@@ -374,6 +403,10 @@ namespace loxx
       auto expr = expression();
       consume(TokenType::RightParen, "Expect ')' after expression.");
       return std::make_unique<Grouping>(std::move(expr));
+    }
+
+    if (match({TokenType::This})) {
+      return std::make_unique<This>(previous());
     }
 
     if (match({TokenType::Identifier})) {
