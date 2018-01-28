@@ -30,6 +30,16 @@ namespace loxx
   }
 
 
+  std::shared_ptr<FuncCallable> FuncCallable::bind(
+      std::shared_ptr<ClassInstance> instance) const
+  {
+    auto environment = std::make_shared<Environment>(closure_);
+    environment->define("this", Generic(std::move(instance)));
+    return std::make_shared<FuncCallable>(declaration_, environment,
+                                          is_initialiser_);
+  }
+
+
   Generic FuncCallable::call(Interpreter& interpreter,
                             const std::vector<Generic>& arguments)
   {

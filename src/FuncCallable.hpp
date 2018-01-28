@@ -36,6 +36,9 @@ namespace loxx
         : declaration_(std::move(declaration)), closure_(std::move(closure))
     {}
 
+    std::shared_ptr<FuncCallable> bind(
+        std::shared_ptr<ClassInstance> instance) const;
+
     Generic call(Interpreter& interpreter,
                  const std::vector<Generic>& arguments) override;
 
