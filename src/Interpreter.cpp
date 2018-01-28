@@ -22,7 +22,8 @@
 #include <sstream>
 
 #include "Callable.hpp"
-#include "FuncCallable.hpp"
+#include "ClassDef.hpp"
+#include "ClassInstance.hpp"
 #include "Interpreter.hpp"
 #include "logging.hpp"
 #include "NativeCallable.hpp"
@@ -83,7 +84,7 @@ namespace loxx
   void Interpreter::visit_function_stmt(const Function& stmt)
   {
     std::shared_ptr<Callable> func =
-        std::make_shared<FuncCallable>(stmt, environment_);
+        std::make_shared<FuncCallable>(stmt, environment_, false);
     environment_->define(stmt.name.lexeme(), Generic(func));
   }
 
@@ -94,12 +95,8 @@ namespace loxx
     if (is_truthy(stack_.pop())) {
       execute(*stmt.then_branch);
     }
-    else {
-      try {
-        execute(*stmt.else_branch);
-      }
-      catch (const std::out_of_range& e) {
-      }
+    else if (stmt.else_branch != nullptr) {
+      execute(*stmt.else_branch);
     }
   }
 
@@ -130,13 +127,11 @@ namespace loxx
   void Interpreter::visit_var_stmt(const Var& stmt)
   {
     auto value = [this, &stmt] () {
-      try {
+      if (stmt.initialiser != nullptr) {
         evaluate(*stmt.initialiser);
         return stack_.pop();
       }
-      catch (const std::out_of_range& e) {
-        return Generic(nullptr);
-      }
+      return Generic(nullptr);
     }();
 
     environment_->define(stmt.name.lexeme(), std::move(value));
@@ -162,6 +157,25 @@ namespace loxx
     }
     catch (const RuntimeError& e) {
     }
+  }
+
+
+  void Interpreter::visit_class_stmt(const Class& stmt)
+  {
+    environment_->define(stmt.name.lexeme(), Generic(nullptr));
+
+    std::unordered_map<std::string, Generic> methods;
+    for (const auto& method : stmt.methods) {
+      const bool is_initialiser = method->name.lexeme() == "init";
+      std::shared_ptr<Callable> callable =
+          std::make_shared<FuncCallable>(*method, environment_, is_initialiser);
+      methods.emplace(method->name.lexeme(), Generic(callable));
+    }
+    
+    std::shared_ptr<Callable> cls =
+        std::make_shared<ClassDef>(stmt.name.lexeme(), std::move(methods));
+
+    environment_->assign(stmt.name, Generic(cls));
   }
 
 
@@ -289,6 +303,19 @@ namespace loxx
   }
 
 
+  void Interpreter::visit_get_expr(const Get& expr)
+  {
+    evaluate(*expr.object);
+    const auto object = stack_.pop();
+    if (object.has_type<ClassInstance>()) {
+      stack_.push(object.get<ClassInstance>().get(expr.name));
+      return;
+    }
+
+    throw RuntimeError(expr.name, "Only instances have properties.");
+  }
+
+
   void Interpreter::visit_literal_expr(const Literal& expr)
   {
     stack_.push(expr.value);
@@ -314,6 +341,26 @@ namespace loxx
     }
 
     evaluate(*expr.right);
+  }
+
+
+  void Interpreter::visit_set_expr(const Set& expr)
+  {
+    evaluate(*expr.object);
+    auto object = stack_.pop();
+
+    if (not object.has_type<ClassInstance>()) {
+      throw RuntimeError(expr.name, "Only instances have fields.");
+    }
+
+    evaluate(*expr.value);
+    object.get<ClassInstance>().set(expr.name, stack_.top());
+  }
+
+
+  void Interpreter::visit_this_expr(const This& expr)
+  {
+    stack_.push(lookup_variable(expr.keyword, expr));
   }
 
 
@@ -433,6 +480,16 @@ namespace loxx
     }
     if (generic.has_type<std::string>()) {
       return generic.get<std::string>();
+    }
+    if (generic.has_type<Callable>()) {
+      // TODO: Find a more elegant way to achieve ths...
+      const auto ptr = dynamic_cast<const ClassDef*>(&generic.get<Callable>());
+      if (ptr) {
+	return ptr->name();
+      }
+    }
+    if (generic.has_type<ClassInstance>()) {
+      return generic.get<ClassInstance>().cls().name() + " instance";
     }
     return "";
   }
