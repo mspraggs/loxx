@@ -33,7 +33,7 @@ namespace loxx
     class Comparable
     {
       template <typename C>
-      static char test(typeof(&C::operator==));
+      static char test(decltype(&C::operator==));
       template <typename C>
       static long test(...);
 
