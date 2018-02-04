@@ -21,6 +21,7 @@
 #define LOXX_GENERIC_HPP
 
 #include <memory>
+#include <stdexcept>
 #include <typeindex>
 #include <typeinfo>
 
