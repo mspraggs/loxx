@@ -82,7 +82,7 @@ if __name__ == "__main__":
          "This": [("Token", "keyword", False)],
          "Unary": [("Token", "op", False), ("Expr", "right", True)],
          "Variable": [("Token", "name", False)]},
-        forward_decls=["class Stmt"])
+        forward_decls=["struct Stmt"])
 
     define_ast(
         output_dir, "Stmt",

@@ -30,7 +30,7 @@
 namespace loxx
 {
 
-  class Stmt;
+  struct Stmt;
 
   struct Binary;
   struct This;
