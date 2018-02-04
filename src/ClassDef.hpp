@@ -36,8 +36,8 @@ namespace loxx
   {
   public:
     ClassDef(std::string name,
-	     std::unordered_map<std::string, Generic> methods)
-      : name_(std::move(name)), methods_(std::move(methods))
+	      std::unordered_map<std::string, Generic> methods)
+        : name_(std::move(name)), methods_(std::move(methods))
     {
     }
 
