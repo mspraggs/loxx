@@ -181,17 +181,25 @@ namespace loxx
   {
     environment_->define(stmt.name.lexeme(), Generic(nullptr));
 
-    std::unordered_map<std::string, Generic> methods;
-    for (const auto& method : stmt.methods) {
+    std::unordered_map<std::string, Generic> bound_methods;
+    for (const auto& method : stmt.bound_methods) {
       const bool is_initialiser = method->name.lexeme() == "init";
       std::shared_ptr<Callable> callable =
           std::make_shared<FuncCallable<Function>>(
               *method, environment_, is_initialiser);
-      methods.emplace(method->name.lexeme(), Generic(callable));
+      bound_methods.emplace(method->name.lexeme(), Generic(callable));
+    }
+
+    std::unordered_map<std::string, Generic> static_methods;
+    for (const auto& method : stmt.static_methods) {
+      std::shared_ptr<Callable> callable =
+          std::make_shared<FuncCallable<Function>>(*method, environment_, false);
+      static_methods.emplace(method->name.lexeme(), Generic(callable));
     }
     
     std::shared_ptr<Callable> cls =
-        std::make_shared<ClassDef>(stmt.name.lexeme(), std::move(methods));
+        std::make_shared<ClassDef>(stmt.name.lexeme(), std::move(bound_methods),
+                                   std::move(static_methods));
 
     environment_->assign(stmt.name, Generic(cls));
   }
@@ -334,6 +342,13 @@ namespace loxx
   {
     evaluate(*expr.object);
     const auto object = stack_.pop();
+    if (object.has_type<Callable>()) {
+      const auto ptr = dynamic_cast<const ClassInstance*>(&object.get<Callable>());
+      if (ptr != nullptr) {
+        stack_.push(ptr->get(expr.name));
+        return;
+      }
+    }
     if (object.has_type<ClassInstance>()) {
       stack_.push(object.get<ClassInstance>().get(expr.name));
       return;
