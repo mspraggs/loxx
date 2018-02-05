@@ -41,7 +41,7 @@ namespace loxx
     begin_scope();
     std::get<0>(scopes_.top()["this"]) = true;
 
-    for (const auto& method : stmt.methods) {
+    for (const auto& method : stmt.bound_methods) {
       auto declaration = FunctionType::Method;
 
       if (method->name.lexeme() == "init") {
@@ -49,6 +49,10 @@ namespace loxx
       }
 
       resolve_function(*method, declaration);
+    }
+
+    for (const auto& method : stmt.static_methods) {
+      resolve_function(*method, FunctionType::Method);
     }
 
     current_class_ = enclosing_class;
@@ -284,7 +288,7 @@ namespace loxx
     const auto scope = std::move(scopes_.pop());
 
     for (const auto& var_state : scope) {
-      if (not std::get<1>(var_state.second)) {
+      if (var_state.first != "this" and not std::get<1>(var_state.second)) {
         error(std::get<2>(var_state.second),
               "Variable '" + var_state.first + "' is unused.");
       }
