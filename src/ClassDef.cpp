@@ -26,35 +26,38 @@ namespace loxx
   Generic ClassDef::find_method(std::shared_ptr<ClassInstance> instance,
                                 const std::string& name) const
   {
-    if (methods_.count(name) != 0) {
+    if (bound_methods_.count(name) != 0) {
       const auto& method =
-          methods_.at(name).get<Callable, FuncCallable<Function>>();
+          bound_methods_.at(name).get<Callable, FuncCallable<Function>>();
       std::shared_ptr<Callable> bound_method = method.bind(std::move(instance));
       return Generic(bound_method);
     }
+
+    if (static_methods_.count(name) != 0) {
+      return static_methods_.at(name);
+    }
+
     return Generic(nullptr);
   }
 
 
   unsigned int ClassDef::arity() const
   {
-    if (methods_.count("init") == 0) {
+    if (bound_methods_.count("init") == 0) {
       return 0;
     }
-    return methods_.at("init").get<Callable>().arity();
+    return bound_methods_.at("init").get<Callable>().arity();
   }
 
   
   Generic ClassDef::call(Interpreter& interpreter,
                          const std::vector<Generic>& arguments)
   {
-    const auto cls =
-        std::static_pointer_cast<ClassDef>(this->shared_from_this());
-    const auto instance = std::make_shared<ClassInstance>(cls);
+    const auto instance = this->shared_from_this();
 
-    if (methods_.count("init") != 0) {
+    if (bound_methods_.count("init") != 0) {
       auto initialiser =
-          methods_.at("init").get<Callable, FuncCallable<Function>>()
+          bound_methods_.at("init").get<Callable, FuncCallable<Function>>()
               .bind(instance);
       initialiser->call(interpreter, arguments);
     }

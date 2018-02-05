@@ -27,7 +27,7 @@ namespace loxx
   {
     try {
       if (match({TokenType::Class})) {
-	return class_declaration();
+        return class_declaration();
       }
       if (match({TokenType::Fun})) {
         return function("function");
@@ -49,17 +49,35 @@ namespace loxx
   std::unique_ptr<Stmt> Parser::class_declaration()
   {
     auto name = consume(TokenType::Identifier, "Expected class name.");
+
+    if (match({TokenType::LeftParen})) {
+      auto parameters = parse_parameters();
+      consume(TokenType::LeftBrace, "Expected '{' before static function.");
+      auto body = block();
+      return std::make_unique<Function>(std::move(name), std::move(parameters),
+                                        std::move(body));
+    }
+
     consume(TokenType::LeftBrace, "Expected '{' before class body.");
 
-    std::vector<std::shared_ptr<Function>> methods;
+    std::vector<std::shared_ptr<Function>> bound_methods;
+    std::vector<std::shared_ptr<Function>> static_methods;
     while (not check(TokenType::RightBrace) and not is_at_end()) {
+      const bool static_method = match({TokenType::Class});
       const std::shared_ptr<Stmt> ptr = function("method");
-      methods.push_back(std::static_pointer_cast<Function>(ptr));
+
+      if (static_method) {
+        static_methods.push_back(std::static_pointer_cast<Function>(ptr));
+      }
+      else {
+        bound_methods.push_back(std::static_pointer_cast<Function>(ptr));
+      }
     }
 
     consume(TokenType::RightBrace, "Expected '}' after class body.");
 
-    return std::make_unique<Class>(std::move(name), std::move(methods));
+    return std::make_unique<Class>(std::move(name), std::move(bound_methods),
+                                   std::move(static_methods));
   }
 
 
