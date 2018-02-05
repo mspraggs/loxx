@@ -163,15 +163,16 @@ namespace loxx
 
   struct Class : public Stmt
   {
-    Class(Token name_arg, std::vector<std::shared_ptr<Function>> methods_arg)
-        : name(std::move(name_arg)), methods(std::move(methods_arg))
+    Class(Token name_arg, std::vector<std::shared_ptr<Function>> bound_methods_arg, std::vector<std::shared_ptr<Function>> static_methods_arg)
+        : name(std::move(name_arg)), bound_methods(std::move(bound_methods_arg)), static_methods(std::move(static_methods_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_class_stmt(*this); }
 
     Token name;
-    std::vector<std::shared_ptr<Function>> methods;
+    std::vector<std::shared_ptr<Function>> bound_methods;
+    std::vector<std::shared_ptr<Function>> static_methods;
   };
 
 
