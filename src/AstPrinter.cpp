@@ -225,7 +225,7 @@ namespace loxx
   {
     stream_ << "(declass " << stmt.name.lexeme() << " (\n";
     set_indent(indent_level_ + 1);
-    print(stmt.methods);
+    print(stmt.bound_methods);
     set_indent(indent_level_ - 1);
     stream_ << indent_ << ')';
   }
