@@ -17,6 +17,7 @@
  * Created by Matt Spraggs on 24/01/2018.
  */
 
+#include "ClassDef.hpp"
 #include "ClassInstance.hpp"
 #include "RuntimeError.hpp"
 

@@ -20,6 +20,7 @@
 #include <utility>
 
 #include "ClassInstance.hpp"
+#include "FuncCallable.hpp"
 #include "Interpreter.hpp"
 
 

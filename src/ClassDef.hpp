@@ -24,6 +24,7 @@
 #include <unordered_map>
 
 #include "Callable.hpp"
+#include "ClassInstance.hpp"
 #include "FuncCallable.hpp"
 
 
@@ -32,7 +33,7 @@ namespace loxx
   class ClassInstance;
 
   
-  class ClassDef : public Callable
+  class ClassDef : public Callable, public ClassInstance
   {
   public:
     ClassDef(std::string name,

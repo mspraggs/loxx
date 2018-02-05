@@ -25,18 +25,19 @@
 #include <unordered_map>
 #include <utility>
 
-#include "ClassDef.hpp"
 #include "Generic.hpp"
 #include "Token.hpp"
 
 
 namespace loxx
 {
+  class ClassDef;
+
+
   class ClassInstance : public std::enable_shared_from_this<ClassInstance>
   {
   public:
-    explicit ClassInstance(std::shared_ptr<ClassDef> cls)
-        : cls_(std::move(cls))
+    explicit ClassInstance(ClassDef& cls) : cls_(&cls)
     {}
 
     const ClassDef& cls() const { return *cls_; }
@@ -45,7 +46,7 @@ namespace loxx
     void set(const Token& name, Generic value);
     
   private:
-    std::shared_ptr<ClassDef> cls_;
+    ClassDef* cls_;
     std::unordered_map<std::string, Generic> fields_;
   };
 }
