@@ -38,6 +38,8 @@ namespace loxx
 
     virtual Generic call(Interpreter& interpreter,
                          const std::vector<Generic>& arguments) = 0;
+
+    virtual bool is_property() const { return false; }
   };
 }
 

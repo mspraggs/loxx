@@ -27,6 +27,23 @@
 
 namespace loxx
 {
+  namespace detail
+  {
+    template <typename T>
+    struct IsPropertyExtractor
+    {
+      static bool value(const T& obj) { return false; }
+    };
+
+
+    template <>
+    struct IsPropertyExtractor<Function>
+    {
+      static bool value(const Function& obj) { return obj.is_property; }
+    };
+  }
+
+
   class ClassInstance;
 
 
@@ -68,6 +85,9 @@ namespace loxx
         : FuncCallableImpl(std::move(closure), is_initialiser),
           declaration_(std::move(declaration))
     {}
+
+    bool is_property() const override
+    { return detail::IsPropertyExtractor<T>::value(declaration_); }
 
   protected:
     const std::vector<Token>& params() const override
