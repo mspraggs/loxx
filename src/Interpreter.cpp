@@ -350,7 +350,13 @@ namespace loxx
       }
     }
     if (object.has_type<ClassInstance>()) {
-      stack_.push(object.get<ClassInstance>().get(expr.name));
+      auto attr = object.get<ClassInstance>().get(expr.name);
+
+      if (attr.has_type<Callable>() and attr.get<Callable>().is_property()) {
+        attr = attr.get<Callable>().call(*this, std::vector<Generic>());
+      }
+
+      stack_.push(std::move(attr));
       return;
     }
 
