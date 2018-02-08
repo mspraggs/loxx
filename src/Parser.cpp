@@ -55,7 +55,7 @@ namespace loxx
       consume(TokenType::LeftBrace, "Expected '{' before static function.");
       auto body = block();
       return std::make_unique<Function>(std::move(name), std::move(parameters),
-                                        std::move(body));
+                                        std::move(body), false);
     }
 
     consume(TokenType::LeftBrace, "Expected '{' before class body.");
@@ -260,13 +260,20 @@ namespace loxx
   std::unique_ptr<Stmt> Parser::function(const std::string& kind)
   {
     auto name = consume(TokenType::Identifier, "Expected " + kind + " name.");
-    consume(TokenType::LeftParen, "Expected '(' after " + kind + " name.");
-    std::vector<Token> parameters = parse_parameters();
+
+    const bool is_property = peek().type() == TokenType::LeftBrace;
+
+    std::vector<Token> parameters;
+
+    if (not is_property) {
+      consume(TokenType::LeftParen, "Expected '(' after " + kind + " name.");
+      parameters = parse_parameters();
+    }
 
     consume(TokenType::LeftBrace, "Expected '{' before " + kind + " body.");
     auto body = block();
     return std::make_unique<Function>(std::move(name), std::move(parameters),
-                                      std::move(body));
+                                      std::move(body), is_property);
   }
 
 
