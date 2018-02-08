@@ -288,18 +288,18 @@ namespace loxx
       arguments.push_back(std::move(stack_.pop()));
     }
 
-    if (not callee.has_type<Callable>()) {
+    if (not callee.has_type<std::shared_ptr<Callable>>()) {
       throw RuntimeError(expr.paren, "Can only call functions and classes.");
     }
 
-    auto& function = callee.get<Callable>();
-    if (arguments.size() != function.arity()) {
+    auto& function = callee.get<std::shared_ptr<Callable>>();
+    if (arguments.size() != function->arity()) {
       std::stringstream ss;
-      ss << "Expected " << function.arity() << " arguments but got "
+      ss << "Expected " << function->arity() << " arguments but got "
          << arguments.size() << '.';
       throw RuntimeError(expr.paren, ss.str());
     }
-    stack_.push(function.call(*this, arguments));
+    stack_.push(function->call(*this, arguments));
   }
 
 
@@ -307,8 +307,8 @@ namespace loxx
   {
     evaluate(*expr.object);
     const auto object = stack_.pop();
-    if (object.has_type<ClassInstance>()) {
-      stack_.push(object.get<ClassInstance>().get(expr.name));
+    if (object.has_type<std::shared_ptr<ClassInstance>>()) {
+      stack_.push(object.get<std::shared_ptr<ClassInstance>>()->get(expr.name));
       return;
     }
 
@@ -349,12 +349,12 @@ namespace loxx
     evaluate(*expr.object);
     auto object = stack_.pop();
 
-    if (not object.has_type<ClassInstance>()) {
+    if (not object.has_type<std::shared_ptr<ClassInstance>>()) {
       throw RuntimeError(expr.name, "Only instances have fields.");
     }
 
     evaluate(*expr.value);
-    object.get<ClassInstance>().set(expr.name, stack_.top());
+    object.get<std::shared_ptr<ClassInstance>>()->set(expr.name, stack_.top());
   }
 
 
@@ -481,15 +481,17 @@ namespace loxx
     if (generic.has_type<std::string>()) {
       return generic.get<std::string>();
     }
-    if (generic.has_type<Callable>()) {
+    if (generic.has_type<std::shared_ptr<Callable>>()) {
       // TODO: Find a more elegant way to achieve ths...
-      const auto ptr = dynamic_cast<const ClassDef*>(&generic.get<Callable>());
-      if (ptr) {
-	return ptr->name();
+      const auto ptr = std::dynamic_pointer_cast<ClassDef>(
+          generic.get<std::shared_ptr<Callable>>());
+      if (ptr != nullptr) {
+        return ptr->name();
       }
     }
-    if (generic.has_type<ClassInstance>()) {
-      return generic.get<ClassInstance>().cls().name() + " instance";
+    if (generic.has_type<std::shared_ptr<ClassInstance>>()) {
+      return generic.get<std::shared_ptr<ClassInstance>>()->cls().name() +
+          " instance";
     }
     return "";
   }

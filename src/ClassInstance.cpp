@@ -32,7 +32,7 @@ namespace loxx
     const auto method = cls_->find_method(
         std::const_pointer_cast<ClassInstance>(this->shared_from_this()),
         name.lexeme());
-    if (method.has_type<Callable>()) {
+    if (method.has_type<std::shared_ptr<Callable>>()) {
       return method;
     }
 
