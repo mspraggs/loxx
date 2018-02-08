@@ -80,8 +80,8 @@ namespace loxx
 
   struct Function : public Stmt
   {
-    Function(Token name_arg, std::vector<Token> parameters_arg, std::vector<std::shared_ptr<Stmt>> body_arg)
-        : name(std::move(name_arg)), parameters(std::move(parameters_arg)), body(std::move(body_arg))
+    Function(Token name_arg, std::vector<Token> parameters_arg, std::vector<std::shared_ptr<Stmt>> body_arg, bool is_property_arg)
+        : name(std::move(name_arg)), parameters(std::move(parameters_arg)), body(std::move(body_arg)), is_property(std::move(is_property_arg))
     {}
 
     void accept(Visitor& visitor) const override
@@ -90,6 +90,7 @@ namespace loxx
     Token name;
     std::vector<Token> parameters;
     std::vector<std::shared_ptr<Stmt>> body;
+    bool is_property;
   };
 
 
