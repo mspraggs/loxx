@@ -28,7 +28,7 @@ namespace loxx
   {
     if (methods_.count(name) != 0) {
       const auto method = std::static_pointer_cast<FuncCallable>(
-          methods_.at(name).get<std::shared_ptr<Callable>>());
+          generic_cast<std::shared_ptr<Callable>>(methods_.at(name)));
       std::shared_ptr<Callable> bound_method = method->bind(std::move(instance));
       return Generic(bound_method);
     }
@@ -41,7 +41,7 @@ namespace loxx
     if (methods_.count("init") == 0) {
       return 0;
     }
-    return methods_.at("init").get<std::shared_ptr<Callable>>()->arity();
+    return generic_cast<std::shared_ptr<Callable>>(methods_.at("init"))->arity();
   }
 
   
@@ -54,7 +54,8 @@ namespace loxx
 
     if (methods_.count("init") != 0) {
       auto initialiser = std::static_pointer_cast<FuncCallable>(
-          methods_.at("init").get<std::shared_ptr<Callable>>())->bind(instance);
+          generic_cast<std::shared_ptr<Callable>>(methods_.at("init")))
+          ->bind(instance);
       initialiser->call(interpreter, arguments);
     }
 

@@ -43,13 +43,6 @@ namespace loxx
 
   void ClassInstance::set(const Token& name, Generic value)
   {
-    const bool have_field = fields_.count(name.lexeme()) != 0;
-
-    if (have_field) {
-      fields_.at(name.lexeme()) = std::move(value);
-    }
-    else {
-      fields_.emplace(name.lexeme(), std::move(value));
-    }
+    fields_[name.lexeme()] = std::move(value);
   }
 }
