@@ -207,7 +207,7 @@ namespace loxx
     }
 
     if (condition == nullptr) {
-      condition = std::make_unique<Literal>(Generic(true));
+      condition = std::make_unique<Literal>(true);
     }
     body = std::make_unique<While>(std::move(condition), std::move(body));
 
@@ -454,13 +454,13 @@ namespace loxx
   std::unique_ptr<Expr> Parser::primary()
   {
     if (match({TokenType::False})) {
-      return std::make_unique<Literal>(Generic(false));
+      return std::make_unique<Literal>(false);
     }
     if (match({TokenType::True})) {
-      return std::make_unique<Literal>(Generic(true));
+      return std::make_unique<Literal>(true);
     }
     if (match({TokenType::Nil})) {
-      return std::make_unique<Literal>(Generic(nullptr));
+      return std::make_unique<Literal>(nullptr);
     }
 
     if (match({TokenType::Number, TokenType::String})) {

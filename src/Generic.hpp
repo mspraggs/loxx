@@ -28,103 +28,43 @@
 
 namespace loxx
 {
-  namespace detail
+  class bad_generic_cast : public std::bad_cast
   {
-    template <typename T>
-    class Comparable
-    {
-      template <typename C>
-      static char test(decltype(&C::operator==));
-      template <typename C>
-      static long test(...);
-
-    public:
-      constexpr static bool value = sizeof(test<T>(0)) == sizeof(char);
-    };
-
-
-    template <typename T, typename U,
-        typename = std::enable_if_t<Comparable<T>::value and
-            Comparable<U>::value>>
-    bool compare(const T& lhs, const U& rhs)
-    {
-      return lhs == rhs;
-    }
-
-
-    template <typename T, typename U>
-    bool compare (const T&, const U&)
-    {
-      return false;
-    }
-  }
+  };
 
 
   class Generic
   {
-    class ContainerBase
+    struct ContainerBase
     {
-    public:
       virtual ~ContainerBase() = default;
 
       virtual bool operator==(const ContainerBase& container) const = 0;
 
-      virtual std::unique_ptr<ContainerBase> clone() const = 0;
+      virtual ContainerBase* clone() const = 0;
 
-      virtual void* get_ptr() = 0;
-      virtual const void* get_ptr() const = 0;
-      virtual const std::type_index& get_type_index() const = 0;
+      virtual const std::type_info& type() const { return typeid(void); };
     };
 
     template <typename T>
-    class ValueContainer : public ContainerBase
+    struct Container : public ContainerBase
     {
-    public:
-      ValueContainer(T value);
+      Container(T value);
 
       bool operator==(const ContainerBase& container) const override;
 
-      std::unique_ptr<ContainerBase> clone() const override;
+      ContainerBase* clone() const override;
 
-      inline void* get_ptr() override;
-      inline const void* get_ptr() const override;
-      const std::type_index& get_type_index() const override { return type_; }
+      const std::type_info& type() const override { return typeid(T); }
 
-    private:
-      std::type_index type_;
-      T value_;
-    };
-
-    template <typename T>
-    class PtrContainer : public ContainerBase
-    {
-    public:
-      PtrContainer(T* ptr);
-      PtrContainer(std::shared_ptr<T> ptr);
-
-      bool operator==(const ContainerBase& container) const override;
-
-      std::unique_ptr<ContainerBase> clone() const override;
-
-      inline void* get_ptr() override;
-      inline const void* get_ptr() const override;
-      const std::type_index& get_type_index() const override { return type_; }
-
-    private:
-      std::type_index type_;
-      std::shared_ptr<T> ptr_;
+      T value;
     };
 
   public:
-    template <typename T,
-        typename = std::enable_if_t<not std::is_pointer<T>::value, void>>
+    Generic() = default;
+
+    template <typename T>
     Generic(T value);
-
-    template <typename T>
-    Generic(std::shared_ptr<T> ptr);
-
-    template <typename T>
-    Generic(T* ptr);
 
     Generic(const Generic& generic);
     Generic(Generic&& generic) noexcept;
@@ -132,187 +72,125 @@ namespace loxx
     Generic& operator=(const Generic& generic);
     Generic& operator=(Generic&& generic) noexcept;
 
+    template <typename T>
+    Generic& operator=(const T& value);
+    template <typename T>
+    Generic& operator=(T&& value);
+
     bool operator==(const Generic& generic) const;
 
-    template <typename T>
-    inline const T& get() const;
-    template <typename T>
-    inline T& get();
+    const std::type_info& type() const { return container_->type(); }
 
-    template <typename T, typename U>
-    inline const U& get() const;
-    template <typename T, typename U>
-    inline U& get();
-
-    const std::type_index& type() const { return container_->get_type_index(); }
+    bool empty() const { return container_ == nullptr; }
 
     template <typename T>
-    bool has_type() const { return std::type_index(typeid(T)) == type(); }
+    bool has_type() const
+    { return typeid(T) == container_->type(); }
 
   private:
     template <typename T>
-    void check_access() const
-    {
-      if (not has_type<T>()) {
-        throw std::logic_error("Unable to get specified type from Generic!");
-      }
-    }
+    friend T* generic_cast(Generic*);
 
     std::unique_ptr<ContainerBase> container_;
   };
 
 
-  template <typename T, typename>
-  Generic::Generic(T value)
-      : container_(new ValueContainer<T>(std::move(value)))
+  template <typename T>
+  Generic::Generic(T value) : container_(new Container<T>(std::move(value)))
+  {
+  }
+
+
+  template<typename T>
+  Generic& Generic::operator=(const T& value)
+  {
+    if (has_type<T>()) {
+      static_cast<Container<T>*>(container_.get())->value = value;
+    }
+    else {
+      container_.reset(new Container<T>(value));
+    }
+    return *this;
+  }
+
+
+  template<typename T>
+  Generic& Generic::operator=(T&& value)
+  {
+    if (has_type<T>()) {
+      static_cast<Container<T>*>(container_.get())->value = value;
+    }
+    else {
+      container_.reset(new Container<T>(value));
+    }
+    return *this;
+  }
+
+
+  template <typename T>
+  Generic::Container<T>::Container(T value)
+      : value(std::move(value))
   {
   }
 
 
   template <typename T>
-  Generic::Generic(std::shared_ptr<T> ptr)
-      : container_(new PtrContainer<T>(std::move(ptr)))
+  bool Generic::Container<T>::operator==(const ContainerBase& container) const
   {
+    if (type() != container.type()) {
+      return false;
+    }
+
+    return value == static_cast<const Container<T>&>(container).value;
   }
 
 
   template <typename T>
-  Generic::Generic(T* ptr)
-      : container_(new PtrContainer<T>(ptr))
+  Generic::ContainerBase* Generic::Container<T>::clone() const
   {
+    return new Container(value);
   }
 
 
   template <typename T>
-  const T& Generic::get() const
+  T* generic_cast(Generic* generic)
   {
-    check_access<T>();
-    return *reinterpret_cast<const T*>(container_->get_ptr());
+    auto ptr = generic->container_.get();
+    return generic->has_type<T>() ?
+           &static_cast<Generic::Container<T>*>(ptr)->value : nullptr;
   }
 
 
   template <typename T>
-  T& Generic::get()
+  const T* generic_cast(const Generic* generic)
   {
-    check_access<T>();
-    return *reinterpret_cast<T*>(container_->get_ptr());
+    return const_cast<const T*>(generic_cast<T>(const_cast<Generic*>(generic)));
   }
 
 
-  template <typename T, typename U>
-  const U& Generic::get() const
+  template <typename T>
+  T& generic_cast(Generic& generic)
   {
-    check_access<T>();
-    auto ptr = dynamic_cast<U*>(reinterpret_cast<T*>(container_->get_ptr()));
+    auto ptr = generic_cast<T>(&generic);
 
     if (ptr != nullptr) {
       return *ptr;
     }
-    throw std::logic_error("Unable to cast type to that specified");
+
+    throw std::bad_cast();
   }
 
 
-  template <typename T, typename U>
-  U& Generic::get()
+  template <typename T>
+  const T& generic_cast(const Generic& generic)
   {
-    check_access<T>();
-    auto ptr = dynamic_cast<U*>(reinterpret_cast<T*>(container_->get_ptr()));
+    const auto ptr = generic_cast<T>(&generic);
 
     if (ptr != nullptr) {
       return *ptr;
     }
-    throw std::logic_error("Unable to cast type to that specified");
-  }
 
-
-  template <typename T>
-  Generic::ValueContainer<T>::ValueContainer(T value)
-      : type_(typeid(T)), value_(std::move(value))
-  {
-  }
-
-
-  template <typename T>
-  bool Generic::ValueContainer<T>::operator==(
-      const ContainerBase& container) const
-  {
-    if (get_type_index() != container.get_type_index()) {
-      return false;
-    }
-
-    return value_ == static_cast<const ValueContainer<T>&>(container).value_;
-  }
-
-
-  template <typename T>
-  std::unique_ptr<Generic::ContainerBase>
-  Generic::ValueContainer<T>::clone() const
-  {
-    return std::make_unique<ValueContainer>(value_);
-  }
-
-
-  template <typename T>
-  void* Generic::ValueContainer<T>::get_ptr()
-  {
-    return reinterpret_cast<void*>(&value_);
-  }
-
-
-  template <typename T>
-  const void* Generic::ValueContainer<T>::get_ptr() const
-  {
-    return reinterpret_cast<const void*>(&value_);
-  }
-
-
-  template <typename T>
-  Generic::PtrContainer<T>::PtrContainer(T* ptr)
-      : type_(typeid(T)), ptr_(ptr)
-  {
-  }
-
-
-  template <typename T>
-  Generic::PtrContainer<T>::PtrContainer(std::shared_ptr<T> ptr)
-      : type_(typeid(T)), ptr_(std::move(ptr))
-  {
-  }
-
-
-  template <typename T>
-  bool Generic::PtrContainer<T>::operator==(
-      const Generic::ContainerBase& container) const
-  {
-    using namespace detail;
-
-    if (get_type_index() != container.get_type_index()) {
-      return false;
-    }
-
-    return compare(*ptr_, *static_cast<const PtrContainer<T>&>(container).ptr_);
-  }
-
-
-  template <typename T>
-  std::unique_ptr<Generic::ContainerBase>
-  Generic::PtrContainer<T>::clone() const
-  {
-    return std::make_unique<PtrContainer>(ptr_);
-  }
-
-
-  template <typename T>
-  void* Generic::PtrContainer<T>::get_ptr()
-  {
-    return reinterpret_cast<void*>(ptr_.get());
-  }
-
-
-  template <typename T>
-  const void* Generic::PtrContainer<T>::get_ptr() const
-  {
-    return reinterpret_cast<void*>(ptr_.get());
+    throw bad_generic_cast();
   }
 }
 

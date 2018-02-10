@@ -91,10 +91,10 @@ namespace loxx
     const Generic& literal = token.literal();
 
     if (token.type() == TokenType::Number) {
-      literal_string = std::to_string(literal.get<double>());
+      literal_string = std::to_string(generic_cast<double>(literal));
     }
     else if (token.type() == TokenType::String) {
-      literal_string = literal.get<std::string>();
+      literal_string = generic_cast<std::string>(literal);
     }
     else if (token.type() == TokenType::True) {
       literal_string = "true";

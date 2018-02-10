@@ -86,11 +86,11 @@ namespace loxx
     std::shared_ptr<Callable> func =
         std::make_shared<FuncCallable<Function>>(stmt, environment_, false);
     if (local_funcs_.count(&stmt) == 0) {
-      environment_->define(stmt.name.lexeme(), Generic(func));
+      environment_->define(stmt.name.lexeme(), func);
     }
     else {
       const std::size_t index = std::get<1>(local_funcs_[&stmt]);
-      environment_->define(index, Generic(func));
+      environment_->define(index, func);
     }
   }
 
@@ -179,7 +179,7 @@ namespace loxx
 
   void Interpreter::visit_class_stmt(const Class& stmt)
   {
-    environment_->define(stmt.name.lexeme(), Generic(nullptr));
+    environment_->define(stmt.name.lexeme(), nullptr);
 
     std::unordered_map<std::string, Generic> bound_methods;
     for (const auto& method : stmt.bound_methods) {
@@ -187,21 +187,21 @@ namespace loxx
       std::shared_ptr<Callable> callable =
           std::make_shared<FuncCallable<Function>>(
               *method, environment_, is_initialiser);
-      bound_methods.emplace(method->name.lexeme(), Generic(callable));
+      bound_methods.emplace(method->name.lexeme(), callable);
     }
 
     std::unordered_map<std::string, Generic> static_methods;
     for (const auto& method : stmt.static_methods) {
       std::shared_ptr<Callable> callable =
           std::make_shared<FuncCallable<Function>>(*method, environment_, false);
-      static_methods.emplace(method->name.lexeme(), Generic(callable));
+      static_methods.emplace(method->name.lexeme(), callable);
     }
     
     std::shared_ptr<Callable> cls =
         std::make_shared<ClassDef>(stmt.name.lexeme(), std::move(bound_methods),
                                    std::move(static_methods));
 
-    environment_->assign(stmt.name, Generic(cls));
+    environment_->assign(stmt.name, cls);
   }
 
 
@@ -230,11 +230,11 @@ namespace loxx
 
     switch (expr.op.type()) {
     case TokenType::Bang:
-      stack_.push(Generic(not is_truthy(value)));
+      stack_.push(not is_truthy(value));
       break;
     case TokenType::Minus:
       check_number_operand(expr.op, value);
-      stack_.push(Generic(-value.get<double>()));
+      stack_.push(-generic_cast<double>(value));
       break;
     default:
       break;
@@ -252,38 +252,38 @@ namespace loxx
 
     switch (expr.op.type()) {
     case TokenType::BangEqual:
-      stack_.push(Generic(not is_equal(left, right)));
+      stack_.push(not is_equal(left, right));
       break;
     case TokenType::EqualEqual:
-      stack_.push(Generic(is_equal(left, right)));
+      stack_.push(is_equal(left, right));
       break;
     case TokenType::Greater:
       check_number_operands(expr.op, left, right);
-      stack_.push(Generic(left.get<double>() > right.get<double>()));
+      stack_.push(generic_cast<double>(left) > generic_cast<double>(right));
       break;
     case TokenType::GreaterEqual:
       check_number_operands(expr.op, left, right);
-      stack_.push(Generic(left.get<double>() >= right.get<double>()));
+      stack_.push(generic_cast<double>(left) >= generic_cast<double>(right));
       break;
     case TokenType::Less:
       check_number_operands(expr.op, left, right);
-      stack_.push(Generic(left.get<double>() < right.get<double>()));
+      stack_.push(generic_cast<double>(left) < generic_cast<double>(right));
       break;
     case TokenType::LessEqual:
       check_number_operands(expr.op, left, right);
-      stack_.push(Generic(left.get<double>() <= right.get<double>()));
+      stack_.push(generic_cast<double>(left) <= generic_cast<double>(right));
       break;
     case TokenType::Minus:
       check_number_operands(expr.op, left, right);
-      stack_.push(Generic(left.get<double>() - right.get<double>()));
+      stack_.push(generic_cast<double>(left) - generic_cast<double>(right));
       break;
     case TokenType::Plus:
       if (left.has_type<double>() and right.has_type<double>()) {
-        stack_.push(Generic(left.get<double>() + right.get<double>()));
+        stack_.push(generic_cast<double>(left) + generic_cast<double>(right));
       }
       else if (left.has_type<std::string>() and right.has_type<std::string>()) {
-        stack_.push(Generic(left.get<std::string>() +
-                                     right.get<std::string>()));
+        stack_.push(generic_cast<std::string>(left) +
+                    generic_cast<std::string>(right));
       }
       else {
         throw RuntimeError(
@@ -293,15 +293,15 @@ namespace loxx
     case TokenType::Slash:
       check_number_operands(expr.op, left, right);
 
-      if (right.get<double>() == 0.0) {
+      if (generic_cast<double>(right) == 0.0) {
         throw RuntimeError(expr.op, "Division by zero encountered.");
       }
 
-      stack_.push(Generic(left.get<double>() / right.get<double>()));
+      stack_.push(generic_cast<double>(left) / generic_cast<double>(right));
       break;
     case TokenType::Star:
       check_number_operands(expr.op, left, right);
-      stack_.push(Generic(left.get<double>() * right.get<double>()));
+      stack_.push(generic_cast<double>(left) * generic_cast<double>(right));
       break;
     case TokenType::Comma:
       stack_.push(right);
@@ -323,18 +323,18 @@ namespace loxx
       arguments.push_back(std::move(stack_.pop()));
     }
 
-    if (not callee.has_type<Callable>()) {
+    if (not callee.has_type<std::shared_ptr<Callable>>()) {
       throw RuntimeError(expr.paren, "Can only call functions and classes.");
     }
 
-    auto& function = callee.get<Callable>();
-    if (arguments.size() != function.arity()) {
+    auto& function = generic_cast<std::shared_ptr<Callable>>(callee);
+    if (arguments.size() != function->arity()) {
       std::stringstream ss;
-      ss << "Expected " << function.arity() << " arguments but got "
+      ss << "Expected " << function->arity() << " arguments but got "
          << arguments.size() << '.';
       throw RuntimeError(expr.paren, ss.str());
     }
-    stack_.push(function.call(*this, arguments));
+    stack_.push(function->call(*this, arguments));
   }
 
 
@@ -342,18 +342,22 @@ namespace loxx
   {
     evaluate(*expr.object);
     const auto object = stack_.pop();
-    if (object.has_type<Callable>()) {
-      const auto ptr = dynamic_cast<const ClassInstance*>(&object.get<Callable>());
+    if (object.has_type<std::shared_ptr<Callable>>()) {
+      const auto ptr = std::dynamic_pointer_cast<const ClassInstance>(
+          generic_cast<std::shared_ptr<Callable>>(object));
       if (ptr != nullptr) {
         stack_.push(ptr->get(expr.name));
         return;
       }
     }
-    if (object.has_type<ClassInstance>()) {
-      auto attr = object.get<ClassInstance>().get(expr.name);
+    if (object.has_type<std::shared_ptr<ClassInstance>>()) {
+      auto attr =
+          generic_cast<std::shared_ptr<ClassInstance>>(object)->get(expr.name);
 
-      if (attr.has_type<Callable>() and attr.get<Callable>().is_property()) {
-        attr = attr.get<Callable>().call(*this, std::vector<Generic>());
+      if (attr.has_type<std::shared_ptr<Callable>>() and
+          generic_cast<std::shared_ptr<Callable>>(attr)->is_property()) {
+        const auto callable = generic_cast<std::shared_ptr<Callable>>(attr);
+        attr = callable->call(*this, std::vector<Generic>());
       }
 
       stack_.push(std::move(attr));
@@ -397,12 +401,12 @@ namespace loxx
     evaluate(*expr.object);
     auto object = stack_.pop();
 
-    if (not object.has_type<ClassInstance>()) {
+    if (not object.has_type<std::shared_ptr<ClassInstance>>()) {
       throw RuntimeError(expr.name, "Only instances have fields.");
     }
 
     evaluate(*expr.value);
-    object.get<ClassInstance>().set(expr.name, stack_.top());
+    generic_cast<std::shared_ptr<ClassInstance>>(object)->set(expr.name, stack_.top());
   }
 
 
@@ -519,7 +523,7 @@ namespace loxx
       return false;
     }
     if (value.has_type<bool>()) {
-      return value.get<bool>();
+      return generic_cast<bool>(value);
     }
     return true;
   }
@@ -566,24 +570,26 @@ namespace loxx
     }
     if (generic.has_type<double>()) {
       std::stringstream ss;
-      ss << generic.get<double>();
+      ss << generic_cast<double>(generic);
       return ss.str();
     }
     if (generic.has_type<bool>()) {
-      return generic.get<bool>() ? "true" : "false";
+      return generic_cast<bool>(generic) ? "true" : "false";
     }
     if (generic.has_type<std::string>()) {
-      return generic.get<std::string>();
+      return generic_cast<std::string>(generic);
     }
-    if (generic.has_type<Callable>()) {
+    if (generic.has_type<std::shared_ptr<Callable>>()) {
       // TODO: Find a more elegant way to achieve ths...
-      const auto ptr = dynamic_cast<const ClassDef*>(&generic.get<Callable>());
-      if (ptr) {
-	return ptr->name();
+      const auto ptr = std::dynamic_pointer_cast<ClassDef>(
+          generic_cast<std::shared_ptr<Callable>>(generic));
+      if (ptr != nullptr) {
+        return ptr->name();
       }
     }
-    if (generic.has_type<ClassInstance>()) {
-      return generic.get<ClassInstance>().cls().name() + " instance";
+    if (generic.has_type<std::shared_ptr<ClassInstance>>()) {
+      return generic_cast<std::shared_ptr<ClassInstance>>(generic)->cls().name() +
+          " instance";
     }
     return "";
   }

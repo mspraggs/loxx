@@ -58,7 +58,7 @@ namespace loxx
       scan_token();
     }
 
-    tokens_.emplace_back(TokenType::Eof, "", Generic(nullptr), line_);
+    tokens_.emplace_back(TokenType::Eof, "", nullptr, line_);
     return tokens_;
   }
 
@@ -156,10 +156,10 @@ namespace loxx
     const TokenType type =
         keywords_.count(text) == 0 ? TokenType::Identifier : keywords_[text];
     if (type == TokenType::True) {
-      add_token(type, Generic(true));
+      add_token(type, true);
     }
     else if (type == TokenType::False) {
-      add_token(type, Generic(false));
+      add_token(type, false);
     }
     else {
       add_token(type);
@@ -182,9 +182,7 @@ namespace loxx
 
     advance();
 
-    Generic literal(src_.substr(start_ + 1, current_ - start_ - 2));
-
-    add_token(TokenType::String, std::move(literal));
+    add_token(TokenType::String, src_.substr(start_ + 1, current_ - start_ - 2));
   }
 
 
@@ -203,8 +201,8 @@ namespace loxx
     }
 
     try {
-      Generic literal(std::stod(src_.substr(start_, current_ - start_)));
-      add_token(TokenType::Number, std::move(literal));
+      add_token(TokenType::Number,
+                std::stod(src_.substr(start_, current_ - start_)));
     }
     catch (const std::out_of_range& e) {
       error(line_, "Unable to parse number: out of range");
@@ -256,7 +254,7 @@ namespace loxx
   void Scanner::add_token(const TokenType type)
   {
     auto substr = src_.substr(start_, current_ - start_);
-    tokens_.emplace_back(type, substr, Generic(nullptr), line_);
+    tokens_.emplace_back(type, substr, nullptr, line_);
   }
 
 

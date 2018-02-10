@@ -36,7 +36,7 @@ namespace loxx
       std::shared_ptr<ClassInstance> instance) const
   {
     auto environment = std::make_shared<Environment>(closure_);
-    environment->define("this", Generic(std::move(instance)));
+    environment->define("this", std::move(instance));
     return wrap_environment(environment);
   }
 

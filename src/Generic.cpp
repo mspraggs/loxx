@@ -37,7 +37,7 @@ namespace loxx
   Generic& Generic::operator=(const Generic& generic)
   {
     if (this != &generic) {
-      container_ = generic.container_->clone();
+      container_.reset(generic.container_->clone());
     }
 
     return *this;
