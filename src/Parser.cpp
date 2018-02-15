@@ -50,10 +50,10 @@ namespace loxx
   {
     auto name = consume(TokenType::Identifier, "Expected class name.");
 
-    auto subclass = std::shared_ptr<Expr>();
+    auto superclass = std::shared_ptr<Expr>();
     if (match({TokenType::Less})) {
       consume(TokenType::Identifier, "Expected superclass named.");
-      subclass = std::make_shared<Variable>(previous());
+      superclass = std::make_shared<Variable>(previous());
     }
     
     consume(TokenType::LeftBrace, "Expected '{' before class body.");
@@ -66,7 +66,7 @@ namespace loxx
 
     consume(TokenType::RightBrace, "Expected '}' after class body.");
 
-    return std::make_unique<Class>(std::move(name), std::move(subclass),
+    return std::make_unique<Class>(std::move(name), std::move(superclass),
                                    std::move(methods));
   }
 
