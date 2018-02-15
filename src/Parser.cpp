@@ -49,6 +49,13 @@ namespace loxx
   std::unique_ptr<Stmt> Parser::class_declaration()
   {
     auto name = consume(TokenType::Identifier, "Expected class name.");
+
+    auto subclass = std::shared_ptr<Expr>();
+    if (match({TokenType::Less})) {
+      consume(TokenType::Identifier, "Expected superclass named.");
+      subclass = std::make_shared<Variable>(previous());
+    }
+    
     consume(TokenType::LeftBrace, "Expected '{' before class body.");
 
     std::vector<std::shared_ptr<Function>> methods;
@@ -59,7 +66,8 @@ namespace loxx
 
     consume(TokenType::RightBrace, "Expected '}' after class body.");
 
-    return std::make_unique<Class>(std::move(name), std::move(methods));
+    return std::make_unique<Class>(std::move(name), std::move(subclass),
+                                   std::move(methods));
   }
 
 
