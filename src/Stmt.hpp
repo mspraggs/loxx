@@ -31,15 +31,15 @@
 namespace loxx
 {
 
+  struct Block;
+  struct Class;
+  struct Expression;
   struct Function;
+  struct If;
+  struct Print;
+  struct Return;
   struct Var;
   struct While;
-  struct Return;
-  struct Print;
-  struct Expression;
-  struct Class;
-  struct Block;
-  struct If;
 
   struct Stmt
   {
@@ -48,18 +48,59 @@ namespace loxx
     class Visitor
     {
     public:
+      virtual void visit_block_stmt(const Block& stmt) = 0;
+      virtual void visit_class_stmt(const Class& stmt) = 0;
+      virtual void visit_expression_stmt(const Expression& stmt) = 0;
       virtual void visit_function_stmt(const Function& stmt) = 0;
+      virtual void visit_if_stmt(const If& stmt) = 0;
+      virtual void visit_print_stmt(const Print& stmt) = 0;
+      virtual void visit_return_stmt(const Return& stmt) = 0;
       virtual void visit_var_stmt(const Var& stmt) = 0;
       virtual void visit_while_stmt(const While& stmt) = 0;
-      virtual void visit_return_stmt(const Return& stmt) = 0;
-      virtual void visit_print_stmt(const Print& stmt) = 0;
-      virtual void visit_expression_stmt(const Expression& stmt) = 0;
-      virtual void visit_class_stmt(const Class& stmt) = 0;
-      virtual void visit_block_stmt(const Block& stmt) = 0;
-      virtual void visit_if_stmt(const If& stmt) = 0;
     };
 
     virtual void accept(Visitor&) const {}
+  };
+
+
+  struct Block : public Stmt
+  {
+    Block(std::vector<std::shared_ptr<Stmt>> statements_arg)
+        : statements(std::move(statements_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_block_stmt(*this); }
+
+    std::vector<std::shared_ptr<Stmt>> statements;
+  };
+
+
+  struct Class : public Stmt
+  {
+    Class(Token name_arg, std::shared_ptr<Expr> superclass_arg, std::vector<std::shared_ptr<Function>> methods_arg)
+        : name(std::move(name_arg)), superclass(std::move(superclass_arg)), methods(std::move(methods_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_class_stmt(*this); }
+
+    Token name;
+    std::shared_ptr<Expr> superclass;
+    std::vector<std::shared_ptr<Function>> methods;
+  };
+
+
+  struct Expression : public Stmt
+  {
+    Expression(std::shared_ptr<Expr> expression_arg)
+        : expression(std::move(expression_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_expression_stmt(*this); }
+
+    std::shared_ptr<Expr> expression;
   };
 
 
@@ -75,6 +116,48 @@ namespace loxx
     Token name;
     std::vector<Token> parameters;
     std::vector<std::shared_ptr<Stmt>> body;
+  };
+
+
+  struct If : public Stmt
+  {
+    If(std::shared_ptr<Expr> condition_arg, std::shared_ptr<Stmt> then_branch_arg, std::shared_ptr<Stmt> else_branch_arg)
+        : condition(std::move(condition_arg)), then_branch(std::move(then_branch_arg)), else_branch(std::move(else_branch_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_if_stmt(*this); }
+
+    std::shared_ptr<Expr> condition;
+    std::shared_ptr<Stmt> then_branch;
+    std::shared_ptr<Stmt> else_branch;
+  };
+
+
+  struct Print : public Stmt
+  {
+    Print(std::shared_ptr<Expr> expression_arg)
+        : expression(std::move(expression_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_print_stmt(*this); }
+
+    std::shared_ptr<Expr> expression;
+  };
+
+
+  struct Return : public Stmt
+  {
+    Return(Token keyword_arg, std::shared_ptr<Expr> value_arg)
+        : keyword(std::move(keyword_arg)), value(std::move(value_arg))
+    {}
+
+    void accept(Visitor& visitor) const override
+    { visitor.visit_return_stmt(*this); }
+
+    Token keyword;
+    std::shared_ptr<Expr> value;
   };
 
 
@@ -103,88 +186,6 @@ namespace loxx
 
     std::shared_ptr<Expr> condition;
     std::shared_ptr<Stmt> body;
-  };
-
-
-  struct Return : public Stmt
-  {
-    Return(Token keyword_arg, std::shared_ptr<Expr> value_arg)
-        : keyword(std::move(keyword_arg)), value(std::move(value_arg))
-    {}
-
-    void accept(Visitor& visitor) const override
-    { visitor.visit_return_stmt(*this); }
-
-    Token keyword;
-    std::shared_ptr<Expr> value;
-  };
-
-
-  struct Print : public Stmt
-  {
-    Print(std::shared_ptr<Expr> expression_arg)
-        : expression(std::move(expression_arg))
-    {}
-
-    void accept(Visitor& visitor) const override
-    { visitor.visit_print_stmt(*this); }
-
-    std::shared_ptr<Expr> expression;
-  };
-
-
-  struct Expression : public Stmt
-  {
-    Expression(std::shared_ptr<Expr> expression_arg)
-        : expression(std::move(expression_arg))
-    {}
-
-    void accept(Visitor& visitor) const override
-    { visitor.visit_expression_stmt(*this); }
-
-    std::shared_ptr<Expr> expression;
-  };
-
-
-  struct Class : public Stmt
-  {
-    Class(Token name_arg, std::vector<std::shared_ptr<Function>> methods_arg)
-        : name(std::move(name_arg)), methods(std::move(methods_arg))
-    {}
-
-    void accept(Visitor& visitor) const override
-    { visitor.visit_class_stmt(*this); }
-
-    Token name;
-    std::vector<std::shared_ptr<Function>> methods;
-  };
-
-
-  struct Block : public Stmt
-  {
-    Block(std::vector<std::shared_ptr<Stmt>> statements_arg)
-        : statements(std::move(statements_arg))
-    {}
-
-    void accept(Visitor& visitor) const override
-    { visitor.visit_block_stmt(*this); }
-
-    std::vector<std::shared_ptr<Stmt>> statements;
-  };
-
-
-  struct If : public Stmt
-  {
-    If(std::shared_ptr<Expr> condition_arg, std::shared_ptr<Stmt> then_branch_arg, std::shared_ptr<Stmt> else_branch_arg)
-        : condition(std::move(condition_arg)), then_branch(std::move(then_branch_arg)), else_branch(std::move(else_branch_arg))
-    {}
-
-    void accept(Visitor& visitor) const override
-    { visitor.visit_if_stmt(*this); }
-
-    std::shared_ptr<Expr> condition;
-    std::shared_ptr<Stmt> then_branch;
-    std::shared_ptr<Stmt> else_branch;
   };
 
 }
