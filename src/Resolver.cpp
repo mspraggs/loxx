@@ -38,6 +38,10 @@ namespace loxx
     const auto enclosing_class = current_class_;
     current_class_ = ClassType::Class;
 
+    if (stmt.superclass != nullptr) {
+      resolve(*stmt.superclass);
+    }
+
     begin_scope();
     scopes_.top()["this"] = true;
 
