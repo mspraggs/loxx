@@ -302,7 +302,7 @@ namespace loxx
     std::vector<Generic> arguments;
     for (const auto& argument : expr.arguments) {
       evaluate(*argument);
-      arguments.push_back(std::move(stack_.pop()));
+      arguments.push_back(stack_.pop());
     }
 
     if (not callee.has_type<std::shared_ptr<Callable>>()) {
@@ -389,7 +389,7 @@ namespace loxx
 
   void Interpreter::visit_variable_expr(const Variable& expr)
   {
-    stack_.push(std::move(lookup_variable(expr.name, expr)));
+    stack_.push(lookup_variable(expr.name, expr));
   }
 
 
