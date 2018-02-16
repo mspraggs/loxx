@@ -164,13 +164,18 @@ namespace loxx
   {
     environment_->define(stmt.name.lexeme(), nullptr);
 
-    Generic superclass;
+    std::shared_ptr<ClassDef> superclass;
     if (stmt.superclass != nullptr) {
       evaluate(*stmt.superclass);
-      superclass = stack_.pop();
-      if (not superclass.has_type<std::shared_ptr<Callable>>() and
-          not std::dynamic_pointer_cast<ClassDef>(
-               generic_cast<std::shared_ptr<Callable>>(superclass)) == nullptr) {
+      auto superclass_obj = stack_.pop();
+      bool bad_superclass = true;
+      if (superclass_obj.has_type<std::shared_ptr<Callable>>()) {
+        auto superclass_ptr =
+          generic_cast<std::shared_ptr<Callable>>(superclass_obj);
+        superclass = std::dynamic_pointer_cast<ClassDef>(superclass_ptr);
+        bad_superclass = superclass == nullptr;
+      }
+      if (bad_superclass) {
         throw RuntimeError(stmt.name, "Superclass must be a class");
       }
     }
