@@ -164,6 +164,17 @@ namespace loxx
   {
     environment_->define(stmt.name.lexeme(), nullptr);
 
+    Generic superclass;
+    if (stmt.superclass != nullptr) {
+      evaluate(*stmt.superclass);
+      superclass = stack_.pop();
+      if (not superclass.has_type<std::shared_ptr<Callable>>() and
+          not std::dynamic_pointer_cast<ClassDef>(
+               generic_cast<std::shared_ptr<Callable>>(superclass)) == nullptr) {
+        throw RuntimeError(stmt.name, "Superclass must be a class");
+      }
+    }
+
     std::unordered_map<std::string, Generic> methods;
     for (const auto& method : stmt.methods) {
       const bool is_initialiser = method->name.lexeme() == "init";
