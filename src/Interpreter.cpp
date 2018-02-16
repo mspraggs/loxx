@@ -189,7 +189,8 @@ namespace loxx
     }
     
     std::shared_ptr<Callable> cls =
-        std::make_shared<ClassDef>(stmt.name.lexeme(), std::move(methods));
+        std::make_shared<ClassDef>(stmt.name.lexeme(), std::move(superclass),
+                                   std::move(methods));
 
     environment_->assign(stmt.name, cls);
   }

@@ -35,9 +35,10 @@ namespace loxx
   class ClassDef : public Callable
   {
   public:
-    ClassDef(std::string name,
-	      std::unordered_map<std::string, Generic> methods)
-        : name_(std::move(name)), methods_(std::move(methods))
+    ClassDef(std::string name, std::shared_ptr<ClassDef> superclass,
+             std::unordered_map<std::string, Generic> methods)
+        : name_(std::move(name)), superclass_(std::move(superclass)),
+          methods_(std::move(methods))
     {
     }
 
@@ -52,6 +53,7 @@ namespace loxx
     
   private:
     std::string name_;
+    std::shared_ptr<ClassDef> superclass_;
     std::unordered_map<std::string, Generic> methods_;
   };
 }
