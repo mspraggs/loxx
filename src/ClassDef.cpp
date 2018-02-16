@@ -32,6 +32,11 @@ namespace loxx
       std::shared_ptr<Callable> bound_method = method->bind(std::move(instance));
       return Generic(bound_method);
     }
+
+    if (superclass_ != nullptr) {
+      return superclass_->find_method(std::move(instance), name);
+    }
+
     return Generic(nullptr);
   }
 
