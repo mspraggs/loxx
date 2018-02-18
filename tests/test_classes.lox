@@ -1,0 +1,14 @@
+// The Fan Man!
+// 0
+
+class Man {
+  init(type) {
+    this.type = type;
+  }
+
+  who() {
+    print "The " + this.type + " Man!";
+  }
+}
+
+Man("Fan").who();
