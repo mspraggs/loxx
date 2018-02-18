@@ -27,10 +27,16 @@ def parse_test(test_path):
 
     assert len(lines) >= 2
 
-    output = re.findall("^//(.+)$", lines[0])[0].strip()
-    rvalue = int(re.findall("^// *(\d+)$", lines[1])[0])
+    header_length = 0
 
-    return output, rvalue
+    while lines[header_length][:2] == "//":
+        header_length += 1
+
+    output_lines = [re.findall("^//(.+)$", line)[0].strip()
+                    for line in lines[:header_length - 1]]
+    rvalue = int(re.findall("^// *(\d+)$", lines[header_length - 1])[0])
+
+    return output_lines, rvalue
 
 
 def run_tests(interpreter_path, test_paths):
@@ -52,7 +58,9 @@ def run_tests(interpreter_path, test_paths):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
 
-        actual_output = "".join(process.communicate()).strip()
+        actual_output = [line.strip()
+                         for line in "".join(process.communicate()).split('\n')
+                         if line.strip()]
         actual_rvalue = process.returncode
 
         test_fname = os.path.basename(test_path)
@@ -66,9 +74,15 @@ def run_tests(interpreter_path, test_paths):
             print()
             print("Test \"{}\" failed!".format(test_name))
             print("-- Expected output:")
-            print("---- {}".format(expected_output))
+
+            for line in expected_output:
+                print("---- {}".format(line))
+
             print("-- Actual output:")
-            print("---- {}".format(actual_output))
+
+            for line in actual_output:
+                print("---- {}".format(line))
+
             print("-- Expected rvalue:")
             print("---- {}".format(expected_rvalue))
             print("-- Actual rvalue:")
