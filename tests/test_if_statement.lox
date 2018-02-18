@@ -1,0 +1,9 @@
+// Wowzer!
+// 0
+
+if (true) {
+  print "Wowzer!";
+}
+else {
+  print "NO!";
+}

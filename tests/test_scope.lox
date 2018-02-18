@@ -1,0 +1,14 @@
+// The sea, the sea!
+// The sea, the sea!
+// 0
+
+var a = "The sea, the sea!";
+{
+  fun show_a() {
+    print a;
+  }
+
+  show_a();
+  var a = "Just a pond...";
+  show_a();
+}
