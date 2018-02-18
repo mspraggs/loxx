@@ -76,17 +76,17 @@ def run_tests(interpreter_path, test_paths):
             print("-- Expected output:")
 
             for line in expected_output:
-                print("---- {}".format(line))
+                print("    {}".format(line))
 
             print("-- Actual output:")
 
             for line in actual_output:
-                print("---- {}".format(line))
+                print("    {}".format(line))
 
-            print("-- Expected rvalue:")
-            print("---- {}".format(expected_rvalue))
-            print("-- Actual rvalue:")
-            print("---- {}".format(actual_rvalue))
+            print("-- Expected return value:")
+            print("    {}".format(expected_rvalue))
+            print("-- Actual return value:")
+            print("    {}".format(actual_rvalue))
             print()
 
     print()
