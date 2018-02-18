@@ -37,6 +37,8 @@ def run_tests(interpreter_path, test_paths):
 
     success_counter = 0
 
+    test_paths = sorted(test_paths, key=lambda p: os.path.basename(p))
+
     for test_path in test_paths:
 
         try:
