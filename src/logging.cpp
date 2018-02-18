@@ -45,10 +45,10 @@ namespace loxx
   void error(const Token& token, const std::string& message)
   {
     if (token.type() == TokenType::Eof) {
-      report(token.line(), " at end", message);
+      report(token.line(), "at end", message);
     }
     else {
-      report(token.line(), " at '" + token.lexeme() + "'", message);
+      report(token.line(), "at '" + token.lexeme() + "'", message);
     }
   }
 

@@ -1,0 +1,4 @@
+// Undefined variable 'x'.
+// [line 4]
+// 70
+print x;

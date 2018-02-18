@@ -28,19 +28,22 @@
 
 namespace loxx
 {
+  class bad_generic_cast : public std::bad_cast
+  {
+  };
+
+
   class Generic
   {
     struct ContainerBase
     {
-      ContainerBase(const std::type_info& type_info) : type(type_info) {}
-
       virtual ~ContainerBase() = default;
 
       virtual bool operator==(const ContainerBase& container) const = 0;
 
       virtual ContainerBase* clone() const = 0;
 
-      std::type_index type;
+      virtual const std::type_info& type() const { return typeid(void); };
     };
 
     template <typename T>
@@ -51,6 +54,8 @@ namespace loxx
       bool operator==(const ContainerBase& container) const override;
 
       ContainerBase* clone() const override;
+
+      const std::type_info& type() const override { return typeid(T); }
 
       T value;
     };
@@ -74,25 +79,17 @@ namespace loxx
 
     bool operator==(const Generic& generic) const;
 
-    const std::type_index& type() const { return container_->type; }
+    const std::type_info& type() const { return container_->type(); }
 
     bool empty() const { return container_ == nullptr; }
 
     template <typename T>
     bool has_type() const
-    { return std::type_index(typeid(T)) == container_->type; }
+    { return typeid(T) == container_->type(); }
 
   private:
     template <typename T>
     friend T* generic_cast(Generic*);
-
-    template <typename T>
-    void check_access() const
-    {
-      if (not has_type<T>()) {
-        throw std::bad_cast();
-      }
-    }
 
     std::unique_ptr<ContainerBase> container_;
   };
@@ -132,7 +129,7 @@ namespace loxx
 
   template <typename T>
   Generic::Container<T>::Container(T value)
-      : ContainerBase(typeid(T)), value(std::move(value))
+      : value(std::move(value))
   {
   }
 
@@ -140,7 +137,7 @@ namespace loxx
   template <typename T>
   bool Generic::Container<T>::operator==(const ContainerBase& container) const
   {
-    if (type != container.type) {
+    if (type() != container.type()) {
       return false;
     }
 
@@ -193,7 +190,7 @@ namespace loxx
       return *ptr;
     }
 
-    throw std::bad_cast();
+    throw bad_generic_cast();
   }
 }
 

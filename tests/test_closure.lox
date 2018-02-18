@@ -1,0 +1,16 @@
+// Nomnomnom, sausage
+// 0
+
+fun make_breakfast(food) {
+
+  fun eat() {
+    return "Nomnomnom, " + food;
+  }
+
+  food = "sausage";
+
+  return eat;
+}
+
+var func = make_breakfast("eggs");
+print func();
