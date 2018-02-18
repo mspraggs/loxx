@@ -9,14 +9,14 @@ import sys
 fname_regex = re.compile("^test_(\w+).lox$")
 
 
-def gather_files():
+def gather_files(test_regex):
     """Collect files with name test_*.lox in test directory"""
 
     directory = os.path.dirname(os.path.abspath(__file__))
 
     return [os.path.join(directory, fname)
             for fname in os.listdir(directory)
-            if fname_regex.findall(fname)]
+            if fname_regex.findall(fname) and re.findall(test_regex, fname)]
 
 
 def parse_test(test_path):
@@ -83,7 +83,13 @@ if __name__ == "__main__":
     try:
         exec_path = sys.argv[1]
     except IndexError:
-        print("Usage: python {} <interpreter_path>".format(sys.argv[0]))
+        print("Usage: python {} <interpreter_path> [<test regex>]"
+              .format(sys.argv[0]))
         sys.exit(1)
 
-    run_tests(exec_path, gather_files())
+    try:
+        test_regex = sys.argv[2]
+    except IndexError:
+        test_regex = ""
+
+    run_tests(exec_path, gather_files(test_regex))
