@@ -195,6 +195,10 @@ namespace loxx
         std::make_shared<ClassDef>(stmt.name.lexeme(), std::move(superclass),
                                    std::move(methods));
 
+    if (superclass != nullptr) {
+      environment_ = environment_->release_enclosing();
+    }
+
     environment_->assign(stmt.name, cls);
   }
 
