@@ -413,6 +413,14 @@ namespace loxx
       return std::make_unique<Grouping>(std::move(expr));
     }
 
+    if (match({TokenType::Super})) {
+      auto keyword = previous();
+      consume(TokenType::Dot, "Expected '.' after 'super'.");
+      auto method = consume(TokenType::Identifier,
+                            "Expected superclass method name.");
+      return std::make_unique<Super>(std::move(keyword), std::move(method));
+    }
+
     if (match({TokenType::This})) {
       return std::make_unique<This>(previous());
     }
