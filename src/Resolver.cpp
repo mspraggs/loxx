@@ -40,6 +40,9 @@ namespace loxx
 
     if (stmt.superclass != nullptr) {
       resolve(*stmt.superclass);
+
+      begin_scope();
+      scopes_.top()["super"] = true;
     }
 
     begin_scope();
@@ -53,6 +56,10 @@ namespace loxx
       }
 
       resolve_function(*method, declaration);
+    }
+
+    if (stmt.superclass != nullptr) {
+      end_scope();
     }
 
     current_class_ = enclosing_class;
