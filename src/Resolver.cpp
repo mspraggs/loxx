@@ -196,6 +196,12 @@ namespace loxx
   }
 
 
+  void Resolver::visit_super_exxpr(const Super& expr)
+  {
+    resolve_local(expr, expr.keyword);
+  }
+
+
   void Resolver::visit_this_expr(const This& expr)
   {
     if (current_class_ == ClassType::None) {
