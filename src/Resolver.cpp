@@ -196,7 +196,7 @@ namespace loxx
   }
 
 
-  void Resolver::visit_super_exxpr(const Super& expr)
+  void Resolver::visit_super_expr(const Super& expr)
   {
     resolve_local(expr, expr.keyword);
   }
