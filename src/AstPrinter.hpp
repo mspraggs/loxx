@@ -44,6 +44,7 @@ namespace loxx
     void visit_get_expr(const Get& expr) override;
     void visit_set_expr(const Set& expr) override;
     void visit_this_expr(const This& expr) override;
+    void visit_super_expr(const Super& expr) override;
 
     void visit_if_stmt(const If& stmt) override;
     void visit_print_stmt(const Print& stmt) override;

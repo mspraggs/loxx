@@ -112,6 +112,13 @@ namespace loxx
   }
 
 
+  void AstPrinter::visit_super_expr(const Super& expr)
+  {
+    stream_ << expr.keyword.lexeme() << ' '
+            << expr.method.lexeme();
+  }
+
+
   void AstPrinter::visit_print_stmt(const Print& stmt)
   {
     paranthesise("write-line", {stmt.expression.get()});
