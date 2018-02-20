@@ -382,7 +382,7 @@ namespace loxx
   }
 
 
-  void Interpreter::visit_super_expr(const Set& expr)
+  void Interpreter::visit_super_expr(const Super& expr)
   {
     const int distance = locals_[&expr];
     const auto super_obj = generic_cast<std::shared_ptr<Callable>>(
@@ -392,15 +392,15 @@ namespace loxx
     auto object = generic_cast<std::shared_ptr<ClassInstance>>(
         environment_->get_at(distance - 1, "this"));
 
-    auto method = superclass->find_method(std::move(object,
-                                                    expr.method.lexeme()));
+    auto method = superclass->find_method(std::move(object),
+                                          expr.method.lexeme());
 
     if (method.has_type<decltype(nullptr)>()) {
       throw RuntimeError(expr.method,
                          "Undefined property '" + expr.method.lexeme() + "'.");
     }
 
-    stack_.push();
+    stack_.push(std::move(method));
   }
 
 

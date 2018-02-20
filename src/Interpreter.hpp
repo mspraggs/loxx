@@ -56,7 +56,7 @@ namespace loxx
     void visit_literal_expr(const Literal& expr) override;
     void visit_logical_expr(const Logical& expr) override;
     void visit_set_expr(const Set& expr) override;
-    void visit_super_expr(const Supser& expr) override;
+    void visit_super_expr(const Super& expr) override;
     void visit_this_expr(const This& expr) override;
     void visit_grouping_expr(const Grouping& expr) override;
     void visit_variable_expr(const Variable& expr) override;
