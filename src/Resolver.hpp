@@ -66,7 +66,7 @@ namespace loxx
 
   private:
     enum class FunctionType { None, Function, Initialiser, Method };
-    enum class ClassType { None, Class };
+    enum class ClassType { None, Class, SubClass };
 
     void resolve(const Stmt& stmt);
     void resolve(const Expr& expr);

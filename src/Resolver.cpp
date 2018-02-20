@@ -39,6 +39,7 @@ namespace loxx
     current_class_ = ClassType::Class;
 
     if (stmt.superclass != nullptr) {
+      current_class_ = ClassType::SubClass;
       resolve(*stmt.superclass);
 
       begin_scope();
@@ -198,6 +199,12 @@ namespace loxx
 
   void Resolver::visit_super_expr(const Super& expr)
   {
+    if (current_class_ == ClassType::None) {
+      error(expr.keyword, "Cannot use 'super' outside of class.");
+    }
+    else if (current_class_ != ClassType::SubClass) {
+      error(expr.keyword, "Cannot use 'super' in a class without a superclass.");
+    }
     resolve_local(expr, expr.keyword);
   }
 
