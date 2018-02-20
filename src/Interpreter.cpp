@@ -388,6 +388,19 @@ namespace loxx
     const auto super_obj = generic_cast<std::shared_ptr<Callable>>(
         environment_->get_at(distance, "super"));
     const auto superclass = std::static_pointer_cast<ClassDef>(super_obj);
+
+    auto object = generic_cast<std::shared_ptr<ClassInstance>>(
+        environment_->get_at(distance - 1, "this"));
+
+    auto method = superclass->find_method(std::move(object,
+                                                    expr.method.lexeme()));
+
+    if (method.has_type<decltype(nullptr)>()) {
+      throw RuntimeError(expr.method,
+                         "Undefined property '" + expr.method.lexeme() + "'.");
+    }
+
+    stack_.push();
   }
 
 
