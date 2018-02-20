@@ -382,6 +382,15 @@ namespace loxx
   }
 
 
+  void Interpreter::visit_super_expr(const Set& expr)
+  {
+    const int distance = locals_[&expr];
+    const auto super_obj = generic_cast<std::shared_ptr<Callable>>(
+        environment_->get_at(distance, "super"));
+    const auto superclass = std::static_pointer_cast<ClassDef>(super_obj);
+  }
+
+
   void Interpreter::visit_this_expr(const This& expr)
   {
     stack_.push(lookup_variable(expr.keyword, expr));
