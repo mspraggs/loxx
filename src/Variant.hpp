@@ -141,6 +141,13 @@ namespace loxx
   }
 
 
+  template <typename T>
+  struct InPlace
+  {
+    using type = T;
+  };
+
+
   // Variant class template
   template <typename... Ts>
   class Variant
@@ -154,6 +161,9 @@ namespace loxx
               typename = std::enable_if_t<
                   not std::is_same<std::decay_t<T>, Variant<Ts...>>::value>>
     Variant(T&& value) noexcept;
+
+    template <typename T0, typename... Us>
+    Variant(InPlace<T0>, Us&&... args);
 
     Variant<Ts...>& operator=(const Variant<Ts...>& other);
     Variant<Ts...>& operator=(Variant<Ts...>&& other) noexcept;
@@ -229,6 +239,21 @@ namespace loxx
 
     new (&storage_) U(std::forward<T>(value));
   }
+
+
+  template<typename... Ts>
+  template <typename T0, typename... Us>
+  Variant<Ts...>::Variant(InPlace<T0>, Us&&... args)
+  {
+    constexpr auto index = detail::type_index<T0, Ts...>();
+
+    static_assert(index < sizeof...(Ts),
+                  "Unable to construct variant using supplied type.");
+
+    type_index_ = index;
+
+    new (&storage_) T0(std::forward<Us>(args)...);
+  };
 
 
   template<typename... Ts>
