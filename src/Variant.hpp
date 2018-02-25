@@ -33,55 +33,48 @@ namespace loxx
   // Helper functions
   namespace detail
   {
-    template<std::size_t I, typename T0>
-    constexpr std::size_t type_index()
-    {
-      return I;
-    }
-
-
-    template<std::size_t I, typename T0, typename T1, typename... Ts>
-    constexpr std::size_t type_index()
-    {
-      return std::is_same<T0, T1>::value ? I : type_index<I + 1, T0, Ts...>();
-    }
-
-
-    template<typename... Ts>
-    constexpr std::size_t type_index()
-    {
-      return type_index<0, Ts...>();
-    }
-
-
-    constexpr std::size_t static_max(std::size_t i)
+    template<typename T0>
+    constexpr std::size_t type_index(std::size_t i = 0)
     {
       return i;
     }
 
 
-    template<typename... Is>
-    constexpr std::size_t static_max(std::size_t i0, std::size_t i1, Is... is)
+    template<typename T0, typename T1, typename... Ts>
+    constexpr std::size_t type_index(std::size_t i = 0)
     {
-      return i0 > static_max(i1, is...) ? i0 : static_max(i1, is...);
+      return std::is_same<T0, T1>::value ? i : type_index<T0, Ts...>(i + 1);
+    }
+
+
+    constexpr std::size_t static_max()
+    {
+      return 0;
+    }
+
+
+    template<typename... Is>
+    constexpr std::size_t static_max(std::size_t i0, Is... is)
+    {
+      return i0 > static_max(is...) ? i0 : static_max(is...);
     }
 
 
     template<std::size_t I, typename T0, typename... Ts>
-    struct LookupType : LookupType<I - 1, Ts...>
+    struct TypeIndexLookup : TypeIndexLookup<I - 1, Ts...>
     {
     };
 
 
     template<typename T0, typename... Ts>
-    struct LookupType<0, T0, Ts...>
+    struct TypeIndexLookup<0, T0, Ts...>
     {
       using type = T0;
     };
 
 
     template<std::size_t I, typename... Ts>
-    using lookup_type_t = typename LookupType<I, Ts...>::type;
+    using LookupType = typename TypeIndexLookup<I, Ts...>::type;
 
 
     constexpr std::size_t index_lookup(std::size_t i,
@@ -157,13 +150,17 @@ namespace loxx
     Variant(const Variant<Ts...>& other);
     Variant(Variant<Ts...>&& other) noexcept;
 
-    template <typename T>
+    template <typename T,
+              typename = std::enable_if_t<
+                  not std::is_same<std::decay_t<T>, Variant<Ts...>>::value>>
     Variant(T&& value) noexcept;
 
     Variant<Ts...>& operator=(const Variant<Ts...>& other);
     Variant<Ts...>& operator=(Variant<Ts...>&& other) noexcept;
 
-    template <typename T>
+    template <typename T,
+              typename = std::enable_if_t<
+                  not std::is_same<std::decay_t<T>, Variant<Ts...>>::value>>
     Variant<Ts...>& operator=(T&& value) noexcept;
 
     std::size_t index() const { return type_index_; }
@@ -171,7 +168,7 @@ namespace loxx
   private:
     template <std::size_t I, typename... Us>
     friend constexpr auto get(Variant<Us...>& variant)
-        -> detail::lookup_type_t<I, Us...>&;
+        -> detail::LookupType<I, Us...>&;
 
     template <typename T, typename... Us>
     friend constexpr bool holds_alternative(Variant<Us...>& variant);
@@ -219,7 +216,7 @@ namespace loxx
 
 
   template <typename... Ts>
-  template <typename T>
+  template <typename T, typename>
   Variant<Ts...>::Variant(T&& value) noexcept
   {
     constexpr auto index = detail::convertible_type_index<T, Ts...>();
@@ -228,7 +225,7 @@ namespace loxx
                   "Unable to construct variant using supplied type.");
 
     type_index_ = index;
-    using U = detail::lookup_type_t<index, Ts...>;
+    using U = detail::LookupType<index, Ts...>;
 
     new (&storage_) U(std::forward<T>(value));
   }
@@ -259,7 +256,7 @@ namespace loxx
 
 
   template<typename... Ts>
-  template<typename T>
+  template<typename T, typename>
   Variant<Ts...>& Variant<Ts...>::operator=(T&& value) noexcept
   {
     constexpr auto index = detail::convertible_type_index<T, Ts...>();
@@ -268,7 +265,7 @@ namespace loxx
                   "Unable to construct variant using supplied type.");
 
     type_index_ = index;
-    using U = detail::lookup_type_t<index, Ts...>;
+    using U = detail::LookupType<index, Ts...>;
     new (&storage_) U(std::forward<T>(value));
 
     return *this;
@@ -277,12 +274,12 @@ namespace loxx
 
   template <std::size_t I, typename... Ts>
   constexpr auto get(Variant<Ts...>& variant)
-      -> detail::lookup_type_t<I, Ts...>&
+      -> detail::LookupType<I, Ts...>&
   {
     if (variant.type_index_ != I) {
       throw BadVariantAccess("Variant does not contain requested object.");
     }
-    using T = detail::lookup_type_t<I, Ts...>;
+    using T = detail::LookupType<I, Ts...>;
     return *reinterpret_cast<T*>(&variant.storage_);
   }
 
@@ -290,7 +287,7 @@ namespace loxx
   template <std::size_t I, typename... Ts>
   constexpr auto get(const Variant<Ts...>& variant)
   {
-    using T = detail::lookup_type_t<I, Ts...>;
+    using T = detail::LookupType<I, Ts...>;
     return const_cast<const T&>(get<I>(const_cast<Variant<Ts...>&>(variant)));
   }
 
