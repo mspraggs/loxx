@@ -20,6 +20,7 @@ set(SRC
   Stack.hpp
   Stmt.hpp
   Token.hpp
+  Variant.hpp
 
   AstPrinter.cpp
   ClassDef.cpp
