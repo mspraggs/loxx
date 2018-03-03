@@ -200,7 +200,7 @@ namespace loxx
   void Resolver::visit_super_expr(const Super& expr)
   {
     if (current_class_ == ClassType::None) {
-      error(expr.keyword, "Cannot use 'super' outside of class.");
+      error(expr.keyword, "Cannot use 'super' outside of a class.");
     }
     else if (current_class_ != ClassType::SubClass) {
       error(expr.keyword, "Cannot use 'super' in a class without a superclass.");

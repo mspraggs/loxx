@@ -52,7 +52,7 @@ namespace loxx
 
     auto superclass = std::shared_ptr<Expr>();
     if (match({TokenType::Less})) {
-      consume(TokenType::Identifier, "Expected superclass named.");
+      consume(TokenType::Identifier, "Expected superclass name.");
       superclass = std::make_shared<Variable>(previous());
     }
     
@@ -210,7 +210,7 @@ namespace loxx
     auto expr = expression();
 
     if (check(TokenType::SemiColon) or not in_repl_) {
-      consume(TokenType::SemiColon, "Expxect ';' after expression");
+      consume(TokenType::SemiColon, "Expected ';' after expression.");
     }
     return std::make_unique<Expression>(std::move(expr));
   }

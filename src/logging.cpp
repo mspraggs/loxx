@@ -36,7 +36,9 @@ namespace loxx
   void report(const unsigned int line, const std::string& where,
               const std::string& message)
   {
-    std::cout << "[line " << line << "] Error " << where << ": "
+    const auto location_padding = where.length() > 0 ? " " : "";
+    std::cout << "[line " << line << "] Error"
+              << location_padding << where << ": "
               << message << std::endl;
     had_error = true;
   }

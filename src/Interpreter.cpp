@@ -176,7 +176,7 @@ namespace loxx
       }
       
       if (superclass == nullptr) {
-        throw RuntimeError(stmt.name, "Superclass must be a class");
+        throw RuntimeError(stmt.name, "Superclass must be a class.");
       }
 
       environment_ = std::make_shared<Environment>(std::move(environment_));
