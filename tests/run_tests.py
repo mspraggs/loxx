@@ -51,7 +51,7 @@ def print_failed_test(test_name, expected_data, actual_data):
     white = "\033[0m" if sys.platform != "win32" else ""
     
     print()
-    print("Test {:.<40}{} FAILED{}"
+    print("Test {:.<50}{} FAILED{}"
           .format(test_name, red, white))
     print("-- Expected output:")
     
@@ -76,7 +76,7 @@ def print_succeeded_test(test_name):
     green = "\033[32m" if sys.platform != "win32" else ""
     white = "\033[0m" if sys.platform != "win32" else ""
 
-    print("Test {:.<40}{} PASSED{}"
+    print("Test {:.<50}{} PASSED{}"
           .format(test_name, green, white))
 
 
@@ -88,7 +88,7 @@ def run_tests(interpreter_path, test_paths):
     test_counter = 0
 
     directory = os.path.dirname(os.path.abspath(__file__))
-    test_paths = sorted(test_paths, key=lambda p: os.path.basename(p))
+    test_paths = sorted(test_paths, key=lambda p: os.path.relpath(p, directory))
 
     for test_path in test_paths:
 
