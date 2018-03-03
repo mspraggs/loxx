@@ -1,0 +1,6 @@
+// Undefined property 'bar'.
+// [line 6]
+// 70
+class Foo {}
+var foo = Foo();
+foo.bar;

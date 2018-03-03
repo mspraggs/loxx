@@ -1,0 +1,8 @@
+// Undefined variable 'err'.
+// [line 8]
+// 70
+var a = "1
+2
+3
+";
+err;

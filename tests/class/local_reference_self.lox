@@ -1,0 +1,8 @@
+// Foo
+// 0
+class Foo {
+  returnSelf() {
+    return Foo;
+  }
+}
+print Foo().returnSelf();

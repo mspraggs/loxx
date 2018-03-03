@@ -1,0 +1,9 @@
+// Undefined variable 'method'.
+// [line 6]
+// 70
+class Foo {
+  method() {
+    print method;
+  }
+}
+Foo().method();

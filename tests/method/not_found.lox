@@ -1,0 +1,5 @@
+// Undefined property 'unknown'.
+// [line 5]
+// 70
+class Foo {}
+Foo().unknown();

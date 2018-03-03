@@ -1,0 +1,5 @@
+// Only instances have fields.
+// [line 5]
+// 70
+class Foo {}
+Foo.bar = "value";

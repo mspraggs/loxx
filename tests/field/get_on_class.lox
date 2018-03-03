@@ -1,0 +1,5 @@
+// Only instances have properties.
+// [line 5]
+// 70
+class Foo {}
+Foo.bar;

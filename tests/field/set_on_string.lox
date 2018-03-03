@@ -1,0 +1,4 @@
+// Only instances have fields.
+// [line 4]
+// 70
+"str".foo = "value";

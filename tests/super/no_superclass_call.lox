@@ -1,0 +1,8 @@
+// [line 5] Error at 'super': Cannot use 'super' in a class without a superclass.
+// 65
+class Base {
+  foo() {
+    super.doesNotExist(1);
+  }
+}
+Base().foo();

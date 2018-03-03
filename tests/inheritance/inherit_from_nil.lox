@@ -1,0 +1,5 @@
+// Superclass must be a class.
+// [line 5]
+// 70
+var Nil = nil;
+class Foo < Nil {}

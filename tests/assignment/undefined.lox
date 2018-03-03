@@ -1,0 +1,4 @@
+// Undefined variable 'unknown'.
+// [line 4]
+// 70
+unknown = "what";

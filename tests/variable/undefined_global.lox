@@ -1,0 +1,4 @@
+// Undefined variable 'notDefined'.
+// [line 4]
+// 70
+print notDefined;

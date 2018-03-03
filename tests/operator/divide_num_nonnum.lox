@@ -1,0 +1,4 @@
+// Binary operands must both be numbers.
+// [line 4]
+// 70
+1 / "1";

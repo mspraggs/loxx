@@ -1,0 +1,5 @@
+// [line 4] Error at 'i': Cannot have more than eight function parameters.
+// 65
+class Foo {
+  method(a, b, c, d, e, f, g, h, i) {}
+}

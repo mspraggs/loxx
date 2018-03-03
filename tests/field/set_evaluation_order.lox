@@ -1,0 +1,5 @@
+// Undefined variable 'undefined1'.
+// [line 4]
+// 70
+undefined1.bar
+  = undefined2;

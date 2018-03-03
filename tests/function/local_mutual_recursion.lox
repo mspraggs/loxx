@@ -1,0 +1,13 @@
+// Undefined variable 'isOdd'.
+// [line 7]
+// 70
+{
+  fun isEven(n) {
+    if (n == 0) return true;
+    return isOdd(n - 1);
+  }
+  fun isOdd(n) {
+    return isEven(n - 1);
+  }
+  isEven(4);
+}

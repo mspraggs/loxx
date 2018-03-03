@@ -1,8 +1,0 @@
-// Yum! Tasty pancakes
-// 0
-
-fun eat(food) {
-  print "Yum! Tasty " + food;
-}
-
-eat("pancakes");

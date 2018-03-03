@@ -1,0 +1,10 @@
+// Undefined property 'doesNotExist'.
+// [line 8]
+// 70
+class Base {}
+class Derived < Base {
+  foo() {
+    super.doesNotExist(1);
+  }
+}
+Derived().foo();

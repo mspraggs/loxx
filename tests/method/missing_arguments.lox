@@ -1,0 +1,7 @@
+// Expected 2 arguments but got 1.
+// [line 7]
+// 70
+class Foo {
+  method(a, b) {}
+}
+Foo().method(1);

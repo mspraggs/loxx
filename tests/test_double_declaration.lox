@@ -1,6 +1,0 @@
-// [line 5] Error at 'x': Variable with this name already declared in this scope.
-// 65
-{
-var x = 1;
-var x = 2;
-}

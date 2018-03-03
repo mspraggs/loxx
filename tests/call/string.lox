@@ -1,0 +1,4 @@
+// Can only call functions and classes.
+// [line 4]
+// 70
+"str"();

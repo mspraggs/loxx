@@ -1,0 +1,3 @@
+// [line 3] Error at '9': Cannot have more than eight function arguments.
+// 65
+true.method(1, 2, 3, 4, 5, 6, 7, 8, 9);

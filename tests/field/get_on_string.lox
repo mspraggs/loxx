@@ -1,0 +1,4 @@
+// Only instances have properties.
+// [line 4]
+// 70
+"str".foo;
