@@ -6,17 +6,17 @@ import subprocess
 import sys
 
 
-fname_regex = re.compile("^test_(\w+).lox$")
-
-
 def gather_files(test_regex):
     """Collect files with name test_*.lox in test directory"""
 
     directory = os.path.dirname(os.path.abspath(__file__))
-
-    return [os.path.join(directory, fname)
-            for fname in os.listdir(directory)
-            if fname_regex.findall(fname) and re.findall(test_regex, fname)]
+    filepaths = [os.path.join(dirpath, fname)
+                 for dirpath, dirnames, fnames in os.walk(directory)
+                 for fname in fnames if fname.endswith(".lox")]
+    
+    return [os.path.join(directory, path)
+            for path in filepaths
+            if re.findall(test_regex, path)]
 
 
 def parse_test(test_path):
@@ -25,11 +25,13 @@ def parse_test(test_path):
     with open(test_path) as f:
         lines = f.readlines()
 
-    assert len(lines) >= 2
+    assert len(lines) >= 1
 
     header_length = 0
 
-    while lines[header_length][:2] == "//":
+    for i, line in enumerate(lines):
+        if line[:2] != "//":
+            break
         header_length += 1
 
     output_lines = [re.findall("^//(.+)$", line)[0].strip()
@@ -56,16 +58,16 @@ def print_failed_test(test_name, expected_data, actual_data):
     for line in expected_output:
         print("    {}".format(line))
         
-        print("-- Actual output:")
+    print("-- Actual output:")
         
-        for line in actual_output:
-            print("    {}".format(line))
+    for line in actual_output:
+        print("    {}".format(line))
 
-        print("-- Expected return value:")
-        print("    {}".format(expected_retval))
-        print("-- Actual return value:")
-        print("    {}".format(actual_retval))
-        print()
+    print("-- Expected return value:")
+    print("    {}".format(expected_retval))
+    print("-- Actual return value:")
+    print("    {}".format(actual_retval))
+    print()
 
 
 def print_succeeded_test(test_name):
@@ -85,6 +87,7 @@ def run_tests(interpreter_path, test_paths):
     fail_counter = 0
     test_counter = 0
 
+    directory = os.path.dirname(os.path.abspath(__file__))
     test_paths = sorted(test_paths, key=lambda p: os.path.basename(p))
 
     for test_path in test_paths:
@@ -101,13 +104,13 @@ def run_tests(interpreter_path, test_paths):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
 
-        actual_output = [line.strip()
-                         for line in "".join(process.communicate()).split('\n')
-                         if line.strip()]
+        actual_output = [
+            line.strip()
+            for line in "".join(process.communicate()).split('\n')
+            if line.strip()]
         actual_retval = process.returncode
 
-        test_fname = os.path.basename(test_path)
-        test_name = fname_regex.findall(test_fname)[0]
+        test_name = os.path.relpath(test_path, directory)
 
         if (actual_retval == expected_retval and
                 actual_output == expected_output):
