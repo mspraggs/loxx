@@ -47,6 +47,9 @@ namespace loxx
 
     unsigned int arity() const override;
 
+    const std::string& name() const override
+    { return declaration_.name.lexeme(); }
+
   private:
     bool is_initialiser_;
     Function declaration_;

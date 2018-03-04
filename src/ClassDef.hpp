@@ -49,7 +49,7 @@ namespace loxx
     Generic call(Interpreter& interpreter,
                  const std::vector<Generic>& arguments) override;
 
-    const std::string& name() const { return name_; }
+    const std::string& name() const override { return name_; }
     
   private:
     std::string name_;

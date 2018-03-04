@@ -29,8 +29,8 @@ namespace loxx
   class NativeCallable : public Callable
   {
   public:
-    NativeCallable(Fn func, unsigned int arity)
-        : func_(std::move(func)), arity_(arity)
+    NativeCallable(std::string name, Fn func, unsigned int arity)
+        : name_(std::move(name)), func_(std::move(func)), arity_(arity)
     {}
 
     unsigned int arity() const override { return arity_; }
@@ -41,7 +41,10 @@ namespace loxx
       return func_(interpreter, arguments);
     }
 
+    const std::string& name() const override { return name_; }
+
   private:
+    std::string name_;
     Fn func_;
     unsigned int arity_;
   };

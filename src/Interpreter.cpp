@@ -47,7 +47,7 @@ namespace loxx
     globals_->define(
         "clock",
         Generic(std::shared_ptr<Callable>(
-            new NativeCallable<Fn>(std::move(fn), 0)))
+            new NativeCallable<Fn>("clock", std::move(fn), 0)))
     );
   }
 
@@ -523,11 +523,13 @@ namespace loxx
     }
     if (generic.has_type<std::shared_ptr<Callable>>()) {
       // TODO: Find a more elegant way to achieve ths...
-      const auto ptr = std::dynamic_pointer_cast<ClassDef>(
-          generic_cast<std::shared_ptr<Callable>>(generic));
-      if (ptr != nullptr) {
-        return ptr->name();
+      const auto ptr = generic_cast<std::shared_ptr<Callable>>(generic);
+
+      const auto class_ptr = std::dynamic_pointer_cast<ClassDef>(ptr);
+      if (class_ptr != nullptr) {
+        return "<class " + class_ptr->name() + ">";
       }
+      return "<fn " + ptr->name() + ">";
     }
     if (generic.has_type<std::shared_ptr<ClassInstance>>()) {
       return generic_cast<std::shared_ptr<ClassInstance>>(generic)->cls().name() +
