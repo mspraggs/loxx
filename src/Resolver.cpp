@@ -304,6 +304,7 @@ namespace loxx
     for (int i = static_cast<int>(scopes_.size()) - 1; i >= 0; i--) {
       if (scopes_.get(i).count(name.lexeme()) > 0) {
         interpreter_->resolve(expr, scopes_.size() - 1 - i);
+        return;
       }
     }
   }
