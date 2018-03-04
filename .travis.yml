@@ -48,7 +48,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-4.0
+            - llvm-toolchain-trusty-4.0
           packages:
             - clang-4.0
       env:
@@ -59,7 +59,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-5.0
+            - llvm-toolchain-trusty-5.0
           packages:
             - clang-5.0
       env:
