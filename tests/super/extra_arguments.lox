@@ -1,6 +1,6 @@
 // Derived.foo()
 // Expected 2 arguments but got 4.
-// [line 14]
+// [line 13]
 // 70
 class Base {
   foo(a, b) {

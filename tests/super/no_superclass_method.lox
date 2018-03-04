@@ -1,5 +1,5 @@
 // Undefined property 'doesNotExist'.
-// [line 8]
+// [line 7]
 // 70
 class Base {}
 class Derived < Base {

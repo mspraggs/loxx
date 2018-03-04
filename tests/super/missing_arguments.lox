@@ -1,5 +1,5 @@
 // Expected 2 arguments but got 1.
-// [line 12]
+// [line 11]
 // 70
 class Base {
   foo(a, b) {
