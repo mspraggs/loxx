@@ -149,12 +149,8 @@ namespace loxx
 
   void Interpreter::visit_block_stmt(const Block& stmt)
   {
-    try {
-      execute_block(stmt.statements,
-                    std::make_shared<Environment>(environment_));
-    }
-    catch (const RuntimeError& e) {
-    }
+    execute_block(stmt.statements,
+                  std::make_shared<Environment>(environment_));
   }
 
 
