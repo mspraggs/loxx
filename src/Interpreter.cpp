@@ -111,13 +111,11 @@ namespace loxx
   void Interpreter::visit_return_stmt(const Return& stmt)
   {
     auto value = [this, &stmt] () {
-      try {
+      if (stmt.value != nullptr) {
         evaluate(*stmt.value);
         return stack_.pop();
       }
-      catch (const std::out_of_range& e) {
-        return Generic(nullptr);
-      }
+      return Generic(nullptr);
     }();
 
     throw Returner(std::move(value));
