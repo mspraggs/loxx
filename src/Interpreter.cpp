@@ -174,7 +174,7 @@ namespace loxx
       }
 
       environment_ = std::make_shared<Environment>(std::move(environment_));
-      environment_->define("superclass", superclass);
+      environment_->define("super", superclass);
     }
 
     std::unordered_map<std::string, Generic> methods;
@@ -186,7 +186,7 @@ namespace loxx
     }
     
     std::shared_ptr<Callable> cls =
-        std::make_shared<ClassDef>(stmt.name.lexeme(), std::move(superclass),
+        std::make_shared<ClassDef>(stmt.name.lexeme(), superclass,
                                    std::move(methods));
 
     if (superclass != nullptr) {
