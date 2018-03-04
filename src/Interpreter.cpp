@@ -378,10 +378,9 @@ namespace loxx
 
   void Interpreter::visit_super_expr(const Super& expr)
   {
-    const int distance = locals_[&expr];
-    const auto super_obj = generic_cast<std::shared_ptr<Callable>>(
+    const std::size_t distance = locals_[&expr];
+    const auto superclass = generic_cast<std::shared_ptr<ClassDef>>(
         environment_->get_at(distance, "super"));
-    const auto superclass = std::static_pointer_cast<ClassDef>(super_obj);
 
     auto object = generic_cast<std::shared_ptr<ClassInstance>>(
         environment_->get_at(distance - 1, "this"));
