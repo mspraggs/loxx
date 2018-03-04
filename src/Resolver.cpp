@@ -106,11 +106,11 @@ namespace loxx
       error(stmt.keyword, "Cannot return from top-level code.");
     }
 
-    if (current_function_ == FunctionType::Initialiser) {
-      error(stmt.keyword, "Cannot return a value from an initialiser.");
-    }
-
     if (stmt.value != nullptr) {
+      if (current_function_ == FunctionType::Initialiser) {
+        error(stmt.keyword, "Cannot return a value from an initialiser.");
+      }
+
       resolve(*stmt.value);
     }
   }
