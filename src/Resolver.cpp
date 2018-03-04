@@ -17,6 +17,8 @@
  * Created by Matt Spraggs on 04/12/17.
  */
 
+#include <memory>
+
 #include "logging.hpp"
 #include "Resolver.hpp"
 
