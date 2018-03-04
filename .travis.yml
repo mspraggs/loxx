@@ -1,0 +1,18 @@
+language: cpp
+
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            -g g++-5
+      env:
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+
+script:
+  - mkdir build && cd build
+  - cmake .. && make -j 4
+  - python ../tests/run_tests.py src/loxx  
