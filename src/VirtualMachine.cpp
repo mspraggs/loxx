@@ -33,7 +33,7 @@ namespace loxx
   {
     switch (instruction) {
     default:
-      throw RuntimeError("Unsupported instruction encountered.");
+      break;
     }
   }
 }
