@@ -20,6 +20,8 @@
 #ifndef LOXX_VIRTUALMACHINE_HPP
 #define LOXX_VIRTUALMACHINE_HPP
 
+#include "Instruction.hpp"
+
 
 namespace loxx
 {
@@ -27,6 +29,9 @@ namespace loxx
   {
   public:
     explicit VirtualMachine();
+
+  private:
+    void execute(const Instruction instruction);
   };
 }
 

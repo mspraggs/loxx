@@ -17,6 +17,7 @@
  * Created by Matt Spraggs on 05/03/2018.
  */
 
+#include "RuntimeError.hpp"
 #include "VirtualMachine.hpp"
 
 
@@ -28,5 +29,11 @@ namespace loxx
   }
 
 
-  
+  void VirtualMachine::execute(const Instruction instruction)
+  {
+    switch (instruction) {
+    default:
+      throw RuntimeError("Unsupported instruction encountered.");
+    }
+  }
 }
