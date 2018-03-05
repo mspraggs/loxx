@@ -125,6 +125,8 @@ def run_tests(interpreter_path, test_paths):
     print("Ran {} tests, of which {} failed."
           .format(test_counter, fail_counter))
 
+    return fail_counter
+
 
 if __name__ == "__main__":
 
@@ -140,4 +142,5 @@ if __name__ == "__main__":
     except IndexError:
         test_regex = ""
 
-    run_tests(exec_path, gather_files(test_regex))
+    num_failed_tests = run_tests(exec_path, gather_files(test_regex))
+    sys.exit(num_failed_tests)
