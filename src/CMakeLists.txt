@@ -21,6 +21,7 @@ set(SRC
   Stmt.hpp
   Token.hpp
   Variant.hpp
+  VirtualMachine.hpp
 
   AstPrinter.cpp
   ClassDef.cpp
@@ -34,7 +35,8 @@ set(SRC
   Parser.cpp
   Resolver.cpp
   Scanner.cpp
-  Token.cpp)
+  Token.cpp
+  VirtualMachine.cpp)
 
 add_executable(loxx ${SRC})
 target_link_libraries(loxx)
