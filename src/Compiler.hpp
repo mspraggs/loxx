@@ -20,14 +20,52 @@
 #ifndef LOXX_COMPILER_HPP
 #define LOXX_COMPILER_HPP
 
+#include <vector>
+
+#include "Expr.hpp"
 #include "Instruction.hpp"
+#include "Stmt.hpp"
+#include "VirtualMachine.hpp"
 
 
 namespace loxx
 {
-  class Compiler
+  class Compiler : public Expr::Visitor, public Stmt::Visitor
   {
+  public:
+    void compile(const std::vector<std::shared_ptr<Stmt>>& statements);
 
+    void visit_assign_expr(const Assign& expr) override;
+    void visit_binary_expr(const Binary& expr) override;
+    void visit_call_expr(const Call& expr) override;
+    void visit_get_expr(const Get& expr) override;
+    void visit_grouping_expr(const Grouping& expr) override;
+    void visit_literal_expr(const Literal& expr) override;
+    void visit_logical_expr(const Logical& expr) override;
+    void visit_set_expr(const Set& expr) override;
+    void visit_super_expr(const Super& expr) override;
+    void visit_this_expr(const This& expr) override;
+    void visit_unary_expr(const Unary& expr) override;
+    void visit_variable_expr(const Variable& expr) override;
+
+    void visit_block_stmt(const Block& stmt) override;
+    void visit_class_stmt(const Class& stmt) override;
+    void visit_expression_stmt(const Expression& stmt) override;
+    void visit_function_stmt(const Function& stmt) override;
+    void visit_if_stmt(const If& stmt) override;
+    void visit_print_stmt(const Print& stmt) override;
+    void visit_return_stmt(const Return& stmt) override;
+    void visit_var_stmt(const Var& stmt) override;
+    void visit_while_stmt(const While& stmt) override;
+
+    const std::vector<std::uint8_t>& byte_code() const { return byte_code_; }
+    const std::vector<Obj>& constants() const { return constants_; }
+
+  private:
+    void compile(const Stmt& stmt);
+
+    std::vector<Obj> constants_;
+    std::vector<std::uint8_t> byte_code_;
   };
 }
 
