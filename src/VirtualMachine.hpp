@@ -20,18 +20,30 @@
 #ifndef LOXX_VIRTUALMACHINE_HPP
 #define LOXX_VIRTUALMACHINE_HPP
 
+#include <vector>
+
 #include "Instruction.hpp"
+#include "Variant.hpp"
+#include "Stack.hpp"
 
 
 namespace loxx
 {
+  using Obj = Variant<double>;
+
   class VirtualMachine
   {
   public:
     explicit VirtualMachine();
 
+    void execute(const std::vector<std::uint8_t>& byte_code,
+                 const std::vector<Obj>& constants);
+
   private:
-    void execute(const Instruction instruction);
+    void print_object(Obj object) const;
+
+    std::size_t instruction_ptr_;
+    Stack<Obj> stack_;
   };
 }
 

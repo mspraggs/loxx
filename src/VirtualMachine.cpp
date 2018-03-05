@@ -17,6 +17,8 @@
  * Created by Matt Spraggs on 05/03/2018.
  */
 
+#include <iostream>
+
 #include "RuntimeError.hpp"
 #include "VirtualMachine.hpp"
 
@@ -24,16 +26,61 @@
 namespace loxx
 {
   VirtualMachine::VirtualMachine()
+      : instruction_ptr_(0)
   {
     // TODO: Stack and frame space size reservation
   }
 
 
-  void VirtualMachine::execute(const Instruction instruction)
+  void VirtualMachine::execute(const std::vector<std::uint8_t>& byte_code,
+                               const std::vector<Obj>& constants)
   {
-    switch (instruction) {
-    default:
-      break;
+    instruction_ptr_ = 0;
+
+    while (true) {
+
+      const auto instruction =
+          static_cast<Instruction>(byte_code[instruction_ptr_]);
+
+      if (instruction == Instruction::Add) {
+        const auto first = stack_.pop();
+        const auto second = stack_.pop();
+
+        if (not holds_alternative<double>(first) or
+            not holds_alternative<double>(second)) {
+          return;
+        }
+
+        stack_.push(get<double>(first) + get<double>(second));
+      }
+
+      else if (instruction == Instruction::LoadConstant) {
+        std::size_t value_index = 0;
+
+        for (std::size_t i = 0; i < sizeof(std::size_t); ++i) {
+          value_index |= (byte_code[++instruction_ptr_] << 8 * i);
+        }
+
+        stack_.push(constants[value_index]);
+      }
+
+      else if (instruction == Instruction::Print) {
+        print_object(stack_.pop());
+      }
+
+      ++instruction_ptr_;
+
+      if (instruction_ptr_ >= byte_code.size()) {
+        return;
+      }
+    }
+  }
+
+
+  void VirtualMachine::print_object(Obj variant) const
+  {
+    if (holds_alternative<double>(variant)) {
+      std::cout << get<double>(variant) << std::endl;
     }
   }
 }
