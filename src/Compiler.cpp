@@ -132,7 +132,7 @@ namespace loxx
 
   void Compiler::visit_grouping_expr(const Grouping& expr)
   {
-
+    expr.expression->accept(*this);
   }
 
 
