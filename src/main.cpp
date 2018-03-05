@@ -10,6 +10,8 @@
 #include "Parser.hpp"
 #include "Resolver.hpp"
 #include "Scanner.hpp"
+#include "Compiler.hpp"
+#include "VirtualMachine.hpp"
 
 
 namespace loxx
@@ -41,16 +43,17 @@ namespace loxx
       std::cout << printer.print(statements) << std::endl;
     }
 
-    static Interpreter interpreter(in_repl);
+    Compiler compiler;
 
-    Resolver resolver(interpreter);
-    resolver.resolve(statements);
+    compiler.compile(statements);
 
     if (had_error) {
       return;
     }
 
-    interpreter.interpret(statements);
+    static VirtualMachine vm;
+
+    vm.execute(compiler.byte_code(), compiler.constants());
   }
 
 
