@@ -27,7 +27,15 @@ namespace loxx
 {
   enum class Instruction : std::uint8_t
   {
+    Add,
+    Divide,
+    LoadConstant,
+    Multiply,
+    Pop,
+    Print,
+    Push,
     Return,
+    Subtract,
   };
 }
 
