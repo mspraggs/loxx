@@ -10,6 +10,7 @@ set(SRC
   Expr.hpp
   FuncCallable.hpp
   Generic.hpp
+  Instructions.hpp
   Interpreter.hpp
   logging.hpp
   NativeCallable.hpp
