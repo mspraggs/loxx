@@ -42,16 +42,31 @@ namespace loxx
       const auto instruction =
           static_cast<Instruction>(byte_code[instruction_ptr_]);
 
-      if (instruction == Instruction::Add) {
-        const auto first = stack_.pop();
+      if (instruction == Instruction::Add or
+          instruction == Instruction::Subtract or
+          instruction == Instruction::Multiply or
+          instruction == Instruction::Divide) {
         const auto second = stack_.pop();
+        const auto first = stack_.pop();
 
-        if (not holds_alternative<double>(first) or
-            not holds_alternative<double>(second)) {
+        if (not valid_binary_ops(instruction, first, second)) {
+          // TODO: Error handling
           return;
         }
 
-        stack_.push(get<double>(first) + get<double>(second));
+        if (instruction == Instruction::Add) {
+          // TODO: Strings
+          stack_.push(get<double>(first) + get<double>(second));
+        }
+        else if (instruction == Instruction::Subtract) {
+          stack_.push(get<double>(first) - get<double>(second));
+        }
+        else if (instruction == Instruction::Multiply) {
+          stack_.push(get<double>(first) * get<double>(second));
+        }
+        else if (instruction == Instruction::Divide) {
+          stack_.push(get<double>(first) / get<double>(second));
+        }
       }
 
       else if (instruction == Instruction::LoadConstant) {
@@ -82,5 +97,29 @@ namespace loxx
     if (holds_alternative<double>(variant)) {
       std::cout << get<double>(variant) << std::endl;
     }
+  }
+
+
+  bool VirtualMachine::valid_binary_ops(
+      const Instruction instruction, const Obj& first, const Obj& second) const
+  {
+    switch (instruction) {
+    case Instruction::Add:
+      if (holds_alternative<double>(first) and
+          holds_alternative<double>(second)) {
+        return true;
+      }
+      // TODO: Strings
+      break;
+    case Instruction::Subtract:
+    case Instruction::Multiply:
+    case Instruction::Divide:
+      if (holds_alternative<double>(first) and
+          holds_alternative<double>(second)) {
+        return true;
+      }
+      break;
+    }
+    return false;
   }
 }
