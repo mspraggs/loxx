@@ -40,13 +40,13 @@ namespace loxx
                  const std::vector<Obj>& constants);
 
   private:
-
     void print_object(Obj object) const;
+    void execute_binary_op(const Instruction instruction);
+
+    void check_number_operands(const Obj& first, const Obj& second) const;
 
     std::size_t instruction_ptr_;
     Stack<Obj> stack_;
-    bool valid_binary_ops(const Instruction instruction,
-                          const Obj& first, const Obj& second) const;
   };
 }
 

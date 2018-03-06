@@ -46,29 +46,8 @@ namespace loxx
           instruction == Instruction::Subtract or
           instruction == Instruction::Multiply or
           instruction == Instruction::Divide) {
-        const auto second = stack_.pop();
-        const auto first = stack_.pop();
-
-        if (not valid_binary_ops(instruction, first, second)) {
-          // TODO: Error handling
-          return;
-        }
-
-        if (instruction == Instruction::Add) {
-          // TODO: Strings
-          stack_.push(get<double>(first) + get<double>(second));
-        }
-        else if (instruction == Instruction::Subtract) {
-          stack_.push(get<double>(first) - get<double>(second));
-        }
-        else if (instruction == Instruction::Multiply) {
-          stack_.push(get<double>(first) * get<double>(second));
-        }
-        else if (instruction == Instruction::Divide) {
-          stack_.push(get<double>(first) / get<double>(second));
-        }
+        execute_binary_op(instruction);
       }
-
       else if (instruction == Instruction::LoadConstant) {
         std::size_t value_index = 0;
 
@@ -100,26 +79,40 @@ namespace loxx
   }
 
 
-  bool VirtualMachine::valid_binary_ops(
-      const Instruction instruction, const Obj& first, const Obj& second) const
+  void VirtualMachine::execute_binary_op(const Instruction instruction)
   {
+    const auto second = stack_.pop();
+    const auto first = stack_.pop();
+
     switch (instruction) {
-    case Instruction::Add:
-      if (holds_alternative<double>(first) and
-          holds_alternative<double>(second)) {
-        return true;
-      }
-      // TODO: Strings
+    case Instruction::Multiply:
+      check_number_operands(first, second);
+      stack_.push(get<double>(first) * get<double>(second));
+      break;
+    case Instruction::Divide:
+      check_number_operands(first, second);
+      stack_.push(get<double>(first) / get<double>(second));
       break;
     case Instruction::Subtract:
-    case Instruction::Multiply:
-    case Instruction::Divide:
-      if (holds_alternative<double>(first) and
-          holds_alternative<double>(second)) {
-        return true;
-      }
+      check_number_operands(first, second);
+      stack_.push(get<double>(first) - get<double>(second));
+      break;
+    case Instruction::Add:
+      check_number_operands(first, second);
+      stack_.push(get<double>(first) - get<double>(second));
+      break;
+    default:
       break;
     }
-    return false;
+  }
+
+
+  void VirtualMachine::check_number_operands(
+      const Obj& first, const Obj& second) const
+  {
+    if (not holds_alternative<double>(first) and
+        not holds_alternative<double>(second)) {
+      // TODO: Error handling
+    }
   }
 }
