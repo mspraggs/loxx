@@ -141,8 +141,8 @@ namespace loxx
     // TODO: Generalise for other types
     auto value = generic_cast<double>(expr.value);
 
-    constants_.emplace_back(std::move(value));
-    const auto index = constants_.size() - 1;
+    vm_->constants().emplace_back(std::move(value));
+    const auto index = vm_->constants().size() - 1;
 
     byte_code_.push_back(static_cast<std::uint8_t>(Instruction::LoadConstant));
 

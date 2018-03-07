@@ -33,6 +33,8 @@ namespace loxx
   class Compiler : public Expr::Visitor, public Stmt::Visitor
   {
   public:
+    explicit Compiler(VirtualMachine& vm) : vm_(&vm) {}
+
     void compile(const std::vector<std::shared_ptr<Stmt>>& statements);
 
     void visit_assign_expr(const Assign& expr) override;
@@ -59,12 +61,11 @@ namespace loxx
     void visit_while_stmt(const While& stmt) override;
 
     const std::vector<std::uint8_t>& byte_code() const { return byte_code_; }
-    const std::vector<Obj>& constants() const { return constants_; }
 
   private:
     void compile(const Stmt& stmt);
 
-    std::vector<Obj> constants_;
+    VirtualMachine* vm_;
     std::vector<std::uint8_t> byte_code_;
   };
 }

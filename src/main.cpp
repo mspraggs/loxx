@@ -43,8 +43,9 @@ namespace loxx
       std::cout << printer.print(statements) << std::endl;
     }
 
-    Compiler compiler;
+    static VirtualMachine vm;
 
+    Compiler compiler(vm);
     compiler.compile(statements);
 
     if (had_error) {
@@ -55,9 +56,7 @@ namespace loxx
       print_byte_code(compiler.byte_code());
     }
 
-    static VirtualMachine vm;
-
-    vm.execute(compiler.byte_code(), compiler.constants());
+    vm.execute(compiler.byte_code());
   }
 
 

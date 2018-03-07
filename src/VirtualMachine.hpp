@@ -36,8 +36,9 @@ namespace loxx
   public:
     explicit VirtualMachine();
 
-    void execute(const std::vector<std::uint8_t>& byte_code,
-                 const std::vector<Obj>& constants);
+    void execute(const std::vector<std::uint8_t>& byte_code);
+
+    std::vector<Obj>& constants() { return constants_; }
 
   private:
     void print_object(Obj object) const;
@@ -45,7 +46,8 @@ namespace loxx
 
     void check_number_operands(const Obj& first, const Obj& second) const;
 
-    std::size_t instruction_ptr_;
+    std::size_t ip_;
+    std::vector<Obj> constants_;
     Stack<Obj> stack_;
   };
 }

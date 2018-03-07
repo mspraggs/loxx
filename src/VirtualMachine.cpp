@@ -26,21 +26,20 @@
 namespace loxx
 {
   VirtualMachine::VirtualMachine()
-      : instruction_ptr_(0)
+      : ip_(0)
   {
     // TODO: Stack and frame space size reservation
   }
 
 
-  void VirtualMachine::execute(const std::vector<std::uint8_t>& byte_code,
-                               const std::vector<Obj>& constants)
+  void VirtualMachine::execute(const std::vector<std::uint8_t>& byte_code)
   {
-    instruction_ptr_ = 0;
+    ip_ = 0;
 
     while (true) {
 
       const auto instruction =
-          static_cast<Instruction>(byte_code[instruction_ptr_]);
+          static_cast<Instruction>(byte_code[ip_]);
 
       if (instruction == Instruction::Add or
           instruction == Instruction::Subtract or
@@ -52,19 +51,19 @@ namespace loxx
         std::size_t value_index = 0;
 
         for (std::size_t i = 0; i < sizeof(std::size_t); ++i) {
-          value_index |= (byte_code[++instruction_ptr_] << 8 * i);
+          value_index |= (byte_code[++ip_] << 8 * i);
         }
 
-        stack_.push(constants[value_index]);
+        stack_.push(constants_[value_index]);
       }
 
       else if (instruction == Instruction::Print) {
         print_object(stack_.pop());
       }
 
-      ++instruction_ptr_;
+      ++ip_;
 
-      if (instruction_ptr_ >= byte_code.size()) {
+      if (ip_ >= byte_code.size()) {
         return;
       }
     }
