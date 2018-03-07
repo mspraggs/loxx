@@ -51,6 +51,10 @@ namespace loxx
       return;
     }
 
+    if (debug) {
+      print_byte_code(compiler.byte_code());
+    }
+
     static VirtualMachine vm;
 
     vm.execute(compiler.byte_code(), compiler.constants());

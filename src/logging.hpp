@@ -44,6 +44,9 @@ namespace loxx
 
 
   void runtime_error(const RuntimeError& error);
+
+
+  void print_byte_code(const std::vector<std::uint8_t>& byte_code);
 }
 
 #endif //LOXX_LOGGING_HPP

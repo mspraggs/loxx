@@ -37,6 +37,43 @@ namespace loxx
     Return,
     Subtract,
   };
+
+
+  template <typename Stream>
+  Stream& operator<<(Stream& stream, const Instruction instruction)
+  {
+    switch (instruction) {
+    case Instruction::Add:
+      stream << "ADD";
+      break;
+    case Instruction::Divide:
+      stream << "DIVIDE";
+      break;
+    case Instruction::LoadConstant:
+      stream << "LOAD_CONST";
+      break;
+    case Instruction::Multiply:
+      stream << "MULTIPLY";
+      break;
+    case Instruction::Pop:
+      stream << "POP";
+      break;
+    case Instruction::Print:
+      stream << "PRINT";
+      break;
+    case Instruction::Push:
+      stream << "PUSH";
+      break;
+    case Instruction::Return:
+      stream << "RETURN";
+      break;
+    case Instruction::Subtract:
+      stream << "SUBTRACT";
+      break;
+    }
+
+    return stream;
+  }
 }
 
 #endif // LOXX_INSTRUCTIONS_HPP

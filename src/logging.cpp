@@ -17,8 +17,10 @@
  * Created by Matt Spraggs on 31/10/17.
  */
 
+#include <iomanip>
 #include <iostream>
 
+#include "Instruction.hpp"
 #include "logging.hpp"
 
 
@@ -61,5 +63,44 @@ namespace loxx
               << std::endl;
 
     had_runtime_error = true;
+  }
+
+
+  void print_byte_code(const std::vector<std::uint8_t>& byte_code)
+  {
+    std::size_t ip = 0;
+
+    while (ip < byte_code.size()) {
+
+      const auto instruction = static_cast<Instruction>(byte_code[ip]);
+
+      switch (instruction) {
+
+      case Instruction::Add:
+      case Instruction::Divide:
+      case Instruction::Multiply:
+      case Instruction::Pop:
+      case Instruction::Print:
+      case Instruction::Push:
+      case Instruction::Return:
+      case Instruction::Subtract:
+        std::cout << std::setw(8) << std::right << ip << ' ' << instruction
+                  << '\n';
+        break;
+      case Instruction::LoadConstant: {
+        std::cout << std::setw(8) << std::right << ip << ' ';
+
+        std::size_t param = 0;
+        for (std::size_t i = 0; i < sizeof(std::size_t); ++i) {
+          param |= (byte_code[++ip] << 8 * i);
+        }
+
+        std::cout << std::setw(20) << std::left << instruction << param << '\n';
+        break;
+      }
+      }
+
+      ++ip;
+    }
   }
 }
