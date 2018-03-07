@@ -99,7 +99,7 @@ namespace loxx
       break;
     case Instruction::Add:
       check_number_operands(first, second);
-      stack_.push(get<double>(first) - get<double>(second));
+      stack_.push(get<double>(first) + get<double>(second));
       break;
     default:
       break;
