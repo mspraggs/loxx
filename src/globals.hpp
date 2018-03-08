@@ -24,7 +24,7 @@
 
 namespace loxx
 {
-  using StackVar = Variant<double>;
+  using StackVar = Variant<double, bool, std::string>;
 }
 
 #endif // LOXX_GLOBALS_HPP

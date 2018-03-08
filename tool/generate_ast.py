@@ -69,7 +69,7 @@ if __name__ == "__main__":
                   ("std::vector<std::shared_ptr<Expr>>", "arguments", False)],
          "Get": [("Expr", "object", True), ("Token", "name", False)],
          "Grouping": [("Expr", "expression", True)],
-         "Literal": [("Generic", "value", False)],
+         "Literal": [("StackVar", "value", False)],
          "Logical": [("Expr", "left", True), ("Token", "op", False),
                      ("Expr", "right", True)],
          "Set": [("Expr", "object", True), ("Token", "name", False),

@@ -45,14 +45,14 @@ namespace loxx
 
   void AstPrinter::visit_literal_expr(const Literal& expr)
   {
-    if (expr.value.has_type<double>()) {
-      stream_ << generic_cast<double>(expr.value);
+    if (holds_alternative<double>(expr.value)) {
+      stream_ << get<double>(expr.value);
     }
-    else if (expr.value.has_type<std::string>()) {
-      stream_ << '"' << generic_cast<std::string>(expr.value) << '"';
+    else if (holds_alternative<std::string>(expr.value)) {
+      stream_ << '"' << get<std::string>(expr.value) << '"';
     }
-    else if (expr.value.has_type<bool>()) {
-      stream_ << (generic_cast<bool>(expr.value) ? "true" : "false");
+    else if (holds_alternative<bool>(expr.value)) {
+      stream_ << (get<bool>(expr.value) ? "true" : "false");
     }
     else {
       stream_ << "nil";

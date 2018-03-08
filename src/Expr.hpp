@@ -23,7 +23,7 @@
 #include <memory>
 #include <vector>
 
-#include "Generic.hpp"
+#include "globals.hpp"
 #include "Token.hpp"
 
 
@@ -141,14 +141,14 @@ namespace loxx
 
   struct Literal : public Expr
   {
-    Literal(Generic value_arg)
+    Literal(StackVar value_arg)
         : value(std::move(value_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_literal_expr(*this); }
 
-    Generic value;
+    StackVar value;
   };
 
 

@@ -23,7 +23,7 @@
 #include <memory>
 #include <vector>
 
-#include "Generic.hpp"
+#include "globals.hpp"
 #include "Token.hpp"
 {% for inc in includes %}#include "{{ inc }}"
 {% endfor %}

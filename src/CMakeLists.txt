@@ -13,11 +13,9 @@ set(SRC
   Generic.hpp
   globals.hpp
   Instruction.hpp
-  Interpreter.hpp
   logging.hpp
   NativeCallable.hpp
   Parser.hpp
-  Resolver.hpp
   RuntimeError.hpp
   Scanner.hpp
   Stack.hpp
@@ -33,11 +31,9 @@ set(SRC
   Environment.cpp
   FuncCallable.cpp
   Generic.cpp
-  Interpreter.cpp
   logging.cpp
   main.cpp
   Parser.cpp
-  Resolver.cpp
   Scanner.cpp
   Token.cpp
   VirtualMachine.cpp)
