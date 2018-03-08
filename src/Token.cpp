@@ -85,13 +85,13 @@ namespace loxx
   {
     std::string literal_string = "None";
 
-    const Generic& literal = token.literal();
+    const StackVar& literal = token.literal();
 
     if (token.type() == TokenType::Number) {
-      literal_string = std::to_string(generic_cast<double>(literal));
+      literal_string = std::to_string(get<double>(literal));
     }
     else if (token.type() == TokenType::String) {
-      literal_string = generic_cast<std::string>(literal);
+      literal_string = get<std::string>(literal);
     }
     else if (token.type() == TokenType::True) {
       literal_string = "true";

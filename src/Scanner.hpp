@@ -1,3 +1,4 @@
+
 /*
  * This file is part of loxx.
  *
@@ -54,7 +55,7 @@ namespace loxx
     bool is_at_end() const { return current_ >= src_.size(); }
     char advance();
     void add_token(const TokenType type);
-    void add_token(const TokenType type, Generic literal);
+    void add_token(const TokenType type, StackVar literal);
 
     unsigned int start_, current_, line_;
 

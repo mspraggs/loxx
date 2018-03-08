@@ -17,6 +17,7 @@
  * Created by Matt Spraggs on 31/10/17.
  */
 
+#include "globals.hpp"
 #include "logging.hpp"
 #include "Scanner.hpp"
 
@@ -251,7 +252,7 @@ namespace loxx
   }
 
 
-  void Scanner::add_token(const TokenType type, Generic literal)
+  void Scanner::add_token(const TokenType type, StackVar literal)
   {
     auto substr = src_.substr(start_, current_ - start_);
     tokens_.emplace_back(type, substr, std::move(literal), line_);

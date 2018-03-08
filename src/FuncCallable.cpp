@@ -51,7 +51,7 @@ namespace loxx
     }
 
     try {
-      interpreter.execute_block(declaration_.body, environment);
+      //interpreter.execute_block(declaration_.body, environment);
     }
     catch (const Interpreter::Returner& e) {
       return e.value();

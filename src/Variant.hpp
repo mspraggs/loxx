@@ -197,10 +197,11 @@ namespace loxx
     explicit BadVariantAccess(const char* what) : what_(what) {}
     //explicit BadVariantAccess(std::string what) : what_(std::move(what)) {}
 
-    const char* what() const noexcept override { return what_.c_str(); }
+    const char* what() const noexcept override { return what_; }
 
   private:
-    std::string what_;
+    const char* what_;
+    //std::string what_;
   };
 
 

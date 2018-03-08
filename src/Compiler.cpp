@@ -138,10 +138,7 @@ namespace loxx
 
   void Compiler::visit_literal_expr(const Literal& expr)
   {
-    // TODO: Generalise for other types
-    auto value = generic_cast<double>(expr.value);
-
-    vm_->constants().emplace_back(std::move(value));
+    vm_->constants().push_back(expr.value);
     const auto index = vm_->constants().size() - 1;
 
     byte_code_.push_back(static_cast<std::uint8_t>(Instruction::LoadConstant));

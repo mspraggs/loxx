@@ -23,7 +23,7 @@
 #include <ostream>
 #include <string>
 
-#include "Generic.hpp"
+#include "globals.hpp"
 
 
 namespace loxx
@@ -46,7 +46,7 @@ namespace loxx
   class Token
   {
   public:
-    Token(const TokenType type, std::string lexeme, Generic literal,
+    Token(const TokenType type, std::string lexeme, StackVar literal,
           const unsigned int line)
         : type_(type), lexeme_(std::move(lexeme)), literal_(std::move(literal)),
           line_(line)
@@ -56,12 +56,12 @@ namespace loxx
     const std::string& lexeme() const { return lexeme_; }
     unsigned int line() const { return line_; }
 
-    const Generic& literal() const { return literal_; }
+    const StackVar& literal() const { return literal_; }
 
   private:
     TokenType type_;
     std::string lexeme_;
-    Generic literal_;
+    StackVar literal_;
     unsigned int line_;
   };
 
