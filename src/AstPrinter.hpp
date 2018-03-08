@@ -57,7 +57,7 @@ namespace loxx
     void visit_class_stmt(const Class& stmt) override;
 
     template <typename T>
-    std::string print(const std::vector<std::shared_ptr<T>>& statements);
+    std::string print(const std::vector<std::unique_ptr<T>>& statements);
 
   private:
     void paranthesise(const std::string& name,
@@ -72,7 +72,7 @@ namespace loxx
 
   template <typename T>
   std::string AstPrinter::print(
-      const std::vector<std::shared_ptr<T>>& statements)
+      const std::vector<std::unique_ptr<T>>& statements)
   {
     for (const auto& stmt : statements) {
       stream_ << indent_;

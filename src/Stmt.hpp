@@ -65,20 +65,20 @@ namespace loxx
 
   struct Block : public Stmt
   {
-    Block(std::vector<std::shared_ptr<Stmt>> statements_arg)
+    Block(std::vector<std::unique_ptr<Stmt>> statements_arg)
         : statements(std::move(statements_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_block_stmt(*this); }
 
-    std::vector<std::shared_ptr<Stmt>> statements;
+    std::vector<std::unique_ptr<Stmt>> statements;
   };
 
 
   struct Class : public Stmt
   {
-    Class(Token name_arg, std::shared_ptr<Expr> superclass_arg, std::vector<std::shared_ptr<Function>> methods_arg)
+    Class(Token name_arg, std::unique_ptr<Expr> superclass_arg, std::vector<std::unique_ptr<Function>> methods_arg)
         : name(std::move(name_arg)), superclass(std::move(superclass_arg)), methods(std::move(methods_arg))
     {}
 
@@ -86,27 +86,27 @@ namespace loxx
     { visitor.visit_class_stmt(*this); }
 
     Token name;
-    std::shared_ptr<Expr> superclass;
-    std::vector<std::shared_ptr<Function>> methods;
+    std::unique_ptr<Expr> superclass;
+    std::vector<std::unique_ptr<Function>> methods;
   };
 
 
   struct Expression : public Stmt
   {
-    Expression(std::shared_ptr<Expr> expression_arg)
+    Expression(std::unique_ptr<Expr> expression_arg)
         : expression(std::move(expression_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_expression_stmt(*this); }
 
-    std::shared_ptr<Expr> expression;
+    std::unique_ptr<Expr> expression;
   };
 
 
   struct Function : public Stmt
   {
-    Function(Token name_arg, std::vector<Token> parameters_arg, std::vector<std::shared_ptr<Stmt>> body_arg)
+    Function(Token name_arg, std::vector<Token> parameters_arg, std::vector<std::unique_ptr<Stmt>> body_arg)
         : name(std::move(name_arg)), parameters(std::move(parameters_arg)), body(std::move(body_arg))
     {}
 
@@ -115,41 +115,41 @@ namespace loxx
 
     Token name;
     std::vector<Token> parameters;
-    std::vector<std::shared_ptr<Stmt>> body;
+    std::vector<std::unique_ptr<Stmt>> body;
   };
 
 
   struct If : public Stmt
   {
-    If(std::shared_ptr<Expr> condition_arg, std::shared_ptr<Stmt> then_branch_arg, std::shared_ptr<Stmt> else_branch_arg)
+    If(std::unique_ptr<Expr> condition_arg, std::unique_ptr<Stmt> then_branch_arg, std::unique_ptr<Stmt> else_branch_arg)
         : condition(std::move(condition_arg)), then_branch(std::move(then_branch_arg)), else_branch(std::move(else_branch_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_if_stmt(*this); }
 
-    std::shared_ptr<Expr> condition;
-    std::shared_ptr<Stmt> then_branch;
-    std::shared_ptr<Stmt> else_branch;
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<Stmt> then_branch;
+    std::unique_ptr<Stmt> else_branch;
   };
 
 
   struct Print : public Stmt
   {
-    Print(std::shared_ptr<Expr> expression_arg)
+    Print(std::unique_ptr<Expr> expression_arg)
         : expression(std::move(expression_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_print_stmt(*this); }
 
-    std::shared_ptr<Expr> expression;
+    std::unique_ptr<Expr> expression;
   };
 
 
   struct Return : public Stmt
   {
-    Return(Token keyword_arg, std::shared_ptr<Expr> value_arg)
+    Return(Token keyword_arg, std::unique_ptr<Expr> value_arg)
         : keyword(std::move(keyword_arg)), value(std::move(value_arg))
     {}
 
@@ -157,13 +157,13 @@ namespace loxx
     { visitor.visit_return_stmt(*this); }
 
     Token keyword;
-    std::shared_ptr<Expr> value;
+    std::unique_ptr<Expr> value;
   };
 
 
   struct Var : public Stmt
   {
-    Var(Token name_arg, std::shared_ptr<Expr> initialiser_arg)
+    Var(Token name_arg, std::unique_ptr<Expr> initialiser_arg)
         : name(std::move(name_arg)), initialiser(std::move(initialiser_arg))
     {}
 
@@ -171,21 +171,21 @@ namespace loxx
     { visitor.visit_var_stmt(*this); }
 
     Token name;
-    std::shared_ptr<Expr> initialiser;
+    std::unique_ptr<Expr> initialiser;
   };
 
 
   struct While : public Stmt
   {
-    While(std::shared_ptr<Expr> condition_arg, std::shared_ptr<Stmt> body_arg)
+    While(std::unique_ptr<Expr> condition_arg, std::unique_ptr<Stmt> body_arg)
         : condition(std::move(condition_arg)), body(std::move(body_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_while_stmt(*this); }
 
-    std::shared_ptr<Expr> condition;
-    std::shared_ptr<Stmt> body;
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<Stmt> body;
   };
 
 }

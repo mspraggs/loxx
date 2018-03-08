@@ -70,7 +70,7 @@ namespace loxx
 
   struct Assign : public Expr
   {
-    Assign(Token name_arg, std::shared_ptr<Expr> value_arg)
+    Assign(Token name_arg, std::unique_ptr<Expr> value_arg)
         : name(std::move(name_arg)), value(std::move(value_arg))
     {}
 
@@ -78,64 +78,64 @@ namespace loxx
     { visitor.visit_assign_expr(*this); }
 
     Token name;
-    std::shared_ptr<Expr> value;
+    std::unique_ptr<Expr> value;
   };
 
 
   struct Binary : public Expr
   {
-    Binary(std::shared_ptr<Expr> left_arg, Token op_arg, std::shared_ptr<Expr> right_arg)
+    Binary(std::unique_ptr<Expr> left_arg, Token op_arg, std::unique_ptr<Expr> right_arg)
         : left(std::move(left_arg)), op(std::move(op_arg)), right(std::move(right_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_binary_expr(*this); }
 
-    std::shared_ptr<Expr> left;
+    std::unique_ptr<Expr> left;
     Token op;
-    std::shared_ptr<Expr> right;
+    std::unique_ptr<Expr> right;
   };
 
 
   struct Call : public Expr
   {
-    Call(std::shared_ptr<Expr> callee_arg, Token paren_arg, std::vector<std::shared_ptr<Expr>> arguments_arg)
+    Call(std::unique_ptr<Expr> callee_arg, Token paren_arg, std::vector<std::unique_ptr<Expr>> arguments_arg)
         : callee(std::move(callee_arg)), paren(std::move(paren_arg)), arguments(std::move(arguments_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_call_expr(*this); }
 
-    std::shared_ptr<Expr> callee;
+    std::unique_ptr<Expr> callee;
     Token paren;
-    std::vector<std::shared_ptr<Expr>> arguments;
+    std::vector<std::unique_ptr<Expr>> arguments;
   };
 
 
   struct Get : public Expr
   {
-    Get(std::shared_ptr<Expr> object_arg, Token name_arg)
+    Get(std::unique_ptr<Expr> object_arg, Token name_arg)
         : object(std::move(object_arg)), name(std::move(name_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_get_expr(*this); }
 
-    std::shared_ptr<Expr> object;
+    std::unique_ptr<Expr> object;
     Token name;
   };
 
 
   struct Grouping : public Expr
   {
-    Grouping(std::shared_ptr<Expr> expression_arg)
+    Grouping(std::unique_ptr<Expr> expression_arg)
         : expression(std::move(expression_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_grouping_expr(*this); }
 
-    std::shared_ptr<Expr> expression;
+    std::unique_ptr<Expr> expression;
   };
 
 
@@ -154,31 +154,31 @@ namespace loxx
 
   struct Logical : public Expr
   {
-    Logical(std::shared_ptr<Expr> left_arg, Token op_arg, std::shared_ptr<Expr> right_arg)
+    Logical(std::unique_ptr<Expr> left_arg, Token op_arg, std::unique_ptr<Expr> right_arg)
         : left(std::move(left_arg)), op(std::move(op_arg)), right(std::move(right_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_logical_expr(*this); }
 
-    std::shared_ptr<Expr> left;
+    std::unique_ptr<Expr> left;
     Token op;
-    std::shared_ptr<Expr> right;
+    std::unique_ptr<Expr> right;
   };
 
 
   struct Set : public Expr
   {
-    Set(std::shared_ptr<Expr> object_arg, Token name_arg, std::shared_ptr<Expr> value_arg)
+    Set(std::unique_ptr<Expr> object_arg, Token name_arg, std::unique_ptr<Expr> value_arg)
         : object(std::move(object_arg)), name(std::move(name_arg)), value(std::move(value_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_set_expr(*this); }
 
-    std::shared_ptr<Expr> object;
+    std::unique_ptr<Expr> object;
     Token name;
-    std::shared_ptr<Expr> value;
+    std::unique_ptr<Expr> value;
   };
 
 
@@ -211,7 +211,7 @@ namespace loxx
 
   struct Unary : public Expr
   {
-    Unary(Token op_arg, std::shared_ptr<Expr> right_arg)
+    Unary(Token op_arg, std::unique_ptr<Expr> right_arg)
         : op(std::move(op_arg)), right(std::move(right_arg))
     {}
 
@@ -219,7 +219,7 @@ namespace loxx
     { visitor.visit_unary_expr(*this); }
 
     Token op;
-    std::shared_ptr<Expr> right;
+    std::unique_ptr<Expr> right;
   };
 
 

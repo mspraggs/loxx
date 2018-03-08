@@ -37,8 +37,8 @@ namespace loxx
         : in_repl_(in_repl), current_(0), tokens_(std::move(tokens))
     {}
 
-    std::vector<std::shared_ptr<Stmt>> parse() {
-      std::vector<std::shared_ptr<Stmt>> statements;
+    std::vector<std::unique_ptr<Stmt>> parse() {
+      std::vector<std::unique_ptr<Stmt>> statements;
 
       while (not is_at_end()) {
         statements.emplace_back(declaration());
@@ -65,7 +65,7 @@ namespace loxx
     std::unique_ptr<Stmt> for_statement();
     std::unique_ptr<Stmt> expression_statement();
     std::unique_ptr<Stmt> function(const std::string& kind);
-    std::vector<std::shared_ptr<Stmt>> block();
+    std::vector<std::unique_ptr<Stmt>> block();
 
     std::unique_ptr<Expr> assignment();
     std::unique_ptr<Expr> logical_or();

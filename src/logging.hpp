@@ -21,8 +21,9 @@
 #define LOXX_LOGGING_HPP
 
 #include <string>
+#include <vector>
 
-#include "Interpreter.hpp"
+#include "Instruction.hpp"
 #include "RuntimeError.hpp"
 #include "Token.hpp"
 

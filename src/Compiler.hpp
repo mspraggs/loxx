@@ -35,7 +35,7 @@ namespace loxx
   public:
     explicit Compiler(VirtualMachine& vm) : vm_(&vm) {}
 
-    void compile(const std::vector<std::shared_ptr<Stmt>>& statements);
+    void compile(const std::vector<std::unique_ptr<Stmt>>& statements);
 
     void visit_assign_expr(const Assign& expr) override;
     void visit_binary_expr(const Binary& expr) override;

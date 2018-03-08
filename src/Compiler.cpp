@@ -22,7 +22,7 @@
 
 namespace loxx
 {
-  void Compiler::compile(const std::vector<std::shared_ptr<Stmt>>& statements)
+  void Compiler::compile(const std::vector<std::unique_ptr<Stmt>>& statements)
   {
     for (const auto& stmt : statements) {
       compile(*stmt);

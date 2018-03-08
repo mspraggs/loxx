@@ -50,18 +50,18 @@ namespace loxx
   {
     auto name = consume(TokenType::Identifier, "Expected class name.");
 
-    auto superclass = std::shared_ptr<Expr>();
+    auto superclass = std::unique_ptr<Expr>();
     if (match({TokenType::Less})) {
       consume(TokenType::Identifier, "Expected superclass name.");
-      superclass = std::make_shared<Variable>(previous());
+      superclass = std::make_unique<Variable>(previous());
     }
     
     consume(TokenType::LeftBrace, "Expected '{' before class body.");
 
-    std::vector<std::shared_ptr<Function>> methods;
+    std::vector<std::unique_ptr<Function>> methods;
     while (not check(TokenType::RightBrace) and not is_at_end()) {
-      const std::shared_ptr<Stmt> ptr = function("method");
-      methods.push_back(std::static_pointer_cast<Function>(ptr));
+      std::unique_ptr<Stmt> ptr = function("method");
+      methods.emplace_back(static_cast<Function*>(ptr.release()));
     }
 
     consume(TokenType::RightBrace, "Expected '}' after class body.");
@@ -180,7 +180,7 @@ namespace loxx
 
     auto body = statement();
 
-    using StmtList = std::vector<std::shared_ptr<Stmt>>;
+    using StmtList = std::vector<std::unique_ptr<Stmt>>;
 
     if (increment != nullptr) {
       StmtList stmts(2);
@@ -216,9 +216,9 @@ namespace loxx
   }
 
 
-  std::vector<std::shared_ptr<Stmt>> Parser::block()
+  std::vector<std::unique_ptr<Stmt>> Parser::block()
   {
-    std::vector<std::shared_ptr<Stmt>> statements;
+    std::vector<std::unique_ptr<Stmt>> statements;
 
     while (not check(TokenType::RightBrace) and not is_at_end()) {
       statements.push_back(declaration());
@@ -268,7 +268,8 @@ namespace loxx
       }
       if (typeid(*expr) == typeid(Get)) {
         auto get = static_cast<Get*>(expr.get());
-        return std::make_unique<Set>(get->object, get->name, std::move(value));
+        return std::make_unique<Set>(std::move(get->object), get->name,
+                                     std::move(value));
       }
 
       error(equals, "Invalid assignment target.");
@@ -351,7 +352,7 @@ namespace loxx
 
   std::unique_ptr<Expr> Parser::finish_call(std::unique_ptr<Expr> callee)
   {
-    std::vector<std::shared_ptr<Expr>> arguments;
+    std::vector<std::unique_ptr<Expr>> arguments;
 
     if (not check(TokenType::RightParen)) {
       do {

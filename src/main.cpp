@@ -5,10 +5,8 @@
 #include <ezOptionParser.hpp>
 
 #include "AstPrinter.hpp"
-#include "Interpreter.hpp"
 #include "logging.hpp"
 #include "Parser.hpp"
-#include "Resolver.hpp"
 #include "Scanner.hpp"
 #include "Compiler.hpp"
 #include "VirtualMachine.hpp"

@@ -23,7 +23,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Generic.hpp"
+#include "globals.hpp"
 #include "Token.hpp"
 
 
@@ -37,12 +37,12 @@ namespace loxx
         : enclosing_(std::move(enclosing))
     {}
 
-    void define(std::string name, Generic value);
-    const Generic& get(const Token& name) const;
-    const Generic& get_at(const std::size_t distance,
+    void define(std::string name, StackVar value);
+    const StackVar& get(const Token& name) const;
+    const StackVar& get_at(const std::size_t distance,
                           const std::string& name) const;
-    void assign(const Token& name, Generic value);
-    void assign_at(const std::size_t distance, const Token& name, Generic value);
+    void assign(const Token& name, StackVar value);
+    void assign_at(const std::size_t distance, const Token& name, StackVar value);
 
     std::shared_ptr<Environment> release_enclosing();
 
@@ -52,7 +52,7 @@ namespace loxx
 
     std::shared_ptr<Environment> enclosing_;
     std::unordered_map<std::string, std::size_t> value_map_;
-    std::vector<Generic> values_;
+    std::vector<StackVar> values_;
   };
 }
 
