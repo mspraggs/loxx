@@ -70,7 +70,7 @@ namespace loxx
   }
 
 
-  void VirtualMachine::print_object(Obj variant) const
+  void VirtualMachine::print_object(StackVar variant) const
   {
     if (holds_alternative<double>(variant)) {
       std::cout << get<double>(variant) << std::endl;
@@ -107,7 +107,7 @@ namespace loxx
 
 
   void VirtualMachine::check_number_operands(
-      const Obj& first, const Obj& second) const
+      const StackVar& first, const StackVar& second) const
   {
     if (not holds_alternative<double>(first) and
         not holds_alternative<double>(second)) {

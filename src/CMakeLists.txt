@@ -11,6 +11,7 @@ set(SRC
   Expr.hpp
   FuncCallable.hpp
   Generic.hpp
+  globals.hpp
   Instruction.hpp
   Interpreter.hpp
   logging.hpp

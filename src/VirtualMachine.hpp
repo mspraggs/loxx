@@ -22,6 +22,7 @@
 
 #include <vector>
 
+#include "globals.hpp"
 #include "Instruction.hpp"
 #include "Variant.hpp"
 #include "Stack.hpp"
@@ -29,8 +30,6 @@
 
 namespace loxx
 {
-  using Obj = Variant<double>;
-
   class VirtualMachine
   {
   public:
@@ -38,17 +37,18 @@ namespace loxx
 
     void execute(const std::vector<std::uint8_t>& byte_code);
 
-    std::vector<Obj>& constants() { return constants_; }
+    std::vector<StackVar>& constants() { return constants_; }
 
   private:
-    void print_object(Obj object) const;
+    void print_object(StackVar object) const;
     void execute_binary_op(const Instruction instruction);
 
-    void check_number_operands(const Obj& first, const Obj& second) const;
+    void check_number_operands(const StackVar& first,
+                               const StackVar& second) const;
 
     std::size_t ip_;
-    std::vector<Obj> constants_;
-    Stack<Obj> stack_;
+    std::vector<StackVar> constants_;
+    Stack<StackVar> stack_;
   };
 }
 

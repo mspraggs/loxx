@@ -267,8 +267,8 @@ namespace loxx
         return std::make_unique<Assign>(std::move(name), std::move(value));
       }
       if (typeid(*expr) == typeid(Get)) {
-	auto get = static_cast<Get*>(expr.get());
-	return std::make_unique<Set>(get->object, get->name, std::move(value));
+        auto get = static_cast<Get*>(expr.get());
+        return std::make_unique<Set>(get->object, get->name, std::move(value));
       }
 
       error(equals, "Invalid assignment target.");
