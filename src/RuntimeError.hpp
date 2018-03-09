@@ -30,14 +30,14 @@ namespace loxx
   class RuntimeError : public std::runtime_error
   {
   public:
-    RuntimeError(Token token, const std::string& message)
-        : std::runtime_error(message), token_(std::move(token))
+    RuntimeError(unsigned int line, const std::string& message)
+        : std::runtime_error(message), line_(line)
     {}
 
-    const Token& token() const { return token_; }
+    unsigned int line() const { return line_; }
 
   private:
-    Token token_;
+    unsigned int line_;
   };
 }
 

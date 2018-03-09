@@ -49,7 +49,8 @@ namespace loxx
     }
 
 
-    throw RuntimeError(name, "Undefined variable '" + name.lexeme() + "'.");
+    throw RuntimeError(name.line(),
+                       "Undefined variable '" + name.lexeme() + "'.");
   }
 
 
@@ -73,7 +74,8 @@ namespace loxx
       return;
     }
 
-    throw RuntimeError(name, "Undefined variable '" + name.lexeme() + "'.");
+    throw RuntimeError(name.line(),
+                       "Undefined variable '" + name.lexeme() + "'.");
   }
 
 

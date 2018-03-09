@@ -54,7 +54,12 @@ namespace loxx
       print_byte_code(compiler.output().bytecode);
     }
 
-    vm.execute(compiler.output());
+    try {
+      vm.execute(compiler.output());
+    }
+    catch (const RuntimeError& e) {
+      runtime_error(e);
+    }
   }
 
 

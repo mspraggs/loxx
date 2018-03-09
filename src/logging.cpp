@@ -59,7 +59,7 @@ namespace loxx
 
   void runtime_error(const RuntimeError& error)
   {
-    std::cout << error.what() << "\n[line " << error.token().line() << ']'
+    std::cout << error.what() << "\n[line " << error.line() << ']'
               << std::endl;
 
     had_runtime_error = true;

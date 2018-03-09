@@ -20,14 +20,14 @@
 #include <iostream>
 
 #include "Compiler.hpp"
+#include "logging.hpp"
 #include "RuntimeError.hpp"
 #include "VirtualMachine.hpp"
 
 
 namespace loxx
 {
-  VirtualMachine::VirtualMachine()
-      : ip_(0)
+  VirtualMachine::VirtualMachine() : ip_(0)
   {
     // TODO: Stack and frame space size reservation
   }
@@ -50,7 +50,6 @@ namespace loxx
         execute_binary_op(instruction);
       }
       else if (instruction == Instruction::LoadConstant) {
-
         stack_.push(constants_[read_integer<std::size_t>()]);
       }
 
@@ -106,8 +105,27 @@ namespace loxx
   void VirtualMachine::check_number_operands(
       const StackVar& first, const StackVar& second) const
   {
-    if (not holds_alternative<double>(first) and
+    if (not holds_alternative<double>(first) or
         not holds_alternative<double>(second)) {
+      throw_runtime_error("Binary operands must both be numbers.");
     }
+  }
+
+
+  void VirtualMachine::throw_runtime_error(const std::string& message) const
+  {
+    std::size_t instruction_counter = 0;
+    unsigned int line = 0;
+
+    for (const auto& table_row : compiler_output_->line_num_table) {
+      instruction_counter += std::get<1>(table_row);
+      line += std::get<0>(table_row);
+
+      if (instruction_counter > ip_) {
+        break;
+      }
+    }
+
+    throw RuntimeError(line, message);
   }
 }

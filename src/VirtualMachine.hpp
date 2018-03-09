@@ -34,7 +34,7 @@ namespace loxx
   class VirtualMachine
   {
   public:
-    explicit VirtualMachine();
+    VirtualMachine();
 
     void execute(const CompilationOutput& compiler_output);
 
@@ -48,6 +48,7 @@ namespace loxx
     T read_integer();
     void check_number_operands(const StackVar& first,
                                const StackVar& second) const;
+    void throw_runtime_error(const std::string& message) const;
 
     std::size_t ip_;
     const CompilationOutput* compiler_output_;
