@@ -50,8 +50,10 @@ namespace loxx
                                const StackVar& second) const;
 
     std::size_t ip_;
+    const CompilationOutput* compiler_output_;
     std::vector<StackVar> constants_;
     Stack<StackVar> stack_;
+    
   };
 }
 

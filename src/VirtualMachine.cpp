@@ -35,6 +35,7 @@ namespace loxx
 
   void VirtualMachine::execute(const CompilationOutput& compiler_output)
   {
+    compiler_output_ = &compiler_output;
     ip_ = 0;
 
     while (true) {
@@ -112,7 +113,6 @@ namespace loxx
   {
     if (not holds_alternative<double>(first) and
         not holds_alternative<double>(second)) {
-      // TODO: Error handling
     }
   }
 }
