@@ -25,14 +25,12 @@
 #include "globals.hpp"
 #include "Instruction.hpp"
 #include "Variant.hpp"
+#include "VirtualMachine.hpp"
 #include "Stack.hpp"
 
 
 namespace loxx
 {
-  struct CompilationOutput;
-  
-  
   class VirtualMachine
   {
   public:
@@ -46,6 +44,8 @@ namespace loxx
     void print_object(StackVar object) const;
     void execute_binary_op(const Instruction instruction);
 
+    template <typename T>
+    T read_integer();
     void check_number_operands(const StackVar& first,
                                const StackVar& second) const;
 
@@ -53,8 +53,20 @@ namespace loxx
     const CompilationOutput* compiler_output_;
     std::vector<StackVar> constants_;
     Stack<StackVar> stack_;
-    
   };
+
+
+  template <typename T>
+  T VirtualMachine::read_integer()
+  {
+    T integer = 0;
+
+    for (std::size_t i = 0; i < sizeof(T); ++i) {
+      integer |= (compiler_output_->bytecode[++ip_] << 8 * i);
+    }
+
+    return integer;
+  }
 }
 
 #endif // LOXX_VIRTUALMACHINE_HPP

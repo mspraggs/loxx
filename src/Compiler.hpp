@@ -25,11 +25,13 @@
 #include "Expr.hpp"
 #include "Instruction.hpp"
 #include "Stmt.hpp"
-#include "VirtualMachine.hpp"
 
 
 namespace loxx
 {
+  class VirtualMachine;
+
+
   struct CompilationOutput
   {
     std::vector<std::uint8_t> bytecode;

@@ -18,6 +18,7 @@
  */
 
 #include "Compiler.hpp"
+#include "VirtualMachine.hpp"
 
 
 namespace loxx

@@ -50,13 +50,8 @@ namespace loxx
         execute_binary_op(instruction);
       }
       else if (instruction == Instruction::LoadConstant) {
-        std::size_t value_index = 0;
 
-        for (std::size_t i = 0; i < sizeof(std::size_t); ++i) {
-          value_index |= (compiler_output.bytecode[++ip_] << 8 * i);
-        }
-
-        stack_.push(constants_[value_index]);
+        stack_.push(constants_[read_integer<std::size_t>()]);
       }
 
       else if (instruction == Instruction::Print) {
