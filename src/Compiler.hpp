@@ -30,10 +30,19 @@
 
 namespace loxx
 {
+  struct CompilationOutput
+  {
+    std::vector<std::uint8_t> bytecode;
+    std::vector<std::tuple<std::int8_t, std::uint8_t>> line_num_table;
+  };
+
+  
   class Compiler : public Expr::Visitor, public Stmt::Visitor
   {
   public:
-    explicit Compiler(VirtualMachine& vm) : vm_(&vm) {}
+    explicit Compiler(VirtualMachine& vm)
+        : last_line_num_(0), last_instr_num_, vm_(&vm)
+    {}
 
     void compile(const std::vector<std::unique_ptr<Stmt>>& statements);
 
@@ -60,13 +69,16 @@ namespace loxx
     void visit_var_stmt(const Var& stmt) override;
     void visit_while_stmt(const While& stmt) override;
 
-    const std::vector<std::uint8_t>& byte_code() const { return byte_code_; }
-
+    const CompilationOutput& output() const { return output_; }
+    
   private:
     void compile(const Stmt& stmt);
+    void update_line_num_table(const Token& token);
 
+    unsigned int last_line_num_;
+    std::size_t last_instr_num_;
     VirtualMachine* vm_;
-    std::vector<std::uint8_t> byte_code_;
+    CompilationOutput output_;
   };
 }
 

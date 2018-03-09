@@ -19,6 +19,7 @@
 
 #include <iostream>
 
+#include "Compiler.hpp"
 #include "RuntimeError.hpp"
 #include "VirtualMachine.hpp"
 
@@ -32,14 +33,14 @@ namespace loxx
   }
 
 
-  void VirtualMachine::execute(const std::vector<std::uint8_t>& byte_code)
+  void VirtualMachine::execute(const CompilationOutput& compiler_output)
   {
     ip_ = 0;
 
     while (true) {
 
       const auto instruction =
-          static_cast<Instruction>(byte_code[ip_]);
+          static_cast<Instruction>(compiler_output.bytecode[ip_]);
 
       if (instruction == Instruction::Add or
           instruction == Instruction::Subtract or
@@ -51,7 +52,7 @@ namespace loxx
         std::size_t value_index = 0;
 
         for (std::size_t i = 0; i < sizeof(std::size_t); ++i) {
-          value_index |= (byte_code[++ip_] << 8 * i);
+          value_index |= (compiler_output.bytecode[++ip_] << 8 * i);
         }
 
         stack_.push(constants_[value_index]);
@@ -63,7 +64,7 @@ namespace loxx
 
       ++ip_;
 
-      if (ip_ >= byte_code.size()) {
+      if (ip_ >= compiler_output.bytecode.size()) {
         return;
       }
     }

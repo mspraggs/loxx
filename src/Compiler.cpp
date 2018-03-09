@@ -64,7 +64,7 @@ namespace loxx
   {
     stmt.expression->accept(*this);
 
-    byte_code_.push_back(static_cast<std::uint8_t>(Instruction::Print));
+    output_.bytecode.push_back(static_cast<std::uint8_t>(Instruction::Print));
   }
 
 
@@ -100,19 +100,22 @@ namespace loxx
     switch (expr.op.type()) {
 
     case TokenType::Plus:
-      byte_code_.push_back(static_cast<std::uint8_t>(Instruction::Add));
+      output_.bytecode.push_back(static_cast<std::uint8_t>(Instruction::Add));
       break;
 
     case TokenType::Minus:
-      byte_code_.push_back(static_cast<std::uint8_t>(Instruction::Subtract));
+      output_.bytecode.push_back(
+          static_cast<std::uint8_t>(Instruction::Subtract));
       break;
 
     case TokenType::Star:
-      byte_code_.push_back(static_cast<std::uint8_t>(Instruction::Multiply));
+      output_.bytecode.push_back(
+          static_cast<std::uint8_t>(Instruction::Multiply));
       break;
 
     case TokenType::Slash:
-      byte_code_.push_back(static_cast<std::uint8_t>(Instruction::Divide));
+      output_.bytecode.push_back(
+          static_cast<std::uint8_t>(Instruction::Divide));
       break;
     }
   }
@@ -141,10 +144,12 @@ namespace loxx
     vm_->constants().push_back(expr.value);
     const auto index = vm_->constants().size() - 1;
 
-    byte_code_.push_back(static_cast<std::uint8_t>(Instruction::LoadConstant));
+    output_.bytecode.push_back(
+        static_cast<std::uint8_t>(Instruction::LoadConstant));
 
     for (unsigned int i = 0; i < sizeof(std::size_t); ++i) {
-      byte_code_.push_back(static_cast<std::uint8_t>((index >> 8 * i) & 0xff));
+      output_.bytecode.push_back(
+          static_cast<std::uint8_t>((index >> 8 * i) & 0xff));
     }
   }
 
@@ -188,5 +193,17 @@ namespace loxx
   void Compiler::compile(const Stmt& stmt)
   {
     stmt.accept(*this);
+  }
+
+
+  void Compiler::update_line_num_table(const Token& token)
+  {
+    unsigned int line_num_diff = token.line() - last_line_num_;
+    std::size_t instr_num_diff = output_.bytecode.size() - last_instr_num_;
+
+    const unsigned int num_rows = std::max(line_num_diff / 128,
+                                           instr_num_diff / 256);
+
+    for ()
   }
 }

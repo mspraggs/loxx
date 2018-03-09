@@ -51,10 +51,10 @@ namespace loxx
     }
 
     if (debug) {
-      print_byte_code(compiler.byte_code());
+      print_byte_code(compiler.output().bytecode);
     }
 
-    vm.execute(compiler.byte_code());
+    vm.execute(compiler.output());
   }
 
 

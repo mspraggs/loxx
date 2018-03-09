@@ -30,12 +30,15 @@
 
 namespace loxx
 {
+  struct CompilationOutput;
+  
+  
   class VirtualMachine
   {
   public:
     explicit VirtualMachine();
 
-    void execute(const std::vector<std::uint8_t>& byte_code);
+    void execute(const CompilationOutput& compiler_output);
 
     std::vector<StackVar>& constants() { return constants_; }
 
