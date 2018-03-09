@@ -198,17 +198,25 @@ namespace loxx
 
   void Compiler::update_line_num_table(const Token& token)
   {
-    unsigned int line_num_diff = token.line() - last_line_num_;
+    int line_num_diff = token.line() - last_line_num_;
+    unsigned int line_num_diff_abs = std::abs(line_num_diff);
     std::size_t instr_num_diff = output_.bytecode.size() - last_instr_num_;
 
     const unsigned int num_rows =
-        std::max(std::max(line_num_diff) / 128, instr_num_diff / 256);
+        std::max(line_num_diff_abs / 128, instr_num_diff / 256);
 
     std::int8_t line_num_delta = line_num_diff / num_rows;
     std::int8_t instr_num_delta = instr_num_diff / num_rows;
 
     for (unsigned int i = 0; i < num_rows; ++i) {
-      
+      output_.line_num_table.emplace_back(line_num_delta, instr_num_delta);
+    }
+
+    line_num_diff -= num_rows * line_num_delta;
+    instr_num_diff -= num_rows * instr_num_delta;
+
+    if (line_num_diff > 0 or instr_num_diff > 0) {
+      output_.line_num_table.emplace_back(line_num_diff, instr_num_diff);
     }
   }
 }

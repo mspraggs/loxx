@@ -41,7 +41,7 @@ namespace loxx
   {
   public:
     explicit Compiler(VirtualMachine& vm)
-        : last_line_num_(0), last_instr_num_, vm_(&vm)
+        : last_line_num_(0), last_instr_num_(0), vm_(&vm)
     {}
 
     void compile(const std::vector<std::unique_ptr<Stmt>>& statements);
