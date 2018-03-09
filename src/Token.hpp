@@ -46,6 +46,10 @@ namespace loxx
   class Token
   {
   public:
+    Token(const TokenType type, std::string lexeme, const unsigned int line)
+        : type_(type), lexeme_(std::move(lexeme)), line_(line)
+    {}
+
     Token(const TokenType type, std::string lexeme, StackVar literal,
           const unsigned int line)
         : type_(type), lexeme_(std::move(lexeme)), literal_(std::move(literal)),

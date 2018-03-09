@@ -58,7 +58,7 @@ namespace loxx
       scan_token();
     }
 
-    tokens_.emplace_back(TokenType::Eof, "", nullptr, line_);
+    tokens_.emplace_back(TokenType::Eof, "", line_);
     return tokens_;
   }
 
@@ -248,7 +248,7 @@ namespace loxx
   void Scanner::add_token(const TokenType type)
   {
     auto substr = src_.substr(start_, current_ - start_);
-    tokens_.emplace_back(type, substr, nullptr, line_);
+    tokens_.emplace_back(type, substr, line_);
   }
 
 
