@@ -101,18 +101,22 @@ namespace loxx
 
     case TokenType::Plus:
       add_instruction(Instruction::Add);
+      update_line_num_table(expr.op);
       break;
 
     case TokenType::Minus:
       add_instruction(Instruction::Subtract);
+      update_line_num_table(expr.op);
       break;
 
     case TokenType::Star:
       add_instruction(Instruction::Multiply);
+      update_line_num_table(expr.op);
       break;
 
     case TokenType::Slash:
       add_instruction(Instruction::Divide);
+      update_line_num_table(expr.op);
       break;
     }
   }
