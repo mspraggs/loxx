@@ -201,9 +201,14 @@ namespace loxx
     unsigned int line_num_diff = token.line() - last_line_num_;
     std::size_t instr_num_diff = output_.bytecode.size() - last_instr_num_;
 
-    const unsigned int num_rows = std::max(line_num_diff / 128,
-                                           instr_num_diff / 256);
+    const unsigned int num_rows =
+        std::max(std::max(line_num_diff) / 128, instr_num_diff / 256);
 
-    for ()
+    std::int8_t line_num_delta = line_num_diff / num_rows;
+    std::int8_t instr_num_delta = instr_num_diff / num_rows;
+
+    for (unsigned int i = 0; i < num_rows; ++i) {
+      
+    }
   }
 }
