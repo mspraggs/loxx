@@ -64,7 +64,7 @@ namespace loxx
   {
     stmt.expression->accept(*this);
 
-    output_.bytecode.push_back(static_cast<std::uint8_t>(Instruction::Print));
+    add_instruction(Instruction::Print);
   }
 
 
@@ -100,22 +100,19 @@ namespace loxx
     switch (expr.op.type()) {
 
     case TokenType::Plus:
-      output_.bytecode.push_back(static_cast<std::uint8_t>(Instruction::Add));
+      add_instruction(Instruction::Add);
       break;
 
     case TokenType::Minus:
-      output_.bytecode.push_back(
-          static_cast<std::uint8_t>(Instruction::Subtract));
+      add_instruction(Instruction::Subtract);
       break;
 
     case TokenType::Star:
-      output_.bytecode.push_back(
-          static_cast<std::uint8_t>(Instruction::Multiply));
+      add_instruction(Instruction::Multiply);
       break;
 
     case TokenType::Slash:
-      output_.bytecode.push_back(
-          static_cast<std::uint8_t>(Instruction::Divide));
+      add_instruction(Instruction::Divide);
       break;
     }
   }
@@ -144,8 +141,7 @@ namespace loxx
     vm_->constants().push_back(expr.value);
     const auto index = vm_->constants().size() - 1;
 
-    output_.bytecode.push_back(
-        static_cast<std::uint8_t>(Instruction::LoadConstant));
+    add_instruction(Instruction::LoadConstant);
 
     for (unsigned int i = 0; i < sizeof(std::size_t); ++i) {
       output_.bytecode.push_back(
@@ -218,5 +214,11 @@ namespace loxx
     if (line_num_diff > 0 or instr_num_diff > 0) {
       output_.line_num_table.emplace_back(line_num_diff, instr_num_diff);
     }
+  }
+
+
+  void Compiler::add_instruction(const Instruction instruction)
+  {
+    output_.bytecode.push_back(static_cast<std::uint8_t>(instruction));
   }
 }

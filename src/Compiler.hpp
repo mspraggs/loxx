@@ -74,6 +74,7 @@ namespace loxx
   private:
     void compile(const Stmt& stmt);
     void update_line_num_table(const Token& token);
+    void add_instruction(const Instruction instruction);
 
     unsigned int last_line_num_;
     std::size_t last_instr_num_;
