@@ -49,6 +49,7 @@ namespace loxx
     T read_integer();
     void check_number_operands(const StackVar& first,
                                const StackVar& second) const;
+    bool are_equal(const StackVar& first, const StackVar& second) const;
     void throw_runtime_error(const std::string& message) const;
 
     std::size_t ip_;

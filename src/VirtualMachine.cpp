@@ -91,6 +91,9 @@ namespace loxx
     if (holds_alternative<double>(variant)) {
       std::cout << get<double>(variant) << std::endl;
     }
+    else if (holds_alternative<bool>(variant)) {
+      std::cout << (get<bool>(variant) ? "true" : "false") << std::endl;
+    }
   }
 
 
@@ -100,6 +103,32 @@ namespace loxx
     const auto first = stack_.pop();
 
     switch (instruction) {
+    case Instruction::NotEqual:
+      stack_.push(StackVar(InPlace<bool>(), not are_equal(first, second)));
+      break;
+    case Instruction::Equal:
+      stack_.push(StackVar(InPlace<bool>(), are_equal(first, second)));
+      break;
+    case Instruction::Less:
+      check_number_operands(first, second);
+      stack_.push(StackVar(InPlace<bool>(),
+                           get<double>(first) < get<double>(second)));
+      break;
+    case Instruction::LessEqual:
+      check_number_operands(first, second);
+      stack_.push(StackVar(InPlace<bool>(),
+                           get<double>(first) <= get<double>(second)));
+      break;
+    case Instruction::Greater:
+      check_number_operands(first, second);
+      stack_.push(StackVar(InPlace<bool>(),
+                           get<double>(first) > get<double>(second)));
+      break;
+    case Instruction::GreaterEqual:
+      check_number_operands(first, second);
+      stack_.push(StackVar(InPlace<bool>(),
+                           get<double>(first) >= get<double>(second)));
+      break;
     case Instruction::Multiply:
       check_number_operands(first, second);
       stack_.push(get<double>(first) * get<double>(second));
@@ -113,8 +142,20 @@ namespace loxx
       stack_.push(get<double>(first) - get<double>(second));
       break;
     case Instruction::Add:
-      check_number_operands(first, second);
-      stack_.push(get<double>(first) + get<double>(second));
+      if (holds_alternative<std::string>(first) and
+          holds_alternative<std::string>(second))
+      {
+        stack_.push(get<std::string>(first) + get<std::string>(second));
+      }
+      else if (holds_alternative<double>(first) and
+               holds_alternative<double>(second))
+      {
+        stack_.push(get<double>(first) + get<double>(second));
+      }
+      else {
+        throw_runtime_error(
+            "Binary operands must be two numbers or two strings.");
+      }
       break;
     default:
       break;
@@ -129,6 +170,21 @@ namespace loxx
         not holds_alternative<double>(second)) {
       throw_runtime_error("Binary operands must both be numbers.");
     }
+  }
+
+  
+  bool VirtualMachine::are_equal(const StackVar& first,
+                                 const StackVar& second) const
+  {
+    if (first.index()  == StackVar::npos and
+        second.index() == StackVar::npos) {
+      return true;
+    }
+    if (first.index() == StackVar::npos) {
+      return false;
+    }
+
+    return first == second;
   }
 
 
