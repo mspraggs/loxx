@@ -66,6 +66,20 @@ namespace loxx
   }
 
 
+  std::size_t VirtualMachine::add_constant(const std::string& lexeme,
+                                           const StackVar& value)
+  {
+    if (constant_map_.count(lexeme) != 0) {
+      return constant_map_[lexeme];
+    }
+
+    constants_.push_back(value);
+    constant_map_[lexeme] = constants_.size() - 1;
+
+    return constants_.size() - 1;
+  }
+
+
   void VirtualMachine::print_object(StackVar variant) const
   {
     if (holds_alternative<double>(variant)) {

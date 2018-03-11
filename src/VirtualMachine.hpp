@@ -20,6 +20,7 @@
 #ifndef LOXX_VIRTUALMACHINE_HPP
 #define LOXX_VIRTUALMACHINE_HPP
 
+#include <unordered_map>
 #include <vector>
 
 #include "globals.hpp"
@@ -38,7 +39,7 @@ namespace loxx
 
     void execute(const CompilationOutput& compiler_output);
 
-    std::vector<StackVar>& constants() { return constants_; }
+    std::size_t add_constant(const std::string& lexeme, const StackVar& value);
 
   private:
     void print_object(StackVar object) const;
@@ -52,6 +53,7 @@ namespace loxx
 
     std::size_t ip_;
     const CompilationOutput* compiler_output_;
+    std::unordered_map<std::string, std::size_t> constant_map_;
     std::vector<StackVar> constants_;
     Stack<StackVar> stack_;
   };
