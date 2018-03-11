@@ -119,6 +119,30 @@ namespace loxx
       add_instruction(Instruction::Divide);
       update_line_num_table(expr.op);
       break;
+
+    case TokenType::Less:
+      add_instruction(Instruction::Less);
+      break;
+
+    case TokenType::LessEqual:
+      add_instruction(Instruction::LessEqual);
+      break;
+
+    case TokenType::Greater:
+      add_instruction(Instruction::Greater);
+      break;
+
+    case TokenType::GreaterEqual:
+      add_instruction(Instruction::GreaterEqual);
+      break;
+
+    case TokenType::EqualEqual:
+      add_instruction(Instruction::Equal);
+      break;
+
+    case TokenType::BangEqual:
+      add_instruction(Instruction::NotEqual);
+      break;
     }
   }
 

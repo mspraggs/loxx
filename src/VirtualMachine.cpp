@@ -46,7 +46,13 @@ namespace loxx
       if (instruction == Instruction::Add or
           instruction == Instruction::Subtract or
           instruction == Instruction::Multiply or
-          instruction == Instruction::Divide) {
+          instruction == Instruction::Divide or
+          instruction == Instruction::Equal or
+          instruction == Instruction::NotEqual or
+          instruction == Instruction::Greater or
+          instruction == Instruction::GreaterEqual or
+          instruction == Instruction::Less or
+          instruction == Instruction::LessEqual) {
         execute_binary_op(instruction);
       }
       else if (instruction == Instruction::LoadConstant) {
