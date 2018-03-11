@@ -153,6 +153,8 @@ namespace loxx
   class Variant
   {
   public:
+    static constexpr std::size_t npos = sizeof...(Ts);
+    
     Variant();
     Variant(const Variant<Ts...>& other);
     Variant(Variant<Ts...>&& other) noexcept;
