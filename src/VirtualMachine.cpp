@@ -38,36 +38,39 @@ namespace loxx
     compiler_output_ = &compiler_output;
     ip_ = 0;
 
-    while (true) {
+    while (ip_ < compiler_output.bytecode.size()) {
 
       const auto instruction =
           static_cast<Instruction>(compiler_output.bytecode[ip_]);
 
-      if (instruction == Instruction::Add or
-          instruction == Instruction::Subtract or
-          instruction == Instruction::Multiply or
-          instruction == Instruction::Divide or
-          instruction == Instruction::Equal or
-          instruction == Instruction::NotEqual or
-          instruction == Instruction::Greater or
-          instruction == Instruction::GreaterEqual or
-          instruction == Instruction::Less or
-          instruction == Instruction::LessEqual) {
-        execute_binary_op(instruction);
-      }
-      else if (instruction == Instruction::LoadConstant) {
-        stack_.push(constants_[read_integer<std::size_t>()]);
-      }
+      switch (instruction) {
 
-      else if (instruction == Instruction::Print) {
+      case Instruction::Add:
+      case Instruction::Subtract:
+      case Instruction::Multiply:
+      case Instruction::Divide:
+      case Instruction::Equal:
+      case Instruction::NotEqual:
+      case Instruction::Greater:
+      case Instruction::GreaterEqual:
+      case Instruction::Less:
+      case Instruction::LessEqual:
+        execute_binary_op(instruction);
+        break;
+
+      case Instruction::LoadConstant:
+        stack_.push(constants_[read_integer<std::size_t>()]);
+        break;
+
+      case Instruction::Print:
         print_object(stack_.pop());
+        break;
+
+      default:
+        break;
       }
 
       ++ip_;
-
-      if (ip_ >= compiler_output.bytecode.size()) {
-        return;
-      }
     }
   }
 
@@ -157,7 +160,7 @@ namespace loxx
       }
       else {
         throw_runtime_error(
-            "Binary operands must be two numbers or two strings.");
+            "Binary operands must be two numbers: two strings.");
       }
       break;
     default:
