@@ -198,6 +198,15 @@ namespace loxx
 
   void Compiler::update_line_num_table(const Token& token)
   {
+    // Okay, so I totally ripped off CPython's strategy for encoding line
+    // numbers here, but what I can I say? It's a good strategy!
+
+    // The broad idea here is that for each instruction we encode the difference
+    // between the last line number number and the current line number, and the
+    // last instruction and the current instruction. If the last line number is
+    // different to the previous one, the difference in instruction and line is
+    // encoded as one or more pairs of bytes.
+
     int line_num_diff = token.line() - last_line_num_;
     auto line_num_diff_abs = static_cast<unsigned int>(std::abs(line_num_diff));
     std::size_t instr_num_diff = output_.bytecode.size() - last_instr_num_;
@@ -218,7 +227,7 @@ namespace loxx
     line_num_diff -= num_rows * line_num_delta;
     instr_num_diff -= num_rows * instr_num_delta;
 
-    if (line_num_diff > 0) {
+    if (line_num_diff != 0) {
       output_.line_num_table.emplace_back(line_num_diff, instr_num_diff);
     }
 
