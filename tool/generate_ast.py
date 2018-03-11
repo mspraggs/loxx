@@ -27,8 +27,9 @@ def define_ast(output_dir, base_name, types, includes=[]):
     """Generate AST class definitions using specification and jinja2"""
 
     class_specs = []
+    type_items = sorted(types.items(), key=lambda i: i[0])
 
-    for name, members in types.items():
+    for name, members in type_items:
         arglist = ", ".join(
             "std::unique_ptr<{}> {}_arg".format(t, n)
             if i else "{} {}_arg".format(t, n)
@@ -69,7 +70,8 @@ if __name__ == "__main__":
                   ("std::vector<std::unique_ptr<Expr>>", "arguments", False)],
          "Get": [("Expr", "object", True), ("Token", "name", False)],
          "Grouping": [("Expr", "expression", True)],
-         "Literal": [("StackVar", "value", False)],
+         "Literal": [("StackVar", "value", False),
+                     ("std::string", "lexeme", False)],
          "Logical": [("Expr", "left", True), ("Token", "op", False),
                      ("Expr", "right", True)],
          "Set": [("Expr", "object", True), ("Token", "name", False),

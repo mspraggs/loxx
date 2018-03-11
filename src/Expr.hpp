@@ -141,14 +141,15 @@ namespace loxx
 
   struct Literal : public Expr
   {
-    Literal(StackVar value_arg)
-        : value(std::move(value_arg))
+    Literal(StackVar value_arg, std::string lexeme_arg)
+        : value(std::move(value_arg)), lexeme(std::move(lexeme_arg))
     {}
 
     void accept(Visitor& visitor) const override
     { visitor.visit_literal_expr(*this); }
 
     StackVar value;
+    std::string lexeme;
   };
 
 
