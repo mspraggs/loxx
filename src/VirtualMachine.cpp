@@ -94,6 +94,9 @@ namespace loxx
     else if (holds_alternative<bool>(variant)) {
       std::cout << (get<bool>(variant) ? "true" : "false") << std::endl;
     }
+    else if (holds_alternative<std::string>(variant)) {
+      std::cout << get<std::string>(variant) << std::endl;
+    }
   }
 
 
