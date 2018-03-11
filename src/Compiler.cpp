@@ -218,9 +218,11 @@ namespace loxx
     line_num_diff -= num_rows * line_num_delta;
     instr_num_diff -= num_rows * instr_num_delta;
 
-    if (line_num_diff > 0 or instr_num_diff > 0) {
+    if (line_num_diff > 0) {
       output_.line_num_table.emplace_back(line_num_diff, instr_num_diff);
     }
+
+    last_line_num_ = token.line();
   }
 
 
