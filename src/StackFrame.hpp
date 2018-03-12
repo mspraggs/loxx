@@ -20,6 +20,10 @@
 #ifndef LOXX_STACKFRAME_HPP
 #define LOXX_STACKFRAME_HPP
 
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "globals.hpp"
 
 
@@ -27,6 +31,11 @@ namespace loxx
 {
   class StackFrame
   {
+  public:
+
+  private:
+    std::unordered_map<std::string, ByteCodeArg> local_map_;
+    std::vector<StackVar> locals_;
   };
 }
 
