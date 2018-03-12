@@ -171,7 +171,7 @@ namespace loxx
 
     add_instruction(Instruction::LoadConstant);
 
-    for (unsigned int i = 0; i < sizeof(std::size_t); ++i) {
+    for (unsigned int i = 0; i < sizeof(ByteCodeArg); ++i) {
       output_.bytecode.push_back(
           static_cast<std::uint8_t>((index >> 8 * i) & 0xff));
     }

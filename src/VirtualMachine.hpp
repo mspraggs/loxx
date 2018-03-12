@@ -39,7 +39,7 @@ namespace loxx
 
     void execute(const CompilationOutput& compiler_output);
 
-    std::size_t add_constant(const std::string& lexeme, const StackVar& value);
+    ByteCodeArg add_constant(const std::string& lexeme, const StackVar& value);
 
   private:
     void print_object(StackVar object) const;
@@ -54,7 +54,7 @@ namespace loxx
 
     std::size_t ip_;
     const CompilationOutput* compiler_output_;
-    std::unordered_map<std::string, std::size_t> constant_map_;
+    std::unordered_map<std::string, ByteCodeArg> constant_map_;
     std::vector<StackVar> constants_;
     Stack<StackVar> stack_;
   };

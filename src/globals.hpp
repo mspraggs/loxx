@@ -24,6 +24,8 @@
 
 namespace loxx
 {
+  using ByteCodeArg = std::size_t;
+  
   using StackVar = Variant<double, bool, std::string>;
 }
 

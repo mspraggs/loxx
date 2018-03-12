@@ -59,7 +59,7 @@ namespace loxx
         break;
 
       case Instruction::LoadConstant:
-        stack_.push(constants_[read_integer<std::size_t>()]);
+        stack_.push(constants_[read_integer<ByteCodeArg>()]);
         break;
 
       case Instruction::Print:
@@ -75,7 +75,7 @@ namespace loxx
   }
 
 
-  std::size_t VirtualMachine::add_constant(const std::string& lexeme,
+  ByteCodeArg VirtualMachine::add_constant(const std::string& lexeme,
                                            const StackVar& value)
   {
     if (constant_map_.count(lexeme) != 0) {
@@ -83,9 +83,9 @@ namespace loxx
     }
 
     constants_.push_back(value);
-    constant_map_[lexeme] = constants_.size() - 1;
+    constant_map_[lexeme] = static_cast<ByteCodeArg>(constants_.size() - 1);
 
-    return constants_.size() - 1;
+    return static_cast<ByteCodeArg>(constants_.size() - 1);
   }
 
 
