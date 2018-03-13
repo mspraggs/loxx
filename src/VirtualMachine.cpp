@@ -75,8 +75,8 @@ namespace loxx
   }
 
 
-  ByteCodeArg VirtualMachine::add_constant(const std::string& lexeme,
-                                           const StackVar& value)
+  ByteCodeArg VirtualMachine::make_constant(const std::string& lexeme,
+                                            const StackVar& value)
   {
     if (constant_map_.count(lexeme) != 0) {
       return constant_map_[lexeme];

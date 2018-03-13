@@ -167,7 +167,7 @@ namespace loxx
 
   void Compiler::visit_literal_expr(const Literal& expr)
   {
-    const auto index = vm_->add_constant(expr.lexeme, expr.value);
+    const auto index = vm_->make_constant(expr.lexeme, expr.value);
 
     add_instruction(Instruction::LoadConstant);
 
