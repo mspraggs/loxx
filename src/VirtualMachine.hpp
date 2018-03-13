@@ -28,6 +28,7 @@
 #include "Variant.hpp"
 #include "VirtualMachine.hpp"
 #include "Stack.hpp"
+#include "StackFrame.hpp"
 
 
 namespace loxx
@@ -57,6 +58,7 @@ namespace loxx
     std::unordered_map<std::string, ByteCodeArg> constant_map_;
     std::vector<StackVar> constants_;
     Stack<StackVar> stack_;
+    Stack<StackFrame> call_stack_;
   };
 
 
