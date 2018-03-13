@@ -82,10 +82,12 @@ namespace loxx
       return constant_map_[lexeme];
     }
 
-    constants_.push_back(value);
-    constant_map_[lexeme] = static_cast<ByteCodeArg>(constants_.size() - 1);
+    const auto index = static_cast<ByteCodeArg>(constants_.size());
 
-    return static_cast<ByteCodeArg>(constants_.size() - 1);
+    constants_.push_back(value);
+    constant_map_[lexeme] = index;
+
+    return index;
   }
 
 
