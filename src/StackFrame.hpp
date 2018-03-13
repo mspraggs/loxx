@@ -32,8 +32,15 @@ namespace loxx
   class StackFrame
   {
   public:
+    StackFrame(const std::size_t prev_ip) : prev_ip_(prev_ip) {}
+
+    std::size_t prev_ip() const { return prev_ip_; }
+
+    ByteCodeArg make_local(const std::string& lexeme,
+                           const StackVar& value);
 
   private:
+    std::size_t prev_ip_;
     std::unordered_map<std::string, ByteCodeArg> local_map_;
     std::vector<StackVar> locals_;
   };
