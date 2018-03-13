@@ -162,7 +162,7 @@ namespace loxx
       }
       else {
         throw_runtime_error(
-            "Binary operands must be two numbers: two strings.");
+            "Binary operands must be two numbers or two strings.");
       }
       break;
     default:
