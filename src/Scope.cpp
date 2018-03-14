@@ -47,4 +47,12 @@ namespace loxx
 
     // TODO: Error handling
   }
+
+
+  std::unique_ptr<Scope> Scope::release_enclosing()
+  {
+    std::unique_ptr<Scope> ret;
+    std::swap(enclosing_, ret);
+    return ret;
+  }
 }
