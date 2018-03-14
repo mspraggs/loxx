@@ -32,10 +32,10 @@ namespace loxx
   class Scope
   {
   public:
-    Scope() : num_variables_(0) {}
+    Scope() : num_locals_(0) {}
 
     explicit Scope(std::unique_ptr<Scope> enclosing)
-        : enclosing_(std::move(enclosing)), num_variables_(0)
+        : enclosing_(std::move(enclosing)), num_locals_(0)
     {}
 
     ByteCodeArg make_variable(const std::string& lexeme);
@@ -47,8 +47,10 @@ namespace loxx
 
     ByteCodeArg get_depth(const ByteCodeArg depth = 0) const;
 
+    ByteCodeArg num_locals() const { num_locals_; }
+
   private:
-    ByteCodeArg num_variables_;
+    ByteCodeArg num_locals_;
     std::unique_ptr<Scope> enclosing_;
     std::unordered_map<std::string, ByteCodeArg> value_map_;
   };

@@ -29,11 +29,11 @@ namespace loxx
       return value_map_[lexeme];
     }
 
-    value_map_[lexeme] = num_variables_;
+    value_map_[lexeme] = num_locals_;
 
-    return num_variables_++;
+    return num_locals_++;
   }
-  
+
   std::tuple<ByteCodeArg, ByteCodeArg> Scope::resolve(
       const std::string& name, const ByteCodeArg depth) const
   {
