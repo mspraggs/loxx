@@ -25,6 +25,7 @@
 #include "Expr.hpp"
 #include "Instruction.hpp"
 #include "Scope.hpp"
+#include "Stack.hpp"
 #include "Stmt.hpp"
 
 
@@ -39,7 +40,7 @@ namespace loxx
     std::vector<std::tuple<std::int8_t, std::uint8_t>> line_num_table;
   };
 
-  
+
   class Compiler : public Expr::Visitor, public Stmt::Visitor
   {
   public:
@@ -73,7 +74,7 @@ namespace loxx
     void visit_while_stmt(const While& stmt) override;
 
     const CompilationOutput& output() const { return output_; }
-    
+
   private:
     void compile(const Stmt& stmt);
     void update_line_num_table(const Token& token);
@@ -88,6 +89,7 @@ namespace loxx
     VirtualMachine* vm_;
     CompilationOutput output_;
     std::unique_ptr<Scope> scope_;
+    Stack<ByteCodeArg> call_positions;
   };
 
 
