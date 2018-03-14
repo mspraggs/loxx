@@ -170,11 +170,7 @@ namespace loxx
     const auto index = vm_->make_constant(expr.lexeme, expr.value);
 
     add_instruction(Instruction::LoadConstant);
-
-    for (unsigned int i = 0; i < sizeof(ByteCodeArg); ++i) {
-      output_.bytecode.push_back(
-          static_cast<std::uint8_t>((index >> 8 * i) & 0xff));
-    }
+    add_integer(index);
   }
 
 

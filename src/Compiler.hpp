@@ -78,6 +78,8 @@ namespace loxx
     void compile(const Stmt& stmt);
     void update_line_num_table(const Token& token);
     void add_instruction(const Instruction instruction);
+    template <typename T>
+    void add_integer(const T integer);
 
     unsigned int last_line_num_;
     std::size_t last_instr_num_;
@@ -85,6 +87,16 @@ namespace loxx
     CompilationOutput output_;
     std::unique_ptr<Scope> scope_;
   };
+
+
+  template<typename T>
+  void Compiler::add_integer(const T integer)
+  {
+    for (unsigned int i = 0; i < sizeof(T); ++i) {
+      output_.bytecode.push_back(
+          static_cast<std::uint8_t>((integer >> 8 * i) & 0xff));
+    }
+  }
 }
 
 #endif //LOXX_COMPILER_HPP
