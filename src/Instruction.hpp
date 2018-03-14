@@ -28,6 +28,7 @@ namespace loxx
   enum class Instruction : std::uint8_t
   {
     Add,
+    Call,
     Divide,
     Equal,
     Greater,
@@ -51,6 +52,9 @@ namespace loxx
     switch (instruction) {
     case Instruction::Add:
       stream << "ADD";
+      break;
+    case Instruction::Call:
+      stream << "CALL";
       break;
     case Instruction::Divide:
       stream << "DIVIDE";
