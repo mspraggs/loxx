@@ -80,6 +80,8 @@ namespace loxx
     void add_instruction(const Instruction instruction);
     template <typename T>
     void add_integer(const T integer);
+    template <typename T>
+    void rewrite_integer(const std::size_t pos, const T integer);
 
     unsigned int last_line_num_;
     std::size_t last_instr_num_;
@@ -95,6 +97,16 @@ namespace loxx
     for (unsigned int i = 0; i < sizeof(T); ++i) {
       output_.bytecode.push_back(
           static_cast<std::uint8_t>((integer >> 8 * i) & 0xff));
+    }
+  }
+
+
+  template<typename T>
+  void Compiler::rewrite_integer(const std::size_t pos, const T integer)
+  {
+    for (unsigned int i = 0; i < sizeof(T); ++i) {
+      output_.bytecode[pos + i] =
+          static_cast<std::uint8_t>((integer >> 8 * i) & 0xff);
     }
   }
 }
