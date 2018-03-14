@@ -55,4 +55,10 @@ namespace loxx
     std::swap(enclosing_, ret);
     return ret;
   }
+
+
+  ByteCodeArg Scope::get_depth(const ByteCodeArg depth) const
+  {
+    return enclosing_ == nullptr ? depth : enclosing_->get_depth(depth + 1);
+  }
 }

@@ -45,6 +45,8 @@ namespace loxx
 
     std::unique_ptr<Scope> release_enclosing();
 
+    ByteCodeArg get_depth(const ByteCodeArg depth = 0) const;
+
   private:
     ByteCodeArg num_variables_;
     std::unique_ptr<Scope> enclosing_;
