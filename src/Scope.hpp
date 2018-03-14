@@ -46,9 +46,6 @@ namespace loxx
     std::unique_ptr<Scope> release_enclosing();
 
   private:
-    const Scope& ancestor(const std::size_t distance) const;
-    Scope& ancestor(const std::size_t distance);
-
     ByteCodeArg num_variables_;
     std::unique_ptr<Scope> enclosing_;
     std::unordered_map<std::string, ByteCodeArg> value_map_;
