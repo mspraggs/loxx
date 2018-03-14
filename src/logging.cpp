@@ -30,6 +30,17 @@ namespace loxx
   bool had_runtime_error = false;
 
 
+  template <typename T>
+  T read_integer(const std::vector<std::uint8_t>& byte_code,
+                 std::size_t& pos)
+  {
+    std::size_t param = 0;
+    for (std::size_t i = 0; i < sizeof(std::size_t); ++i) {
+      param |= (byte_code[++pos] << 8 * i);
+    }
+  }
+
+
   void error(const unsigned int line, const std::string& message)
   {
     report(line, "", message);
@@ -93,13 +104,24 @@ namespace loxx
         std::cout << std::setw(8) << std::right << ip << ' ' << instruction
                   << '\n';
         break;
+
+      case Instruction::Call: {
+        std::cout << std::setw(8) << std::right << ip << ' ';
+
+        const auto return_ip = read_integer<ByteCodeArg>(byte_code, ip);
+        const auto num_locals = read_integer<ByteCodeArg>(byte_code, ip);
+        const auto num_args = read_integer<ByteCodeArg>(byte_code, ip);
+
+        std::cout << std::setw(20) << std::left << instruction
+                  << return_ip << ", " << num_locals << ", "
+                  << num_args << '\n';
+        break;
+      }
+
       case Instruction::LoadConstant: {
         std::cout << std::setw(8) << std::right << ip << ' ';
 
-        std::size_t param = 0;
-        for (std::size_t i = 0; i < sizeof(std::size_t); ++i) {
-          param |= (byte_code[++ip] << 8 * i);
-        }
+        const auto param = read_integer<ByteCodeArg>(byte_code, ip);
 
         std::cout << std::setw(20) << std::left << instruction << param << '\n';
         break;
