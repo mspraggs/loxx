@@ -45,6 +45,7 @@ namespace loxx
   private:
     void print_object(StackVar object) const;
     void execute_binary_op(const Instruction instruction);
+    void setup_call();
 
     template <typename T>
     T read_integer();
