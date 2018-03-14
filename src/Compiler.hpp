@@ -24,6 +24,7 @@
 
 #include "Expr.hpp"
 #include "Instruction.hpp"
+#include "Scope.hpp"
 #include "Stmt.hpp"
 
 
@@ -43,7 +44,7 @@ namespace loxx
   {
   public:
     explicit Compiler(VirtualMachine& vm)
-        : last_line_num_(0), last_instr_num_(0), vm_(&vm)
+        : last_line_num_(0), last_instr_num_(0), vm_(&vm), scope_(new Scope)
     {}
 
     void compile(const std::vector<std::unique_ptr<Stmt>>& statements);
@@ -82,6 +83,7 @@ namespace loxx
     std::size_t last_instr_num_;
     VirtualMachine* vm_;
     CompilationOutput output_;
+    std::unique_ptr<Scope> scope_;
   };
 }
 
