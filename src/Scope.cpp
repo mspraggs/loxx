@@ -25,14 +25,25 @@ namespace loxx
 {
   ByteCodeArg Scope::make_variable(const std::string& lexeme)
   {
-    
+    if (value_map_.count(name) != 0) {
+      return value_map_[lexeme];
+    }
+
+    ByteCodeArg index = values_.size();
+    value_map_[lexeme] = index;
   }
   
   std::tuple<ByteCodeArg, ByteCodeArg> Scope::resolve(
       const std::string& name, const ByteCodeArg depth) const
   {
     if (value_map_.count(name) != 0) {
-      
+      return std::make_tuple(value_map_.at(name), depth);
     }
+
+    if (enclosing_ != nullptr) {
+      return enclosing_->resolve(name, depth + 1);
+    }
+
+    // TODO: Error handling
   }
 }
