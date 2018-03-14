@@ -17,8 +17,8 @@
  * Created by Matt Spraggs on 14/03/2018.
  */
 
+#include "CompileError.hpp"
 #include "Scope.hpp"
-#include "RuntimeError.hpp"
 
 
 namespace loxx
@@ -45,7 +45,7 @@ namespace loxx
       return enclosing_->resolve(name, depth + 1);
     }
 
-    // TODO: Error handling
+    throw CompileError();
   }
 
 
