@@ -3,6 +3,7 @@ project(loxx)
 
 set(SRC
   AstPrinter.hpp
+  CompileError.hpp
   Compiler.hpp
   Environment.hpp
   Expr.hpp
