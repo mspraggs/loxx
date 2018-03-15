@@ -100,7 +100,18 @@ namespace loxx
 
   void Compiler::visit_assign_expr(const Assign& expr)
   {
+    expr.value->accept(*this);
 
+    const auto is_global = local_scope_.get() == global_scope_;
+
+    const auto set_op =
+        is_global ? Instruction::SetGlobal : Instruction::SetLocal;
+    add_instruction(set_op);
+
+    const auto arg = global_scope_->make_variable(expr.name.lexeme());
+    add_integer(arg);
+
+    output_.num_globals = global_scope_->num_locals();
   }
 
 
