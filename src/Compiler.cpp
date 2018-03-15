@@ -77,7 +77,18 @@ namespace loxx
 
   void Compiler::visit_var_stmt(const Var& stmt)
   {
+    stmt.initialiser->accept(*this);
 
+    const auto is_global = local_scope_.get() == global_scope_;
+
+    const auto set_op =
+        is_global ? Instruction::SetGlobal : Instruction::SetLocal;
+    add_instruction(set_op);
+
+    const auto arg = global_scope_->make_variable(stmt.name.lexeme());
+    add_integer(arg);
+
+    output_.num_globals = global_scope_->num_locals();
   }
 
 
@@ -206,7 +217,16 @@ namespace loxx
 
   void Compiler::visit_variable_expr(const Variable& expr)
   {
+    const auto global_depth = local_scope_->get_depth();
 
+    ByteCodeArg var_depth = 0, var_index = 0;
+    std::tie(var_index, var_depth) = local_scope_->resolve(expr.name.lexeme());
+
+    if (var_depth == global_depth) {
+      // Variable is global so treat it as such
+      add_instruction(Instruction::GetGlobal);
+      add_integer(var_index);
+    }
   }
 
 
