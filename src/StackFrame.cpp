@@ -22,6 +22,14 @@
 
 namespace loxx
 {
+  void StackFrame::reserve_local_space(const std::size_t size)
+  {
+    if (locals_.size() < size) {
+      locals_.resize(size);
+    }
+  }
+
+
   ByteCodeArg StackFrame::make_local(const std::string& lexeme,
                                      const StackVar& value)
   {
@@ -30,10 +38,10 @@ namespace loxx
     }
 
     const auto index = static_cast<ByteCodeArg>(locals_.size());
-    
+
     locals_.push_back(value);
     local_map_[lexeme] = index;
-    
+
     return index;
   }
 }

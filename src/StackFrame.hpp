@@ -34,12 +34,22 @@ namespace loxx
   public:
     StackFrame(const std::size_t prev_ip, const std::size_t num_locals)
         : prev_ip_(prev_ip), locals_(num_locals)
-    {}
+    {
+      locals_.reserve(4096);
+    }
+
+    void reserve_local_space(const std::size_t size);
 
     std::size_t prev_ip() const { return prev_ip_; }
 
     ByteCodeArg make_local(const std::string& lexeme,
                            const StackVar& value);
+
+    const StackVar& get_local(const std::size_t index) const
+    { return locals_[index]; }
+
+    void set_local(const std::size_t index, StackVar value)
+    { locals_[index] = std::move(value); }
 
   private:
     std::size_t prev_ip_;
