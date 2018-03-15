@@ -89,7 +89,6 @@ namespace loxx
     VirtualMachine* vm_;
     CompilationOutput output_;
     std::unique_ptr<Scope> scope_;
-    Stack<ByteCodeArg> call_positions;
   };
 
 

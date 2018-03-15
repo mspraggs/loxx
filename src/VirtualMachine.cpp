@@ -58,22 +58,12 @@ namespace loxx
         execute_binary_op(instruction);
         break;
 
-      case Instruction::Call:
-        setup_call();
-        break;
-
       case Instruction::LoadConstant:
         stack_.push(constants_[read_integer<ByteCodeArg>()]);
         break;
 
       case Instruction::Print:
         print_object(stack_.pop());
-        break;
-
-      case Instruction::Return:
-        // Subtract one because ip_ is incremented later
-        ip_ = call_stack_.top().prev_ip() - 1;
-        call_stack_.pop();
         break;
 
       default:
@@ -178,16 +168,6 @@ namespace loxx
     default:
       break;
     }
-  }
-
-
-  void VirtualMachine::setup_call()
-  {
-    const auto return_address = read_integer<ByteCodeArg>();
-    const auto num_locals = read_integer<ByteCodeArg>();
-    const auto num_args = read_integer<ByteCodeArg>();
-
-    call_stack_.push(StackFrame(return_address, num_locals));
   }
 
 

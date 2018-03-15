@@ -25,23 +25,9 @@ namespace loxx
 {
   void Compiler::compile(const std::vector<std::unique_ptr<Stmt>>& statements)
   {
-    add_instruction(Instruction::Call);
-
-    call_positions.push(output_.bytecode.size());
-    // Setup call: First argument is return instruction, second is number of
-    // locals in new stack frame, third is the number of call arguments
-    add_integer<ByteCodeArg>(0);
-    add_integer<ByteCodeArg>(0);
-    add_integer<ByteCodeArg>(0);
-
     for (const auto& stmt : statements) {
       compile(*stmt);
     }
-
-    const auto call_pos = call_positions.pop();
-    rewrite_integer(call_pos, output_.bytecode.size());
-    const auto num_locals = scope_->num_locals();
-    rewrite_integer(call_pos + sizeof(ByteCodeArg), num_locals);
   }
 
 
