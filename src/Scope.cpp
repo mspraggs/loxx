@@ -34,6 +34,13 @@ namespace loxx
     return num_locals_++;
   }
 
+
+  bool Scope::has_variable(const std::string& lexeme)
+  {
+    return value_map_.count(lexeme) != 0;
+  }
+
+
   std::tuple<ByteCodeArg, ByteCodeArg> Scope::resolve(
       const std::string& name, const ByteCodeArg depth) const
   {

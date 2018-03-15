@@ -40,6 +40,8 @@ namespace loxx
 
     ByteCodeArg make_variable(const std::string& lexeme);
 
+    bool has_variable(const std::string& lexeme);
+
     std::tuple<ByteCodeArg, ByteCodeArg> resolve(
         const std::string& lexeme, const ByteCodeArg depth = 0) const;
 
@@ -47,7 +49,7 @@ namespace loxx
 
     ByteCodeArg get_depth(const ByteCodeArg depth = 0) const;
 
-    ByteCodeArg num_locals() const { num_locals_; }
+    ByteCodeArg num_locals() const { return num_locals_; }
 
   private:
     ByteCodeArg num_locals_;
