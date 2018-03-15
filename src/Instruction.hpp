@@ -31,6 +31,8 @@ namespace loxx
     Call,
     Divide,
     Equal,
+    GetGlobal,
+    GetLocal,
     Greater,
     GreaterEqual,
     Less,
@@ -42,6 +44,8 @@ namespace loxx
     Print,
     Push,
     Return,
+    SetGlobal,
+    SetLocal,
     Subtract,
   };
 
@@ -58,6 +62,9 @@ namespace loxx
       break;
     case Instruction::Divide:
       stream << "DIVIDE";
+      break;
+    case Instruction::GetGlobal:
+      stream << "GET_GLOBAL";
       break;
     case Instruction::LoadConstant:
       stream << "LOAD_CONST";
@@ -76,6 +83,9 @@ namespace loxx
       break;
     case Instruction::Return:
       stream << "RETURN";
+      break;
+    case Instruction::SetGlobal:
+      stream << "SET_GLOBAL";
       break;
     case Instruction::Subtract:
       stream << "SUBTRACT";

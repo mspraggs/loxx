@@ -120,6 +120,8 @@ namespace loxx
         break;
       }
 
+      case Instruction::GetGlobal:
+      case Instruction::SetGlobal:
       case Instruction::LoadConstant: {
         std::cout << std::setw(8) << std::right << ip << ' ';
 
