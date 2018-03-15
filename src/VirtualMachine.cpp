@@ -29,7 +29,6 @@ namespace loxx
 {
   VirtualMachine::VirtualMachine() : ip_(0)
   {
-    // TODO: Stack and frame space size reservation
   }
 
 
@@ -37,6 +36,7 @@ namespace loxx
   {
     compiler_output_ = &compiler_output;
     ip_ = 0;
+    call_stack_.get(0).reserve_local_space(compiler_output.num_globals);
 
     while (ip_ < compiler_output.bytecode.size()) {
 
@@ -58,6 +58,10 @@ namespace loxx
         execute_binary_op(instruction);
         break;
 
+      case Instruction::GetGlobal:
+        stack_.push(call_stack_.get(0).get_local(read_integer<ByteCodeArg>()));
+        break;
+
       case Instruction::LoadConstant:
         stack_.push(constants_[read_integer<ByteCodeArg>()]);
         break;
@@ -65,6 +69,9 @@ namespace loxx
       case Instruction::Print:
         print_object(stack_.pop());
         break;
+
+      case Instruction::SetGlobal:
+        call_stack_.get(0).set_local(read_integer<ByteCodeArg>(), stack_.pop());
 
       default:
         break;
