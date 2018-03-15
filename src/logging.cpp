@@ -34,10 +34,12 @@ namespace loxx
   T read_integer(const std::vector<std::uint8_t>& byte_code,
                  std::size_t& pos)
   {
-    std::size_t param = 0;
-    for (std::size_t i = 0; i < sizeof(std::size_t); ++i) {
+    T param = 0;
+    for (std::size_t i = 0; i < sizeof(T); ++i) {
       param |= (byte_code[++pos] << 8 * i);
     }
+
+    return param;
   }
 
 
