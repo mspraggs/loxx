@@ -71,7 +71,7 @@ namespace loxx
         break;
 
       case Instruction::SetGlobal:
-        call_stack_.get(0).set_local(read_integer<ByteCodeArg>(), stack_.pop());
+        call_stack_.get(0).set_local(read_integer<ByteCodeArg>(), stack_.top());
 
       default:
         break;
