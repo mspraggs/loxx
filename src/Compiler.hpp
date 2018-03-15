@@ -36,6 +36,7 @@ namespace loxx
 
   struct CompilationOutput
   {
+    std::size_t num_globals;
     std::vector<std::uint8_t> bytecode;
     std::vector<std::tuple<std::int8_t, std::uint8_t>> line_num_table;
   };
@@ -45,8 +46,11 @@ namespace loxx
   {
   public:
     explicit Compiler(VirtualMachine& vm)
-        : last_line_num_(0), last_instr_num_(0), vm_(&vm), scope_(new Scope)
-    {}
+        : last_line_num_(0), last_instr_num_(0), vm_(&vm),
+          local_scope_(new Scope), global_scope_(local_scope_.get())
+    {
+      output_.num_globals = 0;
+    }
 
     void compile(const std::vector<std::unique_ptr<Stmt>>& statements);
 
@@ -88,7 +92,8 @@ namespace loxx
     std::size_t last_instr_num_;
     VirtualMachine* vm_;
     CompilationOutput output_;
-    std::unique_ptr<Scope> scope_;
+    std::unique_ptr<Scope> local_scope_;
+    Scope* global_scope_;
   };
 
 
