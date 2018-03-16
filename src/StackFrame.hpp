@@ -51,10 +51,14 @@ namespace loxx
     void set_local(const std::size_t index, StackVar value)
     { locals_[index] = std::move(value); }
 
+    bool is_declared(const std::size_t index) const
+    { return is_declared_[index]; }
+
   private:
     std::size_t prev_ip_;
     std::unordered_map<std::string, ByteCodeArg> local_map_;
     std::vector<StackVar> locals_;
+    std::vector<bool> is_declared_;
   };
 }
 
