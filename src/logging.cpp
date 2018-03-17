@@ -79,6 +79,18 @@ namespace loxx
   }
 
 
+  void print_instruction_pointer(const std::size_t ip)
+  {
+    std::cout << std::setw(8) << std::right << ip << ' ';
+  }
+
+
+  void print_instruction(const Instruction instruction)
+  {
+    std::cout << std::setw(20) << std::left << instruction;
+  }
+
+
   void print_byte_code(const std::vector<std::uint8_t>& byte_code)
   {
     std::size_t ip = 0;
@@ -103,19 +115,20 @@ namespace loxx
       case Instruction::Push:
       case Instruction::Return:
       case Instruction::Subtract:
-        std::cout << std::setw(8) << std::right << ip << ' ' << instruction
-                  << '\n';
+        print_instruction_pointer(ip);
+        print_instruction(instruction);
+        std::cout << '\n';
         break;
 
       case Instruction::Call: {
-        std::cout << std::setw(8) << std::right << ip << ' ';
+        print_instruction_pointer(ip);
+        print_instruction(instruction);
 
         const auto return_ip = read_integer<ByteCodeArg>(byte_code, ip);
         const auto num_locals = read_integer<ByteCodeArg>(byte_code, ip);
         const auto num_args = read_integer<ByteCodeArg>(byte_code, ip);
 
-        std::cout << std::setw(20) << std::left << instruction
-                  << return_ip << ", " << num_locals << ", "
+        std::cout << return_ip << ", " << num_locals << ", "
                   << num_args << '\n';
         break;
       }
@@ -123,11 +136,11 @@ namespace loxx
       case Instruction::GetGlobal:
       case Instruction::SetGlobal:
       case Instruction::LoadConstant: {
-        std::cout << std::setw(8) << std::right << ip << ' ';
+        print_instruction_pointer(ip);
+        print_instruction(instruction);
 
         const auto param = read_integer<ByteCodeArg>(byte_code, ip);
-
-        std::cout << std::setw(20) << std::left << instruction << param << '\n';
+        std::cout << param << '\n';
         break;
       }
       }
