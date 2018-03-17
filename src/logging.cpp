@@ -144,6 +144,10 @@ namespace loxx
         std::cout << param << '\n';
         break;
       }
+      case Instruction::Nil:
+        print_instruction_pointer(ip);
+        print_instruction(instruction);
+        std::cout << '\n';
       }
 
       ++ip;

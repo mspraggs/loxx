@@ -66,6 +66,10 @@ namespace loxx
         stack_.push(constants_[read_integer<ByteCodeArg>()]);
         break;
 
+      case Instruction::Nil:
+        stack_.push(StackVar());
+        break;
+
       case Instruction::Print:
         print_object(stack_.pop());
         break;
