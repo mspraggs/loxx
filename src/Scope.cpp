@@ -23,36 +23,58 @@
 
 namespace loxx
 {
+  void Scope::declare_variable(const std::string& lexeme)
+  {
+    if (enclosing_ == nullptr) {
+      // Global variables are implicitly declared
+      return;
+    }
+
+    if (value_map_.count(lexeme) != 0) {
+      throw CompileError();
+    }
+
+    const auto index = value_defined_.size();
+    value_map_[lexeme] = index;
+    value_defined_.push_back(false);
+  }
+
+
+  void Scope::define_variable(const ByteCodeArg arg)
+  {
+    if (enclosing_ == nullptr) {
+      // Global variables are implicitly declared
+      return;
+    }
+
+    value_defined_[arg] = true;
+  }
+
+
   ByteCodeArg Scope::make_variable(const std::string& lexeme)
   {
     if (value_map_.count(lexeme) != 0) {
       return value_map_[lexeme];
     }
 
-    value_map_[lexeme] = num_locals_;
+    value_map_[lexeme] = scope_depth_;
 
-    return num_locals_++;
+    return scope_depth_++;
   }
 
 
-  bool Scope::has_variable(const std::string& lexeme)
-  {
-    return value_map_.count(lexeme) != 0;
-  }
-
-
-  std::tuple<ByteCodeArg, ByteCodeArg> Scope::resolve(
-      const std::string& name, const ByteCodeArg depth) const
+  std::tuple<bool, ByteCodeArg, ByteCodeArg> Scope::resolve(
+      const std::string& name) const
   {
     if (value_map_.count(name) != 0) {
-      return std::make_tuple(value_map_.at(name), depth);
+      return std::make_tuple(true, value_map_.at(name), scope_depth_);
     }
 
     if (enclosing_ != nullptr) {
-      return enclosing_->resolve(name, depth + 1);
+      return enclosing_->resolve(name);
     }
 
-    throw CompileError();
+    return std::make_tuple(false, 0, 0);
   }
 
 
@@ -61,11 +83,5 @@ namespace loxx
     std::unique_ptr<Scope> ret;
     std::swap(enclosing_, ret);
     return ret;
-  }
-
-
-  ByteCodeArg Scope::get_depth(const ByteCodeArg depth) const
-  {
-    return enclosing_ == nullptr ? depth : enclosing_->get_depth(depth + 1);
   }
 }

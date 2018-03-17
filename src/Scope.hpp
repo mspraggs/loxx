@@ -32,29 +32,33 @@ namespace loxx
   class Scope
   {
   public:
-    Scope() : num_locals_(0) {}
+    Scope() : scope_depth_(0) {}
 
     explicit Scope(std::unique_ptr<Scope> enclosing)
-        : enclosing_(std::move(enclosing)), num_locals_(0)
+        : enclosing_(std::move(enclosing)),
+          scope_depth_(enclosing_->scope_depth_ + 1)
     {}
+
+    void declare_variable(const std::string& lexeme);
+
+    void define_variable(const ByteCodeArg arg);
 
     ByteCodeArg make_variable(const std::string& lexeme);
 
-    bool has_variable(const std::string& lexeme);
-
-    std::tuple<ByteCodeArg, ByteCodeArg> resolve(
-        const std::string& lexeme, const ByteCodeArg depth = 0) const;
+    std::tuple<bool, ByteCodeArg, ByteCodeArg> resolve(
+        const std::string& lexeme) const;
 
     std::unique_ptr<Scope> release_enclosing();
 
-    ByteCodeArg get_depth(const ByteCodeArg depth = 0) const;
+    ByteCodeArg get_depth() const { return scope_depth_; }
 
-    ByteCodeArg num_locals() const { return num_locals_; }
+    ByteCodeArg num_locals() const { return value_defined_.size(); }
 
   private:
-    ByteCodeArg num_locals_;
+    ByteCodeArg scope_depth_;
     std::unique_ptr<Scope> enclosing_;
     std::unordered_map<std::string, ByteCodeArg> value_map_;
+    std::vector<bool> value_defined_;
   };
 }
 
