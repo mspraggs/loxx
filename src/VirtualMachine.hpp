@@ -59,6 +59,7 @@ namespace loxx
     const CompilationOutput* compiler_output_;
     std::unordered_map<std::string, ByteCodeArg> constant_map_;
     std::vector<StackVar> constants_;
+    std::unordered_map<std::string, StackVar> globals_;
     Stack<StackVar> stack_;
     Stack<StackFrame> call_stack_;
   };

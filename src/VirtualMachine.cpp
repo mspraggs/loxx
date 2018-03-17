@@ -58,9 +58,23 @@ namespace loxx
         execute_binary_op(instruction);
         break;
 
-      case Instruction::GetGlobal:
-        stack_.push(call_stack_.get(0).get_local(read_integer<ByteCodeArg>()));
+      case Instruction::DefineGlobal: {
+        const auto arg = read_integer<ByteCodeArg>();
+        const auto varname = get<std::string>(constants_[arg]);
+        globals_[varname] = stack_.pop();
         break;
+      }
+      case Instruction::GetGlobal: {
+        const auto arg = read_integer<ByteCodeArg>();
+        const auto varname = get<std::string>(constants_[arg]);
+
+        if (globals_.count(varname) != 1) {
+          throw_runtime_error("Undefined variable '" + varname + "'.");
+        }
+
+        stack_.push(globals_[varname]);
+        break;
+      }
 
       case Instruction::LoadConstant:
         stack_.push(constants_[read_integer<ByteCodeArg>()]);
@@ -74,8 +88,17 @@ namespace loxx
         print_object(stack_.pop());
         break;
 
-      case Instruction::SetGlobal:
-        call_stack_.get(0).set_local(read_integer<ByteCodeArg>(), stack_.top());
+      case Instruction::SetGlobal: {
+        const auto arg = read_integer<ByteCodeArg>();
+        const auto varname = get<std::string>(constants_[arg]);
+
+        if (globals_.count(varname) == 0) {
+          throw_runtime_error("Undefined variable '" + varname + "'.");
+        }
+
+        globals_[varname] = stack_.top();
+        break;
+      }
 
       default:
         break;
