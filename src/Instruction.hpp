@@ -29,6 +29,7 @@ namespace loxx
   {
     Add,
     Call,
+    DefineGlobal,
     Divide,
     Equal,
     GetGlobal,
@@ -59,6 +60,9 @@ namespace loxx
       break;
     case Instruction::Call:
       stream << "CALL";
+      break;
+    case Instruction::DefineGlobal:
+      stream << "DEFINE_GLOBAL";
       break;
     case Instruction::Divide:
       stream << "DIVIDE";

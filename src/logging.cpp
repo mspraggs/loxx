@@ -133,6 +133,7 @@ namespace loxx
         break;
       }
 
+      case Instruction::DefineGlobal:
       case Instruction::GetGlobal:
       case Instruction::SetGlobal:
       case Instruction::LoadConstant: {
