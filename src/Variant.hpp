@@ -138,6 +138,34 @@ namespace loxx
               std::size_t I0, std::size_t... Is, typename... Ts>
     Ret visit(Fn&& func, const std::size_t shared_index,
               std::index_sequence<I0, Is...>, const Ts& ... operands);
+
+
+    template <typename... Ts>
+    class VariantHelper
+    {
+    private:
+      friend class Variant<Ts...>;
+
+      static void destroy(std::index_sequence<>, Variant<Ts...>&);
+
+      template <std::size_t I0, std::size_t... Is>
+      static void destroy(std::index_sequence<I0, Is...>,
+                          Variant<Ts...>& destructee);
+
+      static void copy(std::index_sequence<>,
+                       Variant<Ts...>&, const Variant<Ts...>&);
+
+      template <std::size_t I0, std::size_t... Is>
+      static void copy(std::index_sequence<I0, Is...>,
+                       Variant<Ts...>& first, const Variant<Ts...>& second);
+
+      static void move(std::index_sequence<>,
+                       Variant<Ts...>&, Variant<Ts...>&&);
+
+      template <std::size_t I0, std::size_t... Is>
+      static void move(std::index_sequence<I0, Is...>,
+                       Variant<Ts...>& first, Variant<Ts...>&& second);
+    };
   }
 
 
@@ -154,10 +182,12 @@ namespace loxx
   {
   public:
     static constexpr std::size_t npos = sizeof...(Ts);
-    
+
     Variant();
     Variant(const Variant<Ts...>& other);
     Variant(Variant<Ts...>&& other) noexcept;
+
+    ~Variant();
 
     template <typename T,
               typename = std::enable_if_t<
@@ -184,6 +214,8 @@ namespace loxx
 
     template <typename T, typename... Us>
     friend constexpr bool holds_alternative(Variant<Us...>& variant);
+
+    friend class detail::VariantHelper<Ts...>;
 
     std::size_t type_index_;
     std::aligned_storage_t<
@@ -216,16 +248,30 @@ namespace loxx
 
   template<typename... Ts>
   Variant<Ts...>::Variant(const Variant<Ts...>& other)
-      : type_index_(other.type_index_), storage_(other.storage_)
+      : type_index_(other.type_index_)
   {
+    detail::VariantHelper<Ts...>::copy(
+        std::index_sequence_for<Ts...>(), *this, other);
   }
 
 
   template<typename... Ts>
   Variant<Ts...>::Variant(Variant<Ts...>&& other) noexcept
-      : type_index_(other.type_index_), storage_(other.storage_)
+      : type_index_(other.type_index_)
   {
-    other.type_index_ = sizeof...(Ts);
+    detail::VariantHelper<Ts...>::move(
+        std::index_sequence_for<Ts...>(), *this,
+        std::forward<Variant<Ts...>>(other));
+  }
+
+
+  template<typename... Ts>
+  Variant<Ts...>::~Variant()
+  {
+    if (type_index_ != npos) {
+      detail::VariantHelper<Ts...>::destroy(std::index_sequence_for<Ts...>(),
+                                            *this);
+    }
   }
 
 
@@ -265,7 +311,8 @@ namespace loxx
   {
     if (&other != this) {
       type_index_ = other.type_index_;
-      storage_ = other.storage_;
+      detail::VariantHelper<Ts...>::copy(
+          std::index_sequence_for<Ts...>(), *this, other);
     }
 
     return *this;
@@ -276,9 +323,9 @@ namespace loxx
   Variant<Ts...>& Variant<Ts...>::operator=(Variant<Ts...>&& other) noexcept
   {
     type_index_ = other.type_index_;
-    storage_ = other.storage_;
-
-    other.type_index_ = sizeof...(Ts);
+    detail::VariantHelper<Ts...>::move(
+        std::index_sequence_for<Ts...>(),
+        *this, std::forward<Variant<Ts...>>(other));
 
     return *this;
   }
@@ -418,6 +465,77 @@ namespace loxx
     }
     return detail::visit<Ret>(std::forward<Fn>(func), shared_index,
                               std::index_sequence<Is...>(), operands...);
+  }
+
+
+  template <typename... Ts>
+  void detail::VariantHelper<Ts...>::destroy(
+      std::index_sequence<>, Variant<Ts...>&)
+  {
+  }
+
+
+  template <typename... Ts>
+  template <std::size_t I0, std::size_t... Is>
+  void detail::VariantHelper<Ts...>::destroy(
+      std::index_sequence<I0, Is...>, Variant<Ts...>& destructee)
+  {
+    if (I0 == destructee.index()) {
+      using T = LookupType<I0, Ts...>;
+      reinterpret_cast<T*>(&destructee.storage_)->~T();
+      return;
+    }
+    destroy(std::index_sequence<Is...>(), destructee);
+  }
+
+
+  template <typename... Ts>
+  void detail::VariantHelper<Ts...>::copy(
+      std::index_sequence<>, Variant<Ts...>&, const Variant<Ts...>&)
+  {
+  }
+
+
+  template <typename... Ts>
+  template <std::size_t I0, std::size_t... Is>
+  void detail::VariantHelper<Ts...>::copy(
+      std::index_sequence<I0, Is...>,
+      Variant<Ts...>& first, const Variant<Ts...>& second)
+  {
+    if (I0 == first.type_index_) {
+      using T = LookupType<I0, Ts...>;
+
+      new (&first.storage_) T(*reinterpret_cast<const T*>(&second.storage_));
+      return;
+    }
+    copy(std::index_sequence<Is...>(), first, second);
+  }
+
+
+  template <typename... Ts>
+  void detail::VariantHelper<Ts...>::move(
+      std::index_sequence<>, Variant<Ts...>&, Variant<Ts...>&&)
+  {
+  }
+
+
+  template <typename... Ts>
+  template <std::size_t I0, std::size_t... Is>
+  void detail::VariantHelper<Ts...>::move(
+      std::index_sequence<I0, Is...>,
+      Variant<Ts...>& first, Variant<Ts...>&& second)
+  {
+    if (I0 == first.type_index_) {
+      using T = LookupType<I0, Ts...>;
+
+      new (&first.storage_) T(std::move(
+          *reinterpret_cast<T*>(&second.storage_)));
+
+      second.type_index_ = sizeof...(Ts);
+      return;
+    }
+    move(std::index_sequence<Is...>(), first,
+         std::forward<Variant<Ts...>>(second));
   }
 }
 
