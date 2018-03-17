@@ -102,6 +102,16 @@ namespace loxx
   }
 
 
+  ByteCodeArg VirtualMachine::get_constant(const std::string& lexeme) const
+  {
+    if (constant_map_.count(lexeme) == 0) {
+      throw_runtime_error("Undefined variable '" + lexeme + "'.");
+    }
+
+    return constant_map_.at(lexeme);
+  }
+
+
   void VirtualMachine::print_object(StackVar variant) const
   {
     if (holds_alternative<double>(variant)) {

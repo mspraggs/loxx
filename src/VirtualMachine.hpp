@@ -42,6 +42,8 @@ namespace loxx
 
     ByteCodeArg make_constant(const std::string& lexeme, const StackVar& value);
 
+    ByteCodeArg get_constant(const std::string& lexeme) const;
+
   private:
     void print_object(StackVar object) const;
     void execute_binary_op(const Instruction instruction);
