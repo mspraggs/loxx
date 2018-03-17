@@ -46,8 +46,7 @@ namespace loxx
   {
   public:
     explicit Compiler(VirtualMachine& vm)
-        : last_line_num_(0), last_instr_num_(0), vm_(&vm),
-          local_scope_(new Scope), global_scope_(local_scope_.get())
+        : last_line_num_(0), last_instr_num_(0), vm_(&vm), scope_(new Scope)
     {
       output_.num_globals = 0;
     }
@@ -92,8 +91,7 @@ namespace loxx
     std::size_t last_instr_num_;
     VirtualMachine* vm_;
     CompilationOutput output_;
-    std::unique_ptr<Scope> local_scope_;
-    Scope* global_scope_;
+    std::unique_ptr<Scope> scope_;
   };
 
 
