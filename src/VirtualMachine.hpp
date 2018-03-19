@@ -36,7 +36,7 @@ namespace loxx
   class VirtualMachine
   {
   public:
-    VirtualMachine();
+    explicit VirtualMachine(const bool debug);
 
     void execute(const CompilationOutput& compiler_output);
 
@@ -48,13 +48,20 @@ namespace loxx
     void print_object(StackVar object) const;
     void execute_binary_op(const Instruction instruction);
 
+    std::string stringify(const StackVar& object) const;
+    void print_stack() const;
+    void disassemble_instruction() const;
     template <typename T>
     T read_integer();
+    template <typename T>
+    T read_integer_at_pos(const std::size_t pos) const;
     void check_number_operands(const StackVar& first,
                                const StackVar& second) const;
     bool are_equal(const StackVar& first, const StackVar& second) const;
+    unsigned int get_current_line() const;
     void throw_runtime_error(const std::string& message) const;
 
+    bool debug_;
     std::size_t ip_;
     const CompilationOutput* compiler_output_;
     std::unordered_map<std::string, ByteCodeArg> constant_map_;
@@ -72,6 +79,19 @@ namespace loxx
 
     for (std::size_t i = 0; i < sizeof(T); ++i) {
       integer |= (compiler_output_->bytecode[++ip_] << 8 * i);
+    }
+
+    return integer;
+  }
+
+
+  template <typename T>
+  T VirtualMachine::read_integer_at_pos(const std::size_t pos) const
+  {
+    T integer = 0;
+
+    for (std::size_t i = 0; i < sizeof(T); ++i) {
+      integer |= (compiler_output_->bytecode[pos + i] << 8 * i);
     }
 
     return integer;

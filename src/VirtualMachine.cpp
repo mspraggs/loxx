@@ -17,7 +17,9 @@
  * Created by Matt Spraggs on 05/03/2018.
  */
 
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "Compiler.hpp"
 #include "logging.hpp"
@@ -27,7 +29,8 @@
 
 namespace loxx
 {
-  VirtualMachine::VirtualMachine() : ip_(0)
+  VirtualMachine::VirtualMachine(const bool debug)
+      : debug_(debug), ip_(0)
   {
   }
 
@@ -42,6 +45,11 @@ namespace loxx
 
       const auto instruction =
           static_cast<Instruction>(compiler_output.bytecode[ip_]);
+
+      if (debug_) {
+        print_stack();
+        disassemble_instruction();
+      }
 
       switch (instruction) {
 
@@ -137,15 +145,7 @@ namespace loxx
 
   void VirtualMachine::print_object(StackVar variant) const
   {
-    if (holds_alternative<double>(variant)) {
-      std::cout << get<double>(variant) << std::endl;
-    }
-    else if (holds_alternative<bool>(variant)) {
-      std::cout << (get<bool>(variant) ? "true" : "false") << std::endl;
-    }
-    else if (holds_alternative<std::string>(variant)) {
-      std::cout << get<std::string>(variant) << std::endl;
-    }
+    std::cout << stringify(variant) << std::endl;
   }
 
 
@@ -215,6 +215,100 @@ namespace loxx
   }
 
 
+  std::string VirtualMachine::stringify(const StackVar& object) const
+  {
+    if (object.index() == StackVar::npos) {
+      return "nil";
+    }
+    if (holds_alternative<double>(object)) {
+      std::stringstream ss;
+      ss << get<double>(object);
+      return ss.str();
+    }
+    else if (holds_alternative<bool>(object)) {
+      return get<bool>(object) ? "true" : "false";
+    }
+    else if (holds_alternative<std::string>(object)) {
+      return get<std::string>(object);
+    }
+  }
+
+
+  void VirtualMachine::print_stack() const
+  {
+    if (stack_.size() == 0) {
+      std::cout << std::endl;
+      return;
+    }
+    std::cout << "          [ ";
+
+    for (unsigned int i = 0; i < stack_.size(); ++i) {
+      std::cout << stringify(stack_.get(i));
+
+      if (i < stack_.size() - 1) {
+        std::cout << " | ";
+      }
+    }
+
+    std::cout << " ]" << std::endl;
+  }
+
+
+  void VirtualMachine::disassemble_instruction() const
+  {
+    const auto instruction =
+        static_cast<Instruction>(compiler_output_->bytecode[ip_]);
+
+    static unsigned int last_line_num = 0;
+    const unsigned int current_line_num = get_current_line();
+
+    std::stringstream line_num_ss;
+    line_num_ss << std::right << std::setw(5) << std::setfill(' ');
+    if (last_line_num < current_line_num) {
+      line_num_ss << current_line_num;
+    }
+    else {
+      line_num_ss << '|';
+    }
+    last_line_num = current_line_num;
+
+    std::cout << std::setw(4) << std::setfill('0') << std::right << ip_;
+    std::cout << line_num_ss.str() << ' ';
+    std::cout << std::setw(20) << std::setfill(' ') << std::left << instruction;
+
+    switch (instruction) {
+
+    case Instruction::Add:
+    case Instruction::Divide:
+    case Instruction::Equal:
+    case Instruction::Greater:
+    case Instruction::GreaterEqual:
+    case Instruction::Less:
+    case Instruction::LessEqual:
+    case Instruction::Multiply:
+    case Instruction::Nil:
+    case Instruction::NotEqual:
+    case Instruction::Pop:
+    case Instruction::Print:
+    case Instruction::Push:
+    case Instruction::Return:
+    case Instruction::Subtract:
+      break;
+
+    case Instruction::DefineGlobal:
+    case Instruction::GetGlobal:
+    case Instruction::SetGlobal:
+    case Instruction::LoadConstant: {
+      const auto param = read_integer_at_pos<ByteCodeArg>(ip_ + 1);
+      std::cout << param << " '" << stringify(constants_[param]) << "'";
+      break;
+    }
+    }
+
+    std::cout << '\n';
+  }
+
+
   void VirtualMachine::check_number_operands(
       const StackVar& first, const StackVar& second) const
   {
@@ -240,7 +334,7 @@ namespace loxx
   }
 
 
-  void VirtualMachine::throw_runtime_error(const std::string& message) const
+  unsigned int VirtualMachine::get_current_line() const
   {
     std::size_t instruction_counter = 0;
     unsigned int line = 0;
@@ -254,6 +348,12 @@ namespace loxx
       }
     }
 
-    throw RuntimeError(line, message);
+    return line;
+  }
+
+
+  void VirtualMachine::throw_runtime_error(const std::string& message) const
+  {
+    throw RuntimeError(get_current_line(), message);
   }
 }
