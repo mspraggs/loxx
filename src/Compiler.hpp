@@ -46,7 +46,8 @@ namespace loxx
   {
   public:
     explicit Compiler(VirtualMachine& vm)
-        : last_line_num_(0), last_instr_num_(0), vm_(&vm), scope_(new Scope)
+        : last_line_num_(0), scope_depth_(0), last_instr_num_(0), vm_(&vm),
+          scope_(new Scope)
     {
       output_.num_globals = 0;
     }
@@ -88,10 +89,12 @@ namespace loxx
     void rewrite_integer(const std::size_t pos, const T integer);
 
     unsigned int last_line_num_;
+    unsigned int scope_depth_;
     std::size_t last_instr_num_;
     VirtualMachine* vm_;
     CompilationOutput output_;
     std::unique_ptr<Scope> scope_;
+    std::vector<std::tuple<bool, std::size_t, std::string>> locals_;
   };
 
 
