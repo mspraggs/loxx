@@ -59,7 +59,6 @@ namespace loxx
                                const StackVar& second) const;
     bool are_equal(const StackVar& first, const StackVar& second) const;
     unsigned int get_current_line() const;
-    void throw_runtime_error(const std::string& message) const;
 
     bool debug_;
     std::size_t ip_;

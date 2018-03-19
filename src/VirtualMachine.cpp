@@ -77,7 +77,8 @@ namespace loxx
         const auto varname = get<std::string>(constants_[arg]);
 
         if (globals_.count(varname) != 1) {
-          throw_runtime_error("Undefined variable '" + varname + "'.");
+          throw RuntimeError(get_current_line(),
+                             "Undefined variable '" + varname + "'.");
         }
 
         stack_.push(globals_[varname]);
@@ -101,7 +102,8 @@ namespace loxx
         const auto varname = get<std::string>(constants_[arg]);
 
         if (globals_.count(varname) == 0) {
-          throw_runtime_error("Undefined variable '" + varname + "'.");
+          throw RuntimeError(get_current_line(),
+                             "Undefined variable '" + varname + "'.");
         }
 
         globals_[varname] = stack_.top();
@@ -136,7 +138,8 @@ namespace loxx
   ByteCodeArg VirtualMachine::get_constant(const std::string& lexeme) const
   {
     if (constant_map_.count(lexeme) == 0) {
-      throw_runtime_error("Undefined variable '" + lexeme + "'.");
+      throw RuntimeError(get_current_line(),
+                         "Undefined variable '" + lexeme + "'.");
     }
 
     return constant_map_.at(lexeme);
@@ -205,7 +208,8 @@ namespace loxx
         stack_.push(get<double>(first) + get<double>(second));
       }
       else {
-        throw_runtime_error(
+        throw RuntimeError(
+            get_current_line(),
             "Binary operands must be two numbers or two strings.");
       }
       break;
@@ -314,7 +318,8 @@ namespace loxx
   {
     if (not holds_alternative<double>(first) or
         not holds_alternative<double>(second)) {
-      throw_runtime_error("Binary operands must both be numbers.");
+      throw RuntimeError(get_current_line(),
+                         "Binary operands must both be numbers.");
     }
   }
 
@@ -349,11 +354,5 @@ namespace loxx
     }
 
     return line;
-  }
-
-
-  void VirtualMachine::throw_runtime_error(const std::string& message) const
-  {
-    throw RuntimeError(get_current_line(), message);
   }
 }
