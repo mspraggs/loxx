@@ -94,6 +94,7 @@ namespace loxx
       add_instruction(Instruction::DefineGlobal);
       add_integer(arg);
     }
+    update_line_num_table(stmt.name);
   }
 
 
@@ -112,6 +113,7 @@ namespace loxx
 
     expr.value->accept(*this);
     add_instruction(Instruction::SetGlobal);
+    update_line_num_table(expr.name);
     add_integer(arg);
   }
 
@@ -125,22 +127,18 @@ namespace loxx
 
     case TokenType::Plus:
       add_instruction(Instruction::Add);
-      update_line_num_table(expr.op);
       break;
 
     case TokenType::Minus:
       add_instruction(Instruction::Subtract);
-      update_line_num_table(expr.op);
       break;
 
     case TokenType::Star:
       add_instruction(Instruction::Multiply);
-      update_line_num_table(expr.op);
       break;
 
     case TokenType::Slash:
       add_instruction(Instruction::Divide);
-      update_line_num_table(expr.op);
       break;
 
     case TokenType::Less:
@@ -167,6 +165,7 @@ namespace loxx
       add_instruction(Instruction::NotEqual);
       break;
     }
+    update_line_num_table(expr.op);
   }
 
 
@@ -236,6 +235,7 @@ namespace loxx
 
     if (not resolved) {
       add_instruction(Instruction::GetGlobal);
+      update_line_num_table(expr.name);
       add_integer(vm_->get_constant(expr.name.lexeme()));
       return;
     }
