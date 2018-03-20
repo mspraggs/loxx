@@ -77,7 +77,7 @@ namespace loxx
 
   void Compiler::visit_var_stmt(const Var& stmt)
   {
-    const auto is_global = scope_->get_depth() == 0;
+    const auto is_global = scope_depth_ == 0;
 
     const ByteCodeArg arg =
         is_global ?
@@ -94,6 +94,9 @@ namespace loxx
       add_instruction(Instruction::DefineGlobal);
       add_integer(arg);
     }
+    else {
+      locals_.emplace_back(false, 0, stmt.name.lexeme()); 
+    }
     update_line_num_table(stmt.name);
   }
 
@@ -106,7 +109,7 @@ namespace loxx
 
   void Compiler::visit_assign_expr(const Assign& expr)
   {
-    const auto is_global = scope_ == nullptr;
+    const auto is_global = scope_depth_ == 0;
 
     const ByteCodeArg arg =
         vm_->make_constant(expr.name.lexeme(), expr.name.lexeme());
@@ -229,16 +232,30 @@ namespace loxx
   void Compiler::visit_variable_expr(const Variable& expr)
   {
     bool resolved = false;
-    ByteCodeArg var_depth = 0, var_index = 0;
-    std::tie(resolved, var_index, var_depth) =
-        scope_->resolve(expr.name.lexeme());
+    ByteCodeArg arg = 0;
+
+    const auto num_locals = locals_.size();
+
+    for (int i = 0; i >= 0; --i) {
+      if (std::get<2>(locals_[i]) == expr.name.lexeme()) {
+        if (not in_function_ and not std::get<0>(locals_[i])) {
+          // TODO: Error handling
+          break;
+        }
+        arg = static_cast<ByteCodeArg>(i);
+        resolved = true;
+      }
+    }
+
+    const auto op = resolved ? Instruction::GetLocal : Instruction::GetGlobal;
 
     if (not resolved) {
-      add_instruction(Instruction::GetGlobal);
-      update_line_num_table(expr.name);
-      add_integer(vm_->get_constant(expr.name.lexeme()));
-      return;
+      arg = vm_->get_constant(expr.name.lexeme());
     }
+
+    add_instruction(op);
+    update_line_num_table(expr.name);
+    add_integer(arg);
   }
 
 
