@@ -84,7 +84,7 @@ namespace loxx
         stack_.push(globals_[varname]);
         break;
       }
-        
+
       case Instruction::GetLocal: {
         const auto arg = read_integer<ByteCodeArg>();
         stack_.push(stack_.get(arg));
@@ -315,7 +315,9 @@ namespace loxx
 
     case Instruction::DefineGlobal:
     case Instruction::GetGlobal:
+    case Instruction::GetLocal:
     case Instruction::SetGlobal:
+    case Instruction::SetLocal:
     case Instruction::LoadConstant: {
       const auto param = read_integer_at_pos<ByteCodeArg>(ip_ + 1);
       std::cout << param << " '" << stringify(constants_[param]) << "'";
