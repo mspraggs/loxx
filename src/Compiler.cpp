@@ -17,6 +17,7 @@
  * Created by Matt Spraggs on 05/03/18.
  */
 
+#include "CompileError.hpp"
 #include "Compiler.hpp"
 #include "VirtualMachine.hpp"
 
@@ -88,13 +89,14 @@ namespace loxx
     if (not is_global) {
       // Check to see if a variable with this name has been declared in this
       // scope already
-      for (int i = locals_.size() - 1; i >= 0; --i) {
-        if (std::get<0>(locals_[i]) and
-            std::get<1>(locals_[i]) < scope_depth_) {
+      for (long int i = locals_.size() - 1; i >= 0; --i) {
+        const auto& local = locals_[i];
+
+        if (std::get<0>(local) and std::get<1>(local) < scope_depth_) {
           break;
         }
-        if (std::get<2>(locals_[i]) == stmt.name.lexeme()) {
-          // TODO: Error handling
+        if (std::get<2>(local) == stmt.name.lexeme()) {
+          throw CompileError();
         }
       }
       locals_.emplace_back(false, 0, stmt.name.lexeme());
@@ -113,6 +115,7 @@ namespace loxx
     }
     else {
       std::get<0>(locals_.back()) = true;
+      std::get<1>(locals_.back()) = scope_depth_;
     }
     update_line_num_table(stmt.name);
   }
@@ -126,15 +129,7 @@ namespace loxx
 
   void Compiler::visit_assign_expr(const Assign& expr)
   {
-    const auto is_global = scope_depth_ == 0;
-
-    const ByteCodeArg arg =
-        vm_->make_constant(expr.name.lexeme(), expr.name.lexeme());
-
-    expr.value->accept(*this);
-    add_instruction(Instruction::SetGlobal);
-    update_line_num_table(expr.name);
-    add_integer(arg);
+    handle_variable_reference(expr, true);
   }
 
 
@@ -248,37 +243,28 @@ namespace loxx
 
   void Compiler::visit_variable_expr(const Variable& expr)
   {
-    bool resolved = false;
-    ByteCodeArg arg = 0;
-
-    const auto num_locals = locals_.size();
-
-    for (int i = 0; i >= 0; --i) {
-      if (std::get<2>(locals_[i]) == expr.name.lexeme()) {
-        if (not in_function_ and not std::get<0>(locals_[i])) {
-          // TODO: Error handling
-          break;
-        }
-        arg = static_cast<ByteCodeArg>(i);
-        resolved = true;
-      }
-    }
-
-    const auto op = resolved ? Instruction::GetLocal : Instruction::GetGlobal;
-
-    if (not resolved) {
-      arg = vm_->get_constant(expr.name.lexeme());
-    }
-
-    add_instruction(op);
-    update_line_num_table(expr.name);
-    add_integer(arg);
+    handle_variable_reference(expr, false);
   }
 
 
   void Compiler::compile(const Stmt& stmt)
   {
     stmt.accept(*this);
+  }
+
+
+  std::tuple<bool, ByteCodeArg> Compiler::resolve_local(
+      const std::string& lexeme) const
+  {
+    for (long int i = locals_.size() - 1; i >= 0; --i) {
+      if (std::get<2>(locals_[i]) == lexeme) {
+        if (not in_function_ and not std::get<0>(locals_[i])) {
+          throw CompileError();
+        }
+        return std::make_tuple(true, static_cast<ByteCodeArg>(i));
+      }
+    }
+    return std::make_tuple(false, static_cast<ByteCodeArg>(0));
   }
 
 
@@ -324,5 +310,11 @@ namespace loxx
   void Compiler::add_instruction(const Instruction instruction)
   {
     output_.bytecode.push_back(static_cast<std::uint8_t>(instruction));
+  }
+
+
+  ByteCodeArg Compiler::get_constant(const std::string& str) const
+  {
+    return vm_->get_constant(str);
   }
 }

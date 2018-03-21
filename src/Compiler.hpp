@@ -80,12 +80,16 @@ namespace loxx
 
   private:
     void compile(const Stmt& stmt);
+    template <typename T>
+    void handle_variable_reference(const T& expr, const bool write);
+    std::tuple<bool, ByteCodeArg> resolve_local(const std::string& lexeme) const;
     void update_line_num_table(const Token& token);
     void add_instruction(const Instruction instruction);
     template <typename T>
     void add_integer(const T integer);
     template <typename T>
     void rewrite_integer(const std::size_t pos, const T integer);
+    inline ByteCodeArg get_constant(const std::string& str) const;
 
     bool in_function_;
     unsigned int last_line_num_;
@@ -95,6 +99,53 @@ namespace loxx
     CompilationOutput output_;
     std::vector<std::tuple<bool, std::size_t, std::string>> locals_;
   };
+
+
+  namespace detail
+  {
+    template <typename T>
+    struct VariableTrait
+    {
+      static void handle_value(const T& var_expr, Compiler& compiler) {}
+    };
+
+
+    template <>
+    struct VariableTrait<Assign>
+    {
+      static void handle_value(const Assign& var_expr, Compiler& compiler)
+      {
+        var_expr.value->accept(compiler);
+      }
+    };
+  }
+
+
+  template <typename T>
+  void Compiler::handle_variable_reference(const T& expr, const bool write)
+  {
+    ByteCodeArg arg = 0;
+    bool resolved = false;
+    std::tie(resolved, arg) = resolve_local(expr.name.lexeme());
+
+    Instruction op;
+    if (write) {
+      op = resolved ? Instruction::SetLocal : Instruction::SetGlobal;
+    }
+    else {
+      op = resolved ? Instruction::GetLocal : Instruction::GetGlobal;
+    }
+
+    detail::VariableTrait<T>::handle_value(expr, *this);
+
+    if (not resolved) {
+      arg = get_constant(expr.name.lexeme());
+    }
+
+    add_instruction(op);
+    update_line_num_table(expr.name);
+    add_integer(arg);
+  }
 
 
   template<typename T>
