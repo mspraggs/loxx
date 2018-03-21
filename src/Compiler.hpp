@@ -45,7 +45,8 @@ namespace loxx
   {
   public:
     explicit Compiler(VirtualMachine& vm)
-        : last_line_num_(0), scope_depth_(0), last_instr_num_(0), vm_(&vm)
+        : in_function_(false), last_line_num_(0), scope_depth_(0),
+          last_instr_num_(0), vm_(&vm)
     {
       output_.num_globals = 0;
     }
@@ -86,6 +87,7 @@ namespace loxx
     template <typename T>
     void rewrite_integer(const std::size_t pos, const T integer);
 
+    bool in_function_;
     unsigned int last_line_num_;
     unsigned int scope_depth_;
     std::size_t last_instr_num_;

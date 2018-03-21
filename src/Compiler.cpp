@@ -33,7 +33,9 @@ namespace loxx
 
   void Compiler::visit_block_stmt(const Block& stmt)
   {
-
+    scope_depth_++;
+    compile(stmt.statements);
+    scope_depth_--;
   }
 
 
@@ -83,6 +85,21 @@ namespace loxx
         is_global ?
         vm_->make_constant(stmt.name.lexeme(), stmt.name.lexeme()) : 0;
 
+    if (not is_global) {
+      // Check to see if a variable with this name has been declared in this
+      // scope already
+      for (int i = locals_.size() - 1; i >= 0; --i) {
+        if (std::get<0>(locals_[i]) and
+            std::get<1>(locals_[i]) < scope_depth_) {
+          break;
+        }
+        if (std::get<2>(locals_[i]) == stmt.name.lexeme()) {
+          // TODO: Error handling
+        }
+      }
+      locals_.emplace_back(false, 0, stmt.name.lexeme());
+    }
+
     if (stmt.initialiser != nullptr) {
       stmt.initialiser->accept(*this);
     }
@@ -95,7 +112,7 @@ namespace loxx
       add_integer(arg);
     }
     else {
-      locals_.emplace_back(false, 0, stmt.name.lexeme()); 
+      std::get<0>(locals_.back()) = true;
     }
     update_line_num_table(stmt.name);
   }
