@@ -99,6 +99,10 @@ namespace loxx
         stack_.push(StackVar());
         break;
 
+      case Instruction::Pop:
+        stack_.pop();
+        break;
+
       case Instruction::Print:
         print_object(stack_.pop());
         break;

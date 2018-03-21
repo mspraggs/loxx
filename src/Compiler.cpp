@@ -37,6 +37,11 @@ namespace loxx
     scope_depth_++;
     compile(stmt.statements);
     scope_depth_--;
+
+    while (not locals_.empty() and std::get<1>(locals_.back()) > scope_depth_) {
+      add_instruction(Instruction::Pop);
+      locals_.pop_back();
+    }
   }
 
 
