@@ -84,6 +84,12 @@ namespace loxx
         stack_.push(globals_[varname]);
         break;
       }
+        
+      case Instruction::GetLocal: {
+        const auto arg = read_integer<ByteCodeArg>();
+        stack_.push(stack_.get(arg));
+        break;
+      }
 
       case Instruction::LoadConstant:
         stack_.push(constants_[read_integer<ByteCodeArg>()]);
@@ -110,7 +116,15 @@ namespace loxx
         break;
       }
 
+      case Instruction::SetLocal: {
+        const auto arg = read_integer<ByteCodeArg>();
+        stack_.get(arg) = stack_.top();
+        break;
+      }
+
       default:
+        std::cout << "Unknown instruction: "
+                  << static_cast<unsigned int>(instruction) << std::endl;
         break;
       }
 
