@@ -71,6 +71,9 @@ namespace loxx
     case Instruction::GetGlobal:
       stream << "GET_GLOBAL";
       break;
+    case Instruction::GetLocal:
+      stream << "GET_LOCAL";
+      break;
     case Instruction::LoadConstant:
       stream << "LOAD_CONST";
       break;
@@ -94,6 +97,9 @@ namespace loxx
       break;
     case Instruction::SetGlobal:
       stream << "SET_GLOBAL";
+      break;
+    case Instruction::SetLocal:
+      stream << "SET_LOCAL";
       break;
     case Instruction::Subtract:
       stream << "SUBTRACT";
