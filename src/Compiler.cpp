@@ -226,6 +226,12 @@ namespace loxx
 
   void Compiler::visit_literal_expr(const Literal& expr)
   {
+    if (holds_alternative<bool>(expr.value)) {
+      add_instruction(
+          get<bool>(expr.value) ? Instruction::True : Instruction::False);
+      return;
+    }
+
     const auto index = vm_->make_constant(expr.lexeme, expr.value);
 
     add_instruction(Instruction::LoadConstant);

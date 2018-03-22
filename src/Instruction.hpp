@@ -33,6 +33,7 @@ namespace loxx
     DefineGlobal,
     Divide,
     Equal,
+    False,
     GetGlobal,
     GetLocal,
     Greater,
@@ -51,6 +52,7 @@ namespace loxx
     SetGlobal,
     SetLocal,
     Subtract,
+    True
   };
 
 
@@ -72,6 +74,9 @@ namespace loxx
       break;
     case Instruction::Divide:
       stream << "DIVIDE";
+      break;
+    case Instruction::False:
+      stream << "FALSE";
       break;
     case Instruction::GetGlobal:
       stream << "GET_GLOBAL";
@@ -111,6 +116,9 @@ namespace loxx
       break;
     case Instruction::Subtract:
       stream << "SUBTRACT";
+      break;
+    case Instruction::True:
+      stream << "TRUE";
       break;
     }
 
