@@ -72,6 +72,11 @@ namespace loxx
         globals_[varname] = stack_.pop();
         break;
       }
+
+      case Instruction::False:
+        stack_.push(StackVar(InPlace<bool>(), false));
+        break;
+
       case Instruction::GetGlobal: {
         const auto arg = read_integer<ByteCodeArg>();
         const auto varname = get<std::string>(constants_[arg]);
@@ -125,6 +130,10 @@ namespace loxx
         stack_.get(arg) = stack_.top();
         break;
       }
+
+      case Instruction::True:
+        stack_.push(StackVar(InPlace<bool>(), true));
+        break;
 
       default:
         std::cout << "Unknown instruction: "
@@ -303,6 +312,7 @@ namespace loxx
     case Instruction::Add:
     case Instruction::Divide:
     case Instruction::Equal:
+    case Instruction::False:
     case Instruction::Greater:
     case Instruction::GreaterEqual:
     case Instruction::Less:
@@ -315,6 +325,7 @@ namespace loxx
     case Instruction::Push:
     case Instruction::Return:
     case Instruction::Subtract:
+    case Instruction::True:
       break;
 
     case Instruction::DefineGlobal:
