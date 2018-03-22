@@ -58,6 +58,7 @@ namespace loxx
     void check_number_operands(const StackVar& first,
                                const StackVar& second) const;
     bool are_equal(const StackVar& first, const StackVar& second) const;
+    bool is_truthy(const StackVar& value) const;
     unsigned int get_current_line() const;
 
     bool debug_;

@@ -39,7 +39,6 @@ namespace loxx
   {
     compiler_output_ = &compiler_output;
     ip_ = 0;
-    call_stack_.get(0).reserve_local_space(compiler_output.num_globals);
 
     while (ip_ < compiler_output.bytecode.size()) {
 
@@ -65,6 +64,14 @@ namespace loxx
       case Instruction::LessEqual:
         execute_binary_op(instruction);
         break;
+
+      case Instruction::ConditionalJump: {
+        const auto jmp = read_integer<ByteCodeArg>();
+        if (is_truthy(stack_.pop())) {
+          ip_ += jmp;
+        }
+        break;
+      }
 
       case Instruction::DefineGlobal: {
         const auto arg = read_integer<ByteCodeArg>();
@@ -95,6 +102,10 @@ namespace loxx
         stack_.push(stack_.get(arg));
         break;
       }
+
+      case Instruction::Jump:
+        ip_ += read_integer<ByteCodeArg>();
+        break;
 
       case Instruction::LoadConstant:
         stack_.push(constants_[read_integer<ByteCodeArg>()]);
@@ -328,6 +339,12 @@ namespace loxx
     case Instruction::True:
       break;
 
+    case Instruction::ConditionalJump:
+    case Instruction::Jump: {
+      const auto param = read_integer_at_pos<ByteCodeArg>(ip_ + 1);
+      std::cout << param;
+      break;
+    }
     case Instruction::DefineGlobal:
     case Instruction::GetGlobal:
     case Instruction::GetLocal:
@@ -367,6 +384,18 @@ namespace loxx
     }
 
     return first == second;
+  }
+
+
+  bool VirtualMachine::is_truthy(const StackVar& value) const
+  {
+    if (value.index() == StackVar::npos) {
+      return false;
+    }
+    if (holds_alternative<bool>(value)) {
+      return get<bool>(value);
+    }
+    return true;
   }
 
 
