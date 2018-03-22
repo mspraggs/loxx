@@ -70,7 +70,17 @@ namespace loxx
 
   void Compiler::visit_if_stmt(const If& stmt)
   {
+    stmt.condition->accept(*this);
 
+    add_instruction(Instruction::ConditionalJump);
+    const auto first_jump_pos = output_.bytecode.size();
+    add_integer<ByteCodeArg>(0);
+
+    stmt.else_branch->accept(*this);
+
+    add_instruction(Instruction::Jump);
+    const auto second_jump_pos = output_.bytecode.size();
+    add_integer<ByteCodeArg>(0);
   }
 
 
