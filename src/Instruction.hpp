@@ -29,6 +29,7 @@ namespace loxx
   {
     Add,
     Call,
+    ConditionalJump,
     DefineGlobal,
     Divide,
     Equal,
@@ -36,6 +37,7 @@ namespace loxx
     GetLocal,
     Greater,
     GreaterEqual,
+    Jump,
     Less,
     LessEqual,
     LoadConstant,
@@ -62,6 +64,9 @@ namespace loxx
     case Instruction::Call:
       stream << "CALL";
       break;
+    case Instruction::ConditionalJump:
+      stream << "CONDITIONAL_JUMP";
+      break;
     case Instruction::DefineGlobal:
       stream << "DEFINE_GLOBAL";
       break;
@@ -73,6 +78,9 @@ namespace loxx
       break;
     case Instruction::GetLocal:
       stream << "GET_LOCAL";
+      break;
+    case Instruction::Jump:
+      stream << "JUMP";
       break;
     case Instruction::LoadConstant:
       stream << "LOAD_CONST";
