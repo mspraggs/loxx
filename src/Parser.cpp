@@ -55,7 +55,7 @@ namespace loxx
       consume(TokenType::Identifier, "Expected superclass name.");
       superclass = std::make_unique<Variable>(previous());
     }
-    
+
     consume(TokenType::LeftBrace, "Expected '{' before class body.");
 
     std::vector<std::unique_ptr<Function>> methods;
@@ -190,7 +190,8 @@ namespace loxx
     }
 
     if (condition == nullptr) {
-      condition = std::make_unique<Literal>(true, "true");
+      condition = std::make_unique<Literal>(StackVar(InPlace<bool>(), true),
+                                            "true");
     }
     body = std::make_unique<While>(std::move(condition), std::move(body));
 
@@ -395,13 +396,15 @@ namespace loxx
   std::unique_ptr<Expr> Parser::primary()
   {
     if (match({TokenType::False})) {
-      return std::make_unique<Literal>(false, previous().lexeme());
+      return std::make_unique<Literal>(StackVar(InPlace<bool>(), false),
+                                       previous().lexeme());
     }
     if (match({TokenType::True})) {
-      return std::make_unique<Literal>(true, previous().lexeme());
+      return std::make_unique<Literal>(StackVar(InPlace<bool>(), true),
+                                       previous().lexeme());
     }
     if (match({TokenType::Nil})) {
-      return std::make_unique<Literal>(nullptr, previous().lexeme());
+      return std::make_unique<Literal>(StackVar(), previous().lexeme());
     }
 
     if (match({TokenType::Number, TokenType::String})) {
