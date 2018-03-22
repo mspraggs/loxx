@@ -76,11 +76,25 @@ namespace loxx
     const auto first_jump_pos = output_.bytecode.size();
     add_integer<ByteCodeArg>(0);
 
-    stmt.else_branch->accept(*this);
+    if (stmt.else_branch != nullptr) {
+      stmt.else_branch->accept(*this);
+    }
+
+    const auto first_jump_size =
+        static_cast<ByteCodeArg>(
+            output_.bytecode.size() - first_jump_pos + 1);
+    rewrite_integer(first_jump_pos, first_jump_size);
 
     add_instruction(Instruction::Jump);
     const auto second_jump_pos = output_.bytecode.size();
     add_integer<ByteCodeArg>(0);
+
+    stmt.then_branch->accept(*this);
+
+    const auto second_jump_size =
+        static_cast<ByteCodeArg>(
+            output_.bytecode.size() - second_jump_pos - sizeof(ByteCodeArg));
+    rewrite_integer(second_jump_pos, second_jump_size);
   }
 
 
