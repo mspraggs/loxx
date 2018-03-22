@@ -17,8 +17,8 @@
  * Created by Matt Spraggs on 05/03/18.
  */
 
-#include "CompileError.hpp"
 #include "Compiler.hpp"
+#include "logging.hpp"
 #include "VirtualMachine.hpp"
 
 
@@ -27,7 +27,12 @@ namespace loxx
   void Compiler::compile(const std::vector<std::unique_ptr<Stmt>>& statements)
   {
     for (const auto& stmt : statements) {
-      compile(*stmt);
+      try {
+        compile(*stmt);
+      }
+      catch (const CompileError& e) {
+        error(e.line(), e.what());
+      }
     }
   }
 
@@ -101,7 +106,9 @@ namespace loxx
           break;
         }
         if (std::get<2>(local) == stmt.name.lexeme()) {
-          throw CompileError();
+          throw CompileError(
+              stmt.name.line(),
+              "Variable with this name already declared in this scope.");
         }
       }
       locals_.emplace_back(false, 0, stmt.name.lexeme());
@@ -258,13 +265,14 @@ namespace loxx
   }
 
 
-  std::tuple<bool, ByteCodeArg> Compiler::resolve_local(
-      const std::string& lexeme) const
+  std::tuple<bool, ByteCodeArg> Compiler::resolve_local(const Token& name) const
   {
     for (long int i = locals_.size() - 1; i >= 0; --i) {
-      if (std::get<2>(locals_[i]) == lexeme) {
+      if (std::get<2>(locals_[i]) == name.lexeme()) {
         if (not in_function_ and not std::get<0>(locals_[i])) {
-          throw CompileError();
+          throw CompileError(
+              name.line(),
+              "Cannot read local variable in its own initialiser.");
         }
         return std::make_tuple(true, static_cast<ByteCodeArg>(i));
       }

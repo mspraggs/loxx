@@ -17,7 +17,6 @@
  * Created by Matt Spraggs on 14/03/2018.
  */
 
-#include "CompileError.hpp"
 #include "Scope.hpp"
 
 
@@ -31,7 +30,7 @@ namespace loxx
     }
 
     if (value_map_.count(lexeme) != 0) {
-      throw CompileError();
+      throw std::logic_error("TODO: Fix this(?)");
     }
 
     const auto index = value_defined_.size();

@@ -79,10 +79,24 @@ namespace loxx
     const CompilationOutput& output() const { return output_; }
 
   private:
+    class CompileError : public std::runtime_error
+    {
+    public:
+      CompileError(const unsigned int line, const std::string& msg)
+          : std::runtime_error(msg), line_(line)
+      {}
+
+      unsigned int line() const { return line_; }
+
+    private:
+      unsigned int line_;
+    };
+    
+    
     void compile(const Stmt& stmt);
     template <typename T>
     void handle_variable_reference(const T& expr, const bool write);
-    std::tuple<bool, ByteCodeArg> resolve_local(const std::string& lexeme) const;
+    std::tuple<bool, ByteCodeArg> resolve_local(const Token& name) const;
     void update_line_num_table(const Token& token);
     void add_instruction(const Instruction instruction);
     template <typename T>
@@ -126,7 +140,7 @@ namespace loxx
   {
     ByteCodeArg arg = 0;
     bool resolved = false;
-    std::tie(resolved, arg) = resolve_local(expr.name.lexeme());
+    std::tie(resolved, arg) = resolve_local(expr.name);
 
     Instruction op;
     if (write) {
