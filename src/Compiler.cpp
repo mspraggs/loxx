@@ -265,11 +265,12 @@ namespace loxx
   }
 
 
-  std::tuple<bool, ByteCodeArg> Compiler::resolve_local(const Token& name) const
+  std::tuple<bool, ByteCodeArg> Compiler::resolve_local(
+      const Token& name, const bool in_function) const
   {
     for (long int i = locals_.size() - 1; i >= 0; --i) {
       if (std::get<2>(locals_[i]) == name.lexeme()) {
-        if (not in_function_ and not std::get<0>(locals_[i])) {
+        if (not in_function and not std::get<0>(locals_[i])) {
           throw CompileError(
               name.line(),
               "Cannot read local variable in its own initialiser.");

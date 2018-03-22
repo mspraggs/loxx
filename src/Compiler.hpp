@@ -45,8 +45,7 @@ namespace loxx
   {
   public:
     explicit Compiler(VirtualMachine& vm)
-        : in_function_(false), last_line_num_(0), scope_depth_(0),
-          last_instr_num_(0), vm_(&vm)
+        : last_line_num_(0), scope_depth_(0), last_instr_num_(0), vm_(&vm)
     {
       output_.num_globals = 0;
     }
@@ -96,7 +95,8 @@ namespace loxx
     void compile(const Stmt& stmt);
     template <typename T>
     void handle_variable_reference(const T& expr, const bool write);
-    std::tuple<bool, ByteCodeArg> resolve_local(const Token& name) const;
+    std::tuple<bool, ByteCodeArg> resolve_local(const Token& name,
+                                                const bool in_function) const;
     void update_line_num_table(const Token& token);
     void add_instruction(const Instruction instruction);
     template <typename T>
@@ -105,7 +105,6 @@ namespace loxx
     void rewrite_integer(const std::size_t pos, const T integer);
     inline ByteCodeArg get_constant(const std::string& str) const;
 
-    bool in_function_;
     unsigned int last_line_num_;
     unsigned int scope_depth_;
     std::size_t last_instr_num_;
@@ -140,7 +139,7 @@ namespace loxx
   {
     ByteCodeArg arg = 0;
     bool resolved = false;
-    std::tie(resolved, arg) = resolve_local(expr.name);
+    std::tie(resolved, arg) = resolve_local(expr.name, false);
 
     Instruction op;
     if (write) {
