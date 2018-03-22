@@ -20,6 +20,7 @@
 #ifndef LOXX_COMPILER_HPP
 #define LOXX_COMPILER_HPP
 
+#include <utility>
 #include <vector>
 
 #include "Expr.hpp"
@@ -81,17 +82,17 @@ namespace loxx
     class CompileError : public std::runtime_error
     {
     public:
-      CompileError(const unsigned int line, const std::string& msg)
-          : std::runtime_error(msg), line_(line)
+      CompileError(Token name, const std::string& msg)
+          : std::runtime_error(msg), name_(std::move(name))
       {}
 
-      unsigned int line() const { return line_; }
+      const Token& name() const { return name_; }
 
     private:
-      unsigned int line_;
+      Token name_;
     };
-    
-    
+
+
     void compile(const Stmt& stmt);
     template <typename T>
     void handle_variable_reference(const T& expr, const bool write);

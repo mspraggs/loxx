@@ -31,7 +31,7 @@ namespace loxx
         compile(*stmt);
       }
       catch (const CompileError& e) {
-        error(e.line(), e.what());
+        error(e.name(), e.what());
       }
     }
   }
@@ -131,7 +131,7 @@ namespace loxx
         }
         if (std::get<2>(local) == stmt.name.lexeme()) {
           throw CompileError(
-              stmt.name.line(),
+              stmt.name,
               "Variable with this name already declared in this scope.");
         }
       }
@@ -302,8 +302,7 @@ namespace loxx
       if (std::get<2>(locals_[i]) == name.lexeme()) {
         if (not in_function and not std::get<0>(locals_[i])) {
           throw CompileError(
-              name.line(),
-              "Cannot read local variable in its own initialiser.");
+              name, "Cannot read local variable in its own initialiser.");
         }
         return std::make_tuple(true, static_cast<ByteCodeArg>(i));
       }
