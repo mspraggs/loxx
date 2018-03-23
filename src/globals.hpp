@@ -25,6 +25,7 @@
 namespace loxx
 {
   using ByteCodeArg = std::size_t;
+  using SignedByteCodeArg = std::make_signed_t<ByteCodeArg>;
   
   using StackVar = Variant<double, bool, std::string>;
 }
