@@ -50,7 +50,8 @@ namespace loxx
 
     std::string stringify(const StackVar& object) const;
     void print_stack() const;
-    void disassemble_instruction() const;
+    void disassemble_bytecode();
+    size_t disassemble_instruction() const;
     template <typename T>
     T read_integer();
     template <typename T>

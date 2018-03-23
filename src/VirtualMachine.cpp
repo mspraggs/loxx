@@ -38,6 +38,11 @@ namespace loxx
   void VirtualMachine::execute(const CompilationOutput& compiler_output)
   {
     compiler_output_ = &compiler_output;
+
+    if (debug_) {
+      disassemble_bytecode();
+    }
+
     ip_ = 0;
 
     while (ip_ < compiler_output.bytecode.size()) {
@@ -296,7 +301,16 @@ namespace loxx
   }
 
 
-  void VirtualMachine::disassemble_instruction() const
+  void VirtualMachine::disassemble_bytecode()
+  {
+    ip_ = 0;
+    while (ip_ < compiler_output_->bytecode.size()) {
+      ip_ = disassemble_instruction();
+    }
+  }
+
+
+  size_t VirtualMachine::disassemble_instruction() const
   {
     const auto instruction =
         static_cast<Instruction>(compiler_output_->bytecode[ip_]);
@@ -317,6 +331,8 @@ namespace loxx
     std::cout << std::setw(4) << std::setfill('0') << std::right << ip_;
     std::cout << line_num_ss.str() << ' ';
     std::cout << std::setw(20) << std::setfill(' ') << std::left << instruction;
+
+    std::size_t ret = ip_ + 1;
 
     switch (instruction) {
 
@@ -341,8 +357,9 @@ namespace loxx
 
     case Instruction::ConditionalJump:
     case Instruction::Jump: {
-      const auto param = read_integer_at_pos<UByteCodeArg>(ip_ + 1);
+      const auto param = read_integer_at_pos<ByteCodeArg>(ret);
       std::cout << param;
+      ret += sizeof(ByteCodeArg);
       break;
     }
     case Instruction::DefineGlobal:
@@ -351,13 +368,16 @@ namespace loxx
     case Instruction::SetGlobal:
     case Instruction::SetLocal:
     case Instruction::LoadConstant: {
-      const auto param = read_integer_at_pos<UByteCodeArg>(ip_ + 1);
+      const auto param = read_integer_at_pos<UByteCodeArg>(ret);
       std::cout << param << " '" << stringify(constants_[param]) << "'";
+      ret += sizeof(UByteCodeArg);
       break;
     }
     }
 
     std::cout << '\n';
+
+    return ret;
   }
 
 
