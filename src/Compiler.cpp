@@ -159,13 +159,30 @@ namespace loxx
 
   void Compiler::visit_while_stmt(const While& stmt)
   {
+    const auto first_label_pos = output_.bytecode.size();
 
+    stmt.condition->accept(*this);
+
+    add_instruction(Instruction::ConditionalJump);
+    add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 1);
+
+    add_instruction(Instruction::Jump);
+    const auto second_jump_pos = output_.bytecode.size();
+    add_integer<ByteCodeArg>(0);
+
+    compile(*stmt.body);
+
+    add_instruction(Instruction::Jump);
+    add_integer<SignedByteCodeArg>(first_label_pos - output_.bytecode.size());
+
+    rewrite_integer<ByteCodeArg>(
+        second_jump_pos, output_.bytecode.size() - second_jump_pos);
   }
 
 
   void Compiler::visit_assign_expr(const Assign& expr)
   {
-    handle_variable_reference(expr, true);
+
   }
 
 
