@@ -30,14 +30,14 @@ namespace loxx
   }
 
 
-  ByteCodeArg StackFrame::make_local(const std::string& lexeme,
+  UByteCodeArg StackFrame::make_local(const std::string& lexeme,
                                      const StackVar& value)
   {
     if (local_map_.count(lexeme) != 0) {
       return local_map_[lexeme];
     }
 
-    const auto index = static_cast<ByteCodeArg>(locals_.size());
+    const auto index = static_cast<UByteCodeArg>(locals_.size());
 
     locals_.push_back(value);
     local_map_[lexeme] = index;

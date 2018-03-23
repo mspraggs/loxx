@@ -74,26 +74,26 @@ namespace loxx
 
     add_instruction(Instruction::ConditionalJump);
     const auto first_jump_pos = output_.bytecode.size();
-    add_integer<ByteCodeArg>(0);
+    add_integer<UByteCodeArg>(0);
 
     if (stmt.else_branch != nullptr) {
       stmt.else_branch->accept(*this);
     }
 
     const auto first_jump_size =
-        static_cast<ByteCodeArg>(
+        static_cast<UByteCodeArg>(
             output_.bytecode.size() - first_jump_pos + 1);
     rewrite_integer(first_jump_pos, first_jump_size);
 
     add_instruction(Instruction::Jump);
     const auto second_jump_pos = output_.bytecode.size();
-    add_integer<ByteCodeArg>(0);
+    add_integer<UByteCodeArg>(0);
 
     stmt.then_branch->accept(*this);
 
     const auto second_jump_size =
-        static_cast<ByteCodeArg>(
-            output_.bytecode.size() - second_jump_pos - sizeof(ByteCodeArg));
+        static_cast<UByteCodeArg>(
+            output_.bytecode.size() - second_jump_pos - sizeof(UByteCodeArg));
     rewrite_integer(second_jump_pos, second_jump_size);
   }
 
@@ -116,7 +116,7 @@ namespace loxx
   {
     const auto is_global = scope_depth_ == 0;
 
-    const ByteCodeArg arg =
+    const UByteCodeArg arg =
         is_global ?
         vm_->make_constant(stmt.name.lexeme(), stmt.name.lexeme()) : 0;
 
@@ -164,18 +164,18 @@ namespace loxx
     stmt.condition->accept(*this);
 
     add_instruction(Instruction::ConditionalJump);
-    add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 1);
+    add_integer<UByteCodeArg>(sizeof(UByteCodeArg) + 1);
 
     add_instruction(Instruction::Jump);
     const auto second_jump_pos = output_.bytecode.size();
-    add_integer<ByteCodeArg>(0);
+    add_integer<UByteCodeArg>(0);
 
     compile(*stmt.body);
 
     add_instruction(Instruction::Jump);
-    add_integer<SignedByteCodeArg>(first_label_pos - output_.bytecode.size());
+    add_integer<ByteCodeArg>(first_label_pos - output_.bytecode.size());
 
-    rewrite_integer<ByteCodeArg>(
+    rewrite_integer<UByteCodeArg>(
         second_jump_pos, output_.bytecode.size() - second_jump_pos);
   }
 
@@ -312,7 +312,7 @@ namespace loxx
   }
 
 
-  std::tuple<bool, ByteCodeArg> Compiler::resolve_local(
+  std::tuple<bool, UByteCodeArg> Compiler::resolve_local(
       const Token& name, const bool in_function) const
   {
     for (long int i = locals_.size() - 1; i >= 0; --i) {
@@ -321,10 +321,10 @@ namespace loxx
           throw CompileError(
               name, "Cannot read local variable in its own initialiser.");
         }
-        return std::make_tuple(true, static_cast<ByteCodeArg>(i));
+        return std::make_tuple(true, static_cast<UByteCodeArg>(i));
       }
     }
-    return std::make_tuple(false, static_cast<ByteCodeArg>(0));
+    return std::make_tuple(false, static_cast<UByteCodeArg>(0));
   }
 
 
@@ -373,7 +373,7 @@ namespace loxx
   }
 
 
-  ByteCodeArg Compiler::get_constant(const std::string& str) const
+  UByteCodeArg Compiler::get_constant(const std::string& str) const
   {
     return vm_->get_constant(str);
   }

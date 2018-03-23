@@ -96,7 +96,7 @@ namespace loxx
     void compile(const Stmt& stmt);
     template <typename T>
     void handle_variable_reference(const T& expr, const bool write);
-    std::tuple<bool, ByteCodeArg> resolve_local(const Token& name,
+    std::tuple<bool, UByteCodeArg> resolve_local(const Token& name,
                                                 const bool in_function) const;
     void update_line_num_table(const Token& token);
     void add_instruction(const Instruction instruction);
@@ -104,7 +104,7 @@ namespace loxx
     void add_integer(const T integer);
     template <typename T>
     void rewrite_integer(const std::size_t pos, const T integer);
-    inline ByteCodeArg get_constant(const std::string& str) const;
+    inline UByteCodeArg get_constant(const std::string& str) const;
 
     unsigned int last_line_num_;
     unsigned int scope_depth_;
@@ -138,7 +138,7 @@ namespace loxx
   template <typename T>
   void Compiler::handle_variable_reference(const T& expr, const bool write)
   {
-    ByteCodeArg arg = 0;
+    UByteCodeArg arg = 0;
     bool resolved = false;
     std::tie(resolved, arg) = resolve_local(expr.name, false);
 

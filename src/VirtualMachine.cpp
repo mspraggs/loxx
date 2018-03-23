@@ -66,7 +66,7 @@ namespace loxx
         break;
 
       case Instruction::ConditionalJump: {
-        const auto jmp = read_integer<ByteCodeArg>();
+        const auto jmp = read_integer<UByteCodeArg>();
         if (is_truthy(stack_.pop())) {
           ip_ += jmp;
         }
@@ -74,7 +74,7 @@ namespace loxx
       }
 
       case Instruction::DefineGlobal: {
-        const auto arg = read_integer<ByteCodeArg>();
+        const auto arg = read_integer<UByteCodeArg>();
         const auto varname = get<std::string>(constants_[arg]);
         globals_[varname] = stack_.pop();
         break;
@@ -85,7 +85,7 @@ namespace loxx
         break;
 
       case Instruction::GetGlobal: {
-        const auto arg = read_integer<ByteCodeArg>();
+        const auto arg = read_integer<UByteCodeArg>();
         const auto varname = get<std::string>(constants_[arg]);
 
         if (globals_.count(varname) != 1) {
@@ -98,17 +98,17 @@ namespace loxx
       }
 
       case Instruction::GetLocal: {
-        const auto arg = read_integer<ByteCodeArg>();
+        const auto arg = read_integer<UByteCodeArg>();
         stack_.push(stack_.get(arg));
         break;
       }
 
       case Instruction::Jump:
-        ip_ += read_integer<ByteCodeArg>();
+        ip_ += read_integer<UByteCodeArg>();
         break;
 
       case Instruction::LoadConstant:
-        stack_.push(constants_[read_integer<ByteCodeArg>()]);
+        stack_.push(constants_[read_integer<UByteCodeArg>()]);
         break;
 
       case Instruction::Nil:
@@ -124,7 +124,7 @@ namespace loxx
         break;
 
       case Instruction::SetGlobal: {
-        const auto arg = read_integer<ByteCodeArg>();
+        const auto arg = read_integer<UByteCodeArg>();
         const auto varname = get<std::string>(constants_[arg]);
 
         if (globals_.count(varname) == 0) {
@@ -137,7 +137,7 @@ namespace loxx
       }
 
       case Instruction::SetLocal: {
-        const auto arg = read_integer<ByteCodeArg>();
+        const auto arg = read_integer<UByteCodeArg>();
         stack_.get(arg) = stack_.top();
         break;
       }
@@ -157,14 +157,14 @@ namespace loxx
   }
 
 
-  ByteCodeArg VirtualMachine::make_constant(const std::string& lexeme,
+  UByteCodeArg VirtualMachine::make_constant(const std::string& lexeme,
                                             const StackVar& value)
   {
     if (constant_map_.count(lexeme) != 0) {
       return constant_map_[lexeme];
     }
 
-    const auto index = static_cast<ByteCodeArg>(constants_.size());
+    const auto index = static_cast<UByteCodeArg>(constants_.size());
 
     constants_.push_back(value);
     constant_map_[lexeme] = index;
@@ -173,7 +173,7 @@ namespace loxx
   }
 
 
-  ByteCodeArg VirtualMachine::get_constant(const std::string& lexeme) const
+  UByteCodeArg VirtualMachine::get_constant(const std::string& lexeme) const
   {
     if (constant_map_.count(lexeme) == 0) {
       throw RuntimeError(get_current_line(),
@@ -341,7 +341,7 @@ namespace loxx
 
     case Instruction::ConditionalJump:
     case Instruction::Jump: {
-      const auto param = read_integer_at_pos<ByteCodeArg>(ip_ + 1);
+      const auto param = read_integer_at_pos<UByteCodeArg>(ip_ + 1);
       std::cout << param;
       break;
     }
@@ -351,7 +351,7 @@ namespace loxx
     case Instruction::SetGlobal:
     case Instruction::SetLocal:
     case Instruction::LoadConstant: {
-      const auto param = read_integer_at_pos<ByteCodeArg>(ip_ + 1);
+      const auto param = read_integer_at_pos<UByteCodeArg>(ip_ + 1);
       std::cout << param << " '" << stringify(constants_[param]) << "'";
       break;
     }

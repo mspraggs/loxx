@@ -39,7 +39,7 @@ namespace loxx
   }
 
 
-  void Scope::define_variable(const ByteCodeArg arg)
+  void Scope::define_variable(const UByteCodeArg arg)
   {
     if (enclosing_ == nullptr) {
       // Global variables are implicitly declared
@@ -50,7 +50,7 @@ namespace loxx
   }
 
 
-  ByteCodeArg Scope::make_variable(const std::string& lexeme)
+  UByteCodeArg Scope::make_variable(const std::string& lexeme)
   {
     if (value_map_.count(lexeme) != 0) {
       return value_map_[lexeme];
@@ -62,7 +62,7 @@ namespace loxx
   }
 
 
-  std::tuple<bool, ByteCodeArg, ByteCodeArg> Scope::resolve(
+  std::tuple<bool, UByteCodeArg, UByteCodeArg> Scope::resolve(
       const std::string& name) const
   {
     if (value_map_.count(name) != 0) {

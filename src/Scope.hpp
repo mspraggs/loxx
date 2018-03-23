@@ -41,23 +41,23 @@ namespace loxx
 
     void declare_variable(const std::string& lexeme);
 
-    void define_variable(const ByteCodeArg arg);
+    void define_variable(const UByteCodeArg arg);
 
-    ByteCodeArg make_variable(const std::string& lexeme);
+    UByteCodeArg make_variable(const std::string& lexeme);
 
-    std::tuple<bool, ByteCodeArg, ByteCodeArg> resolve(
+    std::tuple<bool, UByteCodeArg, UByteCodeArg> resolve(
         const std::string& lexeme) const;
 
     std::unique_ptr<Scope> release_enclosing();
 
-    ByteCodeArg get_depth() const { return scope_depth_; }
+    UByteCodeArg get_depth() const { return scope_depth_; }
 
-    ByteCodeArg num_locals() const { return value_defined_.size(); }
+    UByteCodeArg num_locals() const { return value_defined_.size(); }
 
   private:
-    ByteCodeArg scope_depth_;
+    UByteCodeArg scope_depth_;
     std::unique_ptr<Scope> enclosing_;
-    std::unordered_map<std::string, ByteCodeArg> value_map_;
+    std::unordered_map<std::string, UByteCodeArg> value_map_;
     std::vector<bool> value_defined_;
   };
 }
