@@ -74,26 +74,26 @@ namespace loxx
 
     add_instruction(Instruction::ConditionalJump);
     const auto first_jump_pos = output_.bytecode.size();
-    add_integer<UByteCodeArg>(0);
+    add_integer<ByteCodeArg>(0);
 
     if (stmt.else_branch != nullptr) {
       stmt.else_branch->accept(*this);
     }
 
     const auto first_jump_size =
-        static_cast<UByteCodeArg>(
+        static_cast<ByteCodeArg>(
             output_.bytecode.size() - first_jump_pos + 1);
     rewrite_integer(first_jump_pos, first_jump_size);
 
     add_instruction(Instruction::Jump);
     const auto second_jump_pos = output_.bytecode.size();
-    add_integer<UByteCodeArg>(0);
+    add_integer<ByteCodeArg>(0);
 
     stmt.then_branch->accept(*this);
 
     const auto second_jump_size =
-        static_cast<UByteCodeArg>(
-            output_.bytecode.size() - second_jump_pos - sizeof(UByteCodeArg));
+        static_cast<ByteCodeArg>(
+            output_.bytecode.size() - second_jump_pos - sizeof(ByteCodeArg));
     rewrite_integer(second_jump_pos, second_jump_size);
   }
 
@@ -164,18 +164,18 @@ namespace loxx
     stmt.condition->accept(*this);
 
     add_instruction(Instruction::ConditionalJump);
-    add_integer<UByteCodeArg>(sizeof(UByteCodeArg) + 1);
+    add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 1);
 
     add_instruction(Instruction::Jump);
     const auto second_jump_pos = output_.bytecode.size();
-    add_integer<UByteCodeArg>(0);
+    add_integer<ByteCodeArg>(0);
 
     compile(*stmt.body);
 
     add_instruction(Instruction::Jump);
     add_integer<ByteCodeArg>(first_label_pos - output_.bytecode.size());
 
-    rewrite_integer<UByteCodeArg>(
+    rewrite_integer<ByteCodeArg>(
         second_jump_pos, output_.bytecode.size() - second_jump_pos);
   }
 

@@ -71,7 +71,7 @@ namespace loxx
         break;
 
       case Instruction::ConditionalJump: {
-        const auto jmp = read_integer<UByteCodeArg>();
+        const auto jmp = read_integer<ByteCodeArg>();
         if (is_truthy(stack_.pop())) {
           ip_ += jmp;
         }
@@ -109,7 +109,7 @@ namespace loxx
       }
 
       case Instruction::Jump:
-        ip_ += read_integer<UByteCodeArg>();
+        ip_ += read_integer<ByteCodeArg>();
         break;
 
       case Instruction::LoadConstant:
