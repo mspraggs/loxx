@@ -182,7 +182,7 @@ namespace loxx
 
   void Compiler::visit_assign_expr(const Assign& expr)
   {
-
+    handle_variable_reference(expr, true);
   }
 
 
