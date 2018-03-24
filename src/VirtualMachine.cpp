@@ -358,7 +358,7 @@ namespace loxx
     case Instruction::ConditionalJump:
     case Instruction::Jump: {
       const auto param = read_integer_at_pos<ByteCodeArg>(ret);
-      std::cout << param;
+      std::cout << ip_ << " -> " << ip_ + param;
       ret += sizeof(ByteCodeArg);
       break;
     }
