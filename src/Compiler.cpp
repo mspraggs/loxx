@@ -159,6 +159,17 @@ namespace loxx
 
   void Compiler::visit_while_stmt(const While& stmt)
   {
+    // While loops are modelled around this structure:
+    //
+    // begin:
+    // if (expr) goto body
+    // goto end
+    // body:
+    // ...
+    // goto begin
+    // end:
+    // ...
+
     const auto first_label_pos = output_.bytecode.size();
 
     stmt.condition->accept(*this);
