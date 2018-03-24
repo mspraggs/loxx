@@ -165,20 +165,16 @@ namespace loxx
   template<typename T>
   void Compiler::add_integer(const T integer)
   {
-    for (unsigned int i = 0; i < sizeof(T); ++i) {
-      output_.bytecode.push_back(
-          static_cast<std::uint8_t>((integer >> 8 * i) & 0xff));
-    }
+    auto& bytecode = output_.bytecode;
+    const auto integer_ptr = reinterpret_cast<const std::uint8_t*>(&integer);
+    bytecode.insert(bytecode.end(), integer_ptr, integer_ptr + sizeof(T));
   }
 
 
   template<typename T>
   void Compiler::rewrite_integer(const std::size_t pos, const T integer)
   {
-    for (unsigned int i = 0; i < sizeof(T); ++i) {
-      output_.bytecode[pos + i] =
-          static_cast<std::uint8_t>((integer >> 8 * i) & 0xff);
-    }
+    *reinterpret_cast<T*>(&output_.bytecode[pos]) = integer;
   }
 }
 
