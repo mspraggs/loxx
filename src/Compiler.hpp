@@ -93,6 +93,7 @@ namespace loxx
     };
 
 
+    void compile(const Expr& expr);
     void compile(const Stmt& stmt);
     template <typename T>
     void handle_variable_reference(const T& expr, const bool write);

@@ -58,7 +58,7 @@ namespace loxx
 
   void Compiler::visit_expression_stmt(const Expression& stmt)
   {
-    stmt.expression->accept(*this);
+    compile(*stmt.expression);
     add_instruction(Instruction::Pop);
   }
 
@@ -71,14 +71,14 @@ namespace loxx
 
   void Compiler::visit_if_stmt(const If& stmt)
   {
-    stmt.condition->accept(*this);
+    compile(*stmt.condition);
 
     add_instruction(Instruction::ConditionalJump);
     const auto first_jump_pos = output_.bytecode.size();
     add_integer<ByteCodeArg>(0);
 
     if (stmt.else_branch != nullptr) {
-      stmt.else_branch->accept(*this);
+      compile(*stmt.else_branch);
     }
 
     const auto first_jump_size =
@@ -90,7 +90,7 @@ namespace loxx
     const auto second_jump_pos = output_.bytecode.size();
     add_integer<ByteCodeArg>(0);
 
-    stmt.then_branch->accept(*this);
+    compile(*stmt.then_branch);
 
     const auto second_jump_size =
         static_cast<ByteCodeArg>(
@@ -101,7 +101,7 @@ namespace loxx
 
   void Compiler::visit_print_stmt(const Print& stmt)
   {
-    stmt.expression->accept(*this);
+    compile(*stmt.expression);
 
     add_instruction(Instruction::Print);
   }
@@ -140,7 +140,7 @@ namespace loxx
     }
 
     if (stmt.initialiser != nullptr) {
-      stmt.initialiser->accept(*this);
+      compile(*stmt.initialiser);
     }
     else {
       add_instruction(Instruction::Nil);
@@ -173,7 +173,7 @@ namespace loxx
 
     const auto first_label_pos = output_.bytecode.size();
 
-    stmt.condition->accept(*this);
+    compile(*stmt.condition);
 
     add_instruction(Instruction::ConditionalJump);
     // We want to jump over the jump that takes us out of the while loop, which
@@ -214,8 +214,8 @@ namespace loxx
 
   void Compiler::visit_binary_expr(const Binary& expr)
   {
-    expr.left->accept(*this);
-    expr.right->accept(*this);
+    compile(*expr.left);
+    compile(*expr.right);
 
     switch (expr.op.type()) {
 
@@ -277,7 +277,7 @@ namespace loxx
 
   void Compiler::visit_grouping_expr(const Grouping& expr)
   {
-    expr.expression->accept(*this);
+    compile(*expr.expression);
   }
 
 
@@ -329,6 +329,12 @@ namespace loxx
   void Compiler::visit_variable_expr(const Variable& expr)
   {
     handle_variable_reference(expr, false);
+  }
+
+
+  void Compiler::compile(const Expr &expr)
+  {
+    expr.accept(*this);
   }
 
 
