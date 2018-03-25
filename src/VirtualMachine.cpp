@@ -47,13 +47,13 @@ namespace loxx
 
     while (ip_ < compiler_output.bytecode.size()) {
 
-      const auto instruction =
-          static_cast<Instruction>(compiler_output.bytecode[ip_]);
-
       if (debug_) {
         print_stack();
         disassemble_instruction();
       }
+
+      const auto instruction =
+          static_cast<Instruction>(compiler_output.bytecode[ip_++]);
 
       switch (instruction) {
 
@@ -156,8 +156,6 @@ namespace loxx
                   << static_cast<unsigned int>(instruction) << std::endl;
         break;
       }
-
-      ++ip_;
     }
   }
 
