@@ -162,12 +162,12 @@ namespace loxx
   {
     // While loops are modelled around this structure:
     //
-    // begin:
-    // if (expr) goto body
-    // goto end
+    // begin: <- first_label_pos
+    // if (expr) goto body <- Instruction::ConditionalJump -
+    // goto end <- Instruction::Jump - second_jump_pos
     // body:
     // ...
-    // goto begin
+    // goto begin <- Instruction::Jump
     // end:
     // ...
 
@@ -176,6 +176,9 @@ namespace loxx
     stmt.condition->accept(*this);
 
     add_instruction(Instruction::ConditionalJump);
+    // We want to jump over the jump that takes us out of the while loop, which
+    // also involves jumping over a pop instruction (hence + 2 for two
+    // instructions).
     add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 2);
     add_instruction(Instruction::Pop);
 
@@ -183,13 +186,20 @@ namespace loxx
     const auto second_jump_pos = output_.bytecode.size();
     add_integer<ByteCodeArg>(0);
 
+    // Pop the condition value (used by ConditionalJump) off the stack.
     add_instruction(Instruction::Pop);
+    // Compile the body of the while loop.
     compile(*stmt.body);
 
+    // N.B. Size of bytecode argument needs to be subtracted because the VM
+    // automatically increments the instruction pointer when reading arguments.
+
+    // Jump back to the start of the loop to check the condition again.
     add_instruction(Instruction::Jump);
     add_integer<ByteCodeArg>(
         first_label_pos - output_.bytecode.size() - sizeof(ByteCodeArg));
 
+    // Back-patch the jump over the body of the while loop.
     rewrite_integer<ByteCodeArg>(
         second_jump_pos, output_.bytecode.size() - second_jump_pos + 1);
   }
