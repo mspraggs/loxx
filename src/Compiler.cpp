@@ -176,12 +176,14 @@ namespace loxx
     stmt.condition->accept(*this);
 
     add_instruction(Instruction::ConditionalJump);
-    add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 1);
+    add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 2);
+    add_instruction(Instruction::Pop);
 
     add_instruction(Instruction::Jump);
     const auto second_jump_pos = output_.bytecode.size();
     add_integer<ByteCodeArg>(0);
 
+    add_instruction(Instruction::Pop);
     compile(*stmt.body);
 
     add_instruction(Instruction::Jump);
