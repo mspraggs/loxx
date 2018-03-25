@@ -76,8 +76,7 @@ namespace loxx
   template <typename T>
   T VirtualMachine::read_integer()
   {
-    const T integer =
-        *reinterpret_cast<const T*>(&compiler_output_->bytecode[ip_ + 1]);
+    const T integer = read_integer_at_pos<T>(ip_);
     ip_ += sizeof(T);
 
     return integer;
