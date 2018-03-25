@@ -187,10 +187,11 @@ namespace loxx
     compile(*stmt.body);
 
     add_instruction(Instruction::Jump);
-    add_integer<ByteCodeArg>(first_label_pos - output_.bytecode.size());
+    add_integer<ByteCodeArg>(
+        first_label_pos - output_.bytecode.size() - sizeof(ByteCodeArg));
 
     rewrite_integer<ByteCodeArg>(
-        second_jump_pos, output_.bytecode.size() - second_jump_pos);
+        second_jump_pos, output_.bytecode.size() - second_jump_pos + 1);
   }
 
 
