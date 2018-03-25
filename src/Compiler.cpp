@@ -59,6 +59,7 @@ namespace loxx
   void Compiler::visit_expression_stmt(const Expression& stmt)
   {
     stmt.expression->accept(*this);
+    add_instruction(Instruction::Pop);
   }
 
 
