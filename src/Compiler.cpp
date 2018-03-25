@@ -201,7 +201,8 @@ namespace loxx
 
     // Back-patch the jump over the body of the while loop.
     rewrite_integer<ByteCodeArg>(
-        second_jump_pos, output_.bytecode.size() - second_jump_pos + 1);
+        second_jump_pos,
+        output_.bytecode.size() - second_jump_pos - sizeof(ByteCodeArg));
   }
 
 
