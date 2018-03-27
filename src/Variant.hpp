@@ -109,16 +109,16 @@ namespace loxx
 
 
     template <typename T0, typename T1>
-    bool validate_variants(const T0& first, const T1& second);
+    constexpr bool validate_variants(const T0& first, const T1& second);
 
 
     template <typename T0, typename T1, typename... Ts>
-    bool validate_variants(const T0& first, const T1& second,
-                           const Ts&... subsequent);
+    constexpr bool validate_variants(const T0& first, const T1& second,
+                                     const Ts&... subsequent);
 
 
     template <typename T0, typename... Ts>
-    std::size_t common_index(const T0& first, const Ts&... subsequent);
+    constexpr std::size_t common_index(const T0& first, const Ts&... subsequent);
 
 
     template <typename... Ts, typename... Us>
@@ -183,29 +183,29 @@ namespace loxx
   public:
     static constexpr std::size_t npos = sizeof...(Ts);
 
-    Variant();
-    Variant(const Variant<Ts...>& other);
-    Variant(Variant<Ts...>&& other) noexcept;
+    constexpr Variant();
+    constexpr Variant(const Variant<Ts...>& other);
+    constexpr Variant(Variant<Ts...>&& other) noexcept;
 
     ~Variant();
 
     template <typename T,
               typename = std::enable_if_t<
                   not std::is_same<std::decay_t<T>, Variant<Ts...>>::value>>
-    Variant(T&& value) noexcept;
+    constexpr Variant(T&& value) noexcept;
 
     template <typename T0, typename... Us>
-    Variant(InPlace<T0>, Us&&... args);
+    constexpr Variant(InPlace<T0>, Us&&... args);
 
-    Variant<Ts...>& operator=(const Variant<Ts...>& other);
-    Variant<Ts...>& operator=(Variant<Ts...>&& other) noexcept;
+    constexpr Variant<Ts...>& operator=(const Variant<Ts...>& other);
+    constexpr Variant<Ts...>& operator=(Variant<Ts...>&& other) noexcept;
 
     template <typename T,
               typename = std::enable_if_t<
                   not std::is_same<std::decay_t<T>, Variant<Ts...>>::value>>
-    Variant<Ts...>& operator=(T&& value) noexcept;
+    constexpr Variant<Ts...>& operator=(T&& value) noexcept;
 
-    std::size_t index() const { return type_index_; }
+    constexpr std::size_t index() const { return type_index_; }
 
   private:
     template <std::size_t I, typename... Us>
@@ -240,14 +240,14 @@ namespace loxx
 
 
   template <typename... Ts>
-  Variant<Ts...>::Variant()
+  constexpr Variant<Ts...>::Variant()
       : type_index_(sizeof...(Ts))
   {
   }
 
 
   template<typename... Ts>
-  Variant<Ts...>::Variant(const Variant<Ts...>& other)
+  constexpr Variant<Ts...>::Variant(const Variant<Ts...>& other)
       : type_index_(other.type_index_)
   {
     detail::VariantHelper<Ts...>::copy(
@@ -256,7 +256,7 @@ namespace loxx
 
 
   template<typename... Ts>
-  Variant<Ts...>::Variant(Variant<Ts...>&& other) noexcept
+  constexpr Variant<Ts...>::Variant(Variant<Ts...>&& other) noexcept
       : type_index_(other.type_index_)
   {
     detail::VariantHelper<Ts...>::move(
@@ -277,7 +277,7 @@ namespace loxx
 
   template <typename... Ts>
   template <typename T, typename>
-  Variant<Ts...>::Variant(T&& value) noexcept
+  constexpr Variant<Ts...>::Variant(T&& value) noexcept
   {
     constexpr auto index = detail::convertible_type_index<T, Ts...>();
 
@@ -293,7 +293,7 @@ namespace loxx
 
   template<typename... Ts>
   template <typename T0, typename... Us>
-  Variant<Ts...>::Variant(InPlace<T0>, Us&&... args)
+  constexpr Variant<Ts...>::Variant(InPlace<T0>, Us&&... args)
   {
     constexpr auto index = detail::type_index<T0, Ts...>();
 
@@ -307,7 +307,8 @@ namespace loxx
 
 
   template<typename... Ts>
-  Variant<Ts...>& Variant<Ts...>::operator=(const Variant<Ts...>& other)
+  constexpr Variant<Ts...>& Variant<Ts...>::operator=(
+      const Variant<Ts...>& other)
   {
     if (&other != this) {
       type_index_ = other.type_index_;
@@ -320,7 +321,8 @@ namespace loxx
 
 
   template<typename... Ts>
-  Variant<Ts...>& Variant<Ts...>::operator=(Variant<Ts...>&& other) noexcept
+  constexpr Variant<Ts...>& Variant<Ts...>::operator=(
+      Variant<Ts...>&& other) noexcept
   {
     type_index_ = other.type_index_;
     detail::VariantHelper<Ts...>::move(
@@ -333,7 +335,7 @@ namespace loxx
 
   template<typename... Ts>
   template<typename T, typename>
-  Variant<Ts...>& Variant<Ts...>::operator=(T&& value) noexcept
+  constexpr Variant<Ts...>& Variant<Ts...>::operator=(T&& value) noexcept
   {
     constexpr auto index = detail::convertible_type_index<T, Ts...>();
 
@@ -385,7 +387,7 @@ namespace loxx
 
 
   template <typename Fn, typename... Ts>
-  auto visit(Fn&& func, const Ts&... variants)
+  constexpr auto visit(Fn&& func, const Ts&... variants)
   {
     using Ret = decltype(func(get<0>(variants)...));
     return detail::visit<Ret>(std::forward<Fn>(func),
@@ -410,7 +412,8 @@ namespace loxx
 
 
   template <typename... Ts>
-  bool operator==(const Variant<Ts...>& rhs, const Variant<Ts...>& lhs)
+  constexpr bool operator==(const Variant<Ts...>& rhs,
+                            const Variant<Ts...>& lhs)
   {
     if (lhs.index() != rhs.index()) {
       return false;
@@ -422,15 +425,15 @@ namespace loxx
 
 
   template <typename T0, typename T1>
-  bool detail::validate_variants(const T0& first, const T1& second)
+  constexpr bool detail::validate_variants(const T0& first, const T1& second)
   {
     return first.index() == second.index();
   }
 
 
   template <typename T0, typename T1, typename... Ts>
-  bool detail::validate_variants(const T0& first, const T1& second,
-                                 const Ts&... subsequent)
+  constexpr bool detail::validate_variants(const T0& first, const T1& second,
+                                           const Ts&... subsequent)
   {
     return first.index() == second.index() and
            detail::validate_variants(second, subsequent...);
@@ -438,7 +441,8 @@ namespace loxx
 
 
   template <typename T0, typename... Ts>
-  std::size_t detail::common_index(const T0& first, const Ts&... subsequent)
+  constexpr std::size_t detail::common_index(const T0& first,
+                                             const Ts&... subsequent)
   {
     if (not validate_variants(first, subsequent...)) {
       throw BadVariantAccess("Unable to visit variants with mismatched types.");
