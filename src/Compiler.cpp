@@ -77,6 +77,8 @@ namespace loxx
     const auto first_jump_pos = output_.bytecode.size();
     add_integer<ByteCodeArg>(0);
 
+    add_instruction(Instruction::Pop);
+
     if (stmt.else_branch != nullptr) {
       compile(*stmt.else_branch);
     }
@@ -89,6 +91,8 @@ namespace loxx
     add_instruction(Instruction::Jump);
     const auto second_jump_pos = output_.bytecode.size();
     add_integer<ByteCodeArg>(0);
+
+    add_instruction(Instruction::Pop);
 
     compile(*stmt.then_branch);
 
