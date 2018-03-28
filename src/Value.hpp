@@ -26,7 +26,39 @@ namespace loxx
 {
   class Object
   {
+  public:
+    virtual ~Object() = default;
+
+  protected:
+    Object(const bool callable, const bool has_attributes,
+           const std::size_t bytecode_offset)
+        : callable_(callable), has_attributes_(has_attributes),
+          bytecode_offset_(bytecode_offset)
+    {}
+
+    bool callable() const { return callable_; }
+    bool has_attributes() const { return has_attributes_; }
+    std::size_t bytecode_offset() const { return bytecode_offset_; }
+
+  private:
+    bool callable_, has_attributes_;
+    std::size_t bytecode_offset_;
   };
+
+
+  class FuncObject : public Object
+  {
+  public:
+    FuncObject(const std::size_t bytecode_offset, const unsigned int arity)
+        : Object(true, false, bytecode_offset), arity_(arity)
+    {}
+
+    unsigned int arity() const { return arity_; }
+
+  private:
+    unsigned int arity_;
+  };
+
   
   using Value = Variant<double, bool, std::string, std::shared_ptr<Object>>;
 }
