@@ -85,7 +85,7 @@ namespace loxx
   {
     std::string literal_string = "None";
 
-    const StackVar& literal = token.literal();
+    const Value& literal = token.literal();
 
     if (token.type() == TokenType::Number) {
       literal_string = std::to_string(get<double>(literal));

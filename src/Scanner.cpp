@@ -252,7 +252,7 @@ namespace loxx
   }
 
 
-  void Scanner::add_token(const TokenType type, StackVar literal)
+  void Scanner::add_token(const TokenType type, Value literal)
   {
     auto substr = src_.substr(start_, current_ - start_);
     tokens_.emplace_back(type, substr, std::move(literal), line_);

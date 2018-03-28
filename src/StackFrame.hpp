@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "globals.hpp"
+#include "Value.hpp"
 
 
 namespace loxx
@@ -43,12 +44,12 @@ namespace loxx
     std::size_t prev_ip() const { return prev_ip_; }
 
     UByteCodeArg make_local(const std::string& lexeme,
-                           const StackVar& value);
+                           const Value& value);
 
-    const StackVar& get_local(const std::size_t index) const
+    const Value& get_local(const std::size_t index) const
     { return locals_[index]; }
 
-    void set_local(const std::size_t index, StackVar value)
+    void set_local(const std::size_t index, Value value)
     { locals_[index] = std::move(value); }
 
     bool is_declared(const std::size_t index) const
@@ -57,7 +58,7 @@ namespace loxx
   private:
     std::size_t prev_ip_;
     std::unordered_map<std::string, UByteCodeArg> local_map_;
-    std::vector<StackVar> locals_;
+    std::vector<Value> locals_;
     std::vector<bool> is_declared_;
   };
 }

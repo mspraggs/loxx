@@ -23,7 +23,7 @@
 
 namespace loxx
 {
-  void Environment::define(std::string name, StackVar value)
+  void Environment::define(std::string name, Value value)
   {
     const bool first_value = value_map_.count(name) == 0;
     const std::size_t index = first_value ? values_.size() : value_map_[name];
@@ -38,7 +38,7 @@ namespace loxx
   }
 
 
-  const StackVar& Environment::get(const Token& name) const
+  const Value& Environment::get(const Token& name) const
   {
     if (value_map_.count(name.lexeme()) != 0) {
       return values_[value_map_.at(name.lexeme())];
@@ -54,7 +54,7 @@ namespace loxx
   }
 
 
-  const StackVar& Environment::get_at(const std::size_t distance,
+  const Value& Environment::get_at(const std::size_t distance,
                                       const std::string& name) const
   {
     const Environment& env = ancestor(distance);
@@ -62,7 +62,7 @@ namespace loxx
   }
 
 
-  void Environment::assign(const Token& name, StackVar value)
+  void Environment::assign(const Token& name, Value value)
   {
     if (value_map_.count(name.lexeme())) {
       values_[value_map_[name.lexeme()]] = std::move(value);
@@ -80,7 +80,7 @@ namespace loxx
 
 
   void Environment::assign_at(const std::size_t distance, const Token& name,
-                              StackVar value)
+                              Value value)
   {
     Environment& env = ancestor(distance);
     env.values_[env.value_map_.at(name.lexeme())] = std::move(value);

@@ -190,7 +190,7 @@ namespace loxx
     }
 
     if (condition == nullptr) {
-      condition = std::make_unique<Literal>(StackVar(InPlace<bool>(), true),
+      condition = std::make_unique<Literal>(Value(InPlace<bool>(), true),
                                             "true");
     }
     body = std::make_unique<While>(std::move(condition), std::move(body));
@@ -396,15 +396,15 @@ namespace loxx
   std::unique_ptr<Expr> Parser::primary()
   {
     if (match({TokenType::False})) {
-      return std::make_unique<Literal>(StackVar(InPlace<bool>(), false),
+      return std::make_unique<Literal>(Value(InPlace<bool>(), false),
                                        previous().lexeme());
     }
     if (match({TokenType::True})) {
-      return std::make_unique<Literal>(StackVar(InPlace<bool>(), true),
+      return std::make_unique<Literal>(Value(InPlace<bool>(), true),
                                        previous().lexeme());
     }
     if (match({TokenType::Nil})) {
-      return std::make_unique<Literal>(StackVar(), previous().lexeme());
+      return std::make_unique<Literal>(Value(), previous().lexeme());
     }
 
     if (match({TokenType::Number, TokenType::String})) {

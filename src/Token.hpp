@@ -24,6 +24,7 @@
 #include <string>
 
 #include "globals.hpp"
+#include "Value.hpp"
 
 
 namespace loxx
@@ -50,7 +51,7 @@ namespace loxx
         : type_(type), lexeme_(std::move(lexeme)), line_(line)
     {}
 
-    Token(const TokenType type, std::string lexeme, StackVar literal,
+    Token(const TokenType type, std::string lexeme, Value literal,
           const unsigned int line)
         : type_(type), lexeme_(std::move(lexeme)), literal_(std::move(literal)),
           line_(line)
@@ -60,12 +61,12 @@ namespace loxx
     const std::string& lexeme() const { return lexeme_; }
     unsigned int line() const { return line_; }
 
-    const StackVar& literal() const { return literal_; }
+    const Value& literal() const { return literal_; }
 
   private:
     TokenType type_;
     std::string lexeme_;
-    StackVar literal_;
+    Value literal_;
     unsigned int line_;
   };
 

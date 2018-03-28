@@ -20,14 +20,14 @@
 #ifndef LOXX_GLOBALS_HPP
 #define LOXX_GLOBALS_HPP
 
-#include "Variant.hpp"
+#include <cstddef>
+#include <type_traits>
+
 
 namespace loxx
 {
   using UByteCodeArg = std::size_t;
   using ByteCodeArg = std::make_signed_t<UByteCodeArg>;
-  
-  using StackVar = Variant<double, bool, std::string>;
 }
 
 #endif // LOXX_GLOBALS_HPP

@@ -29,6 +29,7 @@
 #include "VirtualMachine.hpp"
 #include "Stack.hpp"
 #include "StackFrame.hpp"
+#include "Value.hpp"
 
 
 namespace loxx
@@ -40,15 +41,15 @@ namespace loxx
 
     void execute(const CompilationOutput& compiler_output);
 
-    UByteCodeArg make_constant(const std::string& lexeme, const StackVar& value);
+    UByteCodeArg make_constant(const std::string& lexeme, const Value& value);
 
     UByteCodeArg get_constant(const std::string& lexeme) const;
 
   private:
-    void print_object(StackVar object) const;
+    void print_object(Value object) const;
     void execute_binary_op(const Instruction instruction);
 
-    std::string stringify(const StackVar& object) const;
+    std::string stringify(const Value& object) const;
     void print_stack() const;
     void disassemble_bytecode();
     size_t disassemble_instruction() const;
@@ -56,19 +57,19 @@ namespace loxx
     T read_integer();
     template <typename T>
     T read_integer_at_pos(const std::size_t pos) const;
-    void check_number_operands(const StackVar& first,
-                               const StackVar& second) const;
-    bool are_equal(const StackVar& first, const StackVar& second) const;
-    bool is_truthy(const StackVar& value) const;
+    void check_number_operands(const Value& first,
+                               const Value& second) const;
+    bool are_equal(const Value& first, const Value& second) const;
+    bool is_truthy(const Value& value) const;
     unsigned int get_current_line() const;
 
     bool debug_;
     std::size_t ip_;
     const CompilationOutput* compiler_output_;
     std::unordered_map<std::string, UByteCodeArg> constant_map_;
-    std::vector<StackVar> constants_;
-    std::unordered_map<std::string, StackVar> globals_;
-    Stack<StackVar> stack_;
+    std::vector<Value> constants_;
+    std::unordered_map<std::string, Value> globals_;
+    Stack<Value> stack_;
     Stack<StackFrame> call_stack_;
   };
 

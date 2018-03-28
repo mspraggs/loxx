@@ -31,7 +31,7 @@ namespace loxx
 
 
   UByteCodeArg StackFrame::make_local(const std::string& lexeme,
-                                     const StackVar& value)
+                                     const Value& value)
   {
     if (local_map_.count(lexeme) != 0) {
       return local_map_[lexeme];

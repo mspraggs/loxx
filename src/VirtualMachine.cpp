@@ -86,7 +86,7 @@ namespace loxx
       }
 
       case Instruction::False:
-        stack_.push(StackVar(InPlace<bool>(), false));
+        stack_.push(Value(InPlace<bool>(), false));
         break;
 
       case Instruction::GetGlobal: {
@@ -117,7 +117,7 @@ namespace loxx
         break;
 
       case Instruction::Nil:
-        stack_.push(StackVar());
+        stack_.push(Value());
         break;
 
       case Instruction::Pop:
@@ -148,7 +148,7 @@ namespace loxx
       }
 
       case Instruction::True:
-        stack_.push(StackVar(InPlace<bool>(), true));
+        stack_.push(Value(InPlace<bool>(), true));
         break;
 
       default:
@@ -161,7 +161,7 @@ namespace loxx
 
 
   UByteCodeArg VirtualMachine::make_constant(const std::string& lexeme,
-                                            const StackVar& value)
+                                            const Value& value)
   {
     if (constant_map_.count(lexeme) != 0) {
       return constant_map_[lexeme];
@@ -187,7 +187,7 @@ namespace loxx
   }
 
 
-  void VirtualMachine::print_object(StackVar variant) const
+  void VirtualMachine::print_object(Value variant) const
   {
     std::cout << stringify(variant) << std::endl;
   }
@@ -200,29 +200,29 @@ namespace loxx
 
     switch (instruction) {
     case Instruction::NotEqual:
-      stack_.push(StackVar(InPlace<bool>(), not are_equal(first, second)));
+      stack_.push(Value(InPlace<bool>(), not are_equal(first, second)));
       break;
     case Instruction::Equal:
-      stack_.push(StackVar(InPlace<bool>(), are_equal(first, second)));
+      stack_.push(Value(InPlace<bool>(), are_equal(first, second)));
       break;
     case Instruction::Less:
       check_number_operands(first, second);
-      stack_.push(StackVar(InPlace<bool>(),
+      stack_.push(Value(InPlace<bool>(),
                            get<double>(first) < get<double>(second)));
       break;
     case Instruction::LessEqual:
       check_number_operands(first, second);
-      stack_.push(StackVar(InPlace<bool>(),
+      stack_.push(Value(InPlace<bool>(),
                            get<double>(first) <= get<double>(second)));
       break;
     case Instruction::Greater:
       check_number_operands(first, second);
-      stack_.push(StackVar(InPlace<bool>(),
+      stack_.push(Value(InPlace<bool>(),
                            get<double>(first) > get<double>(second)));
       break;
     case Instruction::GreaterEqual:
       check_number_operands(first, second);
-      stack_.push(StackVar(InPlace<bool>(),
+      stack_.push(Value(InPlace<bool>(),
                            get<double>(first) >= get<double>(second)));
       break;
     case Instruction::Multiply:
@@ -260,9 +260,9 @@ namespace loxx
   }
 
 
-  std::string VirtualMachine::stringify(const StackVar& object) const
+  std::string VirtualMachine::stringify(const Value& object) const
   {
-    if (object.index() == StackVar::npos) {
+    if (object.index() == Value::npos) {
       return "nil";
     }
     if (holds_alternative<double>(object)) {
@@ -380,7 +380,7 @@ namespace loxx
 
 
   void VirtualMachine::check_number_operands(
-      const StackVar& first, const StackVar& second) const
+      const Value& first, const Value& second) const
   {
     if (not holds_alternative<double>(first) or
         not holds_alternative<double>(second)) {
@@ -390,14 +390,14 @@ namespace loxx
   }
 
 
-  bool VirtualMachine::are_equal(const StackVar& first,
-                                 const StackVar& second) const
+  bool VirtualMachine::are_equal(const Value& first,
+                                 const Value& second) const
   {
-    if (first.index()  == StackVar::npos and
-        second.index() == StackVar::npos) {
+    if (first.index()  == Value::npos and
+        second.index() == Value::npos) {
       return true;
     }
-    if (first.index() == StackVar::npos) {
+    if (first.index() == Value::npos) {
       return false;
     }
 
@@ -405,9 +405,9 @@ namespace loxx
   }
 
 
-  bool VirtualMachine::is_truthy(const StackVar& value) const
+  bool VirtualMachine::is_truthy(const Value& value) const
   {
-    if (value.index() == StackVar::npos) {
+    if (value.index() == Value::npos) {
       return false;
     }
     if (holds_alternative<bool>(value)) {
