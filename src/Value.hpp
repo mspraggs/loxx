@@ -24,7 +24,7 @@
 
 namespace loxx
 {
-  struct Object
+  class Object
   {
   };
   
