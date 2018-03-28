@@ -269,7 +269,13 @@ namespace loxx
 
   void Compiler::visit_call_expr(const Call& expr)
   {
+    compile(*expr.callee);
 
+    // TODO: Check number of arguments is correct
+
+    for (const auto& argument : expr.arguments) {
+      compile(*argument);
+    }
   }
 
 
