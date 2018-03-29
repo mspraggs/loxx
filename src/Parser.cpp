@@ -27,7 +27,7 @@ namespace loxx
   {
     try {
       if (match({TokenType::Class})) {
-	return class_declaration();
+        return class_declaration();
       }
       if (match({TokenType::Fun})) {
         return function("function");
@@ -380,9 +380,9 @@ namespace loxx
         expr = finish_call(std::move(expr));
       }
       else if (match({TokenType::Dot})) {
-	auto name = consume(TokenType::Identifier,
-			    "Expected property name after '.'.");
-	expr = std::make_unique<Get>(std::move(expr), std::move(name));
+        auto name = consume(TokenType::Identifier,
+                            "Expected property name after '.'.");
+        expr = std::make_unique<Get>(std::move(expr), std::move(name));
       }
       else {
         break;
