@@ -119,29 +119,9 @@ namespace loxx
 
   void Compiler::visit_var_stmt(const Var& stmt)
   {
-    const auto is_global = scope_depth_ == 0;
-
-    const UByteCodeArg arg =
-        is_global ?
-        vm_->make_constant(stmt.name.lexeme(), stmt.name.lexeme()) : 0;
-
-    if (not is_global) {
-      // Check to see if a variable with this name has been declared in this
-      // scope already
-      for (long int i = locals_.size() - 1; i >= 0; --i) {
-        const auto& local = locals_[i];
-
-        if (std::get<0>(local) and std::get<1>(local) < scope_depth_) {
-          break;
-        }
-        if (std::get<2>(local) == stmt.name.lexeme()) {
-          throw CompileError(
-              stmt.name,
-              "Variable with this name already declared in this scope.");
-        }
-      }
-      locals_.emplace_back(false, 0, stmt.name.lexeme());
-    }
+    bool is_global;
+    UByteCodeArg arg;
+    std::tie(is_global, arg) = declare_variable(stmt.name);
 
     if (stmt.initialiser != nullptr) {
       compile(*stmt.initialiser);
@@ -150,15 +130,7 @@ namespace loxx
       add_instruction(Instruction::Nil);
     }
 
-    if (is_global) {
-      add_instruction(Instruction::DefineGlobal);
-      add_integer(arg);
-    }
-    else {
-      std::get<0>(locals_.back()) = true;
-      std::get<1>(locals_.back()) = scope_depth_;
-    }
-    update_line_num_table(stmt.name);
+    define_variable(is_global, arg, stmt.name);
   }
 
 
@@ -351,6 +323,52 @@ namespace loxx
   void Compiler::compile(const Stmt& stmt)
   {
     stmt.accept(*this);
+  }
+
+
+  std::tuple<bool, UByteCodeArg> Compiler::declare_variable(
+      const Token &name)
+  {
+    const auto is_global = scope_depth_ == 0;
+
+    const UByteCodeArg arg =
+        is_global ?
+        vm_->make_constant(name.lexeme(), name.lexeme()) : 0;
+
+    if (not is_global) {
+      // Check to see if a variable with this name has been declared in this
+      // scope already
+      for (long int i = locals_.size() - 1; i >= 0; --i) {
+        const auto& local = locals_[i];
+
+        if (std::get<0>(local) and std::get<1>(local) < scope_depth_) {
+          break;
+        }
+        if (std::get<2>(local) == name.lexeme()) {
+          throw CompileError(
+              name,
+              "Variable with this name already declared in this scope.");
+        }
+      }
+      locals_.emplace_back(false, 0, name.lexeme());
+    }
+
+    return std::make_tuple(is_global, arg);
+  }
+
+
+  void Compiler::define_variable(const bool is_global, const UByteCodeArg arg,
+                                 const Token& name)
+  {
+    if (is_global) {
+      add_instruction(Instruction::DefineGlobal);
+      add_integer(arg);
+    }
+    else {
+      std::get<0>(locals_.back()) = true;
+      std::get<1>(locals_.back()) = scope_depth_;
+    }
+    update_line_num_table(name);
   }
 
 

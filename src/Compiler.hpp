@@ -95,10 +95,13 @@ namespace loxx
 
     void compile(const Expr& expr);
     void compile(const Stmt& stmt);
+    std::tuple<bool, UByteCodeArg> declare_variable(const Token& name);
+    void define_variable(const bool is_global, const UByteCodeArg arg,
+                         const Token& name);
     template <typename T>
     void handle_variable_reference(const T& expr, const bool write);
     std::tuple<bool, UByteCodeArg> resolve_local(const Token& name,
-                                                const bool in_function) const;
+                                                 const bool in_function) const;
     void update_line_num_table(const Token& token);
     void add_instruction(const Instruction instruction);
     template <typename T>
