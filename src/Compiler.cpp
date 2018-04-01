@@ -65,7 +65,21 @@ namespace loxx
 
   void Compiler::visit_function_stmt(const Function& stmt)
   {
+    bool is_global;
+    UByteCodeArg arg;
+    std::tie(is_global, arg) = declare_variable(stmt.name);
 
+    const auto bytecode_pos = output_.bytecode.size();
+
+    compile(stmt.body);
+
+    auto func = std::make_shared<FuncObject>(
+        bytecode_pos, static_cast<unsigned int>(stmt.parameters.size()));
+    const auto index = vm_->make_constant(stmt.name.lexeme(), func);
+    add_instruction(Instruction::LoadConstant);
+    add_integer(index);
+
+    define_variable(is_global, arg, stmt.name);
   }
 
 
