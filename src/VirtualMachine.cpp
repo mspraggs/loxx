@@ -138,6 +138,18 @@ namespace loxx
         print_object(stack_.pop());
         break;
 
+      case Instruction::Return: {
+        const auto result = stack_.pop();
+        const auto frame = call_stack_.pop();
+        while (stack_.size() > 0 and
+               &stack_.top() != call_stack_.top().slots_base()) {
+          stack_.pop();
+        }
+        stack_.push(result);
+        ip_ = frame.prev_ip();
+        break;
+      }
+
       case Instruction::SetGlobal: {
         const auto arg = read_integer<UByteCodeArg>();
         const auto varname = get<std::string>(constants_[arg]);
