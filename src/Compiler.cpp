@@ -39,14 +39,9 @@ namespace loxx
 
   void Compiler::visit_block_stmt(const Block& stmt)
   {
-    scope_depth_++;
+    begin_scope();
     compile(stmt.statements);
-    scope_depth_--;
-
-    while (not locals_.empty() and std::get<1>(locals_.back()) > scope_depth_) {
-      add_instruction(Instruction::Pop);
-      locals_.pop_back();
-    }
+    end_scope();
   }
 
 
@@ -399,6 +394,23 @@ namespace loxx
       }
     }
     return std::make_tuple(false, static_cast<UByteCodeArg>(0));
+  }
+
+
+  void Compiler::begin_scope()
+  {
+    scope_depth_++;
+  }
+
+
+  void Compiler::end_scope()
+  {
+    scope_depth_--;
+
+    while (not locals_.empty() and std::get<1>(locals_.back()) > scope_depth_) {
+      add_instruction(Instruction::Pop);
+      locals_.pop_back();
+    }
   }
 
 
