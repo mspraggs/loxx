@@ -285,11 +285,12 @@ namespace loxx
   {
     compile(*expr.callee);
 
-    // TODO: Check number of arguments is correct
-
     for (const auto& argument : expr.arguments) {
       compile(*argument);
     }
+
+    add_instruction(Instruction::Call);
+    add_integer<UByteCodeArg>(expr.arguments.size());
   }
 
 
