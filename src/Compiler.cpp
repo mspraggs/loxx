@@ -149,7 +149,13 @@ namespace loxx
 
   void Compiler::visit_return_stmt(const Return& stmt)
   {
-
+    if (stmt.value != nullptr) {
+      compile(*stmt.value);
+    }
+    else {
+      add_instruction(Instruction::Nil);
+    }
+    add_instruction(Instruction::Return);
   }
 
 
