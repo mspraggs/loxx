@@ -70,6 +70,16 @@ namespace loxx
         execute_binary_op(instruction);
         break;
 
+      case Instruction::Call: {
+        const auto num_args = read_integer<UByteCodeArg>();
+        const auto func_pos = stack_.size() - num_args - 1;
+        call_stack_.push(StackFrame(ip_, stack_.get(func_pos + 1)));
+        const auto func_obj =
+            get<std::shared_ptr<Object>>(stack_.get(func_pos));
+        ip_ = func_obj->bytecode_offset();
+        break;
+      }
+
       case Instruction::ConditionalJump: {
         const auto jmp = read_integer<ByteCodeArg>();
         if (is_truthy(stack_.top())) {
@@ -104,7 +114,7 @@ namespace loxx
 
       case Instruction::GetLocal: {
         const auto arg = read_integer<UByteCodeArg>();
-        stack_.push(stack_.get(arg));
+        stack_.push(call_stack_.top().slot(arg));
         break;
       }
 
@@ -143,7 +153,7 @@ namespace loxx
 
       case Instruction::SetLocal: {
         const auto arg = read_integer<UByteCodeArg>();
-        stack_.get(arg) = stack_.top();
+        call_stack_.top().slot(arg) = stack_.top();
         break;
       }
 
@@ -161,7 +171,7 @@ namespace loxx
 
 
   UByteCodeArg VirtualMachine::make_constant(const std::string& lexeme,
-                                            const Value& value)
+                                             const Value& value)
   {
     if (constant_map_.count(lexeme) != 0) {
       return constant_map_[lexeme];
@@ -283,6 +293,12 @@ namespace loxx
     else if (holds_alternative<std::string>(object)) {
       return get<std::string>(object);
     }
+    else if (holds_alternative<std::shared_ptr<Object>>(object)) {
+      const auto ptr = get<std::shared_ptr<Object>>(object);
+      std::stringstream ss;
+      ss << "<fn " << ptr->lexeme() << '>';
+      return ss.str();
+    }
   }
 
 
@@ -367,6 +383,14 @@ namespace loxx
       ret += sizeof(ByteCodeArg);
       break;
     }
+
+    case Instruction::Call: {
+      const auto num_args = read_integer_at_pos<UByteCodeArg>(ret);
+      ret += sizeof(UByteCodeArg);
+      std::cout << num_args;
+      break;
+    }
+
     case Instruction::DefineGlobal:
     case Instruction::GetGlobal:
     case Instruction::GetLocal:
