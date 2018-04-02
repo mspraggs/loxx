@@ -64,15 +64,42 @@ namespace loxx
     UByteCodeArg arg;
     std::tie(is_global, arg) = declare_variable(stmt.name);
 
+    // Because all code is compiled into one contiguous blob of bytecode,
+    // there's the risk that we end up walking straight into bytecode that
+    // belongs to functions. To avoid this we prepend a jump instruction before
+    // the function's bytecode so that we can skip over the latter.
+    add_instruction(Instruction::Jump);
+    const auto jump_pos = output_.bytecode.size();
+    add_integer<ByteCodeArg>(0);
+
     const auto bytecode_pos = output_.bytecode.size();
 
+    begin_scope();
+
+    for (const auto& param : stmt.parameters) {
+      bool global_param;
+      UByteCodeArg param_index;
+
+      std::tie(global_param, param_index) = declare_variable(param);
+      define_variable(global_param, param_index, param);
+    }
+
     compile(stmt.body);
+    add_instruction(Instruction::Nil);
+    add_instruction(Instruction::Return);
+
+    end_scope();
+
+    const auto jump_size =
+        static_cast<ByteCodeArg>(output_.bytecode.size() - bytecode_pos);
+    rewrite_integer(jump_pos, jump_size);
 
     auto func = std::make_shared<FuncObject>(
-        bytecode_pos, static_cast<unsigned int>(stmt.parameters.size()));
-    const auto index = vm_->make_constant(stmt.name.lexeme(), func);
+        stmt.name.lexeme(), bytecode_pos,
+        static_cast<unsigned int>(stmt.parameters.size()));
+    const auto index = vm_->add_constant(std::move(func));
     add_instruction(Instruction::LoadConstant);
-    add_integer(index);
+    add_integer<UByteCodeArg>(index);
 
     define_variable(is_global, arg, stmt.name);
   }
