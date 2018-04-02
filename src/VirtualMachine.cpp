@@ -176,6 +176,13 @@ namespace loxx
   }
 
 
+  UByteCodeArg VirtualMachine::add_constant(const Value& value)
+  {
+    constants_.push_back(value);
+    return constants_.size() - 1;
+  }
+
+
   UByteCodeArg VirtualMachine::get_constant(const std::string& lexeme) const
   {
     if (constant_map_.count(lexeme) == 0) {
