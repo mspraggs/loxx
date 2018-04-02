@@ -22,27 +22,6 @@
 
 namespace loxx
 {
-  void StackFrame::reserve_local_space(const std::size_t size)
-  {
-    if (locals_.size() < size) {
-      locals_.resize(size);
-    }
-  }
 
-
-  UByteCodeArg StackFrame::make_local(const std::string& lexeme,
-                                     const Value& value)
-  {
-    if (local_map_.count(lexeme) != 0) {
-      return local_map_[lexeme];
-    }
-
-    const auto index = static_cast<UByteCodeArg>(locals_.size());
-
-    locals_.push_back(value);
-    local_map_[lexeme] = index;
-
-    return index;
-  }
 }
 

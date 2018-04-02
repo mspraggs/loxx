@@ -33,33 +33,19 @@ namespace loxx
   class StackFrame
   {
   public:
-    StackFrame(const std::size_t prev_ip, const std::size_t num_locals)
-        : prev_ip_(prev_ip), locals_(num_locals)
-    {
-      locals_.reserve(4096);
-    }
-
-    void reserve_local_space(const std::size_t size);
+    StackFrame(const std::size_t prev_ip, Value& slots_base)
+        : prev_ip_(prev_ip), slots_(&slots_base)
+    {}
 
     std::size_t prev_ip() const { return prev_ip_; }
+    const Value* slots_base() const { return slots_ - 1; }
 
-    UByteCodeArg make_local(const std::string& lexeme,
-                           const Value& value);
-
-    const Value& get_local(const std::size_t index) const
-    { return locals_[index]; }
-
-    void set_local(const std::size_t index, Value value)
-    { locals_[index] = std::move(value); }
-
-    bool is_declared(const std::size_t index) const
-    { return is_declared_[index]; }
+    const Value& slot(const std::size_t i) const { return slots_[i]; }
+    Value& slot(const std::size_t i) { return slots_[i]; }
 
   private:
     std::size_t prev_ip_;
-    std::unordered_map<std::string, UByteCodeArg> local_map_;
-    std::vector<Value> locals_;
-    std::vector<bool> is_declared_;
+    Value* slots_;
   };
 }
 
