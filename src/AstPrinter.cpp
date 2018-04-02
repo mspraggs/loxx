@@ -215,6 +215,9 @@ namespace loxx
     stream_ << '(' << name;
 
     for (const auto expr : exprs) {
+      if (expr == nullptr) {
+        continue;
+      }
       stream_ << ' ';
       expr->accept(*this);
     }
