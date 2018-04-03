@@ -347,7 +347,14 @@ namespace loxx
 
   void Compiler::visit_unary_expr(const Unary& expr)
   {
+    compile(*expr.right);
 
+    if (expr.op.type() == TokenType::Bang) {
+      add_instruction(Instruction::Not);
+    }
+    else if (expr.op.type() == TokenType::Minus) {
+      add_instruction(Instruction::Negate);
+    }
   }
 
 
