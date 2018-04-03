@@ -316,21 +316,14 @@ namespace loxx
 
   void VirtualMachine::print_stack() const
   {
-    if (stack_.size() == 0) {
-      std::cout << std::endl;
-      return;
-    }
-    std::cout << "          [ ";
+    std::cout << "          ";
 
     for (unsigned int i = 0; i < stack_.size(); ++i) {
+      std::cout << "[ ";
       std::cout << stringify(stack_.get(i));
-
-      if (i < stack_.size() - 1) {
-        std::cout << " | ";
-      }
+      std::cout << " ] ";
     }
-
-    std::cout << " ]" << std::endl;
+    std::cout << std::endl;
   }
 
 
