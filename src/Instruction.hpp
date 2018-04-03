@@ -43,7 +43,9 @@ namespace loxx
     LessEqual,
     LoadConstant,
     Multiply,
+    Negate,
     Nil,
+    Not,
     NotEqual,
     Pop,
     Print,
@@ -108,8 +110,14 @@ namespace loxx
     case Instruction::Multiply:
       stream << "MULTIPLY";
       break;
+    case Instruction::Negate:
+      stream << "NEGATE";
+      break;
     case Instruction::Nil:
       stream << "NIL";
+      break;
+    case Instruction::Not:
+      stream << "NOT";
       break;
     case Instruction::NotEqual:
       stream << "NOT_EQUAL";
