@@ -44,6 +44,7 @@ namespace loxx
     }
 
     ip_ = 0;
+    call_stack_.push(StackFrame(ip_, stack_.base_ptr()));
 
     while (ip_ < compiler_output.bytecode.size()) {
 
