@@ -127,8 +127,21 @@ namespace loxx
         stack_.push(constants_[read_integer<UByteCodeArg>()]);
         break;
 
+      case Instruction::Negate: {
+        if (not holds_alternative<double>(stack_.top())) {
+          throw RuntimeError(get_current_line(), "Operand must be a number.");
+        }
+        const auto number = get<double>(stack_.pop());
+        stack_.push(-number);
+        break;
+      }
+
       case Instruction::Nil:
         stack_.push(Value());
+        break;
+
+      case Instruction::Not:
+        stack_.push(Value(InPlace<bool>(), not is_truthy(stack_.pop())));
         break;
 
       case Instruction::Pop:
@@ -372,7 +385,9 @@ namespace loxx
     case Instruction::Less:
     case Instruction::LessEqual:
     case Instruction::Multiply:
+    case Instruction::Negate:
     case Instruction::Nil:
+    case Instruction::Not:
     case Instruction::NotEqual:
     case Instruction::Pop:
     case Instruction::Print:
