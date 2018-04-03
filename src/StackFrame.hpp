@@ -34,7 +34,10 @@ namespace loxx
   {
   public:
     StackFrame(const std::size_t prev_ip, Value& slots_base)
-        : prev_ip_(prev_ip), slots_(&slots_base)
+        : StackFrame(prev_ip, &slots_base)
+    {}
+    StackFrame(const std::size_t prev_ip, Value* slots_base)
+        : prev_ip_(prev_ip), slots_(slots_base)
     {}
 
     std::size_t prev_ip() const { return prev_ip_; }
