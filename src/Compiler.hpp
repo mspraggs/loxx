@@ -157,11 +157,18 @@ namespace loxx
     std::tie(resolved, arg) = resolve_local(expr.name, false);
 
     Instruction op;
-    if (write) {
-      op = resolved ? Instruction::SetLocal : Instruction::SetGlobal;
+    if (resolved) {
+      op = write ? Instruction::SetLocal : Instruction::GetLocal;
     }
     else {
-      op = resolved ? Instruction::GetLocal : Instruction::GetGlobal;
+      std::tie(resolved, arg) = resolve_upvalue(expr.name);
+
+      if (resolved) {
+        op = write ? Instruction::SetUpvalue : Instruction::GetUpvalue;
+      }
+      else {
+        op = write ? Instruction::SetGlobal : Instruction::GetGlobal;
+      }
     }
 
     detail::VariableTrait<T>::handle_value(expr, *this);
