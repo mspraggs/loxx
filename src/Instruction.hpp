@@ -36,6 +36,7 @@ namespace loxx
     False,
     GetGlobal,
     GetLocal,
+    GetUpvalue,
     Greater,
     GreaterEqual,
     Jump,
@@ -53,6 +54,7 @@ namespace loxx
     Return,
     SetGlobal,
     SetLocal,
+    SetUpvalue,
     Subtract,
     True
   };
@@ -88,6 +90,9 @@ namespace loxx
       break;
     case Instruction::GetLocal:
       stream << "GET_LOCAL";
+      break;
+    case Instruction::GetUpvalue:
+      stream << "GET_UPVALUE";
       break;
     case Instruction::Greater:
       stream << "GREATER";
@@ -139,6 +144,9 @@ namespace loxx
       break;
     case Instruction::SetLocal:
       stream << "SET_LOCAL";
+      break;
+    case Instruction::SetUpvalue:
+      stream << "SET_UPVALUE";
       break;
     case Instruction::Subtract:
       stream << "SUBTRACT";
