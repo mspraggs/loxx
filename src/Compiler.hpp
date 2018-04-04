@@ -49,6 +49,7 @@ namespace loxx
         : last_line_num_(0), scope_depth_(0), last_instr_num_(0), vm_(&vm)
     {
       output_.num_globals = 0;
+      locals_.push(std::vector<Local>());
     }
 
     void compile(const std::vector<std::unique_ptr<Stmt>>& statements);
@@ -123,7 +124,7 @@ namespace loxx
     std::size_t last_instr_num_;
     VirtualMachine* vm_;
     CompilationOutput output_;
-    std::vector<Local> locals_;
+    Stack<std::vector<Local>> locals_;
   };
 
 

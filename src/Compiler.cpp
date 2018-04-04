@@ -75,6 +75,7 @@ namespace loxx
     const auto bytecode_pos = output_.bytecode.size();
 
     begin_scope();
+    locals_.push(std::vector<Local>());
 
     for (const auto& param : stmt.parameters) {
       bool global_param;
@@ -89,6 +90,7 @@ namespace loxx
     add_instruction(Instruction::Return);
 
     end_scope();
+    locals_.pop();
 
     const auto jump_size =
         static_cast<ByteCodeArg>(output_.bytecode.size() - bytecode_pos);
@@ -388,8 +390,8 @@ namespace loxx
     if (not is_global) {
       // Check to see if a variable with this name has been declared in this
       // scope already
-      for (long int i = locals_.size() - 1; i >= 0; --i) {
-        const auto& local = locals_[i];
+      for (long int i = locals_.top().size() - 1; i >= 0; --i) {
+        const auto& local = locals_.top()[i];
 
         if (local.defined and local.depth < scope_depth_) {
           break;
@@ -400,7 +402,7 @@ namespace loxx
               "Variable with this name already declared in this scope.");
         }
       }
-      locals_.push_back(Local{false, 0, name.lexeme()});
+      locals_.top().push_back(Local{false, 0, name.lexeme()});
     }
 
     return std::make_tuple(is_global, arg);
@@ -415,8 +417,8 @@ namespace loxx
       add_integer(arg);
     }
     else {
-      locals_.back().defined = true;
-      locals_.back().depth = scope_depth_;
+      locals_.top().back().defined = true;
+      locals_.top().back().depth = scope_depth_;
     }
     update_line_num_table(name);
   }
@@ -425,9 +427,9 @@ namespace loxx
   std::tuple<bool, UByteCodeArg> Compiler::resolve_local(
       const Token& name, const bool in_function) const
   {
-    for (long int i = locals_.size() - 1; i >= 0; --i) {
-      if (locals_[i].name == name.lexeme()) {
-        if (not in_function and not locals_[i].defined) {
+    for (long int i = locals_.top().size() - 1; i >= 0; --i) {
+      if (locals_.top()[i].name == name.lexeme()) {
+        if (not in_function and not locals_.top()[i].defined) {
           throw CompileError(
               name, "Cannot read local variable in its own initialiser.");
         }
@@ -448,9 +450,10 @@ namespace loxx
   {
     scope_depth_--;
 
-    while (not locals_.empty() and locals_.back().depth > scope_depth_) {
+    while (not locals_.top().empty() and
+           locals_.top().back().depth > scope_depth_) {
       add_instruction(Instruction::Pop);
-      locals_.pop_back();
+      locals_.top().pop_back();
     }
   }
 
