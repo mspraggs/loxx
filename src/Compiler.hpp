@@ -109,6 +109,7 @@ namespace loxx
     void handle_variable_reference(const T& expr, const bool write);
     std::tuple<bool, UByteCodeArg> resolve_local(const Token& name,
                                                  const bool in_function) const;
+    std::tuple<bool, UByteCodeArg> resolve_upvalue(const Token& name) const;
     void begin_scope();
     void end_scope();
     void update_line_num_table(const Token& token);

@@ -440,6 +440,13 @@ namespace loxx
   }
 
 
+  std::tuple<bool, UByteCodeArg> Compiler::resolve_upvalue(
+      const Token& name) const
+  {
+    return std::tuple<bool, UByteCodeArg>(false, 0);
+  }
+
+
   void Compiler::begin_scope()
   {
     scope_depth_++;
