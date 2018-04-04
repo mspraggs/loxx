@@ -34,8 +34,8 @@ namespace loxx
       stack_.reserve(reserved_size);
     }
 
-    T* base_ptr() { return stack_.data(); }
-    const T* base_ptr() const { return stack_.data(); }
+    T* data() { return stack_.data(); }
+    const T* data() const { return stack_.data(); }
     T& top() { return stack_.back(); }
     const T& top() const { return stack_.back(); }
     T& get(const std::size_t idx) { return stack_[idx]; }
