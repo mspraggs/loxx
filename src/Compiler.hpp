@@ -92,6 +92,12 @@ namespace loxx
       Token name_;
     };
 
+    struct Local
+    {
+      bool defined;
+      std::size_t depth;
+      std::string name;
+    };
 
     void compile(const Expr& expr);
     void compile(const Stmt& stmt);
@@ -117,7 +123,7 @@ namespace loxx
     std::size_t last_instr_num_;
     VirtualMachine* vm_;
     CompilationOutput output_;
-    std::vector<std::tuple<bool, std::size_t, std::string>> locals_;
+    std::vector<Local> locals_;
   };
 
 

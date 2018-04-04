@@ -391,16 +391,16 @@ namespace loxx
       for (long int i = locals_.size() - 1; i >= 0; --i) {
         const auto& local = locals_[i];
 
-        if (std::get<0>(local) and std::get<1>(local) < scope_depth_) {
+        if (local.defined and local.depth < scope_depth_) {
           break;
         }
-        if (std::get<2>(local) == name.lexeme()) {
+        if (local.name == name.lexeme()) {
           throw CompileError(
               name,
               "Variable with this name already declared in this scope.");
         }
       }
-      locals_.emplace_back(false, 0, name.lexeme());
+      locals_.push_back(Local{false, 0, name.lexeme()});
     }
 
     return std::make_tuple(is_global, arg);
@@ -415,8 +415,8 @@ namespace loxx
       add_integer(arg);
     }
     else {
-      std::get<0>(locals_.back()) = true;
-      std::get<1>(locals_.back()) = scope_depth_;
+      locals_.back().defined = true;
+      locals_.back().depth = scope_depth_;
     }
     update_line_num_table(name);
   }
@@ -426,8 +426,8 @@ namespace loxx
       const Token& name, const bool in_function) const
   {
     for (long int i = locals_.size() - 1; i >= 0; --i) {
-      if (std::get<2>(locals_[i]) == name.lexeme()) {
-        if (not in_function and not std::get<0>(locals_[i])) {
+      if (locals_[i].name == name.lexeme()) {
+        if (not in_function and not locals_[i].defined) {
           throw CompileError(
               name, "Cannot read local variable in its own initialiser.");
         }
@@ -448,7 +448,7 @@ namespace loxx
   {
     scope_depth_--;
 
-    while (not locals_.empty() and std::get<1>(locals_.back()) > scope_depth_) {
+    while (not locals_.empty() and locals_.back().depth > scope_depth_) {
       add_instruction(Instruction::Pop);
       locals_.pop_back();
     }
