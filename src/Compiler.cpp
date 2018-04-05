@@ -425,11 +425,15 @@ namespace loxx
 
 
   std::tuple<bool, UByteCodeArg> Compiler::resolve_local(
-      const Token& name, const bool in_function) const
+      const Token& name, const bool in_function,
+      const std::size_t call_depth) const
   {
-    for (long int i = locals_.top().size() - 1; i >= 0; --i) {
-      if (locals_.top()[i].name == name.lexeme()) {
-        if (not in_function and not locals_.top()[i].defined) {
+    const auto& locals =
+        call_depth > locals_.size() ? locals_.top() : locals_.get(call_depth);
+
+    for (long int i = locals.size() - 1; i >= 0; --i) {
+      if (locals[i].name == name.lexeme()) {
+        if (not in_function and not locals[i].defined) {
           throw CompileError(
               name, "Cannot read local variable in its own initialiser.");
         }

@@ -20,6 +20,7 @@
 #ifndef LOXX_COMPILER_HPP
 #define LOXX_COMPILER_HPP
 
+#include <limits>
 #include <utility>
 #include <vector>
 
@@ -31,6 +32,12 @@
 
 namespace loxx
 {
+  namespace detail
+  {
+    constexpr auto size_t_max = std::numeric_limits<std::size_t>::max();
+  }
+
+
   class VirtualMachine;
 
 
@@ -108,8 +115,9 @@ namespace loxx
                          const Token& name);
     template <typename T>
     void handle_variable_reference(const T& expr, const bool write);
-    std::tuple<bool, UByteCodeArg> resolve_local(const Token& name,
-                                                 const bool in_function) const;
+    std::tuple<bool, UByteCodeArg> resolve_local(
+        const Token& name, const bool in_function,
+        const std::size_t call_depth = detail::size_t_max) const;
     std::tuple<bool, UByteCodeArg> resolve_upvalue(const Token& name) const;
     void begin_scope();
     void end_scope();
