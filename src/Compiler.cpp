@@ -445,7 +445,7 @@ namespace loxx
 
 
   std::tuple<bool, UByteCodeArg> Compiler::resolve_upvalue(
-      const Token& name) const
+      const std::size_t call_depth, const Token& name)
   {
     const auto call_depth = locals_.size() - 1;
 

@@ -118,7 +118,8 @@ namespace loxx
     std::tuple<bool, UByteCodeArg> resolve_local(
         const Token& name, const bool in_function,
         const std::size_t call_depth = detail::size_t_max) const;
-    std::tuple<bool, UByteCodeArg> resolve_upvalue(const Token& name) const;
+    std::tuple<bool, UByteCodeArg> resolve_upvalue(
+        const std::size_t call_depth, const Token& name);
     void begin_scope();
     void end_scope();
     void update_line_num_table(const Token& token);
@@ -170,7 +171,7 @@ namespace loxx
       op = write ? Instruction::SetLocal : Instruction::GetLocal;
     }
     else {
-      std::tie(resolved, arg) = resolve_upvalue(expr.name);
+      std::tie(resolved, arg) = resolve_upvalue(locals_.size() - 1, expr.name);
 
       if (resolved) {
         op = write ? Instruction::SetUpvalue : Instruction::GetUpvalue;
