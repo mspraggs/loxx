@@ -447,8 +447,6 @@ namespace loxx
   std::tuple<bool, UByteCodeArg> Compiler::resolve_upvalue(
       const std::size_t call_depth, const Token& name)
   {
-    const auto call_depth = locals_.size() - 1;
-
     if (call_depth == 0) {
       // There is only one scope, so we're not going to find an upvalue
       return std::tuple<bool, UByteCodeArg>(false, 0);
@@ -460,10 +458,23 @@ namespace loxx
 
     if (resolved) {
       locals_.get(call_depth - 1)[local].is_upvalue = true;
-      // TODO: Add upvalue...
+      return std::make_tuple(true, add_upvalue(call_depth, local, true));
     }
 
-    return std::make_tuple<bool, UByteCodeArg>(false, 0);
+    std::tie(resolved, local) = resolve_upvalue(call_depth - 1, name);
+    if (resolved) {
+      return std::make_tuple(true, add_upvalue(call_depth, local, false));
+    }
+
+    return std::tuple<bool, UByteCodeArg>(false, 0);
+  }
+
+
+  UByteCodeArg Compiler::add_upvalue(
+      const std::size_t call_depth, const UByteCodeArg index,
+      const bool isLocal)
+  {
+    return 0;
   }
 
 
