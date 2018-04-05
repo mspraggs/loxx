@@ -18,6 +18,7 @@ set(SRC
   StackFrame.hpp
   Stmt.hpp
   Token.hpp
+  Value.hpp
   Variant.hpp
   VirtualMachine.hpp
 
