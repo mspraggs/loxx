@@ -474,7 +474,7 @@ namespace loxx
       const std::size_t call_depth, const UByteCodeArg index,
       const bool is_local)
   {
-    const auto& upvalues = upvalues_.get(call_depth);
+    auto& upvalues = upvalues_.get(call_depth);
 
     for (UByteCodeArg i = 0; i < upvalues.size(); ++i) {
       if (upvalues[i].index == index and upvalues[i].is_local == is_local) {
