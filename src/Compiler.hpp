@@ -108,6 +108,12 @@ namespace loxx
       std::string name;
     };
 
+    struct Upvalue
+    {
+      bool is_local;
+      UByteCodeArg index;
+    };
+
     void compile(const Expr& expr);
     void compile(const Stmt& stmt);
     std::tuple<bool, UByteCodeArg> declare_variable(const Token& name);
