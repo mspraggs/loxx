@@ -402,7 +402,7 @@ namespace loxx
               "Variable with this name already declared in this scope.");
         }
       }
-      locals_.top().push_back(Local{false, 0, name.lexeme()});
+      locals_.top().push_back(Local{false, false, 0, name.lexeme()});
     }
 
     return std::make_tuple(is_global, arg);

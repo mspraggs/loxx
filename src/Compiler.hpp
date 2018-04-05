@@ -96,6 +96,7 @@ namespace loxx
     struct Local
     {
       bool defined;
+      bool is_upvalue;
       std::size_t depth;
       std::string name;
     };
