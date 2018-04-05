@@ -187,7 +187,7 @@ namespace loxx
     constexpr Variant(const Variant<Ts...>& other);
     constexpr Variant(Variant<Ts...>&& other) noexcept;
 
-    ~Variant();
+    virtual ~Variant();
 
     template <typename T,
               typename = std::enable_if_t<

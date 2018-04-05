@@ -9,6 +9,7 @@ set(SRC
   globals.hpp
   Instruction.hpp
   logging.hpp
+  Optional.hpp
   Parser.hpp
   RuntimeError.hpp
   Scanner.hpp
