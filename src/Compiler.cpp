@@ -471,7 +471,8 @@ namespace loxx
       }
     }
 
-    return 0;
+    upvalues.push_back(Upvalue{is_local, index});
+    return static_cast<UByteCodeArg>(upvalues.size() - 1);
   }
 
 
