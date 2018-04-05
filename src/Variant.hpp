@@ -351,8 +351,7 @@ namespace loxx
 
 
   template <std::size_t I, typename... Ts>
-  constexpr auto get(Variant<Ts...>& variant)
-      -> detail::LookupType<I, Ts...>&
+  constexpr auto get(Variant<Ts...>& variant) -> detail::LookupType<I, Ts...>&
   {
     if (variant.type_index_ != I) {
       throw BadVariantAccess("Variant does not contain requested object.");
@@ -363,7 +362,7 @@ namespace loxx
 
 
   template <std::size_t I, typename... Ts>
-  constexpr auto get(const Variant<Ts...>& variant)
+  constexpr decltype(auto) get(const Variant<Ts...>& variant)
   {
     using T = detail::LookupType<I, Ts...>;
     return const_cast<const T&>(get<I>(const_cast<Variant<Ts...>&>(variant)));
@@ -373,14 +372,14 @@ namespace loxx
   // Functions to access data stored in Variant instances
 
   template <typename T0, typename... Ts>
-  constexpr auto get(Variant<Ts...>& variant)
+  constexpr decltype(auto) get(Variant<Ts...>& variant)
   {
     return get<detail::type_index<T0, Ts...>()>(variant);
   }
 
 
   template <typename T0, typename... Ts>
-  constexpr auto get(const Variant<Ts...>& variant)
+  constexpr decltype(auto) get(const Variant<Ts...>& variant)
   {
     return get<detail::type_index<T0, Ts...>()>(variant);
   }
