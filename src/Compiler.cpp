@@ -472,8 +472,16 @@ namespace loxx
 
   UByteCodeArg Compiler::add_upvalue(
       const std::size_t call_depth, const UByteCodeArg index,
-      const bool isLocal)
+      const bool is_local)
   {
+    const auto& upvalues = upvalues_.get(call_depth);
+
+    for (UByteCodeArg i = 0; i < upvalues.size(); ++i) {
+      if (upvalues[i].index == index and upvalues[i].is_local == is_local) {
+        return i;
+      }
+    }
+
     return 0;
   }
 

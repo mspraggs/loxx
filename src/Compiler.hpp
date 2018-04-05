@@ -127,7 +127,7 @@ namespace loxx
     std::tuple<bool, UByteCodeArg> resolve_upvalue(
         const std::size_t call_depth, const Token& name);
     UByteCodeArg add_upvalue(
-        const std::size_t call_depth, const UByteCodeArg index, const bool isLocal);
+        const std::size_t call_depth, const UByteCodeArg index, const bool is_local);
     void begin_scope();
     void end_scope();
     void update_line_num_table(const Token& token);
@@ -144,6 +144,7 @@ namespace loxx
     VirtualMachine* vm_;
     CompilationOutput output_;
     Stack<std::vector<Local>> locals_;
+    Stack<std::vector<Upvalue>> upvalues_;
   };
 
 
