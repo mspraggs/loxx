@@ -60,9 +60,7 @@ namespace loxx
 
   void Compiler::visit_function_stmt(const Function& stmt)
   {
-    bool is_global;
-    UByteCodeArg arg;
-    std::tie(is_global, arg) = declare_variable(stmt.name);
+    const auto arg = declare_variable(stmt.name);
 
     // Because all code is compiled into one contiguous blob of bytecode,
     // there's the risk that we end up walking straight into bytecode that
@@ -78,11 +76,8 @@ namespace loxx
     locals_.push(std::vector<Local>());
 
     for (const auto& param : stmt.parameters) {
-      bool global_param;
-      UByteCodeArg param_index;
-
-      std::tie(global_param, param_index) = declare_variable(param);
-      define_variable(global_param, param_index, param);
+      const auto param_index = declare_variable(param);
+      define_variable(param_index, param);
     }
 
     compile(stmt.body);
@@ -103,7 +98,7 @@ namespace loxx
     add_instruction(Instruction::LoadConstant);
     add_integer<UByteCodeArg>(index);
 
-    define_variable(is_global, arg, stmt.name);
+    define_variable(arg, stmt.name);
   }
 
 
@@ -163,9 +158,7 @@ namespace loxx
 
   void Compiler::visit_var_stmt(const Var& stmt)
   {
-    bool is_global;
-    UByteCodeArg arg;
-    std::tie(is_global, arg) = declare_variable(stmt.name);
+    const auto arg = declare_variable(stmt.name);
 
     if (stmt.initialiser != nullptr) {
       compile(*stmt.initialiser);
@@ -174,7 +167,7 @@ namespace loxx
       add_instruction(Instruction::Nil);
     }
 
-    define_variable(is_global, arg, stmt.name);
+    define_variable(arg, stmt.name);
   }
 
 
@@ -378,16 +371,14 @@ namespace loxx
   }
 
 
-  std::tuple<bool, UByteCodeArg> Compiler::declare_variable(
-      const Token &name)
+  Optional<UByteCodeArg> Compiler::declare_variable(const Token& name)
   {
-    const auto is_global = scope_depth_ == 0;
+    const Optional<UByteCodeArg> arg =
+        scope_depth_ == 0 ?
+        vm_->make_constant(name.lexeme(), name.lexeme()) :
+        Optional<UByteCodeArg>();
 
-    const UByteCodeArg arg =
-        is_global ?
-        vm_->make_constant(name.lexeme(), name.lexeme()) : 0;
-
-    if (not is_global) {
+    if (not arg) {
       // Check to see if a variable with this name has been declared in this
       // scope already
       for (long int i = locals_.top().size() - 1; i >= 0; --i) {
@@ -405,16 +396,16 @@ namespace loxx
       locals_.top().push_back(Local{false, false, 0, name.lexeme()});
     }
 
-    return std::make_tuple(is_global, arg);
+    return arg;
   }
 
 
-  void Compiler::define_variable(const bool is_global, const UByteCodeArg arg,
+  void Compiler::define_variable(const Optional<UByteCodeArg>& arg,
                                  const Token& name)
   {
-    if (is_global) {
+    if (arg) {
       add_instruction(Instruction::DefineGlobal);
-      add_integer(arg);
+      add_integer(*arg);
     }
     else {
       locals_.top().back().defined = true;
@@ -424,7 +415,7 @@ namespace loxx
   }
 
 
-  std::tuple<bool, UByteCodeArg> Compiler::resolve_local(
+  Optional<UByteCodeArg> Compiler::resolve_local(
       const Token& name, const bool in_function,
       const std::size_t call_depth) const
   {
@@ -437,36 +428,34 @@ namespace loxx
           throw CompileError(
               name, "Cannot read local variable in its own initialiser.");
         }
-        return std::make_tuple(true, static_cast<UByteCodeArg>(i));
+        return static_cast<UByteCodeArg>(i);
       }
     }
-    return std::make_tuple(false, static_cast<UByteCodeArg>(0));
+    return Optional<UByteCodeArg>();
   }
 
 
-  std::tuple<bool, UByteCodeArg> Compiler::resolve_upvalue(
+  Optional<UByteCodeArg> Compiler::resolve_upvalue(
       const std::size_t call_depth, const Token& name)
   {
     if (call_depth == 0) {
       // There is only one scope, so we're not going to find an upvalue
-      return std::tuple<bool, UByteCodeArg>(false, 0);
+      return Optional<UByteCodeArg>();
     }
 
-    bool resolved = false;
-    UByteCodeArg local = 0;
-    std::tie(resolved, local) = resolve_local(name, true, call_depth - 1);
+    auto local = resolve_local(name, true, call_depth - 1);
 
-    if (resolved) {
-      locals_.get(call_depth - 1)[local].is_upvalue = true;
-      return std::make_tuple(true, add_upvalue(call_depth, local, true));
+    if (local) {
+      locals_.get(call_depth - 1)[*local].is_upvalue = true;
+      return add_upvalue(call_depth, *local, true);
     }
 
-    std::tie(resolved, local) = resolve_upvalue(call_depth - 1, name);
-    if (resolved) {
-      return std::make_tuple(true, add_upvalue(call_depth, local, false));
+    local = resolve_upvalue(call_depth - 1, name);
+    if (local) {
+      return add_upvalue(call_depth, *local, false);
     }
 
-    return std::tuple<bool, UByteCodeArg>(false, 0);
+    return Optional<UByteCodeArg>();
   }
 
 

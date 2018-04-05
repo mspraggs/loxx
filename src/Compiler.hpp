@@ -26,6 +26,7 @@
 
 #include "Expr.hpp"
 #include "Instruction.hpp"
+#include "Optional.hpp"
 #include "Stack.hpp"
 #include "Stmt.hpp"
 
@@ -116,18 +117,18 @@ namespace loxx
 
     void compile(const Expr& expr);
     void compile(const Stmt& stmt);
-    std::tuple<bool, UByteCodeArg> declare_variable(const Token& name);
-    void define_variable(const bool is_global, const UByteCodeArg arg,
-                         const Token& name);
+    Optional <UByteCodeArg> declare_variable(const Token& name);
+    void define_variable(const Optional <UByteCodeArg>& arg, const Token& name);
     template <typename T>
     void handle_variable_reference(const T& expr, const bool write);
-    std::tuple<bool, UByteCodeArg> resolve_local(
+    Optional<UByteCodeArg> resolve_local(
         const Token& name, const bool in_function,
         const std::size_t call_depth = detail::size_t_max) const;
-    std::tuple<bool, UByteCodeArg> resolve_upvalue(
+    Optional<UByteCodeArg> resolve_upvalue(
         const std::size_t call_depth, const Token& name);
     UByteCodeArg add_upvalue(
-        const std::size_t call_depth, const UByteCodeArg index, const bool is_local);
+        const std::size_t call_depth, const UByteCodeArg index,
+        const bool is_local);
     void begin_scope();
     void end_scope();
     void update_line_num_table(const Token& token);
@@ -171,18 +172,16 @@ namespace loxx
   template <typename T>
   void Compiler::handle_variable_reference(const T& expr, const bool write)
   {
-    UByteCodeArg arg = 0;
-    bool resolved = false;
-    std::tie(resolved, arg) = resolve_local(expr.name, false);
+    auto arg = resolve_local(expr.name, false);
 
     Instruction op;
-    if (resolved) {
+    if (arg) {
       op = write ? Instruction::SetLocal : Instruction::GetLocal;
     }
     else {
-      std::tie(resolved, arg) = resolve_upvalue(locals_.size() - 1, expr.name);
+      arg = resolve_upvalue(locals_.size() - 1, expr.name);
 
-      if (resolved) {
+      if (arg) {
         op = write ? Instruction::SetUpvalue : Instruction::GetUpvalue;
       }
       else {
@@ -192,13 +191,13 @@ namespace loxx
 
     detail::VariableTrait<T>::handle_value(expr, *this);
 
-    if (not resolved) {
+    if (not arg) {
       arg = get_constant(expr.name.lexeme());
     }
 
     add_instruction(op);
     update_line_num_table(expr.name);
-    add_integer(arg);
+    add_integer(*arg);
   }
 
 
