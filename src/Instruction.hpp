@@ -29,6 +29,7 @@ namespace loxx
   {
     Add,
     Call,
+    CloseUpvalue,
     ConditionalJump,
     DefineGlobal,
     Divide,
@@ -69,6 +70,9 @@ namespace loxx
       break;
     case Instruction::Call:
       stream << "CALL";
+      break;
+    case Instruction::CloseUpvalue:
+      stream << "CLOSE_UPVALUE";
       break;
     case Instruction::ConditionalJump:
       stream << "CONDITIONAL_JUMP";
