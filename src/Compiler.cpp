@@ -492,7 +492,12 @@ namespace loxx
 
     while (not locals_.top().empty() and
            locals_.top().back().depth > scope_depth_) {
-      add_instruction(Instruction::Pop);
+      if (locals_.top().back().is_upvalue) {
+        add_instruction(Instruction::CloseUpvalue);
+      }
+      else {
+        add_instruction(Instruction::Pop);
+      }
       locals_.top().pop_back();
     }
   }
