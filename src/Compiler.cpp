@@ -99,8 +99,13 @@ namespace loxx
         static_cast<unsigned int>(stmt.parameters.size()),
         num_upvalues);
     const auto index = vm_->add_constant(std::move(func));
-    add_instruction(Instruction::LoadConstant);
+    add_instruction(Instruction::CreateClosure);
     add_integer<UByteCodeArg>(index);
+
+    for (const auto& upvalue : upvalues_.top()) {
+      add_integer<UByteCodeArg>(upvalue.is_local ? 1 : 0);
+      add_integer<UByteCodeArg>(upvalue.index);
+    }
 
     define_variable(arg, stmt.name);
   }
