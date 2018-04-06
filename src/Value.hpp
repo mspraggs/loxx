@@ -52,14 +52,17 @@ namespace loxx
   {
   public:
     FuncObject(std::string lexeme, const std::size_t bytecode_offset,
-               const unsigned int arity)
-        : Object(std::move(lexeme), true, false, bytecode_offset), arity_(arity)
+               const unsigned int arity, const UByteCodeArg num_upvalues)
+        : Object(std::move(lexeme), true, false, bytecode_offset),
+          arity_(arity), num_upvalues_(num_upvalues)
     {}
 
     unsigned int arity() const { return arity_; }
+    UByteCodeArg num_upvalues() const { return num_upvalues_; }
 
   private:
     unsigned int arity_;
+    UByteCodeArg num_upvalues_;
   };
 
 
