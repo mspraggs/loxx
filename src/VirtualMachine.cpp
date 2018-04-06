@@ -123,6 +123,15 @@ namespace loxx
         ip_ += read_integer<ByteCodeArg>();
         break;
 
+      case Instruction::CreateClosure: {
+        const auto& value = constants_[read_integer<UByteCodeArg>()];
+
+        // Call new_closure here and push it onto the stack
+
+        // Iterate over the closure's upvalues and process them
+        break;
+      }
+
       case Instruction::LoadConstant:
         stack_.push(constants_[read_integer<UByteCodeArg>()]);
         break;
