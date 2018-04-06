@@ -74,6 +74,7 @@ namespace loxx
 
     begin_scope();
     locals_.push(std::vector<Local>());
+    upvalues_.push(std::vector<Upvalue>());
 
     for (const auto& param : stmt.parameters) {
       const auto param_index = declare_variable(param);
@@ -86,6 +87,7 @@ namespace loxx
 
     end_scope();
     locals_.pop();
+    upvalues_.pop();
 
     const auto jump_size =
         static_cast<ByteCodeArg>(output_.bytecode.size() - bytecode_pos);

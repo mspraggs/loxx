@@ -58,6 +58,7 @@ namespace loxx
     {
       output_.num_globals = 0;
       locals_.push(std::vector<Local>());
+      upvalues_.push(std::vector<Upvalue>());
     }
 
     void compile(const std::vector<std::unique_ptr<Stmt>>& statements);
