@@ -82,13 +82,14 @@ namespace loxx
     }
 
     compile(stmt.body);
-    add_instruction(Instruction::Nil);
-    add_instruction(Instruction::Return);
 
     const auto num_upvalues = static_cast<UByteCodeArg>(upvalues_.top().size());
     end_scope();
     locals_.pop();
     upvalues_.pop();
+
+    add_instruction(Instruction::Nil);
+    add_instruction(Instruction::Return);
 
     const auto jump_size =
         static_cast<ByteCodeArg>(output_.bytecode.size() - bytecode_pos);
