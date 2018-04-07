@@ -24,27 +24,23 @@
 
 namespace loxx
 {
+  enum class ObjectType
+  {
+    Function,
+  };
+
   class Object
   {
   public:
     virtual ~Object() = default;
 
-    bool callable() const { return callable_; }
-    bool has_attributes() const { return has_attributes_; }
-    std::size_t bytecode_offset() const { return bytecode_offset_; }
-    const std::string& lexeme() const { return lexeme_; }
+    ObjectType type() const { return type_; }
 
   protected:
-    Object(std::string lexeme, const bool callable, const bool has_attributes,
-           const std::size_t bytecode_offset)
-        : callable_(callable), has_attributes_(has_attributes),
-          bytecode_offset_(bytecode_offset), lexeme_(std::move(lexeme))
-    {}
+    explicit Object(const ObjectType type) : type_(type) {}
 
   private:
-    bool callable_, has_attributes_;
-    std::size_t bytecode_offset_;
-    std::string lexeme_;
+    ObjectType type_;
   };
 
 
@@ -53,16 +49,22 @@ namespace loxx
   public:
     FuncObject(std::string lexeme, const std::size_t bytecode_offset,
                const unsigned int arity, const UByteCodeArg num_upvalues)
-        : Object(std::move(lexeme), true, false, bytecode_offset),
-          arity_(arity), num_upvalues_(num_upvalues)
+        : Object(ObjectType::Function),
+          arity_(arity), num_upvalues_(num_upvalues),
+          bytecode_offset_(bytecode_offset), lexeme_(std::move(lexeme))
     {}
+
+    std::size_t bytecode_offset() const { return bytecode_offset_; }
 
     unsigned int arity() const { return arity_; }
     UByteCodeArg num_upvalues() const { return num_upvalues_; }
+    const std::string& lexeme() const { return lexeme_; }
 
   private:
     unsigned int arity_;
     UByteCodeArg num_upvalues_;
+    std::size_t bytecode_offset_;
+    std::string lexeme_;
   };
 
 

@@ -77,7 +77,7 @@ namespace loxx
         call_stack_.push(StackFrame(ip_, stack_.get(func_pos + 1)));
         const auto func_obj =
             get<std::shared_ptr<Object>>(stack_.get(func_pos));
-        ip_ = func_obj->bytecode_offset();
+        ip_ = std::static_pointer_cast<FuncObject>(func_obj)->bytecode_offset();
         break;
       }
 
@@ -330,8 +330,15 @@ namespace loxx
     }
     else if (holds_alternative<std::shared_ptr<Object>>(object)) {
       const auto ptr = get<std::shared_ptr<Object>>(object);
+
       std::stringstream ss;
-      ss << "<fn " << ptr->lexeme() << '>';
+
+      switch (ptr->type()) {
+      case ObjectType::Function:
+        ss << "<fn " << std::static_pointer_cast<FuncObject>(ptr)->lexeme()
+           << '>';
+        break;
+      }
       return ss.str();
     }
   }
