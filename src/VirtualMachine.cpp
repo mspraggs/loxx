@@ -81,6 +81,11 @@ namespace loxx
         break;
       }
 
+      case Instruction::CloseUpvalue:
+        close_upvalues(stack_.top());
+        stack_.pop();
+        break;
+
       case Instruction::ConditionalJump: {
         const auto jmp = read_integer<ByteCodeArg>();
         if (is_truthy(stack_.top())) {
@@ -432,6 +437,7 @@ namespace loxx
     switch (instruction) {
 
     case Instruction::Add:
+    case Instruction::CloseUpvalue:
     case Instruction::Divide:
     case Instruction::Equal:
     case Instruction::False:
