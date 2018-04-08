@@ -44,7 +44,7 @@ namespace loxx
     }
 
     ip_ = 0;
-    call_stack_.push(StackFrame(ip_, stack_.data()));
+    call_stack_.push(StackFrame(ip_, stack_.data(), nullptr));
 
     while (ip_ < compiler_output.bytecode.size()) {
 
@@ -74,7 +74,7 @@ namespace loxx
       case Instruction::Call: {
         const auto num_args = read_integer<UByteCodeArg>();
         const auto func_pos = stack_.size() - num_args - 1;
-        call_stack_.push(StackFrame(ip_, stack_.get(func_pos + 1)));
+        call_stack_.push(StackFrame(ip_, stack_.get(func_pos + 1), nullptr));
         const auto func_obj =
             get<std::shared_ptr<Object>>(stack_.get(func_pos));
         ip_ = std::static_pointer_cast<FuncObject>(func_obj)->bytecode_offset();
