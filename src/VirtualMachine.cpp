@@ -312,6 +312,32 @@ namespace loxx
   }
 
 
+  UpvalueObject& VirtualMachine::capture_upvalue(Value& local)
+  {
+    if (open_upvalues_.empty()) {
+      open_upvalues_.emplace_back(local);
+      return open_upvalues_.back();
+    }
+
+    auto upvalue = open_upvalues_.end();
+
+    for (auto it = open_upvalues_.begin(); it != open_upvalues_.end(); ++it) {
+      if (it->value() == &local) {
+        return *it;
+      }
+      else if (it->value() < &local) {
+        upvalue = it;
+        break;
+      }
+    }
+
+    const auto new_upvalue =
+        open_upvalues_.insert(upvalue, UpvalueObject(local));
+
+    return *new_upvalue;
+  }
+
+
   std::string VirtualMachine::stringify(const Value& object) const
   {
     if (object.index() == Value::npos) {

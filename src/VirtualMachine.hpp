@@ -20,6 +20,7 @@
 #ifndef LOXX_VIRTUALMACHINE_HPP
 #define LOXX_VIRTUALMACHINE_HPP
 
+#include <list>
 #include <unordered_map>
 #include <vector>
 
@@ -49,6 +50,8 @@ namespace loxx
     void print_object(Value object) const;
     void execute_binary_op(const Instruction instruction);
 
+    UpvalueObject& capture_upvalue(Value& local);
+
     std::string stringify(const Value& object) const;
     void print_stack() const;
     void disassemble_bytecode();
@@ -71,6 +74,7 @@ namespace loxx
     std::unordered_map<std::string, Value> globals_;
     Stack<Value> stack_;
     Stack<StackFrame> call_stack_;
+    std::list<UpvalueObject> open_upvalues_;
   };
 
 
