@@ -50,7 +50,7 @@ namespace loxx
     void print_object(Value object) const;
     void execute_binary_op(const Instruction instruction);
 
-    UpvalueObject& capture_upvalue(Value& local);
+    std::shared_ptr<UpvalueObject> capture_upvalue(Value& local);
     void close_upvalues(Value& last);
 
     std::string stringify(const Value& object) const;
@@ -75,7 +75,7 @@ namespace loxx
     std::unordered_map<std::string, Value> globals_;
     Stack<Value> stack_;
     Stack<StackFrame> call_stack_;
-    std::list<UpvalueObject> open_upvalues_;
+    std::list<std::shared_ptr<UpvalueObject>> open_upvalues_;
   };
 
 

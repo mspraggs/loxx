@@ -110,8 +110,7 @@ namespace loxx
           const auto index = read_integer<UByteCodeArg>();
 
           if (is_local) {
-            closure->upvalues()[i] =
-                &capture_upvalue(call_stack_.top().slot(i));
+            closure->upvalues()[i] = capture_upvalue(call_stack_.top().slot(i));
           }
           else {
             closure->upvalues()[i] = call_stack_.top().closure()->upvalues()[i];
@@ -152,7 +151,7 @@ namespace loxx
 
       case Instruction::GetUpvalue: {
         const auto slot = read_integer<UByteCodeArg>();
-        stack_.push(call_stack_.top().closure()->upvalues()[slot]);
+        stack_.push(call_stack_.top().closure()->upvalues()[slot]->value());
         break;
       }
 
@@ -347,27 +346,27 @@ namespace loxx
   }
 
 
-  UpvalueObject& VirtualMachine::capture_upvalue(Value& local)
+  std::shared_ptr<UpvalueObject> VirtualMachine::capture_upvalue(Value& local)
   {
     if (open_upvalues_.empty()) {
-      open_upvalues_.emplace_back(local);
+      open_upvalues_.push_back(std::make_shared<UpvalueObject>(local));
       return open_upvalues_.back();
     }
 
     auto upvalue = open_upvalues_.end();
 
     for (auto it = open_upvalues_.begin(); it != open_upvalues_.end(); ++it) {
-      if (it->value() == &local) {
+      if (&(*it)->value() == &local) {
         return *it;
       }
-      else if (it->value() < &local) {
+      else if (&(*it)->value() < &local) {
         upvalue = it;
         break;
       }
     }
 
     const auto new_upvalue =
-        open_upvalues_.insert(upvalue, UpvalueObject(local));
+        open_upvalues_.insert(upvalue, std::make_shared<UpvalueObject>(local));
 
     return *new_upvalue;
   }
@@ -377,8 +376,8 @@ namespace loxx
   {
     auto it = open_upvalues_.begin();
 
-    while (it != open_upvalues_.end() and it->value() >= &last) {
-      it->close();
+    while (it != open_upvalues_.end() and &(*it)->value() >= &last) {
+      (*it)->close();
 
       ++it;
       open_upvalues_.pop_front();

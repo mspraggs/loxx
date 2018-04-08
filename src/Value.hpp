@@ -111,14 +111,16 @@ namespace loxx
     {
     }
 
-    std::vector<UpvalueObject*>& upvalues() { return upvalues_; }
-    const std::vector<UpvalueObject*>& upvalues() const { return upvalues_; }
+    std::vector<std::shared_ptr<UpvalueObject>>& upvalues()
+    { return upvalues_; }
+    const std::vector<std::shared_ptr<UpvalueObject>>& upvalues() const
+    { return upvalues_; }
 
     const FuncObject& function() const { return *function_; }
 
   private:
     std::shared_ptr<FuncObject> function_;
-    std::vector<UpvalueObject*> upvalues_;
+    std::vector<std::shared_ptr<UpvalueObject>> upvalues_;
   };
 }
 
