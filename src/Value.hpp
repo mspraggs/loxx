@@ -89,7 +89,7 @@ namespace loxx
     void close()
     {
       closed_ = *value_;
-      value_ = nullptr;
+      value_ = &closed_;
     }
 
     const Value& value() const { return *value_; }
