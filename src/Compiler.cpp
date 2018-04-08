@@ -83,10 +83,9 @@ namespace loxx
 
     compile(stmt.body);
 
-    const auto num_upvalues = static_cast<UByteCodeArg>(upvalues_.top().size());
     end_scope();
     locals_.pop();
-    upvalues_.pop();
+    const auto upvalues = upvalues_.pop();
 
     add_instruction(Instruction::Nil);
     add_instruction(Instruction::Return);
@@ -98,12 +97,12 @@ namespace loxx
     auto func = std::make_shared<FuncObject>(
         stmt.name.lexeme(), bytecode_pos,
         static_cast<unsigned int>(stmt.parameters.size()),
-        num_upvalues);
+        upvalues.size());
     const auto index = vm_->add_constant(std::move(func));
     add_instruction(Instruction::CreateClosure);
     add_integer<UByteCodeArg>(index);
 
-    for (const auto& upvalue : upvalues_.top()) {
+    for (const auto& upvalue : upvalues) {
       add_integer<UByteCodeArg>(upvalue.is_local ? 1 : 0);
       add_integer<UByteCodeArg>(upvalue.index);
     }
