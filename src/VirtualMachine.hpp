@@ -51,6 +51,7 @@ namespace loxx
     void execute_binary_op(const Instruction instruction);
 
     UpvalueObject& capture_upvalue(Value& local);
+    void close_upvalues(Value& last);
 
     std::string stringify(const Value& object) const;
     void print_stack() const;

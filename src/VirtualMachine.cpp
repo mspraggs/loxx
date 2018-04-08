@@ -338,6 +338,19 @@ namespace loxx
   }
 
 
+  void VirtualMachine::close_upvalues(Value& last)
+  {
+    auto it = open_upvalues_.begin();
+
+    while (it != open_upvalues_.end() and it->value() >= &last) {
+      it->close();
+
+      ++it;
+      open_upvalues_.pop_front();
+    }
+  }
+
+
   std::string VirtualMachine::stringify(const Value& object) const
   {
     if (object.index() == Value::npos) {
