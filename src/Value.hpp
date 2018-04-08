@@ -92,7 +92,7 @@ namespace loxx
       value_ = nullptr;
     }
 
-    const Value* value() const { return value_; }
+    const Value& value() const { return *value_; }
     void set_value(Value& value) { value_ = &value; }
 
   private:
