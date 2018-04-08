@@ -94,6 +94,31 @@ namespace loxx
         break;
       }
 
+      case Instruction::CreateClosure: {
+        const auto& func_value = constants_[read_integer<UByteCodeArg>()];
+        const auto& func_obj = get<std::shared_ptr<Object>>(func_value);
+        auto func = std::static_pointer_cast<FuncObject>(func_obj);
+
+        const auto num_upvalues = func->num_upvalues();
+
+        auto closure = std::make_shared<ClosureObject>(std::move(func));
+        stack_.push(closure);
+
+        for (unsigned int i = 0; i < closure->upvalues().size(); ++i) {
+          const auto is_local = read_integer<UByteCodeArg>() != 0;
+          const auto index = read_integer<UByteCodeArg>();
+
+          if (is_local) {
+            closure->upvalues()[i] =
+                &capture_upvalue(call_stack_.top().slot(i));
+          }
+          else {
+            closure->upvalues()[i] = call_stack_.top().closure()->upvalues()[i];
+          }
+        }
+        break;
+      }
+
       case Instruction::DefineGlobal: {
         const auto arg = read_integer<UByteCodeArg>();
         const auto varname = get<std::string>(constants_[arg]);
@@ -127,15 +152,6 @@ namespace loxx
       case Instruction::Jump:
         ip_ += read_integer<ByteCodeArg>();
         break;
-
-      case Instruction::CreateClosure: {
-        const auto& value = constants_[read_integer<UByteCodeArg>()];
-
-        // Call new_closure here and push it onto the stack
-
-        // Iterate over the closure's upvalues and process them
-        break;
-      }
 
       case Instruction::LoadConstant:
         stack_.push(constants_[read_integer<UByteCodeArg>()]);
@@ -463,6 +479,30 @@ namespace loxx
       const auto param = read_integer_at_pos<ByteCodeArg>(ret);
       std::cout << ip_ << " -> " << ip_ + param + sizeof(ByteCodeArg) + 1;
       ret += sizeof(ByteCodeArg);
+      break;
+    }
+
+    case Instruction::CreateClosure: {
+      const auto& func_value =
+          constants_[read_integer_at_pos<UByteCodeArg>(ret)];
+      const auto& func_obj = get<std::shared_ptr<Object>>(func_value);
+      auto func = std::static_pointer_cast<FuncObject>(func_obj);
+
+      ret += sizeof(UByteCodeArg);
+
+      for (unsigned int i = 0; i < func->num_upvalues(); ++i) {
+        const auto is_local = read_integer_at_pos<UByteCodeArg>(ret) != 0;
+        ret += sizeof(UByteCodeArg);
+        const auto index = read_integer_at_pos<UByteCodeArg>(ret);
+        ret += sizeof(UByteCodeArg);
+
+        std::cout << (is_local ? "true" : "false") << ", " << index;
+
+        if (i < func->num_upvalues() - 1) {
+          std::cout << ", ";
+        }
+      }
+
       break;
     }
 
