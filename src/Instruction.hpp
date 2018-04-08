@@ -76,7 +76,7 @@ namespace loxx
       stream << "CLOSE_UPVALUE";
       break;
     case Instruction::CreateClosure:
-      stream << "LOAD_CLOSURE";
+      stream << "CREATE_CLOSURE";
       break;
     case Instruction::ConditionalJump:
       stream << "CONDITIONAL_JUMP";
