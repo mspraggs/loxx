@@ -149,6 +149,12 @@ namespace loxx
         break;
       }
 
+      case Instruction::GetUpvalue: {
+        const auto slot = read_integer<UByteCodeArg>();
+        stack_.push(call_stack_.top().closure()->upvalues()[slot]);
+        break;
+      }
+
       case Instruction::Jump:
         ip_ += read_integer<ByteCodeArg>();
         break;
@@ -210,6 +216,12 @@ namespace loxx
       case Instruction::SetLocal: {
         const auto arg = read_integer<UByteCodeArg>();
         call_stack_.top().slot(arg) = stack_.top();
+        break;
+      }
+
+      case Instruction::SetUpvalue: {
+        const auto slot = read_integer<UByteCodeArg>();
+        call_stack_.top().closure()->upvalues()[slot]->set_value(stack_.top());
         break;
       }
 
@@ -516,8 +528,10 @@ namespace loxx
     case Instruction::DefineGlobal:
     case Instruction::GetGlobal:
     case Instruction::GetLocal:
+    case Instruction::GetUpvalue:
     case Instruction::SetGlobal:
     case Instruction::SetLocal:
+    case Instruction::SetUpvalue:
     case Instruction::LoadConstant: {
       const auto param = read_integer_at_pos<UByteCodeArg>(ret);
       std::cout << param << " '" << stringify(constants_[param]) << "'";
