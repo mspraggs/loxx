@@ -20,14 +20,25 @@
 #ifndef LOXX_VALUE_HPP
 #define LOXX_VALUE_HPP
 
+#include <vector>
+
 #include "Variant.hpp"
 
 namespace loxx
 {
+  class Object;
+
+
   enum class ObjectType
   {
+    Closure,
     Function,
+    Upvalue,
   };
+
+
+  using Value = Variant<double, bool, std::string, std::shared_ptr<Object>>;
+
 
   class Object
   {
@@ -68,7 +79,47 @@ namespace loxx
   };
 
 
-  using Value = Variant<double, bool, std::string, std::shared_ptr<Object>>;
+  class UpvalueObject : public Object
+  {
+  public:
+    explicit UpvalueObject(Value& slot)
+        : Object(ObjectType::Upvalue), value_(&slot), next_(nullptr)
+    {}
+
+    void close()
+    {
+      closed_ = *value_;
+      value_ = nullptr;
+    }
+
+    const Value* value() const { return value_; }
+    void set_value(Value& value) { value_ = &value; }
+
+  private:
+    Value* value_;
+    Value closed_;
+    UpvalueObject* next_;
+  };
+
+
+  class ClosureObject : public Object
+  {
+  public:
+    explicit ClosureObject(std::shared_ptr<FuncObject> func)
+        : Object(ObjectType::Closure),
+          function_(std::move(func)), upvalues_(function_->num_upvalues())
+    {
+    }
+
+    std::vector<UpvalueObject*>& upvalues() { return upvalues_; }
+    const std::vector<UpvalueObject*>& upvalues() const { return upvalues_; }
+
+    const FuncObject& function() const { return *function_; }
+
+  private:
+    std::shared_ptr<FuncObject> function_;
+    std::vector<UpvalueObject*> upvalues_;
+  };
 }
 
 #endif // LOXX_VALUE_HPP
