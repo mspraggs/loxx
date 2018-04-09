@@ -105,15 +105,15 @@ namespace loxx
         auto closure = std::make_shared<ClosureObject>(std::move(func));
         stack_.push(closure);
 
-        for (unsigned int i = 0; i < closure->upvalues().size(); ++i) {
+        for (unsigned int i = 0; i < closure->num_upvalues(); ++i) {
           const auto is_local = read_integer<UByteCodeArg>() != 0;
           const auto index = read_integer<UByteCodeArg>();
 
           if (is_local) {
-            closure->upvalues()[i] = capture_upvalue(call_stack_.top().slot(i));
+            closure->set_upvalue(i, capture_upvalue(call_stack_.top().slot(i)));
           }
           else {
-            closure->upvalues()[i] = call_stack_.top().closure()->upvalues()[i];
+            closure->set_upvalue(i, call_stack_.top().closure()->upvalue(i));
           }
         }
         break;
@@ -151,7 +151,7 @@ namespace loxx
 
       case Instruction::GetUpvalue: {
         const auto slot = read_integer<UByteCodeArg>();
-        stack_.push(call_stack_.top().closure()->upvalues()[slot]->value());
+        stack_.push(call_stack_.top().closure()->upvalue(slot)->value());
         break;
       }
 
@@ -222,7 +222,7 @@ namespace loxx
 
       case Instruction::SetUpvalue: {
         const auto slot = read_integer<UByteCodeArg>();
-        call_stack_.top().closure()->upvalues()[slot]->set_value(stack_.top());
+        call_stack_.top().closure()->upvalue(slot)->set_value(stack_.top());
         break;
       }
 
