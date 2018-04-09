@@ -110,10 +110,12 @@ namespace loxx
           const auto index = read_integer<UByteCodeArg>();
 
           if (is_local) {
-            closure->set_upvalue(i, capture_upvalue(call_stack_.top().slot(i)));
+            closure->set_upvalue(
+                i, capture_upvalue(call_stack_.top().slot(index)));
           }
           else {
-            closure->set_upvalue(i, call_stack_.top().closure()->upvalue(i));
+            closure->set_upvalue(
+                i, call_stack_.top().closure()->upvalue(index));
           }
         }
         break;
