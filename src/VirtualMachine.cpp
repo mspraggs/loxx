@@ -193,7 +193,7 @@ namespace loxx
         close_upvalues(call_stack_.top().slot(0));
         const auto frame = call_stack_.pop();
         while (stack_.size() > 0 and
-               &stack_.top() != call_stack_.top().slots_base()) {
+               &stack_.top() != frame.prev_top()) {
           stack_.pop();
         }
         stack_.push(result);

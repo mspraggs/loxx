@@ -39,11 +39,12 @@ namespace loxx
     {}
     StackFrame(const std::size_t prev_ip, Value* slots_base,
                std::shared_ptr<ClosureObject> closure)
-        : prev_ip_(prev_ip), slots_(slots_base), closure_(std::move(closure))
+        : prev_ip_(prev_ip), slots_(slots_base), prev_top_(slots_base - 2),
+          closure_(std::move(closure))
     {}
 
     std::size_t prev_ip() const { return prev_ip_; }
-    const Value* slots_base() const { return slots_ - 1; }
+    const Value* prev_top() const { return prev_top_; }
 
     const Value& slot(const std::size_t i) const { return slots_[i]; }
     Value& slot(const std::size_t i) { return slots_[i]; }
@@ -54,6 +55,7 @@ namespace loxx
   private:
     std::size_t prev_ip_;
     Value* slots_;
+    Value* prev_top_;
     std::shared_ptr<ClosureObject> closure_;
   };
 }
