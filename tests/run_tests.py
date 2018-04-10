@@ -104,9 +104,10 @@ def run_tests(interpreter_path, test_paths):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
 
+        output = [line.decode() for line in process.communicate()]
         actual_output = [
             line.strip()
-            for line in "".join(process.communicate()).split('\n')
+            for line in "".join(output).split('\n')
             if line.strip()]
         actual_retval = process.returncode
 
