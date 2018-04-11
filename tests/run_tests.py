@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import argparse
 import os
 import re
 import subprocess
@@ -41,7 +42,7 @@ def parse_test(test_path):
     return output_lines, rvalue
 
 
-def print_failed_test(test_name, expected_data, actual_data):
+def print_failed_test(test_name, expected_data, actual_data, verbose=False):
     """Prints a failed test result to stdout"""
 
     expected_output, expected_retval = expected_data
@@ -49,25 +50,28 @@ def print_failed_test(test_name, expected_data, actual_data):
     
     red = "\033[31m" if sys.platform != "win32" else ""
     white = "\033[0m" if sys.platform != "win32" else ""
-    
-    print()
+
+    if verbose:
+        print()
     print("Test {:.<50}{} FAILED{}"
           .format(test_name, red, white))
-    print("-- Expected output:")
-    
-    for line in expected_output:
-        print("    {}".format(line))
-        
-    print("-- Actual output:")
-        
-    for line in actual_output:
-        print("    {}".format(line))
 
-    print("-- Expected return value:")
-    print("    {}".format(expected_retval))
-    print("-- Actual return value:")
-    print("    {}".format(actual_retval))
-    print()
+    if verbose:
+        print("-- Expected output:")
+    
+        for line in expected_output:
+            print("    {}".format(line))
+        
+        print("-- Actual output:")
+        
+        for line in actual_output:
+            print("    {}".format(line))
+
+        print("-- Expected return value:")
+        print("    {}".format(expected_retval))
+        print("-- Actual return value:")
+        print("    {}".format(actual_retval))
+        print()
 
 
 def print_succeeded_test(test_name):
@@ -80,7 +84,7 @@ def print_succeeded_test(test_name):
           .format(test_name, green, white))
 
 
-def run_tests(interpreter_path, test_paths):
+def run_tests(interpreter_path, test_paths, verbose=False):
     """Run the specified interpreter over the provided test source files,
     reporting errors as necessary."""
 
@@ -119,7 +123,7 @@ def run_tests(interpreter_path, test_paths):
         else:
             print_failed_test(test_name,
                               (expected_output, expected_retval),
-                              (actual_output, actual_retval))
+                              (actual_output, actual_retval), verbose)
             fail_counter += 1
 
     print()
@@ -131,17 +135,14 @@ def run_tests(interpreter_path, test_paths):
 
 if __name__ == "__main__":
 
-    try:
-        exec_path = sys.argv[1]
-    except IndexError:
-        print("Usage: python {} <interpreter_path> [<test regex>]"
-              .format(sys.argv[0]))
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Run unit tests for loxx.")
+    parser.add_argument("interpreter", help="Path to interpreter to test.")
+    parser.add_argument("test_regex", nargs="?", default="",
+                        help="Regex to filter tests with")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Display detail in failed tests.")
+    args = parser.parse_args()
 
-    try:
-        test_regex = sys.argv[2]
-    except IndexError:
-        test_regex = ""
-
-    num_failed_tests = run_tests(exec_path, gather_files(test_regex))
+    num_failed_tests = run_tests(args.interpreter, gather_files(args.test_regex),
+                                 args.verbose, args.ignore_retval)
     sys.exit(num_failed_tests)
