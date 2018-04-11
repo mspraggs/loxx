@@ -204,6 +204,10 @@ namespace loxx
         break;
 
       case Instruction::Return: {
+        if (call_stack_.size() == 1) {
+          throw RuntimeError(get_current_line(),
+                             "Cannot return from top-level code.");
+        }
         const auto result = stack_.pop();
         close_upvalues(call_stack_.top().slot(0));
         const auto frame = call_stack_.pop();
