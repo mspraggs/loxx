@@ -42,9 +42,9 @@ namespace loxx
 
     void execute(const CompilationOutput& compiler_output);
 
-    UByteCodeArg make_constant(const std::string& lexeme, const Value& value);
+    UByteCodeArg add_named_constant(const std::string& lexeme,
+                                    const Value& value);
     UByteCodeArg add_constant(const Value& value);
-    UByteCodeArg get_constant(const std::string& lexeme) const;
 
   private:
     void print_object(Value object) const;

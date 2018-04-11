@@ -258,8 +258,8 @@ namespace loxx
   }
 
 
-  UByteCodeArg VirtualMachine::make_constant(const std::string& lexeme,
-                                             const Value& value)
+  UByteCodeArg VirtualMachine::add_named_constant(const std::string& lexeme,
+                                                  const Value& value)
   {
     if (constant_map_.count(lexeme) != 0) {
       return constant_map_[lexeme];
@@ -278,17 +278,6 @@ namespace loxx
   {
     constants_.push_back(value);
     return constants_.size() - 1;
-  }
-
-
-  UByteCodeArg VirtualMachine::get_constant(const std::string& lexeme) const
-  {
-    if (constant_map_.count(lexeme) == 0) {
-      throw RuntimeError(get_current_line(),
-                         "Undefined variable '" + lexeme + "'.");
-    }
-
-    return constant_map_.at(lexeme);
   }
 
 
