@@ -280,6 +280,9 @@ namespace loxx
     case TokenType::BangEqual:
       add_instruction(Instruction::NotEqual);
       break;
+
+    default:
+      break;
     }
     update_line_num_table(expr.op);
   }
