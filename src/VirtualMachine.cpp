@@ -71,29 +71,9 @@ namespace loxx
         execute_binary_op(instruction);
         break;
 
-      case Instruction::Call: {
-        const auto num_args = read_integer<UByteCodeArg>();
-        const auto func_pos = stack_.size() - num_args - 1;
-        const auto func_obj = get_callable(stack_.get(func_pos));
-
-        if (not func_obj) {
-          throw RuntimeError(get_current_line(),
-                             "Can only call functions and classes.");
-        }
-
-        const auto closure = std::static_pointer_cast<ClosureObject>(func_obj);
-
-        if (closure->function().arity() != num_args) {
-          std::stringstream ss;
-          ss << "Expected " << closure->function().arity()
-             << " arguments but got " << num_args << '.';
-          throw RuntimeError(get_current_line(), ss.str());
-        }
-
-        call_stack_.push(StackFrame(ip_, stack_.get(func_pos + 1), closure));
-        ip_ = closure->function().bytecode_offset();
+      case Instruction::Call:
+        execute_call();
         break;
-      }
 
       case Instruction::CloseUpvalue:
         close_upvalues(stack_.top());
@@ -351,6 +331,31 @@ namespace loxx
     default:
       break;
     }
+  }
+
+
+  void VirtualMachine::execute_call()
+  {
+    const auto num_args = read_integer<UByteCodeArg>();
+    const auto func_pos = stack_.size() - num_args - 1;
+    const auto func_obj = get_callable(stack_.get(func_pos));
+
+    if (not func_obj) {
+      throw RuntimeError(get_current_line(),
+                         "Can only call functions and classes.");
+    }
+
+    const auto closure = std::static_pointer_cast<ClosureObject>(func_obj);
+
+    if (closure->function().arity() != num_args) {
+      std::stringstream ss;
+      ss << "Expected " << closure->function().arity()
+         << " arguments but got " << num_args << '.';
+      throw RuntimeError(get_current_line(), ss.str());
+    }
+
+    call_stack_.push(StackFrame(ip_, stack_.get(func_pos + 1), closure));
+    ip_ = closure->function().bytecode_offset();
   }
 
 
