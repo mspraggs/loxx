@@ -88,31 +88,9 @@ namespace loxx
         break;
       }
 
-      case Instruction::CreateClosure: {
-        const auto& func_value = constants_[read_integer<UByteCodeArg>()];
-        const auto& func_obj = get<std::shared_ptr<Object>>(func_value);
-        auto func = std::static_pointer_cast<FuncObject>(func_obj);
-
-        const auto num_upvalues = func->num_upvalues();
-
-        auto closure = std::make_shared<ClosureObject>(std::move(func));
-        stack_.push(closure);
-
-        for (unsigned int i = 0; i < closure->num_upvalues(); ++i) {
-          const auto is_local = read_integer<UByteCodeArg>() != 0;
-          const auto index = read_integer<UByteCodeArg>();
-
-          if (is_local) {
-            closure->set_upvalue(
-                i, capture_upvalue(call_stack_.top().slot(index)));
-          }
-          else {
-            closure->set_upvalue(
-                i, call_stack_.top().closure()->upvalue(index));
-          }
-        }
+      case Instruction::CreateClosure:
+        execute_create_closure();
         break;
-      }
 
       case Instruction::DefineGlobal: {
         const auto arg = read_integer<UByteCodeArg>();
@@ -356,6 +334,33 @@ namespace loxx
 
     call_stack_.push(StackFrame(ip_, stack_.get(func_pos + 1), closure));
     ip_ = closure->function().bytecode_offset();
+  }
+
+
+  void VirtualMachine::execute_create_closure()
+  {
+    const auto& func_value = constants_[read_integer<UByteCodeArg>()];
+    const auto& func_obj = get<std::shared_ptr<Object>>(func_value);
+    auto func = std::static_pointer_cast<FuncObject>(func_obj);
+
+    const auto num_upvalues = func->num_upvalues();
+
+    auto closure = std::make_shared<ClosureObject>(std::move(func));
+    stack_.push(closure);
+
+    for (unsigned int i = 0; i < closure->num_upvalues(); ++i) {
+      const auto is_local = read_integer<UByteCodeArg>() != 0;
+      const auto index = read_integer<UByteCodeArg>();
+
+      if (is_local) {
+        closure->set_upvalue(
+            i, capture_upvalue(call_stack_.top().slot(index)));
+      }
+      else {
+        closure->set_upvalue(
+            i, call_stack_.top().closure()->upvalue(index));
+      }
+    }
   }
 
 

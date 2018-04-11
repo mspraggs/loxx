@@ -50,6 +50,7 @@ namespace loxx
     void print_object(Value object) const;
     void execute_binary_op(const Instruction instruction);
     void execute_call();
+    void execute_create_closure();
 
     std::shared_ptr<UpvalueObject> capture_upvalue(Value& local);
     void close_upvalues(Value& last);
