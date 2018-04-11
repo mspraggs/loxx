@@ -138,7 +138,7 @@ namespace loxx
     void add_integer(const T integer);
     template <typename T>
     void rewrite_integer(const std::size_t pos, const T integer);
-    inline UByteCodeArg get_constant(const std::string& str) const;
+    inline UByteCodeArg make_string_constant(const std::string& str) const;
 
     unsigned int last_line_num_;
     unsigned int scope_depth_;
@@ -193,7 +193,7 @@ namespace loxx
     detail::VariableTrait<T>::handle_value(expr, *this);
 
     if (not arg) {
-      arg = get_constant(expr.name.lexeme());
+      arg = make_string_constant(expr.name.lexeme());
     }
 
     add_instruction(op);

@@ -553,8 +553,8 @@ namespace loxx
   }
 
 
-  UByteCodeArg Compiler::get_constant(const std::string& str) const
+  UByteCodeArg Compiler::make_string_constant(const std::string& str) const
   {
-    return vm_->get_constant(str);
+    return vm_->make_constant(str, str);
   }
 }
