@@ -84,7 +84,8 @@ def print_succeeded_test(test_name):
           .format(test_name, green, white))
 
 
-def run_tests(interpreter_path, test_paths, verbose=False):
+def run_tests(interpreter_path, test_paths, verbose=False,
+              ignore_retval=False):
     """Run the specified interpreter over the provided test source files,
     reporting errors as necessary."""
 
@@ -117,8 +118,9 @@ def run_tests(interpreter_path, test_paths, verbose=False):
 
         test_name = os.path.relpath(test_path, directory)
 
-        if (actual_retval == expected_retval and
-                actual_output == expected_output):
+        succeeded = (actual_output == expected_output and
+                     (ignore_retval or actual_retval == expected_retval))
+        if succeeded:
             print_succeeded_test(test_name)
         else:
             print_failed_test(test_name,
@@ -141,6 +143,8 @@ if __name__ == "__main__":
                         help="Regex to filter tests with")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Display detail in failed tests.")
+    parser.add_argument("-i", "--ignore-retval", action="store_true",
+                        help="Ignore interpreter return value")
     args = parser.parse_args()
 
     num_failed_tests = run_tests(args.interpreter, gather_files(args.test_regex),
