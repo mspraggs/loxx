@@ -74,9 +74,22 @@ namespace loxx
       case Instruction::Call: {
         const auto num_args = read_integer<UByteCodeArg>();
         const auto func_pos = stack_.size() - num_args - 1;
-        const auto func_obj =
-            get<std::shared_ptr<Object>>(stack_.get(func_pos));
-        auto closure = std::static_pointer_cast<ClosureObject>(func_obj);
+        const auto func_obj = get_callable(stack_.get(func_pos));
+
+        if (not func_obj) {
+          throw RuntimeError(get_current_line(),
+                             "Can only call functions and classes.");
+        }
+
+        const auto closure = std::static_pointer_cast<ClosureObject>(func_obj);
+
+        if (closure->function().arity() != num_args) {
+          std::stringstream ss;
+          ss << "Expected " << closure->function().arity()
+             << " arguments but got " << num_args << '.';
+          throw RuntimeError(get_current_line(), ss.str());
+        }
+
         call_stack_.push(StackFrame(ip_, stack_.get(func_pos + 1), closure));
         ip_ = closure->function().bytecode_offset();
         break;
@@ -551,6 +564,20 @@ namespace loxx
     std::cout << '\n';
 
     return ret;
+  }
+
+
+  std::shared_ptr<Object> VirtualMachine::get_callable(const Value& value)
+  {
+    if (holds_alternative<std::shared_ptr<Object>>(value)) {
+      const auto obj_ptr = get<std::shared_ptr<Object>>(value);
+
+      if (obj_ptr->type() == ObjectType::Function or
+          obj_ptr->type() == ObjectType::Closure) {
+        return obj_ptr;
+      }
+    }
+    return std::shared_ptr<Object>();
   }
 
 

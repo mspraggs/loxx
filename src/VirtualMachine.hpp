@@ -57,6 +57,7 @@ namespace loxx
     void print_stack() const;
     void disassemble_bytecode();
     size_t disassemble_instruction() const;
+    static std::shared_ptr<Object> get_callable(const Value& value);
     template <typename T>
     T read_integer();
     template <typename T>
