@@ -330,7 +330,32 @@ namespace loxx
 
   void Compiler::visit_logical_expr(const Logical& expr)
   {
+    compile(*expr.left);
 
+    if (expr.op.type() == TokenType::Or) {
+      add_instruction(Instruction::ConditionalJump);
+      const auto jump_pos = output_.bytecode.size();
+      add_integer<ByteCodeArg>(0);
+
+      const auto skip_start = output_.bytecode.size();
+      add_instruction(Instruction::Pop);
+      compile(*expr.right);
+
+      rewrite_integer<ByteCodeArg>(
+          jump_pos, output_.bytecode.size() - skip_start);
+    }
+    else if (expr.op.type() == TokenType::And) {
+      add_instruction(Instruction::ConditionalJump);
+      add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 1);
+      add_instruction(Instruction::Jump);
+      const auto jump_pos = output_.bytecode.size();
+      add_integer<ByteCodeArg>(0);
+
+      const auto skip_start = output_.bytecode.size();
+      compile(*expr.right);
+      rewrite_integer<ByteCodeArg>(
+          jump_pos, output_.bytecode.size() - skip_start);
+    }
   }
 
 
