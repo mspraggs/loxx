@@ -100,6 +100,7 @@ namespace loxx
         upvalues.size());
     const auto index = vm_->add_constant(std::move(func));
     add_instruction(Instruction::CreateClosure);
+    update_line_num_table(stmt.name);
     add_integer<UByteCodeArg>(index);
 
     for (const auto& upvalue : upvalues) {
@@ -162,6 +163,7 @@ namespace loxx
       add_instruction(Instruction::Nil);
     }
     add_instruction(Instruction::Return);
+    update_line_num_table(stmt.keyword);
   }
 
 
@@ -297,6 +299,7 @@ namespace loxx
     }
 
     add_instruction(Instruction::Call);
+    update_line_num_table(expr.paren);
     add_integer<UByteCodeArg>(expr.arguments.size());
   }
 
@@ -331,6 +334,7 @@ namespace loxx
   void Compiler::visit_logical_expr(const Logical& expr)
   {
     compile(*expr.left);
+    update_line_num_table(expr.op);
 
     if (expr.op.type() == TokenType::Or) {
       add_instruction(Instruction::ConditionalJump);
