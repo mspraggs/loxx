@@ -14,7 +14,7 @@ def gather_files(test_regex):
     filepaths = [os.path.join(dirpath, fname)
                  for dirpath, dirnames, fnames in os.walk(directory)
                  for fname in fnames if fname.endswith(".lox")]
-    
+
     return [os.path.join(directory, path)
             for path in filepaths
             if re.findall(test_regex, path)]
@@ -37,6 +37,9 @@ def parse_test(test_path):
 
     output_lines = [re.findall("^//(.+)$", line)[0].strip()
                     for line in lines[:header_length - 1]]
+    if sys.version_info.major < 3:
+        output_lines = [line.decode("utf-8") for line in output_lines]
+
     rvalue = int(re.findall("^// *(\d+)$", lines[header_length - 1])[0])
 
     return output_lines, rvalue
@@ -47,7 +50,7 @@ def print_failed_test(test_name, expected_data, actual_data, verbose=False):
 
     expected_output, expected_retval = expected_data
     actual_output, actual_retval = actual_data
-    
+
     red = "\033[31m" if sys.platform != "win32" else ""
     white = "\033[0m" if sys.platform != "win32" else ""
 
@@ -58,12 +61,12 @@ def print_failed_test(test_name, expected_data, actual_data, verbose=False):
 
     if verbose:
         print("-- Expected output:")
-    
+
         for line in expected_output:
             print("    {}".format(line))
-        
+
         print("-- Actual output:")
-        
+
         for line in actual_output:
             print("    {}".format(line))
 
@@ -109,7 +112,7 @@ def run_tests(interpreter_path, test_paths, verbose=False,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
 
-        output = [line.decode() for line in process.communicate()]
+        output = [line.decode("utf-8") for line in process.communicate()]
         actual_output = [
             line.strip()
             for line in "".join(output).split('\n')
