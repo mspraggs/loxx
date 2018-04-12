@@ -36,8 +36,10 @@ namespace loxx
 
     T* data() { return stack_.data(); }
     const T* data() const { return stack_.data(); }
-    T& top() { return stack_.back(); }
-    const T& top() const { return stack_.back(); }
+    T& top(const std::size_t depth = 0)
+    { return stack_[stack_.size() - 1 - depth]; }
+    const T& top(const std::size_t depth = 0) const
+    { return stack_[stack_.size() - 1 - depth]; }
     T& get(const std::size_t idx) { return stack_[idx]; }
     const T& get(const std::size_t idx) const { return stack_[idx]; }
     void push(T value);
