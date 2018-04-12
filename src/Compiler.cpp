@@ -156,6 +156,9 @@ namespace loxx
 
   void Compiler::visit_return_stmt(const Return& stmt)
   {
+    if (locals_.size() == 1) {
+      error(stmt.keyword, "Cannot return from top-level code.");
+    }
     if (stmt.value != nullptr) {
       compile(*stmt.value);
     }
