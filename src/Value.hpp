@@ -31,6 +31,7 @@ namespace loxx
 
   enum class ObjectType
   {
+    Class,
     Closure,
     Function,
     Upvalue,
@@ -123,6 +124,21 @@ namespace loxx
   private:
     std::shared_ptr<FuncObject> function_;
     std::vector<std::shared_ptr<UpvalueObject>> upvalues_;
+  };
+
+
+  class ClassObject : public Object
+  {
+  public:
+    explicit ClassObject(std::string lexeme)
+        : Object(ObjectType::Class),
+          lexeme_(std::move(lexeme))
+    {}
+
+    const std::string& lexeme() const { return lexeme_; }
+
+  private:
+    std::string lexeme_;
   };
 }
 

@@ -425,6 +425,11 @@ namespace loxx
         ss << "<fn " << std::static_pointer_cast<FuncObject>(ptr)->lexeme()
            << '>';
         break;
+      case ObjectType::Class: {
+        const auto cls = std::static_pointer_cast<ClassObject>(ptr);
+        ss << "<class " << cls->lexeme() << '>';
+        break;
+      }
       case ObjectType::Closure: {
         const auto closure = std::static_pointer_cast<ClosureObject>(ptr);
         ss << "<fn " << closure->function().lexeme() << '>';
