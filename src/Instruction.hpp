@@ -29,6 +29,7 @@ namespace loxx
   {
     Add,
     Call,
+    CreateClass,
     CloseUpvalue,
     CreateClosure,
     ConditionalJump,
@@ -74,6 +75,9 @@ namespace loxx
       break;
     case Instruction::CloseUpvalue:
       stream << "CLOSE_UPVALUE";
+      break;
+    case Instruction::CreateClass:
+      stream << "CREATE_CLASS";
       break;
     case Instruction::CreateClosure:
       stream << "CREATE_CLOSURE";
