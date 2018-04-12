@@ -20,50 +20,200 @@
 #ifndef LOXX_OPTIONAL_HPP
 #define LOXX_OPTIONAL_HPP
 
+#include <memory>
+#include <type_traits>
+
 #include "Variant.hpp"
 
 
 namespace loxx
 {
+  // A half-baked replacement for Boost optional
   template <typename T>
-  class Optional : private Variant<T>
+  class Optional
   {
   public:
-    using Variant<T>::Variant;
-    using Variant<T>::operator=;
+    constexpr Optional();
+    constexpr Optional(const Optional<T>& other);
+    constexpr Optional(Optional<T>&& other) noexcept;
 
-    constexpr explicit operator bool() const noexcept
-    { return this->index() != Variant<T>::npos; }
+    virtual ~Optional();
 
-    constexpr decltype(auto) operator->() const { return &get<T>(*this); }
-    constexpr decltype(auto) operator->() { return &get<T>(*this); }
+    template <typename U,
+        typename = std::enable_if_t<
+            not std::is_same<std::decay_t<U>, Optional<T>>::value>>
+    constexpr Optional(U&& value) noexcept;
 
-    constexpr decltype(auto) operator*() const { return get<T>(*this); }
-    constexpr decltype(auto) operator*() { return get<T>(*this); }
+    template <typename U0, typename... Us>
+    constexpr Optional(InPlace<U0>, Us&&... args);
 
-    constexpr bool has_value() const noexcept
-    { return static_cast<bool>(*this); }
+    constexpr Optional<T>& operator=(const Optional<T>& other);
+    constexpr Optional<T>& operator=(Optional<T>&& other) noexcept;
 
-    constexpr const T& value() const { return this->operator*(); }
-    constexpr T& value() { return this->operator*(); }
+    template <typename U,
+        typename = std::enable_if_t<
+            not std::is_same<std::decay_t<U>, Optional<T>>::value>>
+    constexpr Optional<T>& operator=(U&& value) noexcept;
 
-    template <typename U>
-    constexpr T value_or(U&& default_value);
+    constexpr const T* operator->() const;
+    constexpr T* operator->();
+
+    constexpr const T& operator*() const;
+    constexpr const T& value() const { return *(*this); }
+    constexpr T& operator*();
+    constexpr T& value() { return *(*this); }
+
+    constexpr bool has_value() const { return has_value_; }
+    constexpr explicit operator bool() const { return has_value_; }
+
     template <typename U>
     constexpr T value_or(U&& default_value) const;
+    template <typename U>
+    constexpr T value_or(U&& default_value);
 
-    void reset();
+  private:
+    bool has_value_;
+    std::aligned_storage_t<sizeof(T), alignof(T)> storage_;
+  };
+
+
+  // Exception thrown when contents of a Optional instance can't be accessed
+  class BadOptionalAccess : public std::exception
+  {
+  public:
+    explicit BadOptionalAccess(const char* what) : what_(what) {}
+    //explicit BadOptionalAccess(std::string what) : what_(std::move(what)) {}
+
+    const char* what() const noexcept override { return what_; }
+
+  private:
+    const char* what_;
+    //std::string what_;
+  };
+
+
+  template <typename T>
+  constexpr Optional<T>::Optional()
+      : has_value_(false)
+  {
+  }
+
+
+  template<typename T>
+  constexpr Optional<T>::Optional(const Optional<T>& other)
+      : has_value_(other.has_value_)
+  {
+    new (&storage_) T(*reinterpret_cast<const T*>(&other.storage_));
+  }
+
+
+  template<typename T>
+  constexpr Optional<T>::Optional(Optional<T>&& other) noexcept
+      : has_value_(other.has_value_)
+  {
+    new (&storage_) T(std::move(*reinterpret_cast<T*>(&other.storage_)));
+  }
+
+
+  template<typename T>
+  Optional<T>::~Optional()
+  {
+    if (has_value_) {
+      reinterpret_cast<T*>(&storage_)->~T();
+    }
+  }
+
+
+  template <typename T>
+  template <typename U, typename>
+  constexpr Optional<T>::Optional(U&& value) noexcept
+  {
+    has_value_ = true;
+    new (&storage_) U(std::forward<T>(value));
+  }
+
+
+  template<typename T>
+  template <typename U0, typename... Us>
+  constexpr Optional<T>::Optional(InPlace<U0>, Us&&... args)
+  {
+    has_value_ = true;
+    new (&storage_) U0(std::forward<Us>(args)...);
   };
 
 
   template<typename T>
-  template<typename U>
-  constexpr T Optional<T>::value_or(U&& default_value)
+  constexpr Optional<T>& Optional<T>::operator=(const Optional<T>& other)
   {
-    if (has_value()) {
-      return value();
+    if (&other != this) {
+      has_value_ = other.has_value_;
+      new (&storage_) T(*reinterpret_cast<const T*>(&other.storage_));
     }
-    return default_value;
+
+    return *this;
+  }
+
+
+  template<typename T>
+  constexpr Optional<T>& Optional<T>::operator=(Optional<T>&& other) noexcept
+  {
+    has_value_ = other.has_value_;
+    new (&storage_) T(std::move(*reinterpret_cast<T*>(&other.storage_)));
+    return *this;
+  }
+
+
+  template<typename T>
+  template<typename U, typename>
+  constexpr Optional<T>& Optional<T>::operator=(U&& value) noexcept
+  {
+    has_value_ = true;
+    new (&storage_) U(std::forward<T>(value));
+    return *this;
+  }
+
+
+  template<typename T>
+  constexpr const T* Optional<T>::operator->() const
+  {
+    if (not has_value_) {
+      throw BadOptionalAccess("Optional is not set.");
+    }
+
+    return reinterpret_cast<const T*>(&storage_);
+  }
+
+
+  template<typename T>
+  constexpr T* Optional<T>::operator->()
+  {
+    if (not has_value_) {
+      throw BadOptionalAccess("Optional is not set.");
+    }
+
+    return reinterpret_cast<T*>(&storage_);
+  }
+
+
+  template<typename T>
+  constexpr const T& Optional<T>::operator*() const
+  {
+    if (not has_value_) {
+      throw BadOptionalAccess("Optional is not set.");
+    }
+
+    return *reinterpret_cast<const T*>(&storage_);
+  }
+
+
+  template<typename T>
+  constexpr T& Optional<T>::operator*()
+  {
+    if (not has_value_) {
+      throw BadOptionalAccess("Optional is not set.");
+    }
+
+    return *reinterpret_cast<T*>(&storage_);
   }
 
 
@@ -71,7 +221,7 @@ namespace loxx
   template<typename U>
   constexpr T Optional<T>::value_or(U&& default_value) const
   {
-    if (has_value()) {
+    if (has_value_) {
       return value();
     }
     return default_value;
@@ -79,9 +229,25 @@ namespace loxx
 
 
   template<typename T>
-  void Optional<T>::reset()
+  template<typename U>
+  constexpr T Optional<T>::value_or(U&& default_value)
   {
-    *this = Variant<T>();
+    if (has_value_) {
+      return value();
+    }
+    return default_value;
+  }
+
+
+  template <typename T>
+  constexpr bool operator==(const Optional<T>& rhs,
+                            const Optional<T>& lhs)
+  {
+    if (not (lhs.has_value() and rhs.has_value())) {
+      return false;
+    }
+
+    return rhs.value() == lhs.value();
   }
 }
 
