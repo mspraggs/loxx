@@ -20,6 +20,7 @@
 #ifndef LOXX_VALUE_HPP
 #define LOXX_VALUE_HPP
 
+#include <unordered_map>
 #include <vector>
 
 #include "Variant.hpp"
@@ -34,6 +35,7 @@ namespace loxx
     Class,
     Closure,
     Function,
+    Instance,
     Upvalue,
   };
 
@@ -139,6 +141,32 @@ namespace loxx
 
   private:
     std::string lexeme_;
+  };
+
+
+  class InstanceObject : public Object
+  {
+  public:
+    explicit InstanceObject(std::shared_ptr<ClassObject> cls)
+        : Object(ObjectType::Instance),
+          cls_(std::move(cls))
+    {}
+
+    bool has_field(const std::string& name) const
+    { return fields_.count(name) != 0; }
+
+    const Value& field(const std::string& name) const
+    { return fields_.at(name); }
+    Value& field(const std::string& name) { return fields_[name]; }
+
+    void set_field(const std::string& name, const Value& value)
+    { fields_[name] = value; }
+
+    const ClassObject& cls() const { return *cls_; }
+
+  private:
+    std::shared_ptr<ClassObject> cls_;
+    std::unordered_map<std::string, Value> fields_;
   };
 }
 

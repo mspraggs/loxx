@@ -435,6 +435,10 @@ namespace loxx
         ss << "<fn " << closure->function().lexeme() << '>';
         break;
       }
+      case ObjectType::Instance: {
+        const auto instance = std::static_pointer_cast<InstanceObject>(ptr);
+        ss << instance->cls().lexeme() << " instance";
+      }
       }
       return ss.str();
     }
