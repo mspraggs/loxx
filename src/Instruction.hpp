@@ -39,6 +39,7 @@ namespace loxx
     False,
     GetGlobal,
     GetLocal,
+    GetProperty,
     GetUpvalue,
     Greater,
     GreaterEqual,
@@ -57,6 +58,7 @@ namespace loxx
     Return,
     SetGlobal,
     SetLocal,
+    SetProperty,
     SetUpvalue,
     Subtract,
     True
@@ -102,6 +104,9 @@ namespace loxx
       break;
     case Instruction::GetLocal:
       stream << "GET_LOCAL";
+      break;
+    case Instruction::GetProperty:
+      stream << "GET_PROPERTY";
       break;
     case Instruction::GetUpvalue:
       stream << "GET_UPVALUE";
@@ -156,6 +161,9 @@ namespace loxx
       break;
     case Instruction::SetLocal:
       stream << "SET_LOCAL";
+      break;
+    case Instruction::SetProperty:
+      stream << "SET_PROPERTY";
       break;
     case Instruction::SetUpvalue:
       stream << "SET_UPVALUE";
