@@ -47,7 +47,13 @@ namespace loxx
 
   void Compiler::visit_class_stmt(const Class& stmt)
   {
+    const auto name_constant = declare_variable(stmt.name);
+    add_instruction(Instruction::CreateClass);
 
+    update_line_num_table(stmt.name);
+    add_integer<UByteCodeArg>(*name_constant);
+
+    define_variable(name_constant, stmt.name);
   }
 
 
