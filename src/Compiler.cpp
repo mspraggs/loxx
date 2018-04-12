@@ -315,7 +315,11 @@ namespace loxx
 
   void Compiler::visit_get_expr(const Get& expr)
   {
+    compile(*expr.object);
 
+    const auto name_constant = make_string_constant(expr.name.lexeme());
+    add_instruction(Instruction::GetProperty);
+    add_integer<UByteCodeArg>(name_constant);
   }
 
 
@@ -374,7 +378,12 @@ namespace loxx
 
   void Compiler::visit_set_expr(const Set& expr)
   {
+    compile(*expr.object);
+    compile(*expr.value);
 
+    const auto name_constant = make_string_constant(expr.name.lexeme());
+    add_instruction(Instruction::SetProperty);
+    add_integer<UByteCodeArg>(name_constant);
   }
 
 
