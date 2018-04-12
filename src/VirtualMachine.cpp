@@ -88,6 +88,12 @@ namespace loxx
         break;
       }
 
+      case Instruction::CreateClass: {
+        auto name = get<std::string>(constants_[read_integer<UByteCodeArg>()]);
+        stack_.push(std::make_shared<ClassObject>(std::move(name)));
+        break;
+      }
+
       case Instruction::CreateClosure:
         execute_create_closure();
         break;
@@ -554,6 +560,7 @@ namespace loxx
       break;
     }
 
+    case Instruction::CreateClass:
     case Instruction::DefineGlobal:
     case Instruction::GetGlobal:
     case Instruction::GetLocal:
