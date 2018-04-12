@@ -128,6 +128,28 @@ namespace loxx
         break;
       }
 
+      case Instruction::GetProperty: {
+        const auto obj = get_instance(stack_.top());
+        if (not obj) {
+          throw RuntimeError(get_current_line(),
+                             "Only instances have properties.");
+        }
+
+        const auto instance = std::static_pointer_cast<InstanceObject>(obj);
+        const auto& name =
+            get<std::string>(constants_[read_integer<UByteCodeArg>()]);
+
+        if (instance->has_field(name)) {
+          stack_.pop();
+          stack_.push(instance->field(name));
+        }
+        else {
+          throw RuntimeError(get_current_line(),
+                             "Undefined property '" + name + "'.");
+        }
+        break;
+      }
+
       case Instruction::GetUpvalue: {
         const auto slot = read_integer<UByteCodeArg>();
         stack_.push(call_stack_.top().closure()->upvalue(slot)->value());
@@ -196,6 +218,24 @@ namespace loxx
       case Instruction::SetLocal: {
         const auto arg = read_integer<UByteCodeArg>();
         call_stack_.top().slot(arg) = stack_.top();
+        break;
+      }
+
+      case Instruction::SetProperty: {
+        const auto obj = get_instance(stack_.top(1));
+        if (not obj) {
+          throw RuntimeError(get_current_line(),
+                             "Only instances have properties.");
+        }
+
+        const auto instance = std::static_pointer_cast<InstanceObject>(obj);
+        const auto& name =
+            get<std::string>(constants_[read_integer<UByteCodeArg>()]);
+
+        instance->set_field(name, stack_.top());
+        const auto value = stack_.pop();
+        stack_.pop();
+        stack_.push(value);
         break;
       }
 
@@ -575,9 +615,11 @@ namespace loxx
     case Instruction::DefineGlobal:
     case Instruction::GetGlobal:
     case Instruction::GetLocal:
+    case Instruction::GetProperty:
     case Instruction::GetUpvalue:
     case Instruction::SetGlobal:
     case Instruction::SetLocal:
+    case Instruction::SetProperty:
     case Instruction::SetUpvalue:
     case Instruction::LoadConstant: {
       const auto param = read_integer_at_pos<UByteCodeArg>(ret);
@@ -601,6 +643,19 @@ namespace loxx
       if (obj_ptr->type() == ObjectType::Class or
           obj_ptr->type() == ObjectType::Function or
           obj_ptr->type() == ObjectType::Closure) {
+        return obj_ptr;
+      }
+    }
+    return std::shared_ptr<Object>();
+  }
+
+
+  std::shared_ptr<Object> VirtualMachine::get_instance(const Value& value)
+  {
+    if (holds_alternative<std::shared_ptr<Object>>(value)) {
+      const auto obj_ptr = get<std::shared_ptr<Object>>(value);
+
+      if (obj_ptr->type() == ObjectType::Instance) {
         return obj_ptr;
       }
     }
