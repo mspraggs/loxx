@@ -4,7 +4,6 @@ project(loxx)
 set(SRC
   AstPrinter.hpp
   Compiler.hpp
-  Environment.hpp
   Expr.hpp
   globals.hpp
   Instruction.hpp
@@ -24,7 +23,6 @@ set(SRC
 
   AstPrinter.cpp
   Compiler.cpp
-  Environment.cpp
   logging.cpp
   main.cpp
   Parser.cpp
