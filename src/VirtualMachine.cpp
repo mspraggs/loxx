@@ -367,8 +367,8 @@ namespace loxx
 
     switch (obj->type()) {
     case ObjectType::Class: {
-      const auto cls = std::static_pointer_cast<ClassObject>(obj);
-      stack_.get(obj_pos) = cls;
+      auto cls = std::static_pointer_cast<ClassObject>(obj);
+      stack_.get(obj_pos) = std::make_shared<InstanceObject>(std::move(cls));
       break;
     }
 
