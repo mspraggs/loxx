@@ -160,6 +160,10 @@ namespace loxx
           stack_.pop();
           stack_.push(instance->field(name));
         }
+        else if (instance->cls().has_method(name)) {
+          stack_.pop();
+          stack_.push(instance->cls().method(name));
+        }
         else {
           throw RuntimeError(get_current_line(),
                              "Undefined property '" + name + "'.");
