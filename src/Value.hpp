@@ -86,7 +86,7 @@ namespace loxx
   {
   public:
     explicit UpvalueObject(Value& slot)
-        : Object(ObjectType::Upvalue), value_(&slot), next_(nullptr)
+        : Object(ObjectType::Upvalue), value_(&slot)
     {}
 
     void close()
@@ -101,7 +101,6 @@ namespace loxx
   private:
     Value* value_;
     Value closed_;
-    UpvalueObject* next_;
   };
 
 
