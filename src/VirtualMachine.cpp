@@ -98,6 +98,23 @@ namespace loxx
         execute_create_closure();
         break;
 
+      case Instruction::CreateMethod: {
+        const auto cls_obj = get_object(stack_.top(1), {ObjectType::Class});
+        const auto cls = std::static_pointer_cast<ClassObject>(cls_obj);
+
+        const auto& name =
+            get<std::string>(constants_[read_integer<UByteCodeArg>()]);
+
+        const auto closure_obj =
+            get_object(stack_.top(), {ObjectType::Closure});
+        const auto closure =
+            std::static_pointer_cast<ClosureObject>(closure_obj);
+
+        cls->set_method(name, closure);
+        stack_.pop();
+        break;
+      }
+
       case Instruction::DefineGlobal: {
         const auto arg = read_integer<UByteCodeArg>();
         const auto varname = get<std::string>(constants_[arg]);
@@ -615,6 +632,7 @@ namespace loxx
     }
 
     case Instruction::CreateClass:
+    case Instruction::CreateMethod:
     case Instruction::DefineGlobal:
     case Instruction::GetGlobal:
     case Instruction::GetLocal:
