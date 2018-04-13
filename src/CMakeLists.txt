@@ -12,7 +12,6 @@ set(SRC
   Parser.hpp
   RuntimeError.hpp
   Scanner.hpp
-  Scope.hpp
   Stack.hpp
   StackFrame.hpp
   Stmt.hpp
@@ -27,7 +26,6 @@ set(SRC
   main.cpp
   Parser.cpp
   Scanner.cpp
-  Scope.cpp
   StackFrame.cpp
   Token.cpp
   VirtualMachine.cpp)
