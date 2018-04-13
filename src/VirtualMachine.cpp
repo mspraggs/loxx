@@ -187,7 +187,8 @@ namespace loxx
 
       case Instruction::Negate: {
         if (not holds_alternative<double>(stack_.top())) {
-          throw RuntimeError(get_current_line(), "Operand must be a number.");
+          throw RuntimeError(get_current_line(),
+                             "Unary operand must be a number.");
         }
         const auto number = get<double>(stack_.pop());
         stack_.push(-number);
@@ -246,7 +247,7 @@ namespace loxx
         const auto obj = get_object(stack_.top(1), {ObjectType::Instance});
         if (not obj) {
           throw RuntimeError(get_current_line(),
-                             "Only instances have properties.");
+                             "Only instances have fields.");
         }
 
         const auto instance = std::static_pointer_cast<InstanceObject>(obj);
