@@ -129,7 +129,7 @@ namespace loxx
   constexpr Optional<T>::Optional(U&& value) noexcept
   {
     has_value_ = true;
-    new (&storage_) U(std::forward<T>(value));
+    new (&storage_) T(std::forward<U>(value));
   }
 
 
@@ -168,7 +168,7 @@ namespace loxx
   constexpr Optional<T>& Optional<T>::operator=(U&& value) noexcept
   {
     has_value_ = true;
-    new (&storage_) U(std::forward<T>(value));
+    new (&storage_) T(std::forward<U>(value));
     return *this;
   }
 
