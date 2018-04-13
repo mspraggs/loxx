@@ -89,6 +89,12 @@ namespace loxx
     const CompilationOutput& output() const { return output_; }
 
   private:
+    enum class FunctionType {
+      Function,
+      Initialiser,
+      Method
+    };
+
     class CompileError : public std::runtime_error
     {
     public:
@@ -118,7 +124,8 @@ namespace loxx
 
     void compile(const Expr& expr);
     void compile(const Stmt& stmt);
-    Optional <UByteCodeArg> declare_variable(const Token& name);
+    void compile_function(const Function& stmt, const FunctionType type);
+    Optional<UByteCodeArg> declare_variable(const Token& name);
     void define_variable(const Optional <UByteCodeArg>& arg, const Token& name);
     template <typename T>
     void handle_variable_reference(const T& expr, const bool write);

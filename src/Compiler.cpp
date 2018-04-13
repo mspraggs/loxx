@@ -67,53 +67,7 @@ namespace loxx
   void Compiler::visit_function_stmt(const Function& stmt)
   {
     const auto arg = declare_variable(stmt.name);
-
-    // Because all code is compiled into one contiguous blob of bytecode,
-    // there's the risk that we end up walking straight into bytecode that
-    // belongs to functions. To avoid this we prepend a jump instruction before
-    // the function's bytecode so that we can skip over the latter.
-    add_instruction(Instruction::Jump);
-    const auto jump_pos = output_.bytecode.size();
-    add_integer<ByteCodeArg>(0);
-
-    const auto bytecode_pos = output_.bytecode.size();
-
-    begin_scope();
-    locals_.push(std::vector<Local>());
-    upvalues_.push(std::vector<Upvalue>());
-
-    for (const auto& param : stmt.parameters) {
-      const auto param_index = declare_variable(param);
-      define_variable(param_index, param);
-    }
-
-    compile(stmt.body);
-
-    end_scope();
-    locals_.pop();
-    const auto upvalues = upvalues_.pop();
-
-    add_instruction(Instruction::Nil);
-    add_instruction(Instruction::Return);
-
-    const auto jump_size =
-        static_cast<ByteCodeArg>(output_.bytecode.size() - bytecode_pos);
-    rewrite_integer(jump_pos, jump_size);
-
-    auto func = std::make_shared<FuncObject>(
-        stmt.name.lexeme(), bytecode_pos,
-        static_cast<unsigned int>(stmt.parameters.size()),
-        upvalues.size());
-    const auto index = vm_->add_constant(std::move(func));
-    add_instruction(Instruction::CreateClosure);
-    update_line_num_table(stmt.name);
-    add_integer<UByteCodeArg>(index);
-
-    for (const auto& upvalue : upvalues) {
-      add_integer<UByteCodeArg>(upvalue.is_local ? 1 : 0);
-      add_integer<UByteCodeArg>(upvalue.index);
-    }
-
+    compile_function(stmt, FunctionType::Function);
     define_variable(arg, stmt.name);
   }
 
@@ -427,6 +381,56 @@ namespace loxx
   void Compiler::compile(const Stmt& stmt)
   {
     stmt.accept(*this);
+  }
+
+
+  void Compiler::compile_function(const Function& stmt, const FunctionType type)
+  {
+    // Because all code is compiled into one contiguous blob of bytecode,
+    // there's the risk that we end up walking straight into bytecode that
+    // belongs to functions. To avoid this we prepend a jump instruction before
+    // the function's bytecode so that we can skip over the latter.
+    add_instruction(Instruction::Jump);
+    const auto jump_pos = output_.bytecode.size();
+    add_integer<ByteCodeArg>(0);
+
+    const auto bytecode_pos = output_.bytecode.size();
+
+    begin_scope();
+    locals_.push(std::vector<Local>());
+    upvalues_.push(std::vector<Upvalue>());
+
+    for (const auto& param : stmt.parameters) {
+      const auto param_index = declare_variable(param);
+      define_variable(param_index, param);
+    }
+
+    compile(stmt.body);
+
+    end_scope();
+    locals_.pop();
+    const auto upvalues = upvalues_.pop();
+
+    add_instruction(Instruction::Nil);
+    add_instruction(Instruction::Return);
+
+    const auto jump_size =
+        static_cast<ByteCodeArg>(output_.bytecode.size() - bytecode_pos);
+    rewrite_integer(jump_pos, jump_size);
+
+    auto func = std::make_shared<FuncObject>(
+        stmt.name.lexeme(), bytecode_pos,
+        static_cast<unsigned int>(stmt.parameters.size()),
+        upvalues.size());
+    const auto index = vm_->add_constant(std::move(func));
+    add_instruction(Instruction::CreateClosure);
+    update_line_num_table(stmt.name);
+    add_integer<UByteCodeArg>(index);
+
+    for (const auto& upvalue : upvalues) {
+      add_integer<UByteCodeArg>(upvalue.is_local ? 1 : 0);
+      add_integer<UByteCodeArg>(upvalue.index);
+    }
   }
 
 
