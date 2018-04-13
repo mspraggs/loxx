@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 
-def gather_files(test_regex):
+def gather_files(test_regex, exclude=False):
     """Collect files with name test_*.lox in test directory"""
 
     directory = os.path.dirname(os.path.abspath(__file__))
@@ -15,9 +15,11 @@ def gather_files(test_regex):
                  for dirpath, dirnames, fnames in os.walk(directory)
                  for fname in fnames if fname.endswith(".lox")]
 
+    modifier = lambda r: (not r if exclude else r)
+
     return [os.path.join(directory, path)
             for path in filepaths
-            if re.findall(test_regex, path)]
+            if modifier(re.findall(test_regex, path))]
 
 
 def parse_test(test_path):
@@ -147,9 +149,12 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Display detail in failed tests.")
     parser.add_argument("-i", "--ignore-retval", action="store_true",
-                        help="Ignore interpreter return value")
+                        help="Ignore interpreter return value.")
+    parser.add_argument("-x", "--exclude", action="store_true",
+                        help="Exclude tests matching regex.")
     args = parser.parse_args()
 
-    num_failed_tests = run_tests(args.interpreter, gather_files(args.test_regex),
-                                 args.verbose, args.ignore_retval)
+    num_failed_tests = run_tests(
+        args.interpreter, gather_files(args.test_regex, args.exclude),
+        args.verbose, args.ignore_retval)
     sys.exit(num_failed_tests)
