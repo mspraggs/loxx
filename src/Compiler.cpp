@@ -305,6 +305,10 @@ namespace loxx
           get<bool>(expr.value) ? Instruction::True : Instruction::False);
       return;
     }
+    else if (expr.value.index() == Value::npos) {
+      add_instruction(Instruction::Nil);
+      return;
+    }
 
     const auto index = vm_->add_named_constant(expr.lexeme, expr.value);
 
