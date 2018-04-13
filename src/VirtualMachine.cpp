@@ -129,7 +129,7 @@ namespace loxx
       }
 
       case Instruction::GetProperty: {
-        const auto obj = get_instance(stack_.top());
+        const auto obj = get_object(stack_.top(), {ObjectType::Instance});
         if (not obj) {
           throw RuntimeError(get_current_line(),
                              "Only instances have properties.");
@@ -222,7 +222,7 @@ namespace loxx
       }
 
       case Instruction::SetProperty: {
-        const auto obj = get_instance(stack_.top(1));
+        const auto obj = get_object(stack_.top(1), {ObjectType::Instance});
         if (not obj) {
           throw RuntimeError(get_current_line(),
                              "Only instances have properties.");
@@ -358,7 +358,10 @@ namespace loxx
   {
     const auto num_args = read_integer<UByteCodeArg>();
     const auto obj_pos = stack_.size() - num_args - 1;
-    const auto obj = get_callable(stack_.get(obj_pos));
+    const auto obj =
+        get_object(stack_.get(obj_pos),
+                   {ObjectType::Class, ObjectType::Closure,
+                    ObjectType::Function});
 
     if (not obj) {
       throw RuntimeError(get_current_line(),
@@ -635,28 +638,16 @@ namespace loxx
   }
 
 
-  std::shared_ptr<Object> VirtualMachine::get_callable(const Value& value)
+  std::shared_ptr<Object> VirtualMachine::get_object(
+      const Value& value, const std::vector<ObjectType>& valid_types)
   {
     if (holds_alternative<std::shared_ptr<Object>>(value)) {
       const auto obj_ptr = get<std::shared_ptr<Object>>(value);
 
-      if (obj_ptr->type() == ObjectType::Class or
-          obj_ptr->type() == ObjectType::Function or
-          obj_ptr->type() == ObjectType::Closure) {
-        return obj_ptr;
-      }
-    }
-    return std::shared_ptr<Object>();
-  }
-
-
-  std::shared_ptr<Object> VirtualMachine::get_instance(const Value& value)
-  {
-    if (holds_alternative<std::shared_ptr<Object>>(value)) {
-      const auto obj_ptr = get<std::shared_ptr<Object>>(value);
-
-      if (obj_ptr->type() == ObjectType::Instance) {
-        return obj_ptr;
+      for (auto type : valid_types) {
+        if (obj_ptr->type() == type) {
+          return obj_ptr;
+        }
       }
     }
     return std::shared_ptr<Object>();
