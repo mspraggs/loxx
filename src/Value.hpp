@@ -138,8 +138,21 @@ namespace loxx
 
     const std::string& lexeme() const { return lexeme_; }
 
+    bool has_method(const std::string& name) const
+    { return methods_.count(name) != 0; }
+
+    std::shared_ptr<ClosureObject> method(const std::string& name) const
+    { return methods_.at(name); }
+    std::shared_ptr<ClosureObject> method(const std::string& name)
+    { return methods_[name]; }
+
+    void set_method(const std::string& name,
+                    std::shared_ptr<ClosureObject> method)
+    { methods_[name] = std::move(method); }
+
   private:
     std::string lexeme_;
+    std::unordered_map<std::string, std::shared_ptr<ClosureObject>> methods_;
   };
 
 
