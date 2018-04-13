@@ -287,6 +287,7 @@ namespace loxx
 
     const auto name_constant = make_string_constant(expr.name.lexeme());
     add_instruction(Instruction::GetProperty);
+    update_line_num_table(expr.name);
     add_integer<UByteCodeArg>(name_constant);
   }
 
@@ -351,6 +352,7 @@ namespace loxx
 
     const auto name_constant = make_string_constant(expr.name.lexeme());
     add_instruction(Instruction::SetProperty);
+    update_line_num_table(expr.name);
     add_integer<UByteCodeArg>(name_constant);
   }
 
@@ -377,6 +379,7 @@ namespace loxx
     else if (expr.op.type() == TokenType::Minus) {
       add_instruction(Instruction::Negate);
     }
+    update_line_num_table(expr.op);
   }
 
 
