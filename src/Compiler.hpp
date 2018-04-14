@@ -163,6 +163,7 @@ namespace loxx
     struct VariableTrait
     {
       static void handle_value(const T& var_expr, Compiler& compiler) {}
+      static const Token& get_token(const T& var_expr) { return var_expr.name; }
     };
 
 
@@ -173,6 +174,16 @@ namespace loxx
       {
         var_expr.value->accept(compiler);
       }
+      static const Token& get_token(const Assign& var_expr)
+      { return var_expr.name; }
+    };
+
+    template <>
+    struct VariableTrait<This>
+    {
+      static void handle_value(const This& var_expr, Compiler& compiler) {}
+      static const Token& get_token(const This& var_expr)
+      { return var_expr.keyword; }
     };
   }
 
@@ -180,14 +191,15 @@ namespace loxx
   template <typename T>
   void Compiler::handle_variable_reference(const T& expr, const bool write)
   {
-    auto arg = resolve_local(expr.name, false);
+    const auto& token = detail::VariableTrait<T>::get_token(expr);
+    auto arg = resolve_local(token, false);
 
     Instruction op;
     if (arg) {
       op = write ? Instruction::SetLocal : Instruction::GetLocal;
     }
     else {
-      arg = resolve_upvalue(locals_.size() - 1, expr.name);
+      arg = resolve_upvalue(locals_.size() - 1, token);
 
       if (arg) {
         op = write ? Instruction::SetUpvalue : Instruction::GetUpvalue;
@@ -200,11 +212,11 @@ namespace loxx
     detail::VariableTrait<T>::handle_value(expr, *this);
 
     if (not arg) {
-      arg = make_string_constant(expr.name.lexeme());
+      arg = make_string_constant(token.lexeme());
     }
 
     add_instruction(op);
-    update_line_num_table(expr.name);
+    update_line_num_table(token);
     add_integer(*arg);
   }
 
