@@ -54,7 +54,8 @@ namespace loxx
   {
   public:
     explicit Compiler(VirtualMachine& vm)
-        : last_line_num_(0), scope_depth_(0), last_instr_num_(0), vm_(&vm)
+        : compiling_class_(false), last_line_num_(0), scope_depth_(0),
+          last_instr_num_(0), vm_(&vm)
     {
       output_.num_globals = 0;
       locals_.push(std::vector<Local>());
@@ -147,6 +148,7 @@ namespace loxx
     void rewrite_integer(const std::size_t pos, const T integer);
     inline UByteCodeArg make_string_constant(const std::string& str) const;
 
+    bool compiling_class_;
     unsigned int last_line_num_;
     unsigned int scope_depth_;
     std::size_t last_instr_num_;

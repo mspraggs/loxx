@@ -47,6 +47,9 @@ namespace loxx
 
   void Compiler::visit_class_stmt(const Class& stmt)
   {
+    const auto compiling_class_old = compiling_class_;
+    compiling_class_ = true;
+
     const auto name_constant = make_string_constant(stmt.name.lexeme());
     add_instruction(Instruction::CreateClass);
     update_line_num_table(stmt.name);
@@ -68,6 +71,8 @@ namespace loxx
     }
 
     add_instruction(Instruction::Pop);
+
+    compiling_class_ = compiling_class_old;
   }
 
 
@@ -369,7 +374,11 @@ namespace loxx
 
   void Compiler::visit_this_expr(const This& expr)
   {
-
+    if (not compiling_class_) {
+      error(expr.keyword, "Cannot use 'this' outside of a class.");
+    }
+    handle_variable_reference(expr, false);
+    update_line_num_table(expr.keyword);
   }
 
 
@@ -426,6 +435,12 @@ namespace loxx
       define_variable(param_index, param);
     }
 
+    if (type == FunctionType::Method or type == FunctionType::Initialiser) {
+      const auto this_param = Token(TokenType::This, "this", stmt.name.line());
+      const auto param_index = declare_variable(this_param);
+      define_variable(param_index, this_param);
+    }
+
     compile(stmt.body);
 
     end_scope();
@@ -444,6 +459,7 @@ namespace loxx
         static_cast<unsigned int>(stmt.parameters.size()),
         upvalues.size());
     const auto index = vm_->add_constant(std::move(func));
+
     add_instruction(Instruction::CreateClosure);
     update_line_num_table(stmt.name);
     add_integer<UByteCodeArg>(index);
