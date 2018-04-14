@@ -161,8 +161,10 @@ namespace loxx
           stack_.push(instance->field(name));
         }
         else if (instance->cls().has_method(name)) {
+          auto method = instance->cls().method(name);
+          method->bind(instance);
           stack_.pop();
-          stack_.push(instance->cls().method(name));
+          stack_.push(method);
         }
         else {
           throw RuntimeError(get_current_line(),
@@ -405,6 +407,10 @@ namespace loxx
         ss << "Expected " << closure->function().arity()
            << " arguments but got " << num_args << '.';
         throw RuntimeError(get_current_line(), ss.str());
+      }
+
+      if (closure->instance()) {
+        stack_.push(closure->instance());
       }
 
       call_stack_.push(StackFrame(ip_, stack_.get(obj_pos + 1), closure));
