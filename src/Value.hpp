@@ -28,6 +28,7 @@
 namespace loxx
 {
   class Object;
+  class InstanceObject;
 
 
   enum class ObjectType
@@ -122,7 +123,12 @@ namespace loxx
 
     const FuncObject& function() const { return *function_; }
 
+    void bind(std::shared_ptr<InstanceObject> instance)
+    { instance_ = std::move(instance); }
+    std::shared_ptr<InstanceObject> instance() const { return instance_; }
+
   private:
+    std::shared_ptr<InstanceObject> instance_;
     std::shared_ptr<FuncObject> function_;
     std::vector<std::shared_ptr<UpvalueObject>> upvalues_;
   };
