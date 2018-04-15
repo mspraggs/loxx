@@ -381,43 +381,15 @@ namespace loxx
   {
     const auto num_args = read_integer<UByteCodeArg>();
     const auto obj_pos = stack_.size() - num_args - 1;
-    const auto obj =
-        get_object(stack_.get(obj_pos),
-                   {ObjectType::Class, ObjectType::Closure,
-                    ObjectType::Function});
+    auto obj = get_object(stack_.get(obj_pos),
+                          {ObjectType::Class, ObjectType::Closure});
 
     if (not obj) {
       throw RuntimeError(get_current_line(),
                          "Can only call functions and classes.");
     }
 
-    switch (obj->type()) {
-    case ObjectType::Class: {
-      auto cls = std::static_pointer_cast<ClassObject>(obj);
-      stack_.get(obj_pos) = std::make_shared<InstanceObject>(std::move(cls));
-      break;
-    }
-
-    case ObjectType::Closure: {
-      const auto closure = std::static_pointer_cast<ClosureObject>(obj);
-
-      if (closure->function().arity() != num_args) {
-        std::stringstream ss;
-        ss << "Expected " << closure->function().arity()
-           << " arguments but got " << num_args << '.';
-        throw RuntimeError(get_current_line(), ss.str());
-      }
-
-      if (closure->instance()) {
-        stack_.push(closure->instance());
-      }
-
-      call_stack_.push(StackFrame(ip_, stack_.size() - num_args - 1,
-                                  base_slot, closure));
-      ip_ = closure->function().bytecode_offset();
-      break;
-    }
-    }
+    call_object(std::move(obj), obj_pos, num_args);
   }
 
 
