@@ -33,13 +33,13 @@ namespace loxx
   class StackFrame
   {
   public:
-    StackFrame(const std::size_t prev_ip, Value& slots_base,
+    StackFrame(const std::size_t prev_ip, Value& prev_top, Value& slots_base,
                std::shared_ptr<ClosureObject> closure)
-        : StackFrame(prev_ip, &slots_base, std::move(closure))
+        : StackFrame(prev_ip, &prev_top, &slots_base, std::move(closure))
     {}
-    StackFrame(const std::size_t prev_ip, Value* slots_base,
+    StackFrame(const std::size_t prev_ip, Value* prev_top, Value* slots_base,
                std::shared_ptr<ClosureObject> closure)
-        : prev_ip_(prev_ip), slots_(slots_base), prev_top_(slots_base - 2),
+        : prev_ip_(prev_ip), slots_(slots_base), prev_top_(prev_top),
           closure_(std::move(closure))
     {}
 
