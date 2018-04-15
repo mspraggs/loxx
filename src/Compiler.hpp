@@ -130,6 +130,7 @@ namespace loxx
     void define_variable(const Optional <UByteCodeArg>& arg, const Token& name);
     template <typename T>
     void handle_variable_reference(const T& expr, const bool write);
+    void handle_variable_reference(const Token& token, const bool write);
     Optional<UByteCodeArg> resolve_local(
         const Token& name, const bool in_function,
         const std::size_t call_depth = detail::size_t_max) const;
@@ -193,33 +194,9 @@ namespace loxx
   template <typename T>
   void Compiler::handle_variable_reference(const T& expr, const bool write)
   {
-    const auto& token = detail::VariableTrait<T>::get_token(expr);
-    auto arg = resolve_local(token, false);
-
-    Instruction op;
-    if (arg) {
-      op = write ? Instruction::SetLocal : Instruction::GetLocal;
-    }
-    else {
-      arg = resolve_upvalue(locals_.size() - 1, token);
-
-      if (arg) {
-        op = write ? Instruction::SetUpvalue : Instruction::GetUpvalue;
-      }
-      else {
-        op = write ? Instruction::SetGlobal : Instruction::GetGlobal;
-      }
-    }
-
     detail::VariableTrait<T>::handle_value(expr, *this);
-
-    if (not arg) {
-      arg = make_string_constant(token.lexeme());
-    }
-
-    add_instruction(op);
-    update_line_num_table(token);
-    add_integer(*arg);
+    const auto& token = detail::VariableTrait<T>::get_token(expr);
+    handle_variable_reference(token, write);
   }
 
 

@@ -515,6 +515,35 @@ namespace loxx
   }
 
 
+  void Compiler::handle_variable_reference(const Token& token, const bool write)
+  {
+    auto arg = resolve_local(token, false);
+
+    Instruction op;
+    if (arg) {
+      op = write ? Instruction::SetLocal : Instruction::GetLocal;
+    }
+    else {
+      arg = resolve_upvalue(locals_.size() - 1, token);
+
+      if (arg) {
+        op = write ? Instruction::SetUpvalue : Instruction::GetUpvalue;
+      }
+      else {
+        op = write ? Instruction::SetGlobal : Instruction::GetGlobal;
+      }
+    }
+
+    if (not arg) {
+      arg = make_string_constant(token.lexeme());
+    }
+
+    add_instruction(op);
+    update_line_num_table(token);
+    add_integer(*arg);
+  }
+
+
   Optional<UByteCodeArg> Compiler::resolve_local(
       const Token& name, const bool in_function,
       const std::size_t call_depth) const
