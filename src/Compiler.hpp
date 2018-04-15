@@ -54,8 +54,8 @@ namespace loxx
   {
   public:
     explicit Compiler(VirtualMachine& vm)
-        : compiling_class_(false), last_line_num_(0), scope_depth_(0),
-          last_instr_num_(0), vm_(&vm)
+        : compiling_class_(false), current_function_type_(FunctionType::None),
+          last_line_num_(0), scope_depth_(0), last_instr_num_(0), vm_(&vm)
     {
       output_.num_globals = 0;
       locals_.push(std::vector<Local>());
@@ -93,7 +93,8 @@ namespace loxx
     enum class FunctionType {
       Function,
       Initialiser,
-      Method
+      Method,
+      None
     };
 
     class CompileError : public std::runtime_error
@@ -150,6 +151,7 @@ namespace loxx
     inline UByteCodeArg make_string_constant(const std::string& str) const;
 
     bool compiling_class_;
+    FunctionType current_function_type_;
     unsigned int last_line_num_;
     unsigned int scope_depth_;
     std::size_t last_instr_num_;

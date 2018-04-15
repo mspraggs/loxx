@@ -416,6 +416,9 @@ namespace loxx
 
   void Compiler::compile_function(const Function& stmt, const FunctionType type)
   {
+    const auto old_func_type = current_function_type_;
+    current_function_type_ = type;
+
     // Because all code is compiled into one contiguous blob of bytecode,
     // there's the risk that we end up walking straight into bytecode that
     // belongs to functions. To avoid this we prepend a jump instruction before
@@ -468,6 +471,8 @@ namespace loxx
       add_integer<UByteCodeArg>(upvalue.is_local ? 1 : 0);
       add_integer<UByteCodeArg>(upvalue.index);
     }
+
+    current_function_type_ = old_func_type;
   }
 
 
