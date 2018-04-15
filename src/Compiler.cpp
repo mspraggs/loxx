@@ -63,7 +63,11 @@ namespace loxx
 
     for (const auto& method : stmt.methods) {
       const auto method_constant = make_string_constant(method->name.lexeme());
-      compile_function(*method, FunctionType::Method);
+      const auto type =
+          method->name.lexeme() == "init" ?
+          FunctionType::Initialiser :
+          FunctionType::Method;
+      compile_function(*method, type);
 
       add_instruction(Instruction::CreateMethod);
       update_line_num_table(method->name);
@@ -442,30 +446,41 @@ namespace loxx
     locals_.push(std::vector<Local>());
     upvalues_.push(std::vector<Upvalue>());
 
+    // Declare/define "this"
+    if (type == FunctionType::Method or type == FunctionType::Initialiser) {
+      const auto this_token = Token(TokenType::This, "this", stmt.name.line());
+      const auto param_index = declare_variable(this_token);
+      define_variable(param_index, this_token);
+    }
+
+    // Declare/define function parameters
     for (const auto& param : stmt.parameters) {
       const auto param_index = declare_variable(param);
       define_variable(param_index, param);
     }
 
-    if (type == FunctionType::Method or type == FunctionType::Initialiser) {
-      const auto this_param = Token(TokenType::This, "this", stmt.name.line());
-      const auto param_index = declare_variable(this_param);
-      define_variable(param_index, this_param);
-    }
-
     compile(stmt.body);
+
+    // Return "this" if in constructor
+    if (current_function_type_ == FunctionType::Initialiser) {
+      const auto this_token = Token(TokenType::This, "this", stmt.name.line());
+      compile_this_return(this_token);
+    }
 
     end_scope();
     locals_.pop();
     const auto upvalues = upvalues_.pop();
 
+    // Return "nil" if we haven't returned already.
     add_instruction(Instruction::Nil);
     add_instruction(Instruction::Return);
 
+    // Back-patch the jump over the function definition
     const auto jump_size =
         static_cast<ByteCodeArg>(output_.bytecode.size() - bytecode_pos);
     rewrite_integer(jump_pos, jump_size);
 
+    // Add the new function object as a constant
     auto func = std::make_shared<FuncObject>(
         stmt.name.lexeme(), bytecode_pos,
         static_cast<unsigned int>(stmt.parameters.size()),
