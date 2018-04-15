@@ -44,7 +44,7 @@ namespace loxx
     }
 
     ip_ = 0;
-    call_stack_.push(StackFrame(ip_, stack_.data() - 2, stack_.data(), nullptr));
+    call_stack_.push(StackFrame(ip_, 0, stack_.data(), nullptr));
 
     while (ip_ < compiler_output.bytecode.size()) {
 
@@ -217,8 +217,7 @@ namespace loxx
         const auto result = stack_.pop();
         close_upvalues(call_stack_.top().slot(0));
         const auto frame = call_stack_.pop();
-        while (stack_.size() > 0 and
-               &stack_.top() != frame.prev_top()) {
+        while (stack_.size() != frame.prev_stack_size()) {
           stack_.pop();
         }
         stack_.push(result);
@@ -413,8 +412,8 @@ namespace loxx
         stack_.push(closure->instance());
       }
 
-      call_stack_.push(StackFrame(ip_, stack_.get(obj_pos - 1),
-                                  stack_.get(obj_pos + 1), closure));
+      call_stack_.push(StackFrame(ip_, stack_.size() - num_args - 1,
+                                  base_slot, closure));
       ip_ = closure->function().bytecode_offset();
       break;
     }
