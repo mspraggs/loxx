@@ -55,6 +55,8 @@ namespace loxx
     std::shared_ptr<UpvalueObject> capture_upvalue(Value& local);
     void close_upvalues(Value& last);
 
+    void call_object(std::shared_ptr<Object> obj, const std::size_t obj_pos,
+                     const UByteCodeArg num_args);
     std::string stringify(const Value& object) const;
     void print_stack() const;
     void disassemble_bytecode();

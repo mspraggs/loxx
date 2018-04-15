@@ -487,6 +487,55 @@ namespace loxx
   }
 
 
+  void VirtualMachine::call_object(
+      std::shared_ptr<Object> obj, const std::size_t obj_pos,
+      const UByteCodeArg num_args)
+  {
+    switch (obj->type()) {
+    case ObjectType::Class: {
+      const auto cls = std::static_pointer_cast<ClassObject>(obj);
+      const auto instance = std::make_shared<InstanceObject>(cls);
+      stack_.get(obj_pos) = instance;
+
+      if (cls->has_method("init")) {
+        auto method = cls->method("init");
+        method->bind(instance);
+        call_object(method, obj_pos, num_args);
+        break;
+      }
+
+      if (num_args != 0) {
+        std::stringstream ss;
+        ss << "Expected 0 arguments but got " << num_args << '.';
+        throw RuntimeError(get_current_line(), ss.str());
+      }
+      break;
+    }
+
+    case ObjectType::Closure: {
+      const auto closure = std::static_pointer_cast<ClosureObject>(obj);
+
+      if (closure->function().arity() != num_args) {
+        std::stringstream ss;
+        ss << "Expected " << closure->function().arity()
+           << " arguments but got " << num_args << '.';
+        throw RuntimeError(get_current_line(), ss.str());
+      }
+
+      if (closure->instance()) {
+        stack_.get(obj_pos) = closure->instance();
+      }
+      auto& base_slot = stack_.get(obj_pos + (closure->instance() ? 0 : 1));
+
+      call_stack_.push(StackFrame(ip_, stack_.size() - num_args - 1,
+                                  base_slot, closure));
+      ip_ = closure->function().bytecode_offset();
+      break;
+    }
+    }
+  }
+
+
   std::string VirtualMachine::stringify(const Value& object) const
   {
     if (object.index() == Value::npos) {
