@@ -135,10 +135,19 @@ namespace loxx
 
   void Compiler::visit_return_stmt(const Return& stmt)
   {
-    if (locals_.size() == 1) {
+    if (current_function_type_ == FunctionType::None) {
       error(stmt.keyword, "Cannot return from top-level code.");
     }
-    if (stmt.value != nullptr) {
+    if (current_function_type_ == FunctionType::Initialiser and
+        stmt.value != nullptr) {
+      error(stmt.keyword, "Cannot return a value from an initialiser.");
+    }
+
+    if (current_function_type_ == FunctionType::Initialiser) {
+      compile_this_return(stmt.keyword);
+      return;
+    }
+    else if (stmt.value != nullptr) {
       compile(*stmt.value);
     }
     else {
@@ -473,6 +482,15 @@ namespace loxx
     }
 
     current_function_type_ = old_func_type;
+  }
+
+
+  void Compiler::compile_this_return(const Token& token)
+  {
+    const auto this_token = Token(TokenType::This, "this", token.line());
+    handle_variable_reference(this_token, false);
+    add_instruction(Instruction::Return);
+    update_line_num_table(token);
   }
 
 
