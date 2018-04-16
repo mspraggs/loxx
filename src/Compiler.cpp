@@ -502,10 +502,10 @@ namespace loxx
 
   void Compiler::compile_this_return(const Token& token)
   {
-    const auto this_token = Token(TokenType::This, "this", token.line());
+    const auto this_token = Token(TokenType::This, "this", last_line_num_);
     handle_variable_reference(this_token, false);
     add_instruction(Instruction::Return);
-    update_line_num_table(token);
+    update_line_num_table(this_token);
   }
 
 
