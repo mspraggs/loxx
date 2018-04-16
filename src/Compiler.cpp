@@ -543,13 +543,13 @@ namespace loxx
   {
     if (arg) {
       add_instruction(Instruction::DefineGlobal);
+      update_line_num_table(name);
       add_integer(*arg);
     }
     else {
       locals_.top().back().defined = true;
       locals_.top().back().depth = scope_depth_;
     }
-    update_line_num_table(name);
   }
 
 
