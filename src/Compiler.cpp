@@ -73,6 +73,11 @@ namespace loxx
       update_line_num_table(method->name);
     }
 
+    if (stmt.superclass) {
+      compile(*stmt.superclass);
+      add_instruction(Instruction::SetBase);
+    }
+
     add_instruction(Instruction::Pop);
 
     compiling_class_ = compiling_class_old;
