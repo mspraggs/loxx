@@ -701,6 +701,7 @@ namespace loxx
       output_.line_num_table.emplace_back(line_num_diff, instr_num_diff);
     }
 
+    last_instr_num_ = output_.bytecode.size();
     last_line_num_ = token.line();
   }
 
