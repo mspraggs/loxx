@@ -751,7 +751,7 @@ namespace loxx
       instruction_counter += std::get<1>(table_row);
       line += std::get<0>(table_row);
 
-      if (instruction_counter > ip_) {
+      if (instruction_counter >= ip_) {
         break;
       }
     }

@@ -52,9 +52,8 @@ namespace loxx
 
     const auto name_constant = make_string_constant(stmt.name.lexeme());
     add_instruction(Instruction::CreateClass);
-    update_line_num_table(stmt.name);
-
     add_integer<UByteCodeArg>(name_constant);
+    update_line_num_table(stmt.name);
 
     define_variable(name_constant, stmt.name);
 
@@ -70,8 +69,8 @@ namespace loxx
       compile_function(*method, type);
 
       add_instruction(Instruction::CreateMethod);
-      update_line_num_table(method->name);
       add_integer<UByteCodeArg>(method_constant);
+      update_line_num_table(method->name);
     }
 
     add_instruction(Instruction::Pop);
@@ -294,8 +293,8 @@ namespace loxx
     }
 
     add_instruction(Instruction::Call);
-    update_line_num_table(expr.paren);
     add_integer<UByteCodeArg>(expr.arguments.size());
+    update_line_num_table(expr.paren);
   }
 
 
@@ -305,8 +304,8 @@ namespace loxx
 
     const auto name_constant = make_string_constant(expr.name.lexeme());
     add_instruction(Instruction::GetProperty);
-    update_line_num_table(expr.name);
     add_integer<UByteCodeArg>(name_constant);
+    update_line_num_table(expr.name);
   }
 
 
@@ -338,12 +337,12 @@ namespace loxx
   void Compiler::visit_logical_expr(const Logical& expr)
   {
     compile(*expr.left);
-    update_line_num_table(expr.op);
 
     if (expr.op.type() == TokenType::Or) {
       add_instruction(Instruction::ConditionalJump);
       const auto jump_pos = output_.bytecode.size();
       add_integer<ByteCodeArg>(0);
+      update_line_num_table(expr.op);
 
       const auto skip_start = output_.bytecode.size();
       add_instruction(Instruction::Pop);
@@ -355,6 +354,7 @@ namespace loxx
     else if (expr.op.type() == TokenType::And) {
       add_instruction(Instruction::ConditionalJump);
       add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 1);
+      update_line_num_table(expr.op);
       add_instruction(Instruction::Jump);
       const auto jump_pos = output_.bytecode.size();
       add_integer<ByteCodeArg>(0);
@@ -374,8 +374,8 @@ namespace loxx
 
     const auto name_constant = make_string_constant(expr.name.lexeme());
     add_instruction(Instruction::SetProperty);
-    update_line_num_table(expr.name);
     add_integer<UByteCodeArg>(name_constant);
+    update_line_num_table(expr.name);
   }
 
 
@@ -391,7 +391,6 @@ namespace loxx
       error(expr.keyword, "Cannot use 'this' outside of a class.");
     }
     handle_variable_reference(expr, false);
-    update_line_num_table(expr.keyword);
   }
 
 
@@ -488,8 +487,8 @@ namespace loxx
     const auto index = vm_->add_constant(std::move(func));
 
     add_instruction(Instruction::CreateClosure);
-    update_line_num_table(stmt.name);
     add_integer<UByteCodeArg>(index);
+    update_line_num_table(stmt.name);
 
     for (const auto& upvalue : upvalues) {
       add_integer<UByteCodeArg>(upvalue.is_local ? 1 : 0);
@@ -543,8 +542,8 @@ namespace loxx
   {
     if (arg) {
       add_instruction(Instruction::DefineGlobal);
-      update_line_num_table(name);
       add_integer(*arg);
+      update_line_num_table(name);
     }
     else {
       locals_.top().back().defined = true;
@@ -577,8 +576,8 @@ namespace loxx
     }
 
     add_instruction(op);
-    update_line_num_table(token);
     add_integer(*arg);
+    update_line_num_table(token);
   }
 
 
@@ -685,24 +684,28 @@ namespace loxx
         std::max(line_num_diff_abs / 128,
                  static_cast<unsigned int>(instr_num_diff / 256));
 
-    const auto line_num_delta =
-        num_rows == 0 ? 1 : static_cast<std::int8_t>(line_num_diff / num_rows);
-    const auto instr_num_delta =
-        num_rows == 0 ? 1 : static_cast<std::int8_t>(instr_num_diff / num_rows);
+    if (num_rows > 0) {
+      const auto line_num_delta =
+          static_cast<std::int8_t>(line_num_diff / num_rows);
+      const auto instr_num_delta =
+          static_cast<std::int8_t>(instr_num_diff / num_rows);
 
-    for (unsigned int i = 0; i < num_rows; ++i) {
-      output_.line_num_table.emplace_back(line_num_delta, instr_num_delta);
+      for (unsigned int i = 0; i < num_rows; ++i) {
+        output_.line_num_table.emplace_back(line_num_delta, instr_num_delta);
+      }
+
+      line_num_diff -= num_rows * line_num_delta;
+      instr_num_diff -= num_rows * instr_num_delta;
     }
-
-    line_num_diff -= num_rows * line_num_delta;
-    instr_num_diff -= num_rows * instr_num_delta;
 
     if (line_num_diff != 0) {
       output_.line_num_table.emplace_back(line_num_diff, instr_num_diff);
     }
 
-    last_instr_num_ = output_.bytecode.size();
-    last_line_num_ = token.line();
+    if (num_rows > 0 or line_num_diff != 0) {
+      last_instr_num_ = output_.bytecode.size();
+      last_line_num_ = token.line();
+    }
   }
 
 
