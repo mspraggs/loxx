@@ -225,6 +225,24 @@ namespace loxx
         break;
       }
 
+      case Instruction::SetBase: {
+        const auto& derived_value = stack_.top(1);
+        const auto derived_obj = get_object(derived_value, {ObjectType::Class});
+
+        const auto derived = std::static_pointer_cast<ClassObject>(derived_obj);
+
+        const auto& base_value = stack_.top();
+        const auto base_obj = get_object(base_value, {ObjectType::Class});
+
+        if (not derived_obj or not base_obj) {
+          throw RuntimeError(get_current_line(), "Superclass must be a class.");
+        }
+
+        derived->set_base(std::static_pointer_cast<ClassObject>(base_obj));
+
+        break;
+      }
+
       case Instruction::SetGlobal: {
         const auto arg = read_integer<UByteCodeArg>();
         const auto varname = get<std::string>(constants_[arg]);
@@ -620,6 +638,7 @@ namespace loxx
     case Instruction::Print:
     case Instruction::Push:
     case Instruction::Return:
+    case Instruction::SetBase:
     case Instruction::Subtract:
     case Instruction::True:
       break;
