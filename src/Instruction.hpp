@@ -57,6 +57,7 @@ namespace loxx
     Print,
     Push,
     Return,
+    SetBase,
     SetGlobal,
     SetLocal,
     SetProperty,
@@ -159,6 +160,9 @@ namespace loxx
       break;
     case Instruction::Return:
       stream << "RETURN";
+      break;
+    case Instruction::SetBase:
+      stream << "SET_BASE";
       break;
     case Instruction::SetGlobal:
       stream << "SET_GLOBAL";
