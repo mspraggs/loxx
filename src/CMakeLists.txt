@@ -28,6 +28,7 @@ set(SRC
   Scanner.cpp
   StackFrame.cpp
   Token.cpp
+  Value.cpp
   VirtualMachine.cpp)
 
 add_executable(loxx ${SRC})

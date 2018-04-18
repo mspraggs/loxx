@@ -23,6 +23,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "globals.hpp"
 #include "Variant.hpp"
 
 namespace loxx
@@ -144,21 +145,22 @@ namespace loxx
 
     const std::string& lexeme() const { return lexeme_; }
 
-    bool has_method(const std::string& name) const
-    { return methods_.count(name) != 0; }
-
-    std::shared_ptr<ClosureObject> method(const std::string& name) const
-    { return methods_.at(name); }
-    std::shared_ptr<ClosureObject> method(const std::string& name)
-    { return methods_[name]; }
+    bool has_method(const std::string& name) const;
+    std::shared_ptr<ClosureObject> method(const std::string& name) const;
+    std::shared_ptr<ClosureObject> method(const std::string& name);
 
     void set_method(const std::string& name,
                     std::shared_ptr<ClosureObject> method)
     { methods_[name] = std::move(method); }
 
+    std::shared_ptr<ClassObject> base() const { return base_; }
+    void set_base(std::shared_ptr<ClassObject> base)
+    { base_ = std::move(base); }
+
   private:
     std::string lexeme_;
     std::unordered_map<std::string, std::shared_ptr<ClosureObject>> methods_;
+    std::shared_ptr<ClassObject> base_;
   };
 
 
