@@ -724,4 +724,32 @@ namespace loxx
   {
     return vm_->add_named_constant(str, str);
   }
+
+
+  template <>
+  void detail::handle_value(const Assign& var_expr, Compiler& compiler)
+  {
+    var_expr.value->accept(compiler);
+  }
+
+
+  template <>
+  const Token& detail::get_token(const Assign& var_expr)
+  {
+    return var_expr.name;
+  }
+
+
+  template <>
+  const Token& detail::get_token(const Variable& var_expr)
+  {
+    return var_expr.name;
+  }
+
+
+  template <>
+  const Token& detail::get_token(const This& var_expr)
+  {
+    return var_expr.keyword;
+  }
 }

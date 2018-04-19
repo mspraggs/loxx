@@ -166,39 +166,21 @@ namespace loxx
   namespace detail
   {
     template <typename T>
-    struct VariableTrait
+    void handle_value(const T& var_expr, Compiler& compiler)
     {
-      static void handle_value(const T& var_expr, Compiler& compiler) {}
-      static const Token& get_token(const T& var_expr) { return var_expr.name; }
-    };
+    }
 
 
-    template <>
-    struct VariableTrait<Assign>
-    {
-      static void handle_value(const Assign& var_expr, Compiler& compiler)
-      {
-        var_expr.value->accept(compiler);
-      }
-      static const Token& get_token(const Assign& var_expr)
-      { return var_expr.name; }
-    };
-
-    template <>
-    struct VariableTrait<This>
-    {
-      static void handle_value(const This& var_expr, Compiler& compiler) {}
-      static const Token& get_token(const This& var_expr)
-      { return var_expr.keyword; }
-    };
+    template <typename T>
+    const Token& get_token(const T& var_expr);
   }
 
 
   template <typename T>
   void Compiler::handle_variable_reference(const T& expr, const bool write)
   {
-    detail::VariableTrait<T>::handle_value(expr, *this);
-    const auto& token = detail::VariableTrait<T>::get_token(expr);
+    detail::handle_value(expr, *this);
+    const auto& token = detail::get_token(expr);
     handle_variable_reference(token, write);
   }
 
