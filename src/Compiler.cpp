@@ -726,30 +726,33 @@ namespace loxx
   }
 
 
-  template <>
-  void detail::handle_value(const Assign& var_expr, Compiler& compiler)
+  namespace detail
   {
-    var_expr.value->accept(compiler);
-  }
+    template <>
+    void handle_value(const Assign& var_expr, Compiler& compiler)
+    {
+      var_expr.value->accept(compiler);
+    }
 
 
-  template <>
-  const Token& detail::get_token(const Assign& var_expr)
-  {
-    return var_expr.name;
-  }
+    template <>
+    const Token& get_token(const Assign& var_expr)
+    {
+      return var_expr.name;
+    }
 
 
-  template <>
-  const Token& detail::get_token(const Variable& var_expr)
-  {
-    return var_expr.name;
-  }
+    template <>
+    const Token& get_token(const Variable& var_expr)
+    {
+      return var_expr.name;
+    }
 
 
-  template <>
-  const Token& detail::get_token(const This& var_expr)
-  {
-    return var_expr.keyword;
+    template <>
+    const Token& get_token(const This& var_expr)
+    {
+      return var_expr.keyword;
+    }
   }
 }
