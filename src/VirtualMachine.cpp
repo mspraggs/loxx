@@ -413,10 +413,7 @@ namespace loxx
     const auto& func_obj = get<std::shared_ptr<Object>>(func_value);
     auto func = std::static_pointer_cast<FuncObject>(func_obj);
 
-    const auto num_upvalues = func->num_upvalues();
-
     auto closure = std::make_shared<ClosureObject>(std::move(func));
-    stack_.push(closure);
 
     for (unsigned int i = 0; i < closure->num_upvalues(); ++i) {
       const auto is_local = read_integer<UByteCodeArg>() != 0;
@@ -431,6 +428,8 @@ namespace loxx
             i, call_stack_.top().closure()->upvalue(index));
       }
     }
+
+    stack_.push(closure);
   }
 
 
