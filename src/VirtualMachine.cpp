@@ -115,6 +115,20 @@ namespace loxx
         break;
       }
 
+      case Instruction::CreateSubclass: {
+        const auto super_obj = get_object(stack_.top(), {ObjectType::Class});
+        auto super = std::static_pointer_cast<ClassObject>(super_obj);
+
+        if (not super) {
+          throw RuntimeError(get_current_line(), "Superclass must be a class.");
+        }
+
+        auto name = get<std::string>(constants_[read_integer<UByteCodeArg>()]);
+        stack_.push(std::make_shared<ClassObject>(std::move(name),
+                                                  std::move(super)));
+        break;
+      }
+
       case Instruction::DefineGlobal: {
         const auto arg = read_integer<UByteCodeArg>();
         const auto varname = get<std::string>(constants_[arg]);
@@ -222,23 +236,6 @@ namespace loxx
         }
         stack_.push(result);
         ip_ = frame.prev_ip();
-        break;
-      }
-
-      case Instruction::SetBase: {
-        const auto base_value = stack_.pop();
-        const auto base_obj = get_object(base_value, {ObjectType::Class});
-
-        if (not base_obj) {
-          throw RuntimeError(get_current_line(), "Superclass must be a class.");
-        }
-
-        const auto& derived_value = stack_.top();
-        const auto derived_obj = get_object(derived_value, {ObjectType::Class});
-        const auto derived = std::static_pointer_cast<ClassObject>(derived_obj);
-
-        derived->set_base(std::static_pointer_cast<ClassObject>(base_obj));
-
         break;
       }
 
