@@ -47,8 +47,8 @@ namespace loxx
 
   void Compiler::visit_class_stmt(const Class& stmt)
   {
-    const auto compiling_class_old = compiling_class_;
-    compiling_class_ = true;
+    const auto class_type_old = class_type_;
+    class_type_ = stmt.superclass ? ClassType::Subclass : ClassType::Superclass;
 
     const auto name_constant = make_string_constant(stmt.name.lexeme());
     add_instruction(Instruction::CreateClass);
@@ -80,7 +80,7 @@ namespace loxx
 
     add_instruction(Instruction::Pop);
 
-    compiling_class_ = compiling_class_old;
+    class_type_ = class_type_old;
   }
 
 
@@ -392,7 +392,7 @@ namespace loxx
 
   void Compiler::visit_this_expr(const This& expr)
   {
-    if (not compiling_class_) {
+    if (class_type_ == ClassType::None) {
       error(expr.keyword, "Cannot use 'this' outside of a class.");
     }
     handle_variable_reference(expr, false);

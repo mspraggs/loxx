@@ -54,8 +54,9 @@ namespace loxx
   {
   public:
     explicit Compiler(VirtualMachine& vm)
-        : compiling_class_(false), current_function_type_(FunctionType::None),
-          last_line_num_(0), scope_depth_(0), last_instr_num_(0), vm_(&vm)
+        : class_type_(ClassType::None),
+          current_function_type_(FunctionType::None), last_line_num_(0),
+          scope_depth_(0), last_instr_num_(0), vm_(&vm)
     {
       output_.num_globals = 0;
       locals_.push(std::vector<Local>());
@@ -90,6 +91,12 @@ namespace loxx
     const CompilationOutput& output() const { return output_; }
 
   private:
+    enum class ClassType {
+      Superclass,
+      Subclass,
+      None
+    };
+
     enum class FunctionType {
       Function,
       Initialiser,
@@ -151,7 +158,7 @@ namespace loxx
     void rewrite_integer(const std::size_t pos, const T integer);
     inline UByteCodeArg make_string_constant(const std::string& str) const;
 
-    bool compiling_class_;
+    ClassType class_type_;
     FunctionType current_function_type_;
     unsigned int last_line_num_;
     unsigned int scope_depth_;
