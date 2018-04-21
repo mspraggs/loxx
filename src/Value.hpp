@@ -139,9 +139,10 @@ namespace loxx
   class ClassObject : public Object
   {
   public:
-    explicit ClassObject(std::string lexeme)
+    explicit ClassObject(std::string lexeme,
+                         std::shared_ptr<ClassObject> base = {})
         : Object(ObjectType::Class),
-          lexeme_(std::move(lexeme))
+          lexeme_(std::move(lexeme)), base_(std::move(base))
     {}
 
     const std::string& lexeme() const { return lexeme_; }
