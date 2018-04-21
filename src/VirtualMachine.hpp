@@ -63,6 +63,10 @@ namespace loxx
     size_t disassemble_instruction() const;
     static std::shared_ptr<Object> get_object(
         const Value& value, const std::vector<ObjectType>& valid_types);
+    template <typename T>
+    static std::shared_ptr<T> get_object(const Value& value);
+    static std::shared_ptr<Object> get_object_impl(
+        const Value& value, ObjectType type);
 
     template <typename T>
     T read_integer();

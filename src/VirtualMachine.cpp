@@ -29,6 +29,19 @@
 
 namespace loxx
 {
+  template <>
+  std::shared_ptr<ClassObject> VirtualMachine::get_object(const Value& value);
+
+
+  template <>
+  std::shared_ptr<ClosureObject> VirtualMachine::get_object(const Value& value);
+
+
+  template <>
+  std::shared_ptr<InstanceObject> VirtualMachine::get_object(
+      const Value& value);
+
+
   VirtualMachine::VirtualMachine(const bool debug)
       : debug_(debug), ip_(0)
   {
@@ -99,25 +112,18 @@ namespace loxx
         break;
 
       case Instruction::CreateMethod: {
-        const auto cls_obj = get_object(stack_.top(1), {ObjectType::Class});
-        const auto cls = std::static_pointer_cast<ClassObject>(cls_obj);
-
+        const auto cls = get_object<ClassObject>(stack_.top(1));
+        auto closure = get_object<ClosureObject>(stack_.top());
         const auto& name =
             get<std::string>(constants_[read_integer<UByteCodeArg>()]);
 
-        const auto closure_obj =
-            get_object(stack_.top(), {ObjectType::Closure});
-        const auto closure =
-            std::static_pointer_cast<ClosureObject>(closure_obj);
-
-        cls->set_method(name, closure);
+        cls->set_method(name, std::move(closure));
         stack_.pop();
         break;
       }
 
       case Instruction::CreateSubclass: {
-        const auto super_obj = get_object(stack_.top(), {ObjectType::Class});
-        auto super = std::static_pointer_cast<ClassObject>(super_obj);
+        auto super = get_object<ClassObject>(stack_.top());
 
         if (not super) {
           throw RuntimeError(get_current_line(), "Superclass must be a class.");
@@ -160,13 +166,12 @@ namespace loxx
       }
 
       case Instruction::GetProperty: {
-        const auto obj = get_object(stack_.top(), {ObjectType::Instance});
-        if (not obj) {
+        auto instance = get_object<InstanceObject>(stack_.top());
+        if (not instance) {
           throw RuntimeError(get_current_line(),
                              "Only instances have properties.");
         }
 
-        const auto instance = std::static_pointer_cast<InstanceObject>(obj);
         const auto& name =
             get<std::string>(constants_[read_integer<UByteCodeArg>()]);
 
@@ -176,7 +181,7 @@ namespace loxx
         }
         else if (instance->cls().has_method(name)) {
           auto method = instance->cls().method(name);
-          method->bind(instance);
+          method->bind(std::move(instance));
           stack_.pop();
           stack_.push(method);
         }
@@ -189,19 +194,14 @@ namespace loxx
 
       case Instruction::GetSuperFunc: {
         const auto cls_value = stack_.pop();
-        const auto cls_obj = get_object(cls_value, {ObjectType::Class});
-        const auto cls = std::static_pointer_cast<ClassObject>(cls_obj);
-
-        const auto instance_obj =
-            get_object(stack_.top(), {ObjectType::Instance});
-        const auto instance =
-            std::static_pointer_cast<InstanceObject>(instance_obj);
+        const auto cls = get_object<ClassObject>(cls_value);
+        auto instance = get_object<InstanceObject>(stack_.top());
         const auto& name =
             get<std::string>(constants_[read_integer<UByteCodeArg>()]);
 
         if (cls->has_method(name)) {
           auto method = cls->method(name);
-          method->bind(instance);
+          method->bind(std::move(instance));
           stack_.pop();
           stack_.push(method);
         }
@@ -284,7 +284,7 @@ namespace loxx
       }
 
       case Instruction::SetProperty: {
-        const auto obj = get_object(stack_.top(1), {ObjectType::Instance});
+        const auto obj = get_object<InstanceObject>(stack_.top(1));
         if (not obj) {
           throw RuntimeError(get_current_line(),
                              "Only instances have fields.");
@@ -745,6 +745,45 @@ namespace loxx
       }
     }
     return std::shared_ptr<Object>();
+  }
+
+
+  template <>
+  std::shared_ptr<ClassObject> VirtualMachine::get_object(const Value& value)
+  {
+    return std::static_pointer_cast<ClassObject>(
+        get_object_impl(value, ObjectType::Class));
+  }
+
+
+  template <>
+  std::shared_ptr<ClosureObject> VirtualMachine::get_object(const Value& value)
+  {
+    return std::static_pointer_cast<ClosureObject>(
+        get_object_impl(value, ObjectType::Closure));
+  }
+
+
+  template <>
+  std::shared_ptr<InstanceObject> VirtualMachine::get_object(const Value& value)
+  {
+    return std::static_pointer_cast<InstanceObject>(
+        get_object_impl(value, ObjectType::Instance));
+  }
+
+
+  std::shared_ptr<Object> VirtualMachine::get_object_impl(
+      const loxx::Value& value, loxx::ObjectType type)
+  {
+    if (holds_alternative<std::shared_ptr<Object>>(value)) {
+      const auto obj_ptr = get<std::shared_ptr<Object>>(value);
+
+      if (obj_ptr->type() == type) {
+        return obj_ptr;
+      }
+    }
+
+    return {};
   }
 
 
