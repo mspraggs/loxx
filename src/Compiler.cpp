@@ -50,15 +50,23 @@ namespace loxx
     const auto class_type_old = class_type_;
     class_type_ = stmt.superclass ? ClassType::Subclass : ClassType::Superclass;
 
+    if (stmt.superclass) {
+      begin_scope();
+      locals_.push({});
+      upvalues_.push({});
+
+      const auto super_token =
+          Token(TokenType::Super, "super", stmt.name.line());
+      const auto local = declare_variable(super_token);
+      compile(*stmt.superclass);
+    }
+
+    const auto op = stmt.superclass ?
+                    Instruction::CreateSubclass : Instruction::CreateClass;
     const auto name_constant = make_string_constant(stmt.name.lexeme());
-    add_instruction(Instruction::CreateClass);
+    add_instruction(op);
     add_integer<UByteCodeArg>(name_constant);
     update_line_num_table(stmt.name);
-
-    define_variable(name_constant, stmt.name);
-
-    add_instruction(Instruction::GetGlobal);
-    add_integer<UByteCodeArg>(name_constant);
 
     for (const auto& method : stmt.methods) {
       const auto method_constant = make_string_constant(method->name.lexeme());
@@ -74,11 +82,12 @@ namespace loxx
     }
 
     if (stmt.superclass) {
-      compile(*stmt.superclass);
-      add_instruction(Instruction::SetBase);
+      end_scope();
+      locals_.pop();
+      upvalues_.pop();
     }
 
-    add_instruction(Instruction::Pop);
+    define_variable(name_constant, stmt.name);
 
     class_type_ = class_type_old;
   }
