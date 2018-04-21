@@ -187,6 +187,31 @@ namespace loxx
         break;
       }
 
+      case Instruction::GetSuperFunc: {
+        const auto cls_value = stack_.pop();
+        const auto cls_obj = get_object(cls_value, {ObjectType::Class});
+        const auto cls = std::static_pointer_cast<ClassObject>(cls_obj);
+
+        const auto instance_obj =
+            get_object(stack_.top(), {ObjectType::Instance});
+        const auto instance =
+            std::static_pointer_cast<InstanceObject>(instance_obj);
+        const auto& name =
+            get<std::string>(constants_[read_integer<UByteCodeArg>()]);
+
+        if (cls->has_method(name)) {
+          auto method = cls->method(name);
+          method->bind(instance);
+          stack_.pop();
+          stack_.push(method);
+        }
+        else {
+          throw RuntimeError(get_current_line(),
+                             "Undefined property '" + name + "'.");
+        }
+        break;
+      }
+
       case Instruction::GetUpvalue: {
         const auto slot = read_integer<UByteCodeArg>();
         stack_.push(call_stack_.top().closure()->upvalue(slot)->value());
