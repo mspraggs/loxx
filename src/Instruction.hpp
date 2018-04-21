@@ -34,6 +34,7 @@ namespace loxx
     CreateClass,
     CreateClosure,
     CreateMethod,
+    CreateSubclass,
     DefineGlobal,
     Divide,
     Equal,
@@ -91,6 +92,9 @@ namespace loxx
       break;
     case Instruction::CreateMethod:
       stream << "CREATE_METHOD";
+      break;
+    case Instruction::CreateSubclass:
+      stream << "CREATE_SUBCLASS";
       break;
     case Instruction::DefineGlobal:
       stream << "DEFINE_GLOBAL";

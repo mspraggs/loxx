@@ -683,6 +683,7 @@ namespace loxx
 
     case Instruction::CreateClass:
     case Instruction::CreateMethod:
+    case Instruction::CreateSubclass:
     case Instruction::DefineGlobal:
     case Instruction::GetGlobal:
     case Instruction::GetLocal:
