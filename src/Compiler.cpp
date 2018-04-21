@@ -395,7 +395,23 @@ namespace loxx
 
   void Compiler::visit_super_expr(const Super& expr)
   {
+    if (class_type_ == ClassType::Superclass) {
+      error(expr.keyword,
+            "Cannot use 'super' in a class without a superclass.");
+    }
+    else if (class_type_ == ClassType::None) {
+      error(expr.keyword, "Cannot use 'super' outside of a class.");
+    }
 
+    const auto this_token = Token(TokenType::This, "this", expr.keyword.line());
+    handle_variable_reference(this_token, false);
+
+    handle_variable_reference(expr.keyword, false);
+
+    const auto func = make_string_constant(expr.method.lexeme());
+    add_instruction(Instruction::GetSuperFunc);
+    add_integer<UByteCodeArg>(func);
+    update_line_num_table(expr.keyword);
   }
 
 
