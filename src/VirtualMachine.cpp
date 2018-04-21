@@ -684,6 +684,7 @@ namespace loxx
     case Instruction::GetGlobal:
     case Instruction::GetLocal:
     case Instruction::GetProperty:
+    case Instruction::GetSuperFunc:
     case Instruction::GetUpvalue:
     case Instruction::SetGlobal:
     case Instruction::SetLocal:

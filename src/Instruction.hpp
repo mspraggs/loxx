@@ -42,6 +42,7 @@ namespace loxx
     GetGlobal,
     GetLocal,
     GetProperty,
+    GetSuperFunc,
     GetUpvalue,
     Greater,
     GreaterEqual,
@@ -116,6 +117,9 @@ namespace loxx
       break;
     case Instruction::GetProperty:
       stream << "GET_PROPERTY";
+      break;
+    case Instruction::GetSuperFunc:
+      stream << "GET_SUPER_FUNC";
       break;
     case Instruction::GetUpvalue:
       stream << "GET_UPVALUE";
