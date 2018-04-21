@@ -504,13 +504,13 @@ namespace loxx
     switch (obj->type()) {
     case ObjectType::Class: {
       const auto cls = std::static_pointer_cast<ClassObject>(obj);
-      const auto instance = std::make_shared<InstanceObject>(cls);
+      auto instance = std::make_shared<InstanceObject>(cls);
       stack_.get(obj_pos) = instance;
 
       if (cls->has_method("init")) {
         auto method = cls->method("init");
-        method->bind(instance);
-        call_object(method, obj_pos, num_args);
+        method->bind(std::move(instance));
+        call_object(std::move(method), obj_pos, num_args);
         break;
       }
 
