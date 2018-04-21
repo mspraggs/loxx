@@ -156,8 +156,6 @@ namespace loxx
     { methods_[name] = std::move(method); }
 
     std::shared_ptr<ClassObject> base() const { return base_; }
-    void set_base(std::shared_ptr<ClassObject> base)
-    { base_ = std::move(base); }
 
   private:
     std::string lexeme_;
