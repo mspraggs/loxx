@@ -26,8 +26,8 @@ namespace loxx
   {
     bool ret = methods_.count(name) != 0;
 
-    if (base_) {
-      ret |= base_->has_method(name);
+    if (superclass_) {
+      ret |= superclass_->has_method(name);
     }
 
     return ret;
@@ -40,8 +40,8 @@ namespace loxx
     if (methods_.count(name) != 0) {
       return methods_.at(name);
     }
-    if (base_) {
-      return base_->method(name);
+    if (superclass_) {
+      return superclass_->method(name);
     }
     return std::shared_ptr<ClosureObject>();
   }
@@ -52,8 +52,8 @@ namespace loxx
     if (methods_.count(name) != 0) {
       return methods_[name];
     }
-    if (base_) {
-      return base_->method(name);
+    if (superclass_) {
+      return superclass_->method(name);
     }
     return std::shared_ptr<ClosureObject>();
   }

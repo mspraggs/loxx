@@ -140,9 +140,9 @@ namespace loxx
   {
   public:
     explicit ClassObject(std::string lexeme,
-                         std::shared_ptr<ClassObject> base = {})
+                         std::shared_ptr<ClassObject> superclass = {})
         : Object(ObjectType::Class),
-          lexeme_(std::move(lexeme)), base_(std::move(base))
+          lexeme_(std::move(lexeme)), superclass_(std::move(superclass))
     {}
 
     const std::string& lexeme() const { return lexeme_; }
@@ -155,12 +155,10 @@ namespace loxx
                     std::shared_ptr<ClosureObject> method)
     { methods_[name] = std::move(method); }
 
-    std::shared_ptr<ClassObject> base() const { return base_; }
-
   private:
     std::string lexeme_;
     std::unordered_map<std::string, std::shared_ptr<ClosureObject>> methods_;
-    std::shared_ptr<ClassObject> base_;
+    std::shared_ptr<ClassObject> superclass_;
   };
 
 
