@@ -444,7 +444,7 @@ namespace loxx
   }
 
 
-  void Compiler::compile(const Expr &expr)
+  void Compiler::compile(const Expr& expr)
   {
     expr.accept(*this);
   }
@@ -472,8 +472,8 @@ namespace loxx
     const auto bytecode_pos = output_.bytecode.size();
 
     begin_scope();
-    locals_.push(std::vector<Local>());
-    upvalues_.push(std::vector<Upvalue>());
+    locals_.push({});
+    upvalues_.push({});
 
     // Declare/define "this"
     if (type == FunctionType::Method or type == FunctionType::Initialiser) {
@@ -559,7 +559,7 @@ namespace loxx
               "Variable with this name already declared in this scope.");
         }
       }
-      locals_.top().push_back(Local{false, false, 0, name.lexeme()});
+      locals_.top().push_back({false, false, 0, name.lexeme()});
     }
 
     return arg;
