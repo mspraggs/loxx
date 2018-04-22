@@ -39,6 +39,7 @@ namespace loxx
     Closure,
     Function,
     Instance,
+    Native,
     Upvalue,
   };
 
@@ -185,6 +186,24 @@ namespace loxx
   private:
     std::shared_ptr<ClassObject> cls_;
     std::unordered_map<std::string, Value> fields_;
+  };
+
+
+  class NativeObject : public Object
+  {
+  public:
+    using Fn = Value (*) (const Value*, unsigned int);
+
+    explicit NativeObject(Fn func)
+        : Object(ObjectType::Native),
+          func_(func)
+    {}
+
+    Value call(const Value* args, const unsigned int num_args)
+    { return func_(args, num_args); }
+
+  private:
+    Fn func_;
   };
 }
 
