@@ -50,6 +50,8 @@ namespace loxx
     const auto class_type_old = class_type_;
     class_type_ = stmt.superclass ? ClassType::Subclass : ClassType::Superclass;
 
+    // If this class derives from an existing class, we create an additional
+    // scope containing a reference to the superclass
     if (stmt.superclass) {
       begin_scope();
       locals_.push({});
@@ -61,6 +63,7 @@ namespace loxx
       compile(*stmt.superclass);
     }
 
+    // Add an instruction to make the class
     const auto op = stmt.superclass ?
                     Instruction::CreateSubclass : Instruction::CreateClass;
     const auto name_constant = make_string_constant(stmt.name.lexeme());
@@ -68,6 +71,7 @@ namespace loxx
     add_integer<UByteCodeArg>(name_constant);
     update_line_num_table(stmt.name);
 
+    // Compile the class's methods
     for (const auto& method : stmt.methods) {
       const auto method_constant = make_string_constant(method->name.lexeme());
       const auto type =
@@ -81,6 +85,7 @@ namespace loxx
       update_line_num_table(method->name);
     }
 
+    // Close the scope we opened above, if applicable
     if (stmt.superclass) {
       end_scope();
       locals_.pop();
