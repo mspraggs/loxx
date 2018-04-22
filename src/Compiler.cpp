@@ -161,7 +161,7 @@ namespace loxx
     }
 
     if (current_function_type_ == FunctionType::Initialiser) {
-      compile_this_return(stmt.keyword);
+      compile_this_return();
       return;
     }
     else if (stmt.value != nullptr) {
@@ -492,8 +492,7 @@ namespace loxx
 
     // Return "this" if in constructor
     if (current_function_type_ == FunctionType::Initialiser) {
-      const auto this_token = Token(TokenType::This, "this", stmt.name.line());
-      compile_this_return(this_token);
+      compile_this_return();
     }
 
     end_scope();
@@ -529,7 +528,7 @@ namespace loxx
   }
 
 
-  void Compiler::compile_this_return(const Token& token)
+  void Compiler::compile_this_return()
   {
     const auto this_token = Token(TokenType::This, "this", last_line_num_);
     handle_variable_reference(this_token, false);

@@ -108,7 +108,7 @@ namespace loxx
 
   void AstPrinter::visit_this_expr(const This& expr)
   {
-    stream_ << "this";
+    stream_ << expr.keyword.lexeme();
   }
 
 

@@ -134,7 +134,7 @@ namespace loxx
     void compile(const Expr& expr);
     void compile(const Stmt& stmt);
     void compile_function(const Function& stmt, const FunctionType type);
-    void compile_this_return(const Token& token);
+    void compile_this_return();
     Optional<UByteCodeArg> declare_variable(const Token& name);
     void define_variable(const Optional <UByteCodeArg>& arg, const Token& name);
     template <typename T>
@@ -173,7 +173,7 @@ namespace loxx
   namespace detail
   {
     template <typename T>
-    void handle_value(const T& var_expr, Compiler& compiler)
+    void handle_value(const T&, Compiler&)
     {
     }
 

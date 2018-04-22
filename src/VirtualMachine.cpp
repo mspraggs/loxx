@@ -542,6 +542,9 @@ namespace loxx
       ip_ = closure->function().bytecode_offset();
       break;
     }
+
+    default:
+      break;
     }
   }
 
@@ -586,9 +589,13 @@ namespace loxx
         const auto instance = std::static_pointer_cast<InstanceObject>(ptr);
         ss << instance->cls().lexeme() << " instance";
       }
+      default:
+        break;
       }
       return ss.str();
     }
+
+    return "";
   }
 
 
