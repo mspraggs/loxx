@@ -410,7 +410,6 @@ namespace loxx
 
     const auto this_token = Token(TokenType::This, "this", expr.keyword.line());
     handle_variable_reference(this_token, false);
-
     handle_variable_reference(expr.keyword, false);
 
     const auto func = make_string_constant(expr.method.lexeme());
@@ -732,14 +731,9 @@ namespace loxx
       instr_num_diff -= num_rows * instr_num_delta;
     }
 
-    if (line_num_diff != 0) {
-      output_.line_num_table.emplace_back(line_num_diff, instr_num_diff);
-    }
-
-    if (num_rows > 0 or line_num_diff != 0) {
-      last_instr_num_ = output_.bytecode.size();
-      last_line_num_ = token.line();
-    }
+    output_.line_num_table.emplace_back(line_num_diff, instr_num_diff);
+    last_instr_num_ = output_.bytecode.size();
+    last_line_num_ = token.line();
   }
 
 
