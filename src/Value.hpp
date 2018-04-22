@@ -192,7 +192,7 @@ namespace loxx
   class NativeObject : public Object
   {
   public:
-    using Fn = Value (*) (const Value*, unsigned int);
+    using Fn = Value (*) (const Value*, const unsigned int);
 
     explicit NativeObject(Fn func)
         : Object(ObjectType::Native),
