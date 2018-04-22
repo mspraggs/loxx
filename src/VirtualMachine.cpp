@@ -17,6 +17,7 @@
  * Created by Matt Spraggs on 05/03/2018.
  */
 
+#include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -45,6 +46,18 @@ namespace loxx
   VirtualMachine::VirtualMachine(const bool debug)
       : debug_(debug), ip_(0)
   {
+    NativeObject::Fn fn =
+        [] (const Value*, const unsigned int)
+        {
+          using namespace std::chrono;
+          const auto millis =
+              system_clock::now().time_since_epoch() / milliseconds(1);
+
+          return Value(static_cast<double>(millis) / 1000.0);
+        };
+
+    add_named_constant("clock", Value(InPlace<std::string>(), "clock"));
+    globals_["clock"] = std::make_shared<NativeObject>(fn);
   }
 
 
@@ -421,7 +434,8 @@ namespace loxx
     const auto num_args = read_integer<UByteCodeArg>();
     const auto obj_pos = stack_.size() - num_args - 1;
     auto obj = get_object(stack_.get(obj_pos),
-                          {ObjectType::Class, ObjectType::Closure});
+                          {ObjectType::Class, ObjectType::Closure,
+                           ObjectType::Native});
 
     if (not obj) {
       throw RuntimeError(get_current_line(),
@@ -541,6 +555,18 @@ namespace loxx
                                   base_slot, closure));
       ip_ = closure->function().bytecode_offset();
       break;
+    }
+
+    case ObjectType::Native: {
+      const auto native = std::static_pointer_cast<NativeObject>(obj);
+      const auto result = native->call(&stack_.top(num_args),
+                                       static_cast<unsigned int>(num_args));
+
+      for (unsigned int i = 0; i < num_args; ++i) {
+        stack_.pop();
+      }
+
+      stack_.get(obj_pos) = result;
     }
 
     default:
