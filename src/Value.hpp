@@ -44,6 +44,14 @@ namespace loxx
   };
 
 
+  enum class TriColour
+  {
+    White,
+    Grey,
+    Black
+  };
+
+
   using Value = Variant<double, bool, std::string, std::shared_ptr<Object>>;
 
 
@@ -52,13 +60,19 @@ namespace loxx
   public:
     virtual ~Object() = default;
 
+    TriColour colour() const { return colour_; }
+    void set_colour(const TriColour colour) { colour_ = colour; }
+
     ObjectType type() const { return type_; }
 
   protected:
-    explicit Object(const ObjectType type) : type_(type) {}
+    explicit Object(const ObjectType type)
+        : type_(type), colour_(TriColour::White)
+    {}
 
   private:
     ObjectType type_;
+    TriColour colour_;
   };
 
 
