@@ -8,6 +8,7 @@ set(SRC
   globals.hpp
   Instruction.hpp
   logging.hpp
+  ObjectTracker.hpp
   Optional.hpp
   Parser.hpp
   RuntimeError.hpp
@@ -24,6 +25,7 @@ set(SRC
   Compiler.cpp
   logging.cpp
   main.cpp
+  ObjectTracker.cpp
   Parser.cpp
   Scanner.cpp
   StackFrame.cpp
