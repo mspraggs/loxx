@@ -30,7 +30,7 @@ namespace loxx
   class Stack
   {
   public:
-    Stack(const std::size_t reserved_size = 4096)
+    explicit Stack(const std::size_t reserved_size = 4096)
     {
       stack_.reserve(reserved_size);
     }
