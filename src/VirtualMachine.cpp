@@ -24,6 +24,7 @@
 
 #include "Compiler.hpp"
 #include "logging.hpp"
+#include "ObjectTracker.hpp"
 #include "RuntimeError.hpp"
 #include "VirtualMachine.hpp"
 
@@ -58,6 +59,8 @@ namespace loxx
 
     add_named_constant("clock", Value(InPlace<std::string>(), "clock"));
     globals_["clock"] = std::make_shared<NativeObject>(fn);
+
+    ObjectTracker::instance().set_roots(stack_);
   }
 
 
