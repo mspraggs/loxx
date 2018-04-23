@@ -20,6 +20,7 @@
 #ifndef LOXX_OBJECTTRACKER_HPP
 #define LOXX_OBJECTTRACKER_HPP
 
+#include "Stack.hpp"
 #include "Value.hpp"
 
 #include <memory>
@@ -35,13 +36,16 @@ namespace loxx
 
     void add_object(std::shared_ptr<Object> object);
 
+    void set_roots(const Stack<Value>& stack) { roots_ = &stack; }
+
   private:
-    ObjectTracker() : gc_size_trigger_(1024) {}
+    ObjectTracker() : gc_size_trigger_(1024), roots_(nullptr) {}
 
     void collect_garbage();
 
     std::size_t gc_size_trigger_;
     std::vector<std::shared_ptr<Object>> objects_;
+    const Stack<Value>* roots_;
   };
 
 
