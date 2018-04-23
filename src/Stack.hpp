@@ -20,6 +20,7 @@
 #ifndef LOXX_STACK_HPP
 #define LOXX_STACK_HPP
 
+#include <stdexcept>
 #include <vector>
 
 
