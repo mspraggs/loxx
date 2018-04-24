@@ -23,6 +23,7 @@
 #include "Stack.hpp"
 #include "Value.hpp"
 
+#include <list>
 #include <memory>
 #include <vector>
 
@@ -32,20 +33,29 @@ namespace loxx
   class ObjectTracker
   {
   public:
+    struct Roots
+    {
+      Stack<Value>* stack;
+      std::list<std::shared_ptr<UpvalueObject>>* upvalues;
+      std::unordered_map<std::string, Value>* globals;
+    };
+
     static ObjectTracker& instance();
 
     void add_object(std::shared_ptr<Object> object);
 
-    void set_roots(const Stack<Value>& stack) { roots_ = &stack; }
+    void set_roots(const Roots roots) { roots_ = roots; }
 
   private:
-    ObjectTracker() : gc_size_trigger_(1024), roots_(nullptr) {}
+    ObjectTracker()
+        : gc_size_trigger_(1024), roots_{nullptr, nullptr, nullptr}
+    {}
 
     void collect_garbage();
 
     std::size_t gc_size_trigger_;
     std::vector<std::shared_ptr<Object>> objects_;
-    const Stack<Value>* roots_;
+    Roots roots_;
   };
 
 

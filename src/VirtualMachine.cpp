@@ -60,7 +60,8 @@ namespace loxx
     add_named_constant("clock", Value(InPlace<std::string>(), "clock"));
     globals_["clock"] = std::make_shared<NativeObject>(fn);
 
-    ObjectTracker::instance().set_roots(stack_);
+    ObjectTracker::instance().set_roots(
+        ObjectTracker::Roots{&stack_, &open_upvalues_, &globals_});
   }
 
 
