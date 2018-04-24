@@ -17,6 +17,8 @@
  * Created by Matt Spraggs on 23/04/18.
  */
 
+#include <algorithm>
+
 #include "ObjectTracker.hpp"
 
 
@@ -41,7 +43,44 @@ namespace loxx
 
   void ObjectTracker::collect_garbage()
   {
+    for (auto object : objects_) {
+      object->set_colour(TriColour::White);
+    }
 
+    grey_roots();
+
+    const auto is_grey =
+        [] (std::shared_ptr<Object> obj)
+        {
+          return obj->colour() == TriColour::Grey;
+        };
+
+    auto num_greys = std::count_if(objects_.begin(), objects_.end(), is_grey);
+
+    while (num_greys > 0) {
+      for (auto object : objects_) {
+        if (object->colour() != TriColour::Grey) {
+          continue;
+        }
+
+        object->set_colour(TriColour::Black);
+        object->grey_references();
+      }
+
+      num_greys = std::count_if(objects_.begin(), objects_.end(), is_grey);
+    }
+
+    for (auto object : objects_) {
+      if (object->colour() == TriColour::White) {
+        object->clear_references();
+      }
+    }
+
+    for (auto it = objects_.begin(); it != objects_.end(); ++it) {
+      if ((*it)->colour() == TriColour::White) {
+        objects_.erase(it);
+      }
+    }
   }
 
 
