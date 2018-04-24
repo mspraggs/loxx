@@ -43,4 +43,32 @@ namespace loxx
   {
 
   }
+
+
+  void ObjectTracker::grey_roots()
+  {
+    for (std::size_t i = 0; i < roots_.stack->size(); ++i) {
+      auto& value = roots_.stack->get(i);
+
+      if (not holds_alternative<std::shared_ptr<Object>>(value)) {
+        continue;
+      }
+
+      auto object = get<std::shared_ptr<Object>>(value);
+
+      object->set_colour(TriColour::Grey);
+    }
+
+    for (auto upvalue : *roots_.upvalues) {
+      upvalue->set_colour(TriColour::Grey);
+    }
+
+    for (auto& value : *roots_.globals) {
+      if (not holds_alternative<std::shared_ptr<Object>>(value.second)) {
+        continue;
+      }
+
+      get<std::shared_ptr<Object>>(value.second)->set_colour(TriColour::Grey);
+    }
+  }
 }

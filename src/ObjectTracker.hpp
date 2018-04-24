@@ -53,6 +53,8 @@ namespace loxx
 
     void collect_garbage();
 
+    void grey_roots();
+
     std::size_t gc_size_trigger_;
     std::vector<std::shared_ptr<Object>> objects_;
     Roots roots_;
