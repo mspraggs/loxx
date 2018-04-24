@@ -60,10 +60,12 @@ namespace loxx
   public:
     virtual ~Object() = default;
 
+    ObjectType type() const { return type_; }
+
     TriColour colour() const { return colour_; }
     void set_colour(const TriColour colour) { colour_ = colour; }
 
-    ObjectType type() const { return type_; }
+    virtual void grey_references() {}
 
   protected:
     explicit Object(const ObjectType type)
@@ -116,6 +118,7 @@ namespace loxx
     const Value& value() const { return *value_; }
     void set_value(const Value& value) { *value_ = value; }
 
+    void grey_references() override;
   private:
     Value* value_;
     Value closed_;
@@ -144,6 +147,7 @@ namespace loxx
     { instance_ = std::move(instance); }
     std::shared_ptr<InstanceObject> instance() const { return instance_; }
 
+    void grey_references() override;
   private:
     std::shared_ptr<InstanceObject> instance_;
     std::shared_ptr<FuncObject> function_;
@@ -170,6 +174,7 @@ namespace loxx
                     std::shared_ptr<ClosureObject> method)
     { methods_[name] = std::move(method); }
 
+    void grey_references() override;
   private:
     std::string lexeme_;
     std::unordered_map<std::string, std::shared_ptr<ClosureObject>> methods_;
@@ -197,6 +202,7 @@ namespace loxx
 
     const ClassObject& cls() const { return *cls_; }
 
+    void grey_references() override;
   private:
     std::shared_ptr<ClassObject> cls_;
     std::unordered_map<std::string, Value> fields_;

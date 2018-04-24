@@ -22,6 +22,29 @@
 
 namespace loxx
 {
+  void UpvalueObject::grey_references()
+  {
+    if (holds_alternative<std::shared_ptr<Object>>(*value_)) {
+      auto obj = get<std::shared_ptr<Object>>(*value_);
+      obj->set_colour(TriColour::Grey);
+    }
+  }
+
+
+  void ClosureObject::grey_references()
+  {
+    function_->set_colour(TriColour::Grey);
+
+    if (instance_) {
+      instance_->set_colour(TriColour::Grey);
+    }
+
+    for (auto upvalue : upvalues_) {
+      if (upvalue) {
+        upvalue->set_colour(TriColour::Grey);
+      }
+    }
+  }
   bool ClassObject::has_method(const std::string& name) const
   {
     bool ret = methods_.count(name) != 0;
@@ -56,5 +79,32 @@ namespace loxx
       return superclass_->method(name);
     }
     return std::shared_ptr<ClosureObject>();
+  }
+
+
+  void ClassObject::grey_references()
+  {
+    for (auto& method : methods_) {
+      method.second->set_colour(TriColour::Grey);
+    }
+
+    if (superclass_) {
+      superclass_->set_colour(TriColour::Grey);
+    }
+  }
+
+
+  void InstanceObject::grey_references()
+  {
+    cls_->set_colour(TriColour::Grey);
+
+    for (auto& field : fields_) {
+      if (not holds_alternative<std::shared_ptr<Object>>(field.second)) {
+        continue;
+      }
+
+      auto obj = get<std::shared_ptr<Object>>(field.second);
+      obj->set_colour(TriColour::Grey);
+    }
   }
 }
