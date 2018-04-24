@@ -31,6 +31,15 @@ namespace loxx
   }
 
 
+  void UpvalueObject::clear_references()
+  {
+    if (holds_alternative<std::shared_ptr<Object>>(*value_)) {
+      auto ptr = get<std::shared_ptr<Object>>(*value_);
+      ptr.reset();
+    }
+  }
+
+
   void ClosureObject::grey_references()
   {
     function_->set_colour(TriColour::Grey);
@@ -45,6 +54,16 @@ namespace loxx
       }
     }
   }
+
+
+  void ClosureObject::clear_references()
+  {
+    instance_.reset();
+    function_.reset();
+    upvalues_.clear();
+  }
+
+
   bool ClassObject::has_method(const std::string& name) const
   {
     bool ret = methods_.count(name) != 0;
@@ -94,6 +113,13 @@ namespace loxx
   }
 
 
+  void ClassObject::clear_references()
+  {
+    superclass_.reset();
+    methods_.clear();
+  }
+
+
   void InstanceObject::grey_references()
   {
     cls_->set_colour(TriColour::Grey);
@@ -106,5 +132,12 @@ namespace loxx
       auto obj = get<std::shared_ptr<Object>>(field.second);
       obj->set_colour(TriColour::Grey);
     }
+  }
+
+
+  void InstanceObject::clear_references()
+  {
+    cls_.reset();
+    fields_.clear();
   }
 }
