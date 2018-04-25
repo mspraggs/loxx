@@ -514,7 +514,7 @@ namespace loxx
     rewrite_integer(jump_pos, jump_size);
 
     // Add the new function object as a constant
-    auto func = loxx::make_shared<FuncObject>(
+    auto func = make_object<FuncObject>(
         stmt.name.lexeme(), bytecode_pos,
         static_cast<unsigned int>(stmt.parameters.size()),
         upvalues.size());

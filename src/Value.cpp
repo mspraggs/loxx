@@ -64,7 +64,7 @@ namespace loxx
       const std::string& name) const
   {
     if (methods_.count(name) != 0) {
-      return loxx::make_shared<ClosureObject>(*methods_.at(name));
+      return make_object<ClosureObject>(*methods_.at(name));
     }
     if (superclass_) {
       return superclass_->method(name);
@@ -76,7 +76,7 @@ namespace loxx
   ClosureObject* ClassObject::method(const std::string& name)
   {
     if (methods_.count(name) != 0) {
-      return loxx::make_shared<ClosureObject>(*methods_[name]);
+      return make_object<ClosureObject>(*methods_[name]);
     }
     if (superclass_) {
       return superclass_->method(name);

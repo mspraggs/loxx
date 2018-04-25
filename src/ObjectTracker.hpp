@@ -64,7 +64,7 @@ namespace loxx
 
 
   template <typename T0, typename... Ts>
-  T0* make_shared(Ts&&... args)
+  T0* make_object(Ts&& ... args)
   {
     auto ptr = std::make_unique<T0>(std::forward<Ts>(args)...);
     const auto ret = ptr.get();
