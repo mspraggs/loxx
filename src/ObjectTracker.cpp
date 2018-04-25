@@ -33,11 +33,11 @@ namespace loxx
 
   void ObjectTracker::add_object(std::shared_ptr<Object> object)
   {
-    objects_.push_back(std::move(object));
-
     if (objects_.size() > gc_size_trigger_) {
       collect_garbage();
     }
+
+    objects_.push_back(std::move(object));
   }
 
 
@@ -76,9 +76,12 @@ namespace loxx
       }
     }
 
-    for (auto it = objects_.begin(); it != objects_.end(); ++it) {
+    for (auto it = objects_.begin(); it != objects_.end(); ) {
       if ((*it)->colour() == TriColour::White) {
         objects_.erase(it);
+      }
+      else {
+        ++it;
       }
     }
   }
