@@ -36,7 +36,7 @@ namespace loxx
     struct Roots
     {
       Stack<Value>* stack;
-      std::list<UpvalueObject*>* upvalues;
+      std::list<raw_ptr<UpvalueObject>>* upvalues;
       std::unordered_map<std::string, Value>* globals;
     };
 
@@ -64,7 +64,7 @@ namespace loxx
 
 
   template <typename T0, typename... Ts>
-  T0* make_object(Ts&& ... args)
+  raw_ptr<T0> make_object(Ts&& ... args)
   {
     auto ptr = std::make_unique<T0>(std::forward<Ts>(args)...);
     const auto ret = ptr.get();

@@ -61,7 +61,7 @@ namespace loxx
 
   private:
     void paranthesise(const std::string& name,
-                      std::initializer_list<const Expr*> exprs);
+                      std::initializer_list<raw_ptr<const Expr>> exprs);
     void set_indent(const unsigned int indent);
 
     unsigned int indent_level_;

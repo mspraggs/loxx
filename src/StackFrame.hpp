@@ -34,11 +34,11 @@ namespace loxx
   {
   public:
     StackFrame(const std::size_t prev_ip, const std::size_t prev_stack_size,
-               Value& slots_base, ClosureObject* closure)
+               Value& slots_base, raw_ptr<ClosureObject> closure)
         : StackFrame(prev_ip, prev_stack_size, &slots_base, closure)
     {}
     StackFrame(const std::size_t prev_ip, const std::size_t prev_stack_size,
-               Value* slots_base, ClosureObject* closure)
+               raw_ptr<Value> slots_base, raw_ptr<ClosureObject> closure)
         : prev_ip_(prev_ip), prev_stack_size_(prev_stack_size),
           slots_(slots_base), closure_(closure)
     {}
@@ -49,13 +49,13 @@ namespace loxx
     const Value& slot(const std::size_t i) const { return slots_[i]; }
     Value& slot(const std::size_t i) { return slots_[i]; }
 
-    const ClosureObject* closure() const { return closure_; }
-    ClosureObject* closure() { return closure_; }
+    raw_ptr<const ClosureObject> closure() const { return closure_; }
+    raw_ptr<ClosureObject> closure() { return closure_; }
 
   private:
     std::size_t prev_ip_, prev_stack_size_;
-    Value* slots_;
-    ClosureObject* closure_;
+    raw_ptr<Value> slots_;
+    raw_ptr<ClosureObject> closure_;
   };
 }
 

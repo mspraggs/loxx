@@ -163,7 +163,7 @@ namespace loxx
     unsigned int last_line_num_;
     unsigned int scope_depth_;
     std::size_t last_instr_num_;
-    VirtualMachine* vm_;
+    raw_ptr<VirtualMachine> vm_;
     CompilationOutput output_;
     Stack<std::vector<Local>> locals_;
     Stack<std::vector<Upvalue>> upvalues_;

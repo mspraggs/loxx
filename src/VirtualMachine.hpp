@@ -52,7 +52,7 @@ namespace loxx
     void execute_call();
     void execute_create_closure();
 
-    UpvalueObject* capture_upvalue(Value& local);
+    raw_ptr<UpvalueObject> capture_upvalue(Value& local);
     void close_upvalues(Value& last);
 
     void call_object(ObjectPtr obj, const std::size_t obj_pos,
@@ -64,7 +64,7 @@ namespace loxx
     static ObjectPtr get_object(
         const Value& value, const std::vector<ObjectType>& valid_types);
     template <typename T>
-    static T* get_object(const Value& value);
+    static raw_ptr<T> get_object(const Value& value);
     static ObjectPtr get_object_impl(const Value& value, ObjectType type);
 
     template <typename T>
@@ -79,13 +79,13 @@ namespace loxx
 
     bool debug_;
     std::size_t ip_;
-    const CompilationOutput* compiler_output_;
+    raw_ptr<const CompilationOutput> compiler_output_;
     std::unordered_map<std::string, UByteCodeArg> constant_map_;
     std::vector<Value> constants_;
     std::unordered_map<std::string, Value> globals_;
     Stack<Value> stack_;
     Stack<StackFrame> call_stack_;
-    std::list<UpvalueObject*> open_upvalues_;
+    std::list<raw_ptr<UpvalueObject>> open_upvalues_;
   };
 
 
@@ -103,7 +103,7 @@ namespace loxx
   T VirtualMachine::read_integer_at_pos(const std::size_t pos) const
   {
     const T integer =
-        *reinterpret_cast<const T*>(&compiler_output_->bytecode[pos]);
+        *reinterpret_cast<raw_ptr<const T>>(&compiler_output_->bytecode[pos]);
 
     return integer;
   }

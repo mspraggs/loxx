@@ -28,6 +28,9 @@ namespace loxx
 {
   using UByteCodeArg = std::size_t;
   using ByteCodeArg = std::make_signed_t<UByteCodeArg>;
+
+  template <typename T>
+  using raw_ptr = T*;
 }
 
 #endif // LOXX_GLOBALS_HPP

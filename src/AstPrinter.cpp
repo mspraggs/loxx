@@ -210,7 +210,7 @@ namespace loxx
 
 
   void AstPrinter::paranthesise(const std::string& name,
-                                std::initializer_list<const Expr*> exprs)
+                                std::initializer_list<raw_ptr<const Expr>> exprs)
   {
     stream_ << '(' << name;
 

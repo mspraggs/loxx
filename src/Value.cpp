@@ -60,7 +60,7 @@ namespace loxx
   }
 
 
-  ClosureObject* ClassObject::method(
+  raw_ptr<ClosureObject> ClassObject::method(
       const std::string& name) const
   {
     if (methods_.count(name) != 0) {
@@ -73,7 +73,7 @@ namespace loxx
   }
 
 
-  ClosureObject* ClassObject::method(const std::string& name)
+  raw_ptr<ClosureObject> ClassObject::method(const std::string& name)
   {
     if (methods_.count(name) != 0) {
       return make_object<ClosureObject>(*methods_[name]);

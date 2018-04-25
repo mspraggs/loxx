@@ -52,7 +52,7 @@ namespace loxx
   };
 
 
-  using ObjectPtr = Object*;
+  using ObjectPtr = raw_ptr<Object>;
   using Value = Variant<double, bool, std::string, ObjectPtr>;
 
 
@@ -122,7 +122,7 @@ namespace loxx
     void grey_references() override;
 
   private:
-    Value* value_;
+    raw_ptr<Value> value_;
     Value closed_;
   };
 
@@ -130,30 +130,30 @@ namespace loxx
   class ClosureObject : public Object
   {
   public:
-    explicit ClosureObject(FuncObject* func)
+    explicit ClosureObject(raw_ptr<FuncObject> func)
         : Object(ObjectType::Closure),
           instance_(), function_(func), upvalues_(function_->num_upvalues())
     {
     }
 
-    UpvalueObject* upvalue(const std::size_t i) const
+    raw_ptr<UpvalueObject> upvalue(const std::size_t i) const
     { return upvalues_[i]; }
-    void set_upvalue(const std::size_t i, UpvalueObject* value)
+    void set_upvalue(const std::size_t i, raw_ptr<UpvalueObject> value)
     { upvalues_[i] = value; }
 
     std::size_t num_upvalues() const { return upvalues_.size(); }
 
     const FuncObject& function() const { return *function_; }
 
-    void bind(InstanceObject* instance) { instance_ = instance; }
-    InstanceObject* instance() const { return instance_; }
+    void bind(raw_ptr<InstanceObject> instance) { instance_ = instance; }
+    raw_ptr<InstanceObject> instance() const { return instance_; }
 
     void grey_references() override;
 
   private:
-    InstanceObject* instance_;
-    FuncObject* function_;
-    std::vector<UpvalueObject*> upvalues_;
+    raw_ptr<InstanceObject> instance_;
+    raw_ptr<FuncObject> function_;
+    std::vector<raw_ptr<UpvalueObject>> upvalues_;
   };
 
 
@@ -161,7 +161,7 @@ namespace loxx
   {
   public:
     explicit ClassObject(std::string lexeme,
-                         ClassObject* superclass = {})
+                         raw_ptr<ClassObject> superclass = {})
         : Object(ObjectType::Class),
           lexeme_(std::move(lexeme)), superclass_(superclass)
     {}
@@ -169,26 +169,25 @@ namespace loxx
     const std::string& lexeme() const { return lexeme_; }
 
     bool has_method(const std::string& name) const;
-    ClosureObject* method(const std::string& name) const;
-    ClosureObject* method(const std::string& name);
+    raw_ptr<ClosureObject> method(const std::string& name) const;
+    raw_ptr<ClosureObject> method(const std::string& name);
 
-    void set_method(const std::string& name,
-                    ClosureObject* method)
-    { methods_[name] = std::move(method); }
+    void set_method(const std::string& name, raw_ptr<ClosureObject> method)
+    { methods_[name] = method; }
 
     void grey_references() override;
 
   private:
     std::string lexeme_;
-    std::unordered_map<std::string, ClosureObject*> methods_;
-    ClassObject* superclass_;
+    std::unordered_map<std::string, raw_ptr<ClosureObject>> methods_;
+    raw_ptr<ClassObject> superclass_;
   };
 
 
   class InstanceObject : public Object
   {
   public:
-    explicit InstanceObject(ClassObject* cls)
+    explicit InstanceObject(raw_ptr<ClassObject> cls)
         : Object(ObjectType::Instance),
           cls_(cls)
     {}
@@ -208,7 +207,7 @@ namespace loxx
     void grey_references() override;
 
   private:
-    ClassObject* cls_;
+    raw_ptr<ClassObject> cls_;
     std::unordered_map<std::string, Value> fields_;
   };
 
@@ -216,14 +215,14 @@ namespace loxx
   class NativeObject : public Object
   {
   public:
-    using Fn = Value (*) (const Value*, const unsigned int);
+    using Fn = Value (*) (raw_ptr<const Value>, const unsigned int);
 
     explicit NativeObject(Fn func)
         : Object(ObjectType::Native),
           func_(func)
     {}
 
-    Value call(const Value* args, const unsigned int num_args)
+    Value call(raw_ptr<const Value> args, const unsigned int num_args)
     { return func_(args, num_args); }
 
   private:

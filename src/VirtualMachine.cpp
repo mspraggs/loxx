@@ -32,15 +32,15 @@
 namespace loxx
 {
   template <>
-  ClassObject* VirtualMachine::get_object(const Value& value);
+  raw_ptr<ClassObject> VirtualMachine::get_object(const Value& value);
 
 
   template <>
-  ClosureObject* VirtualMachine::get_object(const Value& value);
+  raw_ptr<ClosureObject> VirtualMachine::get_object(const Value& value);
 
 
   template <>
-  InstanceObject* VirtualMachine::get_object(
+  raw_ptr<InstanceObject> VirtualMachine::get_object(
       const Value& value);
 
 
@@ -48,7 +48,7 @@ namespace loxx
       : debug_(debug), ip_(0)
   {
     NativeObject::Fn fn =
-        [] (const Value*, const unsigned int)
+        [] (raw_ptr<const Value>, const unsigned int)
         {
           using namespace std::chrono;
           const auto millis =
@@ -309,7 +309,7 @@ namespace loxx
                              "Only instances have fields.");
         }
 
-        const auto instance = static_cast<InstanceObject*>(obj);
+        const auto instance = static_cast<raw_ptr<InstanceObject>>(obj);
         const auto& name =
             get<std::string>(constants_[read_integer<UByteCodeArg>()]);
 
@@ -456,7 +456,7 @@ namespace loxx
   {
     const auto& func_value = constants_[read_integer<UByteCodeArg>()];
     const auto& func_obj = get<ObjectPtr>(func_value);
-    auto func = static_cast<FuncObject*>(func_obj);
+    auto func = static_cast<raw_ptr<FuncObject>>(func_obj);
 
     auto closure = make_object<ClosureObject>(func);
 
@@ -478,7 +478,7 @@ namespace loxx
   }
 
 
-  UpvalueObject* VirtualMachine::capture_upvalue(Value& local)
+  raw_ptr<UpvalueObject> VirtualMachine::capture_upvalue(Value& local)
   {
     if (open_upvalues_.empty()) {
       open_upvalues_.push_back(make_object<UpvalueObject>(local));
@@ -523,7 +523,7 @@ namespace loxx
   {
     switch (obj->type()) {
     case ObjectType::Class: {
-      const auto cls = static_cast<ClassObject*>(obj);
+      const auto cls = static_cast<raw_ptr<ClassObject>>(obj);
       auto instance = make_object<InstanceObject>(cls);
       get<ObjectPtr>(stack_.get(obj_pos)) = instance;
 
@@ -543,7 +543,7 @@ namespace loxx
     }
 
     case ObjectType::Closure: {
-      const auto closure = static_cast<ClosureObject*>(obj);
+      const auto closure = static_cast<raw_ptr<ClosureObject>>(obj);
 
       if (closure->function().arity() != num_args) {
         std::stringstream ss;
@@ -564,7 +564,7 @@ namespace loxx
     }
 
     case ObjectType::Native: {
-      const auto native = static_cast<NativeObject*>(obj);
+      const auto native = static_cast<raw_ptr<NativeObject>>(obj);
       const auto result = native->call(&stack_.top(num_args),
                                        static_cast<unsigned int>(num_args));
 
@@ -604,16 +604,16 @@ namespace loxx
 
       switch (ptr->type()) {
       case ObjectType::Function:
-        ss << "<fn " << static_cast<FuncObject*>(ptr)->lexeme()
+        ss << "<fn " << static_cast<raw_ptr<FuncObject>>(ptr)->lexeme()
            << '>';
         break;
       case ObjectType::Class: {
-        const auto cls = static_cast<ClassObject*>(ptr);
+        const auto cls = static_cast<raw_ptr<ClassObject>>(ptr);
         ss << "<class " << cls->lexeme() << '>';
         break;
       }
       case ObjectType::Closure: {
-        const auto closure = static_cast<ClosureObject*>(ptr);
+        const auto closure = static_cast<raw_ptr<ClosureObject>>(ptr);
         ss << "<fn " << closure->function().lexeme() << '>';
         break;
       }
