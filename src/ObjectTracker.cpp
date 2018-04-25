@@ -31,7 +31,7 @@ namespace loxx
   }
 
 
-  void ObjectTracker::add_object(std::shared_ptr<Object> object)
+  void ObjectTracker::add_object(ObjectPtr object)
   {
     if (objects_.size() > gc_size_trigger_) {
       collect_garbage();
@@ -50,7 +50,7 @@ namespace loxx
     grey_roots();
 
     const auto is_grey =
-        [] (std::shared_ptr<Object> obj)
+        [] (ObjectPtr obj)
         {
           return obj->colour() == TriColour::Grey;
         };
@@ -92,11 +92,11 @@ namespace loxx
     for (std::size_t i = 0; i < roots_.stack->size(); ++i) {
       auto& value = roots_.stack->get(i);
 
-      if (not holds_alternative<std::shared_ptr<Object>>(value)) {
+      if (not holds_alternative<ObjectPtr>(value)) {
         continue;
       }
 
-      auto object = get<std::shared_ptr<Object>>(value);
+      auto object = get<ObjectPtr>(value);
 
       object->set_colour(TriColour::Grey);
     }
@@ -106,11 +106,11 @@ namespace loxx
     }
 
     for (auto& value : *roots_.globals) {
-      if (not holds_alternative<std::shared_ptr<Object>>(value.second)) {
+      if (not holds_alternative<ObjectPtr>(value.second)) {
         continue;
       }
 
-      get<std::shared_ptr<Object>>(value.second)->set_colour(TriColour::Grey);
+      get<ObjectPtr>(value.second)->set_colour(TriColour::Grey);
     }
   }
 }

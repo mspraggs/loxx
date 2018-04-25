@@ -42,7 +42,7 @@ namespace loxx
 
     static ObjectTracker& instance();
 
-    void add_object(std::shared_ptr<Object> object);
+    void add_object(ObjectPtr object);
 
     void set_roots(const Roots roots) { roots_ = roots; }
 
@@ -56,7 +56,7 @@ namespace loxx
     void grey_roots();
 
     std::size_t gc_size_trigger_;
-    std::vector<std::shared_ptr<Object>> objects_;
+    std::vector<ObjectPtr> objects_;
     Roots roots_;
   };
 

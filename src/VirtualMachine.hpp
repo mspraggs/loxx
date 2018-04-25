@@ -55,18 +55,17 @@ namespace loxx
     std::shared_ptr<UpvalueObject> capture_upvalue(Value& local);
     void close_upvalues(Value& last);
 
-    void call_object(std::shared_ptr<Object> obj, const std::size_t obj_pos,
+    void call_object(ObjectPtr obj, const std::size_t obj_pos,
                      const UByteCodeArg num_args);
     std::string stringify(const Value& object) const;
     void print_stack() const;
     void disassemble_bytecode();
     size_t disassemble_instruction() const;
-    static std::shared_ptr<Object> get_object(
+    static ObjectPtr get_object(
         const Value& value, const std::vector<ObjectType>& valid_types);
     template <typename T>
     static std::shared_ptr<T> get_object(const Value& value);
-    static std::shared_ptr<Object> get_object_impl(
-        const Value& value, ObjectType type);
+    static ObjectPtr get_object_impl(const Value& value, ObjectType type);
 
     template <typename T>
     T read_integer();

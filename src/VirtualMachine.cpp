@@ -453,7 +453,7 @@ namespace loxx
   void VirtualMachine::execute_create_closure()
   {
     const auto& func_value = constants_[read_integer<UByteCodeArg>()];
-    const auto& func_obj = get<std::shared_ptr<Object>>(func_value);
+    const auto& func_obj = get<ObjectPtr>(func_value);
     auto func = std::static_pointer_cast<FuncObject>(func_obj);
 
     auto closure = loxx::make_shared<ClosureObject>(std::move(func));
@@ -516,7 +516,7 @@ namespace loxx
 
 
   void VirtualMachine::call_object(
-      std::shared_ptr<Object> obj, const std::size_t obj_pos,
+      ObjectPtr obj, const std::size_t obj_pos,
       const UByteCodeArg num_args)
   {
     switch (obj->type()) {
@@ -595,8 +595,8 @@ namespace loxx
     else if (holds_alternative<std::string>(object)) {
       return get<std::string>(object);
     }
-    else if (holds_alternative<std::shared_ptr<Object>>(object)) {
-      const auto ptr = get<std::shared_ptr<Object>>(object);
+    else if (holds_alternative<ObjectPtr>(object)) {
+      const auto ptr = get<ObjectPtr>(object);
 
       std::stringstream ss;
 
@@ -711,7 +711,7 @@ namespace loxx
     case Instruction::CreateClosure: {
       const auto& func_value =
           constants_[read_integer_at_pos<UByteCodeArg>(ret)];
-      const auto& func_obj = get<std::shared_ptr<Object>>(func_value);
+      const auto& func_obj = get<ObjectPtr>(func_value);
       auto func = std::static_pointer_cast<FuncObject>(func_obj);
 
       ret += sizeof(UByteCodeArg);
@@ -769,11 +769,11 @@ namespace loxx
   }
 
 
-  std::shared_ptr<Object> VirtualMachine::get_object(
+  ObjectPtr VirtualMachine::get_object(
       const Value& value, const std::vector<ObjectType>& valid_types)
   {
-    if (holds_alternative<std::shared_ptr<Object>>(value)) {
-      const auto obj_ptr = get<std::shared_ptr<Object>>(value);
+    if (holds_alternative<ObjectPtr>(value)) {
+      const auto obj_ptr = get<ObjectPtr>(value);
 
       for (auto type : valid_types) {
         if (obj_ptr->type() == type) {
@@ -781,7 +781,7 @@ namespace loxx
         }
       }
     }
-    return std::shared_ptr<Object>();
+    return ObjectPtr();
   }
 
 
@@ -809,11 +809,11 @@ namespace loxx
   }
 
 
-  std::shared_ptr<Object> VirtualMachine::get_object_impl(
+  ObjectPtr VirtualMachine::get_object_impl(
       const loxx::Value& value, loxx::ObjectType type)
   {
-    if (holds_alternative<std::shared_ptr<Object>>(value)) {
-      const auto obj_ptr = get<std::shared_ptr<Object>>(value);
+    if (holds_alternative<ObjectPtr>(value)) {
+      const auto obj_ptr = get<ObjectPtr>(value);
 
       if (obj_ptr->type() == type) {
         return obj_ptr;

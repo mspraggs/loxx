@@ -24,8 +24,8 @@ namespace loxx
 {
   void UpvalueObject::grey_references()
   {
-    if (holds_alternative<std::shared_ptr<Object>>(*value_)) {
-      auto obj = get<std::shared_ptr<Object>>(*value_);
+    if (holds_alternative<ObjectPtr>(*value_)) {
+      auto obj = get<ObjectPtr>(*value_);
       obj->set_colour(TriColour::Grey);
     }
   }
@@ -33,8 +33,8 @@ namespace loxx
 
   void UpvalueObject::clear_references()
   {
-    if (holds_alternative<std::shared_ptr<Object>>(*value_)) {
-      auto ptr = get<std::shared_ptr<Object>>(*value_);
+    if (holds_alternative<ObjectPtr>(*value_)) {
+      auto ptr = get<ObjectPtr>(*value_);
       ptr.reset();
     }
   }
@@ -125,11 +125,11 @@ namespace loxx
     cls_->set_colour(TriColour::Grey);
 
     for (auto& field : fields_) {
-      if (not holds_alternative<std::shared_ptr<Object>>(field.second)) {
+      if (not holds_alternative<ObjectPtr>(field.second)) {
         continue;
       }
 
-      auto obj = get<std::shared_ptr<Object>>(field.second);
+      auto obj = get<ObjectPtr>(field.second);
       obj->set_colour(TriColour::Grey);
     }
   }

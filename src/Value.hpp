@@ -52,7 +52,8 @@ namespace loxx
   };
 
 
-  using Value = Variant<double, bool, std::string, std::shared_ptr<Object>>;
+  using ObjectPtr = std::shared_ptr<Object>;
+  using Value = Variant<double, bool, std::string, ObjectPtr>;
 
 
   class Object
