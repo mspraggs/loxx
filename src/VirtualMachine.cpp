@@ -58,7 +58,7 @@ namespace loxx
         };
 
     add_named_constant("clock", Value(InPlace<std::string>(), "clock"));
-    globals_["clock"] = std::make_shared<NativeObject>(fn);
+    globals_["clock"] = loxx::make_shared<NativeObject>(fn);
 
     ObjectTracker::instance().set_roots(
         ObjectTracker::Roots{&stack_, &open_upvalues_, &globals_});
@@ -120,7 +120,7 @@ namespace loxx
 
       case Instruction::CreateClass: {
         auto name = get<std::string>(constants_[read_integer<UByteCodeArg>()]);
-        stack_.push(std::make_shared<ClassObject>(std::move(name)));
+        stack_.push(loxx::make_shared<ClassObject>(std::move(name)));
         break;
       }
 
@@ -147,7 +147,7 @@ namespace loxx
         }
 
         auto name = get<std::string>(constants_[read_integer<UByteCodeArg>()]);
-        stack_.push(std::make_shared<ClassObject>(std::move(name),
+        stack_.push(loxx::make_shared<ClassObject>(std::move(name),
                                                   std::move(super)));
         break;
       }
@@ -456,7 +456,7 @@ namespace loxx
     const auto& func_obj = get<std::shared_ptr<Object>>(func_value);
     auto func = std::static_pointer_cast<FuncObject>(func_obj);
 
-    auto closure = std::make_shared<ClosureObject>(std::move(func));
+    auto closure = loxx::make_shared<ClosureObject>(std::move(func));
 
     for (unsigned int i = 0; i < closure->num_upvalues(); ++i) {
       const auto is_local = read_integer<UByteCodeArg>() != 0;
@@ -479,7 +479,7 @@ namespace loxx
   std::shared_ptr<UpvalueObject> VirtualMachine::capture_upvalue(Value& local)
   {
     if (open_upvalues_.empty()) {
-      open_upvalues_.push_back(std::make_shared<UpvalueObject>(local));
+      open_upvalues_.push_back(loxx::make_shared<UpvalueObject>(local));
       return open_upvalues_.back();
     }
 
@@ -496,7 +496,7 @@ namespace loxx
     }
 
     const auto new_upvalue =
-        open_upvalues_.insert(upvalue, std::make_shared<UpvalueObject>(local));
+        open_upvalues_.insert(upvalue, loxx::make_shared<UpvalueObject>(local));
 
     return *new_upvalue;
   }
@@ -522,7 +522,7 @@ namespace loxx
     switch (obj->type()) {
     case ObjectType::Class: {
       const auto cls = std::static_pointer_cast<ClassObject>(obj);
-      auto instance = std::make_shared<InstanceObject>(cls);
+      auto instance = loxx::make_shared<InstanceObject>(cls);
       stack_.get(obj_pos) = instance;
 
       if (cls->has_method("init")) {
