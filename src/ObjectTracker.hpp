@@ -47,15 +47,14 @@ namespace loxx
     void set_roots(const Roots roots) { roots_ = roots; }
 
   private:
-    ObjectTracker()
-        : gc_size_trigger_(1024), roots_{nullptr, nullptr, nullptr}
-    {}
+    ObjectTracker() : roots_{nullptr, nullptr, nullptr} {}
 
     void collect_garbage();
 
     void grey_roots();
 
-    std::size_t gc_size_trigger_;
+    static constexpr std::size_t gc_size_trigger_ =
+        1024 * 1024 / sizeof(ObjectPtr);
     std::vector<ObjectPtr> objects_;
     Roots roots_;
   };
