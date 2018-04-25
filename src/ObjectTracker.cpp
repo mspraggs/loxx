@@ -31,7 +31,7 @@ namespace loxx
   }
 
 
-  void ObjectTracker::add_object(ObjectPtr object)
+  void ObjectTracker::add_object(std::unique_ptr<Object> object)
   {
     if (objects_.size() > gc_size_trigger_) {
       collect_garbage();
@@ -43,47 +43,39 @@ namespace loxx
 
   void ObjectTracker::collect_garbage()
   {
-    for (auto object : objects_) {
+    for (auto& object : objects_) {
       object->set_colour(TriColour::White);
     }
 
     grey_roots();
 
     const auto is_grey =
-        [] (ObjectPtr obj)
+        [] (const std::unique_ptr<Object>& obj)
         {
-          return obj->colour() == TriColour::Grey;
+          return obj and obj->colour() == TriColour::Grey;
         };
 
     auto num_greys = std::count_if(objects_.begin(), objects_.end(), is_grey);
 
+    std::vector<std::unique_ptr<Object>> reachable_objects;
+    reachable_objects.reserve(objects_.size());
+
     while (num_greys > 0) {
-      for (auto object : objects_) {
-        if (object->colour() != TriColour::Grey) {
+      for (auto& object : objects_) {
+        if (not object or object->colour() != TriColour::Grey) {
           continue;
         }
 
         object->set_colour(TriColour::Black);
         object->grey_references();
+
+        reachable_objects.push_back(std::move(object));
       }
 
       num_greys = std::count_if(objects_.begin(), objects_.end(), is_grey);
     }
 
-    for (auto object : objects_) {
-      if (object->colour() == TriColour::White) {
-        object->clear_references();
-      }
-    }
-
-    for (auto it = objects_.begin(); it != objects_.end(); ) {
-      if ((*it)->colour() == TriColour::White) {
-        objects_.erase(it);
-      }
-      else {
-        ++it;
-      }
-    }
+    objects_ = std::move(reachable_objects);
   }
 
 

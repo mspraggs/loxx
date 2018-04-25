@@ -19,6 +19,7 @@
 
 #include "Compiler.hpp"
 #include "logging.hpp"
+#include "ObjectTracker.hpp"
 #include "VirtualMachine.hpp"
 
 
@@ -513,11 +514,11 @@ namespace loxx
     rewrite_integer(jump_pos, jump_size);
 
     // Add the new function object as a constant
-    auto func = std::make_shared<FuncObject>(
+    auto func = loxx::make_shared<FuncObject>(
         stmt.name.lexeme(), bytecode_pos,
         static_cast<unsigned int>(stmt.parameters.size()),
         upvalues.size());
-    const auto index = vm_->add_constant(std::move(func));
+    const auto index = vm_->add_constant(Value(InPlace<ObjectPtr>(), func));
 
     add_instruction(Instruction::CreateClosure);
     add_integer<UByteCodeArg>(index);

@@ -17,6 +17,7 @@
  * Created by Matt Spraggs on 18/04/18.
  */
 
+#include "ObjectTracker.hpp"
 #include "Value.hpp"
 
 
@@ -27,15 +28,6 @@ namespace loxx
     if (holds_alternative<ObjectPtr>(*value_)) {
       auto obj = get<ObjectPtr>(*value_);
       obj->set_colour(TriColour::Grey);
-    }
-  }
-
-
-  void UpvalueObject::clear_references()
-  {
-    if (holds_alternative<ObjectPtr>(*value_)) {
-      auto ptr = get<ObjectPtr>(*value_);
-      ptr.reset();
     }
   }
 
@@ -56,14 +48,6 @@ namespace loxx
   }
 
 
-  void ClosureObject::clear_references()
-  {
-    instance_.reset();
-    function_.reset();
-    upvalues_.clear();
-  }
-
-
   bool ClassObject::has_method(const std::string& name) const
   {
     bool ret = methods_.count(name) != 0;
@@ -76,28 +60,28 @@ namespace loxx
   }
 
 
-  std::shared_ptr<ClosureObject> ClassObject::method(
+  ClosureObject* ClassObject::method(
       const std::string& name) const
   {
     if (methods_.count(name) != 0) {
-      return std::make_shared<ClosureObject>(*methods_.at(name));
+      return loxx::make_shared<ClosureObject>(*methods_.at(name));
     }
     if (superclass_) {
       return superclass_->method(name);
     }
-    return std::shared_ptr<ClosureObject>();
+    return nullptr;
   }
 
 
-  std::shared_ptr<ClosureObject> ClassObject::method(const std::string& name)
+  ClosureObject* ClassObject::method(const std::string& name)
   {
     if (methods_.count(name) != 0) {
-      return std::make_shared<ClosureObject>(*methods_[name]);
+      return loxx::make_shared<ClosureObject>(*methods_[name]);
     }
     if (superclass_) {
       return superclass_->method(name);
     }
-    return std::shared_ptr<ClosureObject>();
+    return nullptr;
   }
 
 
@@ -110,13 +94,6 @@ namespace loxx
     if (superclass_) {
       superclass_->set_colour(TriColour::Grey);
     }
-  }
-
-
-  void ClassObject::clear_references()
-  {
-    superclass_.reset();
-    methods_.clear();
   }
 
 
@@ -135,9 +112,4 @@ namespace loxx
   }
 
 
-  void InstanceObject::clear_references()
-  {
-    cls_.reset();
-    fields_.clear();
-  }
 }

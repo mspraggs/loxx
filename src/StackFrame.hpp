@@ -34,13 +34,13 @@ namespace loxx
   {
   public:
     StackFrame(const std::size_t prev_ip, const std::size_t prev_stack_size,
-               Value& slots_base, std::shared_ptr<ClosureObject> closure)
-        : StackFrame(prev_ip, prev_stack_size, &slots_base, std::move(closure))
+               Value& slots_base, ClosureObject* closure)
+        : StackFrame(prev_ip, prev_stack_size, &slots_base, closure)
     {}
     StackFrame(const std::size_t prev_ip, const std::size_t prev_stack_size,
-               Value* slots_base, std::shared_ptr<ClosureObject> closure)
+               Value* slots_base, ClosureObject* closure)
         : prev_ip_(prev_ip), prev_stack_size_(prev_stack_size),
-          slots_(slots_base), closure_(std::move(closure))
+          slots_(slots_base), closure_(closure)
     {}
 
     std::size_t prev_ip() const { return prev_ip_; }
@@ -49,13 +49,13 @@ namespace loxx
     const Value& slot(const std::size_t i) const { return slots_[i]; }
     Value& slot(const std::size_t i) { return slots_[i]; }
 
-    const ClosureObject* closure() const { return closure_.get(); }
-    ClosureObject* closure() { return closure_.get(); }
+    const ClosureObject* closure() const { return closure_; }
+    ClosureObject* closure() { return closure_; }
 
   private:
     std::size_t prev_ip_, prev_stack_size_;
     Value* slots_;
-    std::shared_ptr<ClosureObject> closure_;
+    ClosureObject* closure_;
   };
 }
 

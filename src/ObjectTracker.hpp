@@ -20,12 +20,12 @@
 #ifndef LOXX_OBJECTTRACKER_HPP
 #define LOXX_OBJECTTRACKER_HPP
 
-#include "Stack.hpp"
-#include "Value.hpp"
-
 #include <list>
 #include <memory>
 #include <vector>
+
+#include "Stack.hpp"
+#include "Value.hpp"
 
 
 namespace loxx
@@ -36,36 +36,40 @@ namespace loxx
     struct Roots
     {
       Stack<Value>* stack;
-      std::list<std::shared_ptr<UpvalueObject>>* upvalues;
+      std::list<UpvalueObject*>* upvalues;
       std::unordered_map<std::string, Value>* globals;
     };
 
     static ObjectTracker& instance();
 
-    void add_object(ObjectPtr object);
+    void add_object(std::unique_ptr<Object> object);
 
     void set_roots(const Roots roots) { roots_ = roots; }
 
   private:
-    ObjectTracker() : roots_{nullptr, nullptr, nullptr} {}
+    ObjectTracker()
+        : roots_{nullptr, nullptr, nullptr}
+    {
+      objects_.reserve(gc_size_trigger_);
+    }
 
     void collect_garbage();
 
     void grey_roots();
 
-    static constexpr std::size_t gc_size_trigger_ =
-        1024 * 1024 / sizeof(ObjectPtr);
-    std::vector<ObjectPtr> objects_;
+    static constexpr std::size_t gc_size_trigger_ = 1024 * 1024;
+    std::vector<std::unique_ptr<Object>> objects_;
     Roots roots_;
   };
 
 
   template <typename T0, typename... Ts>
-  std::shared_ptr<T0> make_shared(Ts&&... args)
+  T0* make_shared(Ts&&... args)
   {
-    const auto ptr = std::make_shared<T0>(std::forward<Ts>(args)...);
-    ObjectTracker::instance().add_object(ptr);
-    return ptr;
+    auto ptr = std::make_unique<T0>(std::forward<Ts>(args)...);
+    const auto ret = ptr.get();
+    ObjectTracker::instance().add_object(std::move(ptr));
+    return ret;
   };
 }
 

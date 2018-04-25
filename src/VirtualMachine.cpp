@@ -32,15 +32,15 @@
 namespace loxx
 {
   template <>
-  std::shared_ptr<ClassObject> VirtualMachine::get_object(const Value& value);
+  ClassObject* VirtualMachine::get_object(const Value& value);
 
 
   template <>
-  std::shared_ptr<ClosureObject> VirtualMachine::get_object(const Value& value);
+  ClosureObject* VirtualMachine::get_object(const Value& value);
 
 
   template <>
-  std::shared_ptr<InstanceObject> VirtualMachine::get_object(
+  InstanceObject* VirtualMachine::get_object(
       const Value& value);
 
 
@@ -58,7 +58,8 @@ namespace loxx
         };
 
     add_named_constant("clock", Value(InPlace<std::string>(), "clock"));
-    globals_["clock"] = loxx::make_shared<NativeObject>(fn);
+    globals_["clock"] =
+        Value(InPlace<ObjectPtr>(), loxx::make_shared<NativeObject>(fn));
 
     ObjectTracker::instance().set_roots(
         ObjectTracker::Roots{&stack_, &open_upvalues_, &globals_});
@@ -120,7 +121,8 @@ namespace loxx
 
       case Instruction::CreateClass: {
         auto name = get<std::string>(constants_[read_integer<UByteCodeArg>()]);
-        stack_.push(loxx::make_shared<ClassObject>(std::move(name)));
+        const auto cls = loxx::make_shared<ClassObject>(std::move(name));
+        stack_.push(Value(InPlace<ObjectPtr>(), cls));
         break;
       }
 
@@ -147,8 +149,8 @@ namespace loxx
         }
 
         auto name = get<std::string>(constants_[read_integer<UByteCodeArg>()]);
-        stack_.push(loxx::make_shared<ClassObject>(std::move(name),
-                                                  std::move(super)));
+        const auto cls = loxx::make_shared<ClassObject>(std::move(name), super);
+        stack_.push(Value(InPlace<ObjectPtr>(), cls));
         break;
       }
 
@@ -198,9 +200,9 @@ namespace loxx
         }
         else if (instance->cls().has_method(name)) {
           auto method = instance->cls().method(name);
-          method->bind(std::move(instance));
+          method->bind(instance);
           stack_.pop();
-          stack_.push(method);
+          stack_.push(Value(InPlace<ObjectPtr>(), method));
         }
         else {
           throw RuntimeError(get_current_line(),
@@ -218,9 +220,9 @@ namespace loxx
 
         if (cls->has_method(name)) {
           auto method = cls->method(name);
-          method->bind(std::move(instance));
+          method->bind(instance);
           stack_.pop();
-          stack_.push(method);
+          stack_.push(Value(InPlace<ObjectPtr>(), method));
         }
         else {
           throw RuntimeError(get_current_line(),
@@ -307,7 +309,7 @@ namespace loxx
                              "Only instances have fields.");
         }
 
-        const auto instance = std::static_pointer_cast<InstanceObject>(obj);
+        const auto instance = static_cast<InstanceObject*>(obj);
         const auto& name =
             get<std::string>(constants_[read_integer<UByteCodeArg>()]);
 
@@ -446,7 +448,7 @@ namespace loxx
                          "Can only call functions and classes.");
     }
 
-    call_object(std::move(obj), obj_pos, num_args);
+    call_object(obj, obj_pos, num_args);
   }
 
 
@@ -454,7 +456,7 @@ namespace loxx
   {
     const auto& func_value = constants_[read_integer<UByteCodeArg>()];
     const auto& func_obj = get<ObjectPtr>(func_value);
-    auto func = std::static_pointer_cast<FuncObject>(func_obj);
+    auto func = static_cast<FuncObject*>(func_obj);
 
     auto closure = loxx::make_shared<ClosureObject>(std::move(func));
 
@@ -472,11 +474,11 @@ namespace loxx
       }
     }
 
-    stack_.push(closure);
+    stack_.push(Value(InPlace<ObjectPtr>(), closure));
   }
 
 
-  std::shared_ptr<UpvalueObject> VirtualMachine::capture_upvalue(Value& local)
+  UpvalueObject* VirtualMachine::capture_upvalue(Value& local)
   {
     if (open_upvalues_.empty()) {
       open_upvalues_.push_back(loxx::make_shared<UpvalueObject>(local));
@@ -521,9 +523,9 @@ namespace loxx
   {
     switch (obj->type()) {
     case ObjectType::Class: {
-      const auto cls = std::static_pointer_cast<ClassObject>(obj);
+      const auto cls = static_cast<ClassObject*>(obj);
       auto instance = loxx::make_shared<InstanceObject>(cls);
-      stack_.get(obj_pos) = instance;
+      get<ObjectPtr>(stack_.get(obj_pos)) = instance;
 
       if (cls->has_method("init")) {
         auto method = cls->method("init");
@@ -541,7 +543,7 @@ namespace loxx
     }
 
     case ObjectType::Closure: {
-      const auto closure = std::static_pointer_cast<ClosureObject>(obj);
+      const auto closure = static_cast<ClosureObject*>(obj);
 
       if (closure->function().arity() != num_args) {
         std::stringstream ss;
@@ -551,7 +553,7 @@ namespace loxx
       }
 
       if (closure->instance()) {
-        stack_.get(obj_pos) = closure->instance();
+        get<ObjectPtr>(stack_.get(obj_pos)) = closure->instance();
       }
       auto& base_slot = stack_.get(obj_pos + (closure->instance() ? 0 : 1));
 
@@ -562,7 +564,7 @@ namespace loxx
     }
 
     case ObjectType::Native: {
-      const auto native = std::static_pointer_cast<NativeObject>(obj);
+      const auto native = static_cast<NativeObject*>(obj);
       const auto result = native->call(&stack_.top(num_args),
                                        static_cast<unsigned int>(num_args));
 
@@ -602,21 +604,21 @@ namespace loxx
 
       switch (ptr->type()) {
       case ObjectType::Function:
-        ss << "<fn " << std::static_pointer_cast<FuncObject>(ptr)->lexeme()
+        ss << "<fn " << static_cast<FuncObject*>(ptr)->lexeme()
            << '>';
         break;
       case ObjectType::Class: {
-        const auto cls = std::static_pointer_cast<ClassObject>(ptr);
+        const auto cls = static_cast<ClassObject*>(ptr);
         ss << "<class " << cls->lexeme() << '>';
         break;
       }
       case ObjectType::Closure: {
-        const auto closure = std::static_pointer_cast<ClosureObject>(ptr);
+        const auto closure = static_cast<ClosureObject*>(ptr);
         ss << "<fn " << closure->function().lexeme() << '>';
         break;
       }
       case ObjectType::Instance: {
-        const auto instance = std::static_pointer_cast<InstanceObject>(ptr);
+        const auto instance = static_cast<InstanceObject*>(ptr);
         ss << instance->cls().lexeme() << " instance";
       }
       default:
@@ -712,7 +714,7 @@ namespace loxx
       const auto& func_value =
           constants_[read_integer_at_pos<UByteCodeArg>(ret)];
       const auto& func_obj = get<ObjectPtr>(func_value);
-      auto func = std::static_pointer_cast<FuncObject>(func_obj);
+      auto func = static_cast<FuncObject*>(func_obj);
 
       ret += sizeof(UByteCodeArg);
 
@@ -786,25 +788,25 @@ namespace loxx
 
 
   template <>
-  std::shared_ptr<ClassObject> VirtualMachine::get_object(const Value& value)
+  ClassObject* VirtualMachine::get_object(const Value& value)
   {
-    return std::static_pointer_cast<ClassObject>(
+    return static_cast<ClassObject*>(
         get_object_impl(value, ObjectType::Class));
   }
 
 
   template <>
-  std::shared_ptr<ClosureObject> VirtualMachine::get_object(const Value& value)
+  ClosureObject* VirtualMachine::get_object(const Value& value)
   {
-    return std::static_pointer_cast<ClosureObject>(
+    return static_cast<ClosureObject*>(
         get_object_impl(value, ObjectType::Closure));
   }
 
 
   template <>
-  std::shared_ptr<InstanceObject> VirtualMachine::get_object(const Value& value)
+  InstanceObject* VirtualMachine::get_object(const Value& value)
   {
-    return std::static_pointer_cast<InstanceObject>(
+    return static_cast<InstanceObject*>(
         get_object_impl(value, ObjectType::Instance));
   }
 

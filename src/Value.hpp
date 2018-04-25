@@ -52,7 +52,7 @@ namespace loxx
   };
 
 
-  using ObjectPtr = std::shared_ptr<Object>;
+  using ObjectPtr = Object*;
   using Value = Variant<double, bool, std::string, ObjectPtr>;
 
 
@@ -67,7 +67,6 @@ namespace loxx
     void set_colour(const TriColour colour) { colour_ = colour; }
 
     virtual void grey_references() {}
-    virtual void clear_references() {}
 
   protected:
     explicit Object(const ObjectType type)
@@ -121,7 +120,6 @@ namespace loxx
     void set_value(const Value& value) { *value_ = value; }
 
     void grey_references() override;
-    void clear_references() override;
 
   private:
     Value* value_;
@@ -132,32 +130,30 @@ namespace loxx
   class ClosureObject : public Object
   {
   public:
-    explicit ClosureObject(std::shared_ptr<FuncObject> func)
+    explicit ClosureObject(FuncObject* func)
         : Object(ObjectType::Closure),
-          function_(std::move(func)), upvalues_(function_->num_upvalues())
+          instance_(), function_(func), upvalues_(function_->num_upvalues())
     {
     }
 
-    std::shared_ptr<UpvalueObject> upvalue(const std::size_t i) const
+    UpvalueObject* upvalue(const std::size_t i) const
     { return upvalues_[i]; }
-    void set_upvalue(const std::size_t i, std::shared_ptr<UpvalueObject> value)
-    { upvalues_[i] = std::move(value); }
+    void set_upvalue(const std::size_t i, UpvalueObject* value)
+    { upvalues_[i] = value; }
 
     std::size_t num_upvalues() const { return upvalues_.size(); }
 
     const FuncObject& function() const { return *function_; }
 
-    void bind(std::shared_ptr<InstanceObject> instance)
-    { instance_ = std::move(instance); }
-    std::shared_ptr<InstanceObject> instance() const { return instance_; }
+    void bind(InstanceObject* instance) { instance_ = instance; }
+    InstanceObject* instance() const { return instance_; }
 
     void grey_references() override;
-    void clear_references() override;
 
   private:
-    std::shared_ptr<InstanceObject> instance_;
-    std::shared_ptr<FuncObject> function_;
-    std::vector<std::shared_ptr<UpvalueObject>> upvalues_;
+    InstanceObject* instance_;
+    FuncObject* function_;
+    std::vector<UpvalueObject*> upvalues_;
   };
 
 
@@ -165,37 +161,36 @@ namespace loxx
   {
   public:
     explicit ClassObject(std::string lexeme,
-                         std::shared_ptr<ClassObject> superclass = {})
+                         ClassObject* superclass = {})
         : Object(ObjectType::Class),
-          lexeme_(std::move(lexeme)), superclass_(std::move(superclass))
+          lexeme_(std::move(lexeme)), superclass_(superclass)
     {}
 
     const std::string& lexeme() const { return lexeme_; }
 
     bool has_method(const std::string& name) const;
-    std::shared_ptr<ClosureObject> method(const std::string& name) const;
-    std::shared_ptr<ClosureObject> method(const std::string& name);
+    ClosureObject* method(const std::string& name) const;
+    ClosureObject* method(const std::string& name);
 
     void set_method(const std::string& name,
-                    std::shared_ptr<ClosureObject> method)
+                    ClosureObject* method)
     { methods_[name] = std::move(method); }
 
     void grey_references() override;
-    void clear_references() override;
 
   private:
     std::string lexeme_;
-    std::unordered_map<std::string, std::shared_ptr<ClosureObject>> methods_;
-    std::shared_ptr<ClassObject> superclass_;
+    std::unordered_map<std::string, ClosureObject*> methods_;
+    ClassObject* superclass_;
   };
 
 
   class InstanceObject : public Object
   {
   public:
-    explicit InstanceObject(std::shared_ptr<ClassObject> cls)
+    explicit InstanceObject(ClassObject* cls)
         : Object(ObjectType::Instance),
-          cls_(std::move(cls))
+          cls_(cls)
     {}
 
     bool has_field(const std::string& name) const
@@ -211,10 +206,9 @@ namespace loxx
     const ClassObject& cls() const { return *cls_; }
 
     void grey_references() override;
-    void clear_references() override;
 
   private:
-    std::shared_ptr<ClassObject> cls_;
+    ClassObject* cls_;
     std::unordered_map<std::string, Value> fields_;
   };
 
