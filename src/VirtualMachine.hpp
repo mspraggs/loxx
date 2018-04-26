@@ -61,11 +61,8 @@ namespace loxx
     void print_stack() const;
     void disassemble_bytecode();
     size_t disassemble_instruction() const;
-    static ObjectPtr get_object(
+    static ObjectPtr select_object(
         const Value& value, const std::vector<ObjectType>& valid_types);
-    template <typename T>
-    static raw_ptr<T> get_object(const Value& value);
-    static ObjectPtr get_object_impl(const Value& value, ObjectType type);
 
     template <typename T>
     T read_integer();

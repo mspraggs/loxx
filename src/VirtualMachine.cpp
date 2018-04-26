@@ -31,19 +31,6 @@
 
 namespace loxx
 {
-  template <>
-  raw_ptr<ClassObject> VirtualMachine::get_object(const Value& value);
-
-
-  template <>
-  raw_ptr<ClosureObject> VirtualMachine::get_object(const Value& value);
-
-
-  template <>
-  raw_ptr<InstanceObject> VirtualMachine::get_object(
-      const Value& value);
-
-
   VirtualMachine::VirtualMachine(const bool debug)
       : debug_(debug), ip_(0)
   {
@@ -439,9 +426,9 @@ namespace loxx
   {
     const auto num_args = read_integer<UByteCodeArg>();
     const auto obj_pos = stack_.size() - num_args - 1;
-    auto obj = get_object(stack_.get(obj_pos),
-                          {ObjectType::Class, ObjectType::Closure,
-                           ObjectType::Native});
+    auto obj = select_object(stack_.get(obj_pos),
+                             {ObjectType::Class, ObjectType::Closure,
+                              ObjectType::Native});
 
     if (not obj) {
       throw RuntimeError(get_current_line(),
@@ -771,7 +758,7 @@ namespace loxx
   }
 
 
-  ObjectPtr VirtualMachine::get_object(
+  ObjectPtr VirtualMachine::select_object(
       const Value& value, const std::vector<ObjectType>& valid_types)
   {
     if (holds_alternative<ObjectPtr>(value)) {
@@ -784,45 +771,6 @@ namespace loxx
       }
     }
     return ObjectPtr();
-  }
-
-
-  template <>
-  ClassObject* VirtualMachine::get_object(const Value& value)
-  {
-    return static_cast<ClassObject*>(
-        get_object_impl(value, ObjectType::Class));
-  }
-
-
-  template <>
-  ClosureObject* VirtualMachine::get_object(const Value& value)
-  {
-    return static_cast<ClosureObject*>(
-        get_object_impl(value, ObjectType::Closure));
-  }
-
-
-  template <>
-  InstanceObject* VirtualMachine::get_object(const Value& value)
-  {
-    return static_cast<InstanceObject*>(
-        get_object_impl(value, ObjectType::Instance));
-  }
-
-
-  ObjectPtr VirtualMachine::get_object_impl(
-      const loxx::Value& value, loxx::ObjectType type)
-  {
-    if (holds_alternative<ObjectPtr>(value)) {
-      const auto obj_ptr = get<ObjectPtr>(value);
-
-      if (obj_ptr->type() == type) {
-        return obj_ptr;
-      }
-    }
-
-    return {};
   }
 
 

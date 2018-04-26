@@ -228,6 +228,68 @@ namespace loxx
   private:
     Fn func_;
   };
+
+
+  namespace detail
+  {
+    template <typename T>
+    constexpr ObjectType object_type();
+
+
+    template<>
+    constexpr ObjectType object_type<ClassObject>()
+    {
+      return ObjectType::Class;
+    }
+
+
+    template<>
+    constexpr ObjectType object_type<ClosureObject>()
+    {
+      return ObjectType::Closure;
+    }
+
+
+    template<>
+    constexpr ObjectType object_type<FuncObject>()
+    {
+      return ObjectType::Function;
+    }
+
+
+    template<>
+    constexpr ObjectType object_type<InstanceObject>()
+    {
+      return ObjectType::Instance;
+    }
+
+
+    template<>
+    constexpr ObjectType object_type<NativeObject>()
+    {
+      return ObjectType::Native;
+    }
+
+
+    template<>
+    constexpr ObjectType object_type<StringObject>()
+    {
+      return ObjectType::Upvalue;
+    }
+  }
+
+
+  template <typename T>
+  constexpr raw_ptr<T> get_object(const Value& value)
+  {
+    if (holds_alternative<ObjectPtr>(value) and
+        get<ObjectPtr>(value)->type() == detail::object_type<T>())
+    {
+      return static_cast<raw_ptr<T>>(get<ObjectPtr>(value));
+    }
+
+    return nullptr;
+  }
 }
 
 #endif // LOXX_VALUE_HPP
