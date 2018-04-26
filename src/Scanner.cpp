@@ -20,6 +20,7 @@
 #include "globals.hpp"
 #include "logging.hpp"
 #include "Scanner.hpp"
+#include "ObjectTracker.hpp"
 
 #include <cctype>
 
@@ -176,7 +177,9 @@ namespace loxx
 
     advance();
 
-    add_token(TokenType::String, src_.substr(start_ + 1, current_ - start_ - 2));
+    const auto string_obj = make_object<StringObject>(
+        src_.substr(start_ + 1, current_ - start_ - 2));
+    add_token(TokenType::String, Value(InPlace<ObjectPtr>(), string_obj));
   }
 
 

@@ -91,7 +91,8 @@ namespace loxx
       literal_string = std::to_string(get<double>(literal));
     }
     else if (token.type() == TokenType::String) {
-      literal_string = get<std::string>(literal);
+      literal_string =
+          static_cast<std::string>(*get_object<StringObject>(literal));
     }
     else if (token.type() == TokenType::True) {
       literal_string = "true";

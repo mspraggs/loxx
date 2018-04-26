@@ -44,7 +44,7 @@ namespace loxx
           return Value(static_cast<double>(millis) / 1000.0);
         };
 
-    add_named_constant("clock", Value(InPlace<std::string>(), "clock"));
+    add_string_constant("clock");
     globals_["clock"] =
         Value(InPlace<ObjectPtr>(), make_object<NativeObject>(fn));
 
@@ -107,7 +107,7 @@ namespace loxx
       }
 
       case Instruction::CreateClass: {
-        auto name = get<std::string>(constants_[read_integer<UByteCodeArg>()]);
+        auto name = read_string();
         const auto cls = make_object<ClassObject>(std::move(name));
         stack_.push(Value(InPlace<ObjectPtr>(), cls));
         break;
@@ -120,8 +120,7 @@ namespace loxx
       case Instruction::CreateMethod: {
         const auto cls = get_object<ClassObject>(stack_.top(1));
         auto closure = get_object<ClosureObject>(stack_.top());
-        const auto& name =
-            get<std::string>(constants_[read_integer<UByteCodeArg>()]);
+        const auto& name = read_string();
 
         cls->set_method(name, closure);
         stack_.pop();
@@ -135,15 +134,14 @@ namespace loxx
           throw RuntimeError(get_current_line(), "Superclass must be a class.");
         }
 
-        auto name = get<std::string>(constants_[read_integer<UByteCodeArg>()]);
+        auto name = read_string();
         const auto cls = make_object<ClassObject>(std::move(name), super);
         stack_.push(Value(InPlace<ObjectPtr>(), cls));
         break;
       }
 
       case Instruction::DefineGlobal: {
-        const auto arg = read_integer<UByteCodeArg>();
-        const auto varname = get<std::string>(constants_[arg]);
+        const auto varname = read_string();
         globals_[varname] = stack_.pop();
         break;
       }
@@ -153,8 +151,7 @@ namespace loxx
         break;
 
       case Instruction::GetGlobal: {
-        const auto arg = read_integer<UByteCodeArg>();
-        const auto varname = get<std::string>(constants_[arg]);
+        const auto varname = read_string();
 
         if (globals_.count(varname) != 1) {
           throw RuntimeError(get_current_line(),
@@ -178,8 +175,7 @@ namespace loxx
                              "Only instances have properties.");
         }
 
-        const auto& name =
-            get<std::string>(constants_[read_integer<UByteCodeArg>()]);
+        const auto& name = read_string();
 
         if (instance->has_field(name)) {
           stack_.pop();
@@ -202,8 +198,7 @@ namespace loxx
         const auto cls_value = stack_.pop();
         const auto cls = get_object<ClassObject>(cls_value);
         auto instance = get_object<InstanceObject>(stack_.top());
-        const auto& name =
-            get<std::string>(constants_[read_integer<UByteCodeArg>()]);
+        const auto& name = read_string();
 
         if (cls->has_method(name)) {
           auto method = cls->method(name);
@@ -271,8 +266,7 @@ namespace loxx
       }
 
       case Instruction::SetGlobal: {
-        const auto arg = read_integer<UByteCodeArg>();
-        const auto varname = get<std::string>(constants_[arg]);
+        const auto varname = read_string();
 
         if (globals_.count(varname) == 0) {
           throw RuntimeError(get_current_line(),
@@ -297,8 +291,7 @@ namespace loxx
         }
 
         const auto instance = static_cast<raw_ptr<InstanceObject>>(obj);
-        const auto& name =
-            get<std::string>(constants_[read_integer<UByteCodeArg>()]);
+        const auto& name = read_string();
 
         instance->set_field(name, stack_.top());
         const auto value = stack_.pop();
@@ -339,6 +332,13 @@ namespace loxx
     constant_map_[lexeme] = index;
 
     return index;
+  }
+
+
+  UByteCodeArg VirtualMachine::add_string_constant(const std::string& str)
+  {
+    const auto ptr = make_object<StringObject>(str);
+    return add_named_constant(str, Value(InPlace<ObjectPtr>(), ptr));
   }
 
 
@@ -399,15 +399,17 @@ namespace loxx
       check_number_operands(first, second);
       stack_.push(get<double>(first) - get<double>(second));
       break;
-    case Instruction::Add:
-      if (holds_alternative<std::string>(first) and
-          holds_alternative<std::string>(second))
-      {
-        stack_.push(get<std::string>(first) + get<std::string>(second));
+    case Instruction::Add: {
+      raw_ptr<StringObject> str1 = nullptr, str2 = nullptr;
+      if ((str1 = get_object<StringObject>(first)) and
+          (str2 = get_object<StringObject>(second))) {
+        const auto new_obj =
+            make_object<StringObject>(static_cast<std::string>(*str1) +
+                                      static_cast<std::string>(*str2));
+        stack_.push(Value(InPlace<ObjectPtr>(), new_obj));
       }
       else if (holds_alternative<double>(first) and
-               holds_alternative<double>(second))
-      {
+               holds_alternative<double>(second)) {
         stack_.push(get<double>(first) + get<double>(second));
       }
       else {
@@ -416,6 +418,7 @@ namespace loxx
             "Binary operands must be two numbers or two strings.");
       }
       break;
+    }
     default:
       break;
     }
@@ -581,8 +584,8 @@ namespace loxx
     else if (holds_alternative<bool>(object)) {
       return get<bool>(object) ? "true" : "false";
     }
-    else if (holds_alternative<std::string>(object)) {
-      return get<std::string>(object);
+    else if (const auto str = get_object<StringObject>(object)) {
+      return static_cast<std::string>(*str);
     }
     else if (holds_alternative<ObjectPtr>(object)) {
       const auto ptr = get<ObjectPtr>(object);
@@ -771,6 +774,14 @@ namespace loxx
       }
     }
     return ObjectPtr();
+  }
+
+
+  std::string VirtualMachine::read_string()
+  {
+    const auto str_obj =
+        get_object<StringObject>(constants_[read_integer<UByteCodeArg>()]);
+    return static_cast<std::__cxx11::string>(*str_obj);
   }
 
 

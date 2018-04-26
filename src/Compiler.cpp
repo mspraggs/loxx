@@ -546,7 +546,7 @@ namespace loxx
   {
     const Optional<UByteCodeArg> arg =
         scope_depth_ == 0 ?
-        vm_->add_named_constant(name.lexeme(), name.lexeme()) :
+        vm_->add_string_constant(name.lexeme()) :
         Optional<UByteCodeArg>();
 
     if (not arg) {
@@ -746,7 +746,7 @@ namespace loxx
 
   UByteCodeArg Compiler::make_string_constant(const std::string& str) const
   {
-    return vm_->add_named_constant(str, str);
+    return vm_->add_string_constant(str);
   }
 
 

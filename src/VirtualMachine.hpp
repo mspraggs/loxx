@@ -44,6 +44,7 @@ namespace loxx
 
     UByteCodeArg add_named_constant(const std::string& lexeme,
                                     const Value& value);
+    UByteCodeArg add_string_constant(const std::string& str);
     UByteCodeArg add_constant(const Value& value);
 
   private:
@@ -66,6 +67,7 @@ namespace loxx
 
     template <typename T>
     T read_integer();
+    std::string read_string();
     template <typename T>
     T read_integer_at_pos(const std::size_t pos) const;
     void check_number_operands(const Value& first,
