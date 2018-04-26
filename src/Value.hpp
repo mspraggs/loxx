@@ -40,6 +40,7 @@ namespace loxx
     Function,
     Instance,
     Native,
+    String,
     Upvalue,
   };
 
@@ -53,7 +54,7 @@ namespace loxx
 
 
   using ObjectPtr = raw_ptr<Object>;
-  using Value = Variant<double, bool, std::string, ObjectPtr>;
+  using Value = Variant<double, bool, ObjectPtr>;
 
 
   class Object
@@ -230,6 +231,21 @@ namespace loxx
   };
 
 
+  class StringObject : public Object
+  {
+  public:
+    explicit StringObject(std::string value)
+        : Object(ObjectType::String),
+          value_(std::move(value))
+    {}
+
+    explicit operator std::string() { return value_; }
+
+  private:
+    std::string value_;
+  };
+
+
   namespace detail
   {
     template <typename T>
@@ -273,6 +289,13 @@ namespace loxx
 
     template<>
     constexpr ObjectType object_type<StringObject>()
+    {
+      return ObjectType::String;
+    }
+
+
+    template<>
+    constexpr ObjectType object_type<UpvalueObject>()
     {
       return ObjectType::Upvalue;
     }
