@@ -35,6 +35,7 @@ namespace loxx
   public:
     struct Roots
     {
+      std::vector<Value>* constants;
       Stack<Value>* stack;
       std::list<raw_ptr<UpvalueObject>>* upvalues;
       std::unordered_map<std::string, Value>* globals;

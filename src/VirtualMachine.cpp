@@ -49,7 +49,7 @@ namespace loxx
         Value(InPlace<ObjectPtr>(), make_object<NativeObject>(fn));
 
     ObjectTracker::instance().set_roots(
-        ObjectTracker::Roots{&stack_, &open_upvalues_, &globals_});
+        ObjectTracker::Roots{&constants_, &stack_, &open_upvalues_, &globals_});
   }
 
 
