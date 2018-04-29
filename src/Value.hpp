@@ -241,6 +241,8 @@ namespace loxx
 
     explicit operator std::string() { return value_; }
 
+    const std::string& as_std_string() const { return value_; }
+
   private:
     std::string value_;
   };

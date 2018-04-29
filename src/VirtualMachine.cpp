@@ -404,8 +404,8 @@ namespace loxx
       if ((str1 = get_object<StringObject>(first)) and
           (str2 = get_object<StringObject>(second))) {
         const auto new_obj =
-            make_object<StringObject>(static_cast<std::string>(*str1) +
-                                      static_cast<std::string>(*str2));
+            make_object<StringObject>(str1->as_std_string() +
+                                      str2->as_std_string());
         stack_.push(Value(InPlace<ObjectPtr>(), new_obj));
       }
       else if (holds_alternative<double>(first) and
@@ -585,7 +585,7 @@ namespace loxx
       return get<bool>(object) ? "true" : "false";
     }
     else if (const auto str = get_object<StringObject>(object)) {
-      return static_cast<std::string>(*str);
+      return str->as_std_string();
     }
     else if (holds_alternative<ObjectPtr>(object)) {
       const auto ptr = get<ObjectPtr>(object);
@@ -781,7 +781,7 @@ namespace loxx
   {
     const auto str_obj =
         get_object<StringObject>(constants_[read_integer<UByteCodeArg>()]);
-    return static_cast<std::__cxx11::string>(*str_obj);
+    return str_obj->as_std_string();
   }
 
 
