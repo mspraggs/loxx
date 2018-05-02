@@ -52,11 +52,10 @@ namespace loxx
     class_type_ = stmt.superclass ? ClassType::Subclass : ClassType::Superclass;
 
     // If this class derives from an existing class, we create an additional
-    // scope containing a reference to the superclass
+    // scope containing a reference to the superclass, which is then captured
+    // as an upvalue if it's used anywhere via the super keyword
     if (stmt.superclass) {
       begin_scope();
-      locals_.push({});
-      upvalues_.push({});
 
       const auto super_token =
           Token(TokenType::Super, "super", stmt.name.line());
@@ -89,8 +88,6 @@ namespace loxx
     // Close the scope we opened above, if applicable
     if (stmt.superclass) {
       end_scope();
-      locals_.pop();
-      upvalues_.pop();
     }
 
     define_variable(name_constant, stmt.name);
