@@ -49,7 +49,7 @@ namespace loxx
 
   private:
     ObjectTracker()
-        : roots_{nullptr, nullptr, nullptr}
+        : roots_{nullptr, nullptr, nullptr, nullptr}
     {
       objects_.reserve(gc_size_trigger_);
     }
