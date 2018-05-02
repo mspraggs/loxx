@@ -57,9 +57,7 @@ namespace loxx
     if (stmt.superclass) {
       begin_scope();
 
-      const auto super_token =
-          Token(TokenType::Super, "super", stmt.name.line());
-      const auto local = declare_variable(super_token);
+      locals_.top().push_back({false, false, 0, "super"});
       compile(*stmt.superclass);
     }
 
