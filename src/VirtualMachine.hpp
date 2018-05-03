@@ -74,6 +74,7 @@ namespace loxx
                                const Value& second) const;
     bool are_equal(const Value& first, const Value& second) const;
     bool is_truthy(const Value& value) const;
+    RuntimeError runtime_error(const std::string& msg) const;
     unsigned int get_current_line() const;
 
     bool debug_;
