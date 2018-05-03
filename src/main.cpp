@@ -14,7 +14,17 @@
 
 namespace loxx
 {
-  void run(const std::string& src, const bool debug, const bool in_repl)
+  struct DebugConfig
+  {
+    bool print_tokens;
+    bool print_ast;
+    bool print_bytecode;
+    bool trace_exec;
+  };
+
+
+  void run(const std::string& src, const DebugConfig& debug_config,
+           const bool in_repl)
   {
     Scanner scanner(src);
     auto tokens = scanner.scan_tokens();
@@ -23,7 +33,7 @@ namespace loxx
       return;
     }
 
-    if (debug) {
+    if (debug_config.print_tokens) {
       for (const auto& token : tokens) {
         std::cout << token << '\n';
       }
@@ -36,12 +46,12 @@ namespace loxx
       return;
     }
 
-    if (debug) {
+    if (debug_config.print_ast) {
       AstPrinter printer;
       std::cout << printer.print(statements) << std::endl;
     }
 
-    static VirtualMachine vm(debug);
+    static VirtualMachine vm(debug_config.trace_exec);
 
     Compiler compiler(vm);
     compiler.compile(statements);
@@ -50,7 +60,7 @@ namespace loxx
       return;
     }
 
-    if (debug) {
+    if (debug_config.print_bytecode) {
       print_bytecode(vm, compiler.output());
     }
 
@@ -63,19 +73,19 @@ namespace loxx
   }
 
 
-  void run_prompt(const bool debug)
+  void run_prompt(const DebugConfig& debug_config)
   {
     while (true) {
       std::cout << "> ";
       std::string src;
       std::getline(std::cin, src);
-      run(src, debug, true);
+      run(src, debug_config, true);
       had_error = false;
     }
   }
 
 
-  void run_file(const std::string& path, const bool debug)
+  void run_file(const std::string& path, const DebugConfig& debug_config)
   {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     std::streamsize size = file.tellg();
@@ -87,7 +97,7 @@ namespace loxx
       throw std::ios_base::failure("Unable to read source file!");
     }
 
-    run(src, debug, false);
+    run(src, debug_config, false);
 
     if (had_error) {
       std::exit(65);
@@ -108,20 +118,31 @@ int main(int argc, const char* argv[])
   opt.add(
       "",
       false,
-      0,
-      0,
+      -1,
+      ',',
       "Enable debugging output.",
       "-d", "--debug"
   );
 
   opt.parse(argc, argv);
 
-  const bool debug = opt.isSet("-d") != 0;
+  loxx::DebugConfig debug_config{false, false, false, false};
+
+  if (opt.isSet("-d") != 0) {
+    std::vector<std::string> selections;
+    opt.get("-d")->getStrings(selections);
+    for (const auto& s : selections) {
+      debug_config.print_tokens   |= s == "tokens";
+      debug_config.print_ast      |= s == "ast";
+      debug_config.print_bytecode |= s == "bytecode";
+      debug_config.trace_exec     |= s == "trace";
+    }
+  }
 
   if (opt.lastArgs.size() == 1) {
-    loxx::run_file(*opt.lastArgs[0], debug);
+    loxx::run_file(*opt.lastArgs[0], debug_config);
   }
   else {
-    loxx::run_prompt(debug);
+    loxx::run_prompt(debug_config);
   }
 }
