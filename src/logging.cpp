@@ -20,8 +20,10 @@
 #include <iomanip>
 #include <iostream>
 
+#include "Compiler.hpp"
 #include "Instruction.hpp"
 #include "logging.hpp"
+#include "VirtualMachine.hpp"
 
 
 namespace loxx
@@ -76,5 +78,204 @@ namespace loxx
               << std::endl;
 
     had_runtime_error = true;
+  }
+
+
+  void print_bytecode(const VirtualMachine& vm, const CompilationOutput& output)
+  {
+    std::size_t pos = 0;
+    while (pos < output.bytecode.size()) {
+      pos = print_instruction(vm, output, pos);
+    }
+  }
+
+
+  std::size_t print_instruction(
+      const VirtualMachine& vm, const CompilationOutput& output,
+      const std::size_t pos)
+  {
+    const auto& bytecode = output.bytecode;
+    const auto instruction = static_cast<Instruction>(bytecode[pos]);
+
+    static unsigned int last_line_num = 0;
+    const unsigned int current_line_num = get_current_line(output, pos);
+
+    std::stringstream line_num_ss;
+    line_num_ss << std::right << std::setw(5) << std::setfill(' ');
+    if (last_line_num < current_line_num) {
+      line_num_ss << current_line_num;
+    }
+    else {
+      line_num_ss << '|';
+    }
+    last_line_num = current_line_num;
+
+    std::cout << std::setw(4) << std::setfill('0') << std::right << pos;
+    std::cout << line_num_ss.str() << ' ';
+    std::cout << std::setw(20) << std::setfill(' ') << std::left << instruction;
+
+    std::size_t ret = pos + 1;
+
+    switch (instruction) {
+
+    case Instruction::Add:
+    case Instruction::CloseUpvalue:
+    case Instruction::Divide:
+    case Instruction::Equal:
+    case Instruction::False:
+    case Instruction::Greater:
+    case Instruction::GreaterEqual:
+    case Instruction::Less:
+    case Instruction::LessEqual:
+    case Instruction::Multiply:
+    case Instruction::Negate:
+    case Instruction::Nil:
+    case Instruction::Not:
+    case Instruction::NotEqual:
+    case Instruction::Pop:
+    case Instruction::Print:
+    case Instruction::Push:
+    case Instruction::Return:
+    case Instruction::SetBase:
+    case Instruction::Subtract:
+    case Instruction::True:
+      break;
+
+    case Instruction::ConditionalJump:
+    case Instruction::Jump: {
+      const auto param = read_integer_at_pos<ByteCodeArg>(bytecode, ret);
+      std::cout << pos << " -> " << pos + param + sizeof(ByteCodeArg) + 1;
+      ret += sizeof(ByteCodeArg);
+      break;
+    }
+
+    case Instruction::CreateClosure: {
+      const auto& func_value =
+          vm.get_constant(read_integer_at_pos<UByteCodeArg>(bytecode, ret));
+      const auto& func_obj = get<ObjectPtr>(func_value);
+      auto func = static_cast<FuncObject*>(func_obj);
+
+      ret += sizeof(UByteCodeArg);
+
+      std::cout << func->lexeme() << ' ';
+
+      for (unsigned int i = 0; i < func->num_upvalues(); ++i) {
+        const auto is_local =
+            read_integer_at_pos<UByteCodeArg>(bytecode, ret) != 0;
+        ret += sizeof(UByteCodeArg);
+        const auto index = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
+        ret += sizeof(UByteCodeArg);
+
+        std::cout << '(' << (is_local ? "local" : "upvalue") << ", "
+                  << index << ')';
+
+        if (i < func->num_upvalues() - 1) {
+          std::cout << ", ";
+        }
+      }
+
+      break;
+    }
+
+    case Instruction::Call: {
+      const auto num_args = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
+      ret += sizeof(UByteCodeArg);
+      std::cout << num_args;
+      break;
+    }
+
+    case Instruction::CreateClass:
+    case Instruction::CreateMethod:
+    case Instruction::CreateSubclass:
+    case Instruction::DefineGlobal:
+    case Instruction::GetGlobal:
+    case Instruction::GetLocal:
+    case Instruction::GetProperty:
+    case Instruction::GetSuperFunc:
+    case Instruction::GetUpvalue:
+    case Instruction::SetGlobal:
+    case Instruction::SetLocal:
+    case Instruction::SetProperty:
+    case Instruction::SetUpvalue:
+    case Instruction::LoadConstant: {
+      const auto param = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
+      std::cout << param << " '" << stringify(vm.get_constant(param)) << "'";
+      ret += sizeof(UByteCodeArg);
+      break;
+    }
+    }
+
+    std::cout << '\n';
+
+    return ret;
+  }
+
+
+  std::string stringify(const Value& object)
+  {
+    if (object.index() == Value::npos) {
+      return "nil";
+    }
+    if (holds_alternative<double>(object)) {
+      std::stringstream ss;
+      ss << get<double>(object);
+      return ss.str();
+    }
+    else if (holds_alternative<bool>(object)) {
+      return get<bool>(object) ? "true" : "false";
+    }
+    else if (const auto str = get_object<StringObject>(object)) {
+      return str->as_std_string();
+    }
+    else if (holds_alternative<ObjectPtr>(object)) {
+      const auto ptr = get<ObjectPtr>(object);
+
+      std::stringstream ss;
+
+      switch (ptr->type()) {
+      case ObjectType::Function:
+        ss << "<fn " << static_cast<raw_ptr<FuncObject>>(ptr)->lexeme()
+           << '>';
+        break;
+      case ObjectType::Class: {
+        const auto cls = static_cast<raw_ptr<ClassObject>>(ptr);
+        ss << "<class " << cls->lexeme() << '>';
+        break;
+      }
+      case ObjectType::Closure: {
+        const auto closure = static_cast<raw_ptr<ClosureObject>>(ptr);
+        ss << "<fn " << closure->function().lexeme() << '>';
+        break;
+      }
+      case ObjectType::Instance: {
+        const auto instance = static_cast<InstanceObject*>(ptr);
+        ss << instance->cls().lexeme() << " instance";
+      }
+      default:
+        break;
+      }
+      return ss.str();
+    }
+
+    return "";
+  }
+
+
+  unsigned int get_current_line(const CompilationOutput& output,
+                                const std::size_t pos)
+  {
+    std::size_t instruction_counter = 0;
+    unsigned int line = 0;
+
+    for (const auto& table_row : output.line_num_table) {
+      instruction_counter += std::get<1>(table_row);
+      line += std::get<0>(table_row);
+
+      if (instruction_counter >= pos) {
+        break;
+      }
+    }
+
+    return line;
   }
 }

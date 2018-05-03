@@ -34,6 +34,10 @@ namespace loxx
   extern bool had_runtime_error;
 
 
+  struct CompilationOutput;
+  class VirtualMachine;
+
+
   void error(const unsigned int line, const std::string& message);
 
 
@@ -45,6 +49,22 @@ namespace loxx
 
 
   void runtime_error(const RuntimeError& error);
+
+
+  void print_bytecode(const VirtualMachine& vm,
+                      const CompilationOutput& output);
+
+
+  std::size_t print_instruction(
+      const VirtualMachine& vm, const CompilationOutput& output,
+      const std::size_t pos);
+
+
+  std::string stringify(const Value& object);
+
+
+  unsigned int get_current_line(const CompilationOutput& output,
+                                const std::size_t pos);
 }
 
 #endif //LOXX_LOGGING_HPP

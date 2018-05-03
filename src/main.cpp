@@ -50,6 +50,10 @@ namespace loxx
       return;
     }
 
+    if (debug) {
+      print_bytecode(vm, compiler.output());
+    }
+
     try {
       vm.execute(compiler.output());
     }

@@ -46,6 +46,8 @@ namespace loxx
                                     const Value& value);
     UByteCodeArg add_string_constant(const std::string& str);
     UByteCodeArg add_constant(const Value& value);
+    const Value& get_constant(const UByteCodeArg index) const
+    { return constants_[index]; }
 
   private:
     void print_object(Value object) const;
@@ -58,24 +60,18 @@ namespace loxx
 
     void call_object(ObjectPtr obj, const std::size_t obj_pos,
                      const UByteCodeArg num_args);
-    std::string stringify(const Value& object) const;
     void print_stack() const;
-    void disassemble_bytecode();
-    size_t disassemble_instruction() const;
     static ObjectPtr select_object(
         const Value& value, const std::vector<ObjectType>& valid_types);
 
     template <typename T>
     T read_integer();
     std::string read_string();
-    template <typename T>
-    T read_integer_at_pos(const std::size_t pos) const;
     void check_number_operands(const Value& first,
                                const Value& second) const;
     bool are_equal(const Value& first, const Value& second) const;
     bool is_truthy(const Value& value) const;
     RuntimeError runtime_error(const std::string& msg) const;
-    unsigned int get_current_line() const;
 
     bool debug_;
     std::size_t ip_;
@@ -92,18 +88,8 @@ namespace loxx
   template <typename T>
   T VirtualMachine::read_integer()
   {
-    const T integer = read_integer_at_pos<T>(ip_);
+    const T integer = read_integer_at_pos<T>(compiler_output_->bytecode, ip_);
     ip_ += sizeof(T);
-
-    return integer;
-  }
-
-
-  template <typename T>
-  T VirtualMachine::read_integer_at_pos(const std::size_t pos) const
-  {
-    const T integer =
-        *reinterpret_cast<raw_ptr<const T>>(&compiler_output_->bytecode[pos]);
 
     return integer;
   }
