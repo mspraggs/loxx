@@ -340,7 +340,7 @@ namespace loxx
 
   void VirtualMachine::print_object(Value variant) const
   {
-    std::cout << stringify(variant) << std::endl;
+    std::cout << variant << std::endl;
   }
 
 
@@ -564,7 +564,7 @@ namespace loxx
 
     for (unsigned int i = 0; i < stack_.size(); ++i) {
       std::cout << "[ ";
-      std::cout << stringify(stack_.get(i));
+      std::cout << stack_.get(i);
       std::cout << " ] ";
     }
     std::cout << std::endl;

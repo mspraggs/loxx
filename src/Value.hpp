@@ -20,6 +20,7 @@
 #ifndef LOXX_VALUE_HPP
 #define LOXX_VALUE_HPP
 
+#include <ios>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -314,6 +315,54 @@ namespace loxx
     }
 
     return nullptr;
+  }
+
+
+  template <typename OStream, typename T>
+  auto operator<<(OStream& os, const T& value)
+      -> std::enable_if_t<std::is_same<T, Value>::value, OStream&>
+  {
+    if (value.index() == Value::npos) {
+      os << "nil";
+      return os;
+    }
+    if (holds_alternative<double>(value)) {
+      os << get<double>(value);
+      return os;
+    }
+    else if (holds_alternative<bool>(value)) {
+      os << std::boolalpha << get<bool>(value);
+    }
+    else if (const auto str = get_object<StringObject>(value)) {
+      os << str->as_std_string();
+    }
+    else if (holds_alternative<ObjectPtr>(value)) {
+      const auto ptr = get<ObjectPtr>(value);
+
+      switch (ptr->type()) {
+      case ObjectType::Function:
+        os << "<fn " << static_cast<raw_ptr<FuncObject>>(ptr)->lexeme() << '>';
+        break;
+      case ObjectType::Class: {
+        const auto cls = static_cast<raw_ptr<ClassObject>>(ptr);
+        os << "<class " << cls->lexeme() << '>';
+        break;
+      }
+      case ObjectType::Closure: {
+        const auto closure = static_cast<raw_ptr<ClosureObject>>(ptr);
+        os << "<fn " << closure->function().lexeme() << '>';
+        break;
+      }
+      case ObjectType::Instance: {
+        const auto instance = static_cast<InstanceObject*>(ptr);
+        os << instance->cls().lexeme() << " instance";
+      }
+      default:
+        break;
+      }
+    }
+
+    return os;
   }
 }
 

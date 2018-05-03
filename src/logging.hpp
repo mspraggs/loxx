@@ -60,9 +60,6 @@ namespace loxx
       const std::size_t pos);
 
 
-  std::string stringify(const Value& object);
-
-
   unsigned int get_current_line(const CompilationOutput& output,
                                 const std::size_t pos);
 }

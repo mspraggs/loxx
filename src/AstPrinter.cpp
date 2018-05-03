@@ -45,19 +45,7 @@ namespace loxx
 
   void AstPrinter::visit_literal_expr(const Literal& expr)
   {
-    if (holds_alternative<double>(expr.value)) {
-      stream_ << get<double>(expr.value);
-    }
-    else if (get_object<StringObject>(expr.value)) {
-      const auto ptr = get_object<StringObject>(expr.value);
-      stream_ << '"' << static_cast<std::string>(*ptr) << '"';
-    }
-    else if (holds_alternative<bool>(expr.value)) {
-      stream_ << (get<bool>(expr.value) ? "true" : "false");
-    }
-    else {
-      stream_ << "nil";
-    }
+    stream_ << expr.value;
   }
 
 

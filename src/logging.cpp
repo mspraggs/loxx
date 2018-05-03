@@ -199,7 +199,7 @@ namespace loxx
     case Instruction::SetUpvalue:
     case Instruction::LoadConstant: {
       const auto param = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
-      std::cout << param << " '" << stringify(vm.get_constant(param)) << "'";
+      std::cout << param << " '" << vm.get_constant(param) << "'";
       ret += sizeof(UByteCodeArg);
       break;
     }
@@ -208,56 +208,6 @@ namespace loxx
     std::cout << '\n';
 
     return ret;
-  }
-
-
-  std::string stringify(const Value& object)
-  {
-    if (object.index() == Value::npos) {
-      return "nil";
-    }
-    if (holds_alternative<double>(object)) {
-      std::stringstream ss;
-      ss << get<double>(object);
-      return ss.str();
-    }
-    else if (holds_alternative<bool>(object)) {
-      return get<bool>(object) ? "true" : "false";
-    }
-    else if (const auto str = get_object<StringObject>(object)) {
-      return str->as_std_string();
-    }
-    else if (holds_alternative<ObjectPtr>(object)) {
-      const auto ptr = get<ObjectPtr>(object);
-
-      std::stringstream ss;
-
-      switch (ptr->type()) {
-      case ObjectType::Function:
-        ss << "<fn " << static_cast<raw_ptr<FuncObject>>(ptr)->lexeme()
-           << '>';
-        break;
-      case ObjectType::Class: {
-        const auto cls = static_cast<raw_ptr<ClassObject>>(ptr);
-        ss << "<class " << cls->lexeme() << '>';
-        break;
-      }
-      case ObjectType::Closure: {
-        const auto closure = static_cast<raw_ptr<ClosureObject>>(ptr);
-        ss << "<fn " << closure->function().lexeme() << '>';
-        break;
-      }
-      case ObjectType::Instance: {
-        const auto instance = static_cast<InstanceObject*>(ptr);
-        ss << instance->cls().lexeme() << " instance";
-      }
-      default:
-        break;
-      }
-      return ss.str();
-    }
-
-    return "";
   }
 
 
