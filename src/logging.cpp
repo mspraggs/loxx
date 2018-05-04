@@ -19,6 +19,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "Compiler.hpp"
 #include "Instruction.hpp"
