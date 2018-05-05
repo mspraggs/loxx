@@ -115,7 +115,7 @@ namespace loxx
 
       case Instruction::CreateMethod: {
         const auto cls = get_object<ClassObject>(stack_.top(1));
-        auto closure = get_object<ClosureObject>(stack_.top());
+        const auto closure = get_object<ClosureObject>(stack_.top());
         const auto& name = read_string();
 
         cls->set_method(name, closure);
