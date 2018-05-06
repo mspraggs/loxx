@@ -632,7 +632,7 @@ namespace loxx
 
   RuntimeError VirtualMachine::runtime_error(const std::string& msg) const
   {
-    const std::size_t pos = ip_ - &current_.get().bytecode.front();
+    const std::size_t pos = ip_ - current_.get().bytecode.data();
     return RuntimeError(get_current_line(current_, pos), msg);
   }
 }
