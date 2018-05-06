@@ -31,8 +31,9 @@
 
 namespace loxx
 {
-  VirtualMachine::VirtualMachine(const bool debug)
-      : debug_(debug), ip_(0)
+  VirtualMachine::VirtualMachine(const CodeObject& compiler_output,
+                                 const bool debug)
+      : debug_(debug), ip_(0), compiler_output_(&compiler_output)
   {
     NativeObject::Fn fn =
         [] (raw_ptr<const Value>, const unsigned int)
@@ -53,22 +54,20 @@ namespace loxx
   }
 
 
-  void VirtualMachine::execute(const CodeObject& compiler_output)
+  void VirtualMachine::execute()
   {
-    compiler_output_ = &compiler_output;
-
     ip_ = 0;
     call_stack_.push(StackFrame(ip_, 0, stack_.data(), nullptr));
 
-    while (ip_ < compiler_output.bytecode.size()) {
+    while (ip_ < compiler_output_->bytecode.size()) {
 
       if (debug_) {
         print_stack();
-        print_instruction(*this, compiler_output, ip_);
+        print_instruction(*this, *compiler_output_, ip_);
       }
 
       const auto instruction =
-          static_cast<Instruction>(compiler_output.bytecode[ip_++]);
+          static_cast<Instruction>(compiler_output_->bytecode[ip_++]);
 
       switch (instruction) {
 

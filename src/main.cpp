@@ -52,7 +52,7 @@ namespace loxx
     }
 
     static CodeObject compiler_output;
-    static VirtualMachine vm(debug_config.trace_exec);
+    static VirtualMachine vm(compiler_output, debug_config.trace_exec);
 
     Compiler compiler(vm, compiler_output);
     compiler.compile(statements);
@@ -66,7 +66,7 @@ namespace loxx
     }
 
     try {
-      vm.execute(compiler.output());
+      vm.execute();
     }
     catch (const RuntimeError& e) {
       runtime_error(e);

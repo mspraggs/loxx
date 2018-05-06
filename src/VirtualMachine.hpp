@@ -38,9 +38,10 @@ namespace loxx
   class VirtualMachine
   {
   public:
-    explicit VirtualMachine(const bool debug);
+    explicit VirtualMachine(const CodeObject& compiler_output,
+                            const bool debug);
 
-    void execute(const CodeObject& compiler_output);
+    void execute();
 
     UByteCodeArg add_named_constant(const std::string& lexeme,
                                     const Value& value);
