@@ -157,6 +157,8 @@ namespace loxx
     void add_integer(const T integer);
     template <typename T>
     void rewrite_integer(const std::size_t pos, const T integer);
+    std::size_t current_bytecode_size() const
+    { return code_objects_.get()[current_].bytecode.size(); }
     inline UByteCodeArg make_string_constant(const std::string& str) const;
 
     ClassType class_type_;
