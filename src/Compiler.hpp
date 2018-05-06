@@ -53,11 +53,12 @@ namespace loxx
   class Compiler : public Expr::Visitor, public Stmt::Visitor
   {
   public:
-    explicit Compiler(VirtualMachine& vm, CodeObject& compiler_output)
+    explicit Compiler(VirtualMachine& vm,
+                      std::vector<CodeObject>& code_objects)
         : class_type_(ClassType::None),
           current_function_type_(FunctionType::None), last_line_num_(0),
           scope_depth_(0), last_instr_num_(0), vm_(&vm),
-          current_(compiler_output)
+          code_objects_(code_objects), current_(code_objects.front())
     {
       locals_.push(std::vector<Local>());
       upvalues_.push(std::vector<Upvalue>());
@@ -164,6 +165,7 @@ namespace loxx
     unsigned int scope_depth_;
     std::size_t last_instr_num_;
     raw_ptr<VirtualMachine> vm_;
+    std::reference_wrapper<std::vector<CodeObject>> code_objects_;
     std::reference_wrapper<CodeObject> current_;
     Stack<std::vector<Local>> locals_;
     Stack<std::vector<Upvalue>> upvalues_;

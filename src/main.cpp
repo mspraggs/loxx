@@ -51,11 +51,11 @@ namespace loxx
       std::cout << printer.print(statements) << std::endl;
     }
 
-    static CodeObject compiler_output;
-    compiler_output.bytecode.reserve(10240);
-    static VirtualMachine vm(compiler_output, debug_config.trace_exec);
+    static std::vector<CodeObject> code_objects{CodeObject{}};
+    code_objects.front().bytecode.reserve(10240);
+    static VirtualMachine vm(code_objects.front(), debug_config.trace_exec);
 
-    Compiler compiler(vm, compiler_output);
+    Compiler compiler(vm, code_objects);
     compiler.compile(statements);
 
     if (had_error) {
