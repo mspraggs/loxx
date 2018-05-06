@@ -51,9 +51,10 @@ namespace loxx
       std::cout << printer.print(statements) << std::endl;
     }
 
+    static CodeObject compiler_output;
     static VirtualMachine vm(debug_config.trace_exec);
 
-    Compiler compiler(vm);
+    Compiler compiler(vm, compiler_output);
     compiler.compile(statements);
 
     if (had_error) {

@@ -52,10 +52,11 @@ namespace loxx
   class Compiler : public Expr::Visitor, public Stmt::Visitor
   {
   public:
-    explicit Compiler(VirtualMachine& vm)
+    explicit Compiler(VirtualMachine& vm, CodeObject& compiler_output)
         : class_type_(ClassType::None),
           current_function_type_(FunctionType::None), last_line_num_(0),
-          scope_depth_(0), last_instr_num_(0), vm_(&vm)
+          scope_depth_(0), last_instr_num_(0), vm_(&vm),
+          output_(&compiler_output)
     {
       locals_.push(std::vector<Local>());
       upvalues_.push(std::vector<Upvalue>());
@@ -86,7 +87,7 @@ namespace loxx
     void visit_var_stmt(const Var& stmt) override;
     void visit_while_stmt(const While& stmt) override;
 
-    const CodeObject& output() const { return output_; }
+    const CodeObject& output() const { return *output_; }
 
   private:
     enum class ClassType {
@@ -162,7 +163,7 @@ namespace loxx
     unsigned int scope_depth_;
     std::size_t last_instr_num_;
     raw_ptr<VirtualMachine> vm_;
-    CodeObject output_;
+    raw_ptr<CodeObject> output_;
     Stack<std::vector<Local>> locals_;
     Stack<std::vector<Upvalue>> upvalues_;
   };
@@ -204,7 +205,7 @@ namespace loxx
   template<typename T>
   void Compiler::add_integer(const T integer)
   {
-    auto& bytecode = output_.bytecode;
+    auto& bytecode = output_->bytecode;
     const auto integer_ptr = reinterpret_cast<const std::uint8_t*>(&integer);
     bytecode.insert(bytecode.end(), integer_ptr, integer_ptr + sizeof(T));
   }
@@ -213,7 +214,7 @@ namespace loxx
   template<typename T>
   void Compiler::rewrite_integer(const std::size_t pos, const T integer)
   {
-    *reinterpret_cast<T*>(&output_.bytecode[pos]) = integer;
+    *reinterpret_cast<T*>(&output_->bytecode[pos]) = integer;
   }
 }
 

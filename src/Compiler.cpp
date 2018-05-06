@@ -114,7 +114,7 @@ namespace loxx
     compile(*stmt.condition);
 
     add_instruction(Instruction::ConditionalJump);
-    const auto first_jump_pos = output_.bytecode.size();
+    const auto first_jump_pos = output_->bytecode.size();
     add_integer<ByteCodeArg>(0);
 
     add_instruction(Instruction::Pop);
@@ -125,11 +125,11 @@ namespace loxx
 
     const auto first_jump_size =
         static_cast<ByteCodeArg>(
-            output_.bytecode.size() - first_jump_pos + 1);
+            output_->bytecode.size() - first_jump_pos + 1);
     rewrite_integer(first_jump_pos, first_jump_size);
 
     add_instruction(Instruction::Jump);
-    const auto second_jump_pos = output_.bytecode.size();
+    const auto second_jump_pos = output_->bytecode.size();
     add_integer<ByteCodeArg>(0);
 
     add_instruction(Instruction::Pop);
@@ -138,7 +138,7 @@ namespace loxx
 
     const auto second_jump_size =
         static_cast<ByteCodeArg>(
-            output_.bytecode.size() - second_jump_pos - sizeof(ByteCodeArg));
+            output_->bytecode.size() - second_jump_pos - sizeof(ByteCodeArg));
     rewrite_integer(second_jump_pos, second_jump_size);
   }
 
@@ -204,7 +204,7 @@ namespace loxx
     // end:
     // ...
 
-    const auto first_label_pos = output_.bytecode.size();
+    const auto first_label_pos = output_->bytecode.size();
 
     compile(*stmt.condition);
 
@@ -216,7 +216,7 @@ namespace loxx
     add_instruction(Instruction::Pop);
 
     add_instruction(Instruction::Jump);
-    const auto second_jump_pos = output_.bytecode.size();
+    const auto second_jump_pos = output_->bytecode.size();
     add_integer<ByteCodeArg>(0);
 
     // Pop the condition value (used by ConditionalJump) off the stack.
@@ -230,12 +230,12 @@ namespace loxx
     // Jump back to the start of the loop to check the condition again.
     add_instruction(Instruction::Jump);
     add_integer<ByteCodeArg>(
-        first_label_pos - output_.bytecode.size() - sizeof(ByteCodeArg));
+        first_label_pos - output_->bytecode.size() - sizeof(ByteCodeArg));
 
     // Back-patch the jump over the body of the while loop.
     rewrite_integer<ByteCodeArg>(
         second_jump_pos,
-        output_.bytecode.size() - second_jump_pos - sizeof(ByteCodeArg));
+        output_->bytecode.size() - second_jump_pos - sizeof(ByteCodeArg));
   }
 
 
@@ -355,29 +355,29 @@ namespace loxx
 
     if (expr.op.type() == TokenType::Or) {
       add_instruction(Instruction::ConditionalJump);
-      const auto jump_pos = output_.bytecode.size();
+      const auto jump_pos = output_->bytecode.size();
       add_integer<ByteCodeArg>(0);
       update_line_num_table(expr.op);
 
-      const auto skip_start = output_.bytecode.size();
+      const auto skip_start = output_->bytecode.size();
       add_instruction(Instruction::Pop);
       compile(*expr.right);
 
       rewrite_integer<ByteCodeArg>(
-          jump_pos, output_.bytecode.size() - skip_start);
+          jump_pos, output_->bytecode.size() - skip_start);
     }
     else if (expr.op.type() == TokenType::And) {
       add_instruction(Instruction::ConditionalJump);
       add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 1);
       update_line_num_table(expr.op);
       add_instruction(Instruction::Jump);
-      const auto jump_pos = output_.bytecode.size();
+      const auto jump_pos = output_->bytecode.size();
       add_integer<ByteCodeArg>(0);
 
-      const auto skip_start = output_.bytecode.size();
+      const auto skip_start = output_->bytecode.size();
       compile(*expr.right);
       rewrite_integer<ByteCodeArg>(
-          jump_pos, output_.bytecode.size() - skip_start);
+          jump_pos, output_->bytecode.size() - skip_start);
     }
   }
 
@@ -466,10 +466,10 @@ namespace loxx
     // belongs to functions. To avoid this we prepend a jump instruction before
     // the function's bytecode so that we can skip over the latter.
     add_instruction(Instruction::Jump);
-    const auto jump_pos = output_.bytecode.size();
+    const auto jump_pos = output_->bytecode.size();
     add_integer<ByteCodeArg>(0);
 
-    const auto bytecode_pos = output_.bytecode.size();
+    const auto bytecode_pos = output_->bytecode.size();
 
     begin_scope();
     locals_.push({});
@@ -505,7 +505,7 @@ namespace loxx
 
     // Back-patch the jump over the function definition
     const auto jump_size =
-        static_cast<ByteCodeArg>(output_.bytecode.size() - bytecode_pos);
+        static_cast<ByteCodeArg>(output_->bytecode.size() - bytecode_pos);
     rewrite_integer(jump_pos, jump_size);
 
     // Add the new function object as a constant
@@ -707,7 +707,7 @@ namespace loxx
 
     int line_num_diff = token.line() - last_line_num_;
     auto line_num_diff_abs = static_cast<unsigned int>(std::abs(line_num_diff));
-    std::size_t instr_num_diff = output_.bytecode.size() - last_instr_num_;
+    std::size_t instr_num_diff = output_->bytecode.size() - last_instr_num_;
 
     const auto num_rows =
         std::max(line_num_diff_abs / 128,
@@ -720,22 +720,22 @@ namespace loxx
           static_cast<std::int8_t>(instr_num_diff / num_rows);
 
       for (unsigned int i = 0; i < num_rows; ++i) {
-        output_.line_num_table.emplace_back(line_num_delta, instr_num_delta);
+        output_->line_num_table.emplace_back(line_num_delta, instr_num_delta);
       }
 
       line_num_diff -= num_rows * line_num_delta;
       instr_num_diff -= num_rows * instr_num_delta;
     }
 
-    output_.line_num_table.emplace_back(line_num_diff, instr_num_diff);
-    last_instr_num_ = output_.bytecode.size();
+    output_->line_num_table.emplace_back(line_num_diff, instr_num_diff);
+    last_instr_num_ = output_->bytecode.size();
     last_line_num_ = token.line();
   }
 
 
   void Compiler::add_instruction(const Instruction instruction)
   {
-    output_.bytecode.push_back(static_cast<std::uint8_t>(instruction));
+    output_->bytecode.push_back(static_cast<std::uint8_t>(instruction));
   }
 
 
