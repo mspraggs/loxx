@@ -52,6 +52,7 @@ namespace loxx
     }
 
     static CodeObject compiler_output;
+    compiler_output.bytecode.reserve(10240);
     static VirtualMachine vm(compiler_output, debug_config.trace_exec);
 
     Compiler compiler(vm, compiler_output);

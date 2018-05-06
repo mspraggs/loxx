@@ -55,9 +55,9 @@ namespace loxx
                       const CodeObject& output);
 
 
-  std::size_t print_instruction(
+  raw_ptr<const std::uint8_t> print_instruction(
       const VirtualMachine& vm, const CodeObject& output,
-      const std::size_t pos);
+      const raw_ptr<const std::uint8_t> pos);
 
 
   unsigned int get_current_line(const CodeObject& output,

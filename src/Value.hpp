@@ -84,14 +84,14 @@ namespace loxx
   class FuncObject : public Object
   {
   public:
-    FuncObject(std::string lexeme, const std::size_t bytecode_offset,
+    FuncObject(std::string lexeme, const raw_ptr<const std::uint8_t> first_ip,
                const unsigned int arity, const UByteCodeArg num_upvalues)
         : Object(ObjectType::Function),
           arity_(arity), num_upvalues_(num_upvalues),
-          bytecode_offset_(bytecode_offset), lexeme_(std::move(lexeme))
+          first_ip_(first_ip), lexeme_(std::move(lexeme))
     {}
 
-    std::size_t bytecode_offset() const { return bytecode_offset_; }
+    raw_ptr<const std::uint8_t> bytecode_offset() const { return first_ip_; }
 
     unsigned int arity() const { return arity_; }
     UByteCodeArg num_upvalues() const { return num_upvalues_; }
@@ -100,7 +100,7 @@ namespace loxx
   private:
     unsigned int arity_;
     UByteCodeArg num_upvalues_;
-    std::size_t bytecode_offset_;
+    raw_ptr<const std::uint8_t> first_ip_;
     std::string lexeme_;
   };
 

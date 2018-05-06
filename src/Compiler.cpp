@@ -510,7 +510,7 @@ namespace loxx
 
     // Add the new function object as a constant
     auto func = make_object<FuncObject>(
-        stmt.name.lexeme(), bytecode_pos,
+        stmt.name.lexeme(), &output_->bytecode[bytecode_pos],
         static_cast<unsigned int>(stmt.parameters.size()),
         upvalues.size());
     const auto index = vm_->add_constant(Value(InPlace<ObjectPtr>(), func));
