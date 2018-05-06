@@ -89,6 +89,10 @@ namespace loxx
   void run_file(const std::string& path, const DebugConfig& debug_config)
   {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
+    if (not file.good()) {
+      throw std::ios_base::failure("Unable to open source file!");
+    }
+
     std::streamsize size = file.tellg();
 
     file.seekg(0, std::ios::beg);
@@ -140,10 +144,15 @@ int main(int argc, const char* argv[])
     }
   }
 
-  if (opt.lastArgs.size() == 1) {
-    loxx::run_file(*opt.lastArgs[0], debug_config);
+  try {
+    if (opt.lastArgs.size() == 1) {
+      loxx::run_file(*opt.lastArgs[0], debug_config);
+    }
+    else {
+      loxx::run_prompt(debug_config);
+    }
   }
-  else {
-    loxx::run_prompt(debug_config);
+  catch (const std::exception& e) {
+    std::cerr << "Unhandled exception: " << e.what() << '\n';
   }
 }
