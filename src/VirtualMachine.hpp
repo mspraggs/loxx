@@ -76,7 +76,7 @@ namespace loxx
 
     bool debug_;
     raw_ptr<const std::uint8_t> ip_;
-    raw_ptr<const CodeObject> compiler_output_;
+    raw_ptr<const CodeObject> current_;
     std::unordered_map<std::string, UByteCodeArg> constant_map_;
     std::vector<Value> constants_;
     std::unordered_map<std::string, Value> globals_;
