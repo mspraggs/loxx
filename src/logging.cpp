@@ -84,7 +84,7 @@ namespace loxx
 
   void print_bytecode(const VirtualMachine& vm, const CodeObject& output)
   {
-    raw_ptr<const std::uint8_t> pos = &output.bytecode.front();
+    raw_ptr<const std::uint8_t> pos = output.bytecode.data();
     while (pos <= &output.bytecode.back()) {
       pos = print_instruction(vm, output, pos);
     }
@@ -96,7 +96,7 @@ namespace loxx
       const raw_ptr<const std::uint8_t> ip)
   {
     const auto& bytecode = output.bytecode;
-    const std::size_t pos = ip - &output.bytecode.front();
+    const std::size_t pos = ip - output.bytecode.data();
     const auto instruction = static_cast<Instruction>(*ip);
 
     static unsigned int last_line_num = 0;
