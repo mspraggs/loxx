@@ -44,7 +44,6 @@ namespace loxx
 
   struct CompilationOutput
   {
-    std::size_t num_globals;
     std::vector<std::uint8_t> bytecode;
     std::vector<std::tuple<std::int8_t, std::uint8_t>> line_num_table;
   };
@@ -58,7 +57,6 @@ namespace loxx
           current_function_type_(FunctionType::None), last_line_num_(0),
           scope_depth_(0), last_instr_num_(0), vm_(&vm)
     {
-      output_.num_globals = 0;
       locals_.push(std::vector<Local>());
       upvalues_.push(std::vector<Upvalue>());
     }
