@@ -20,6 +20,7 @@
 #ifndef LOXX_VIRTUALMACHINE_HPP
 #define LOXX_VIRTUALMACHINE_HPP
 
+#include <functional>
 #include <list>
 #include <unordered_map>
 #include <vector>
@@ -76,7 +77,7 @@ namespace loxx
 
     bool debug_;
     raw_ptr<const std::uint8_t> ip_;
-    raw_ptr<const CodeObject> current_;
+    std::reference_wrapper<const CodeObject> current_;
     std::unordered_map<std::string, UByteCodeArg> constant_map_;
     std::vector<Value> constants_;
     std::unordered_map<std::string, Value> globals_;
