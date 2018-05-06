@@ -721,7 +721,8 @@ namespace loxx
           static_cast<std::int8_t>(instr_num_diff / num_rows);
 
       for (unsigned int i = 0; i < num_rows; ++i) {
-        current_.get().line_num_table.emplace_back(line_num_delta, instr_num_delta);
+        current_.get().line_num_table.emplace_back(
+            line_num_delta, instr_num_delta);
       }
 
       line_num_diff -= num_rows * line_num_delta;
