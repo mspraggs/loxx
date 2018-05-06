@@ -53,7 +53,7 @@ namespace loxx
   }
 
 
-  void VirtualMachine::execute(const CompilationOutput& compiler_output)
+  void VirtualMachine::execute(const CodeObject& compiler_output)
   {
     compiler_output_ = &compiler_output;
 

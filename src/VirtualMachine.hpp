@@ -40,7 +40,7 @@ namespace loxx
   public:
     explicit VirtualMachine(const bool debug);
 
-    void execute(const CompilationOutput& compiler_output);
+    void execute(const CodeObject& compiler_output);
 
     UByteCodeArg add_named_constant(const std::string& lexeme,
                                     const Value& value);
@@ -75,7 +75,7 @@ namespace loxx
 
     bool debug_;
     std::size_t ip_;
-    raw_ptr<const CompilationOutput> compiler_output_;
+    raw_ptr<const CodeObject> compiler_output_;
     std::unordered_map<std::string, UByteCodeArg> constant_map_;
     std::vector<Value> constants_;
     std::unordered_map<std::string, Value> globals_;

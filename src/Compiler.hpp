@@ -42,7 +42,7 @@ namespace loxx
   class VirtualMachine;
 
 
-  struct CompilationOutput
+  struct CodeObject
   {
     std::vector<std::uint8_t> bytecode;
     std::vector<std::tuple<std::int8_t, std::uint8_t>> line_num_table;
@@ -86,7 +86,7 @@ namespace loxx
     void visit_var_stmt(const Var& stmt) override;
     void visit_while_stmt(const While& stmt) override;
 
-    const CompilationOutput& output() const { return output_; }
+    const CodeObject& output() const { return output_; }
 
   private:
     enum class ClassType {
@@ -162,7 +162,7 @@ namespace loxx
     unsigned int scope_depth_;
     std::size_t last_instr_num_;
     raw_ptr<VirtualMachine> vm_;
-    CompilationOutput output_;
+    CodeObject output_;
     Stack<std::vector<Local>> locals_;
     Stack<std::vector<Upvalue>> upvalues_;
   };

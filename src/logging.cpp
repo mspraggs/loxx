@@ -82,7 +82,7 @@ namespace loxx
   }
 
 
-  void print_bytecode(const VirtualMachine& vm, const CompilationOutput& output)
+  void print_bytecode(const VirtualMachine& vm, const CodeObject& output)
   {
     std::size_t pos = 0;
     while (pos < output.bytecode.size()) {
@@ -92,7 +92,7 @@ namespace loxx
 
 
   std::size_t print_instruction(
-      const VirtualMachine& vm, const CompilationOutput& output,
+      const VirtualMachine& vm, const CodeObject& output,
       const std::size_t pos)
   {
     const auto& bytecode = output.bytecode;
@@ -212,7 +212,7 @@ namespace loxx
   }
 
 
-  unsigned int get_current_line(const CompilationOutput& output,
+  unsigned int get_current_line(const CodeObject& output,
                                 const std::size_t pos)
   {
     std::size_t instruction_counter = 0;

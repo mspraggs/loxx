@@ -34,7 +34,7 @@ namespace loxx
   extern bool had_runtime_error;
 
 
-  struct CompilationOutput;
+  struct CodeObject;
   class VirtualMachine;
 
 
@@ -52,15 +52,15 @@ namespace loxx
 
 
   void print_bytecode(const VirtualMachine& vm,
-                      const CompilationOutput& output);
+                      const CodeObject& output);
 
 
   std::size_t print_instruction(
-      const VirtualMachine& vm, const CompilationOutput& output,
+      const VirtualMachine& vm, const CodeObject& output,
       const std::size_t pos);
 
 
-  unsigned int get_current_line(const CompilationOutput& output,
+  unsigned int get_current_line(const CodeObject& output,
                                 const std::size_t pos);
 }
 
