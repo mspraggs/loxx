@@ -24,7 +24,7 @@
 
 namespace loxx
 {
-  void FunctionScope::add_local(const Token& name)
+  void FunctionScope::declare_local(const Token& name)
   {
     for (long int i = locals_.size() - 1; i >= 0; --i) {
       const auto& local = locals_[i];
@@ -36,7 +36,7 @@ namespace loxx
         error(name, "Variable with this name already declared in this scope.");
       }
     }
-    locals_.push_back({false, false, 0, name.lexeme()});
+    add_local(name);
   }
 
 
@@ -44,6 +44,12 @@ namespace loxx
   {
     locals_.back().defined = true;
     locals_.back().depth = scope_depth_;
+  }
+
+
+  void FunctionScope::add_local(const Token& name)
+  {
+    locals_.push_back({false, false, 0, name.lexeme()});
   }
 
 

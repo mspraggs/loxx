@@ -53,8 +53,9 @@ namespace loxx
           enclosing_(std::move(enclosing)), code_object_(new CodeObject)
     {}
 
-    void add_local(const Token& name);
+    void declare_local(const Token& name);
     void define_local();
+    void add_local(const Token& name);
 
     Optional<UByteCodeArg> resolve_local(
         const Token& name, const bool in_function) const;
