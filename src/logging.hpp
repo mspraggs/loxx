@@ -51,13 +51,13 @@ namespace loxx
   void runtime_error(const RuntimeError& error);
 
 
-  void print_bytecode(const VirtualMachine& vm,
-                      const CodeObject& output);
+  void print_bytecode(const VirtualMachine& vm, const std::string& name,
+                        const CodeObject& output);
 
 
-  raw_ptr<const std::uint8_t> print_instruction(
+  std::size_t print_instruction(
       const VirtualMachine& vm, const CodeObject& output,
-      const raw_ptr<const std::uint8_t> pos);
+      const std::size_t pos);
 
 
   unsigned int get_current_line(const CodeObject& output,

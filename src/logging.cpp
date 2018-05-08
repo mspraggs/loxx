@@ -33,19 +33,6 @@ namespace loxx
   bool had_runtime_error = false;
 
 
-  template <typename T>
-  T read_integer(const std::vector<std::uint8_t>& byte_code,
-                 std::size_t& pos)
-  {
-    T param = 0;
-    for (std::size_t i = 0; i < sizeof(T); ++i) {
-      param |= (byte_code[++pos] << 8 * i);
-    }
-
-    return param;
-  }
-
-
   void error(const unsigned int line, const std::string& message)
   {
     report(line, "", message);
@@ -82,25 +69,26 @@ namespace loxx
   }
 
 
-  void print_bytecode(const VirtualMachine& vm, const CodeObject& output)
+  void print_bytecode(const VirtualMachine& vm, const std::string& name,
+                      const CodeObject& output)
   {
-    raw_ptr<const std::uint8_t> pos = output.bytecode.data();
-    while (pos <= &output.bytecode.back()) {
+    std::cout << "=== " << name << " ===\n";
+    std::size_t pos = 0;
+    while (pos < output.bytecode.size()) {
       pos = print_instruction(vm, output, pos);
     }
   }
 
 
-  raw_ptr<const std::uint8_t> print_instruction(
+  std::size_t print_instruction(
       const VirtualMachine& vm, const CodeObject& output,
-      const raw_ptr<const std::uint8_t> ip)
+      const std::size_t pos)
   {
     const auto& bytecode = output.bytecode;
-    const std::size_t pos = ip - output.bytecode.data();
-    const auto instruction = static_cast<Instruction>(*ip);
+    const auto instruction = static_cast<Instruction>(bytecode[pos]);
 
     static unsigned int last_line_num = 0;
-    const unsigned int current_line_num = get_current_line(output, *ip);
+    const unsigned int current_line_num = get_current_line(output, pos);
 
     std::stringstream line_num_ss;
     line_num_ss << std::right << std::setw(5) << std::setfill(' ');
@@ -116,7 +104,7 @@ namespace loxx
     std::cout << line_num_ss.str() << ' ';
     std::cout << std::setw(20) << std::setfill(' ') << std::left << instruction;
 
-    raw_ptr<const std::uint8_t> ret = ip + 1;
+    std::size_t ret = pos + 1;
 
     switch (instruction) {
 
@@ -145,7 +133,7 @@ namespace loxx
 
     case Instruction::ConditionalJump:
     case Instruction::Jump: {
-      const auto param = read_integer_at_pos<ByteCodeArg>(ret);
+      const auto param = read_integer_at_pos<ByteCodeArg>(bytecode, ret);
       std::cout << pos << " -> " << pos + param + sizeof(ByteCodeArg) + 1;
       ret += sizeof(ByteCodeArg);
       break;
@@ -153,7 +141,7 @@ namespace loxx
 
     case Instruction::CreateClosure: {
       const auto& func_value =
-          vm.get_constant(read_integer_at_pos<UByteCodeArg>(ret));
+          vm.get_constant(read_integer_at_pos<UByteCodeArg>(bytecode, ret));
       const auto& func_obj = get<ObjectPtr>(func_value);
       auto func = static_cast<FuncObject*>(func_obj);
 
@@ -163,9 +151,9 @@ namespace loxx
 
       for (unsigned int i = 0; i < func->num_upvalues(); ++i) {
         const auto is_local =
-            read_integer_at_pos<UByteCodeArg>(ret) != 0;
+            read_integer_at_pos<UByteCodeArg>(bytecode, ret) != 0;
         ret += sizeof(UByteCodeArg);
-        const auto index = read_integer_at_pos<UByteCodeArg>(ret);
+        const auto index = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
         ret += sizeof(UByteCodeArg);
 
         std::cout << '(' << (is_local ? "local" : "upvalue") << ", "
@@ -180,7 +168,7 @@ namespace loxx
     }
 
     case Instruction::Call: {
-      const auto num_args = read_integer_at_pos<UByteCodeArg>(ret);
+      const auto num_args = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
       ret += sizeof(UByteCodeArg);
       std::cout << num_args;
       break;
@@ -200,7 +188,7 @@ namespace loxx
     case Instruction::SetProperty:
     case Instruction::SetUpvalue:
     case Instruction::LoadConstant: {
-      const auto param = read_integer_at_pos<UByteCodeArg>(ret);
+      const auto param = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
       std::cout << param << " '" << vm.get_constant(param) << "'";
       ret += sizeof(UByteCodeArg);
       break;

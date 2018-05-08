@@ -33,7 +33,7 @@ namespace loxx
 {
   VirtualMachine::VirtualMachine(const CodeObject& compiler_output,
                                  const bool debug)
-      : debug_(debug), ip_(nullptr), current_(compiler_output)
+      : debug_(debug), ip_(0), current_(compiler_output)
   {
     NativeObject::Fn fn =
         [] (raw_ptr<const Value>, const unsigned int)
@@ -56,17 +56,18 @@ namespace loxx
 
   void VirtualMachine::execute()
   {
-    ip_ = current_.get().bytecode.data();
     call_stack_.push(StackFrame(ip_, 0, stack_.data(), nullptr));
+    ip_ = 0;
 
-    while (ip_ <= &current_.get().bytecode.back()) {
+    while (ip_ < code_object_->bytecode.size()) {
 
       if (debug_) {
         print_stack();
         print_instruction(*this, current_, ip_);
       }
 
-      const auto instruction = static_cast<Instruction>(*ip_++);
+      const auto instruction =
+          static_cast<Instruction>(code_object_->bytecode[ip_++]);
 
       switch (instruction) {
 
@@ -632,7 +633,6 @@ namespace loxx
 
   RuntimeError VirtualMachine::runtime_error(const std::string& msg) const
   {
-    const std::size_t pos = ip_ - current_.get().bytecode.data();
-    return RuntimeError(get_current_line(current_, pos), msg);
+    return RuntimeError(get_current_line(*code_object_, ip_), msg);
   }
 }

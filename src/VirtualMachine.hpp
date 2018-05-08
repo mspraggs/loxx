@@ -76,8 +76,8 @@ namespace loxx
     RuntimeError runtime_error(const std::string& msg) const;
 
     bool debug_;
-    raw_ptr<const std::uint8_t> ip_;
     std::reference_wrapper<const CodeObject> current_;
+    std::size_t ip_;
     std::unordered_map<std::string, UByteCodeArg> constant_map_;
     std::vector<Value> constants_;
     std::unordered_map<std::string, Value> globals_;
@@ -90,7 +90,7 @@ namespace loxx
   template <typename T>
   T VirtualMachine::read_integer()
   {
-    const T integer = read_integer_at_pos<T>(ip_);
+    const T integer = read_integer_at_pos<T>(code_object_->bytecode, ip_);
     ip_ += sizeof(T);
 
     return integer;

@@ -33,19 +33,19 @@ namespace loxx
   class StackFrame
   {
   public:
-    StackFrame(const raw_ptr<const std::uint8_t> prev_ip,
+    StackFrame(const std::size_t prev_ip,
                const std::size_t prev_stack_size, Value& slots_base,
                raw_ptr<ClosureObject> closure)
         : StackFrame(prev_ip, prev_stack_size, &slots_base, closure)
     {}
-    StackFrame(const raw_ptr<const std::uint8_t> prev_ip,
+    StackFrame(const std::size_t prev_ip,
                const std::size_t prev_stack_size, raw_ptr<Value> slots_base,
                raw_ptr<ClosureObject> closure)
         : prev_ip_(prev_ip), prev_stack_size_(prev_stack_size),
           slots_(slots_base), closure_(closure)
     {}
 
-    raw_ptr<const std::uint8_t> prev_ip() const { return prev_ip_; }
+    std::size_t prev_ip() const { return prev_ip_; }
     std::size_t prev_stack_size() const { return prev_stack_size_; }
 
     const Value& slot(const std::size_t i) const { return slots_[i]; }
@@ -55,7 +55,7 @@ namespace loxx
     raw_ptr<ClosureObject> closure() { return closure_; }
 
   private:
-    raw_ptr<const std::uint8_t> prev_ip_;
+    std::size_t prev_ip_;
     std::size_t prev_stack_size_;
     raw_ptr<Value> slots_;
     raw_ptr<ClosureObject> closure_;
