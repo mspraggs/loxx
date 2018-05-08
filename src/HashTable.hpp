@@ -20,16 +20,35 @@
 #ifndef LOXX_HASHTABLE_HPP
 #define LOXX_HASHTABLE_HPP
 
-#include <tuple>
+#include <pair>
 #include <vector>
+
+#inclue "Optional.hpp"
 
 
 namespace loxx
 {
-  template <typename Key, typename Value>
+  template <typename Key, typename Value, typename Hash>
   class HashTable
   {
+  public:
+    HashTable() : data_(1024) {}
+
+    Value& operator[](const Key& key);
+
+  private:
+    using Item = Optional<std::pair<Key, Value>>;
+
+    Hash hash_func_;
+    std::vector<Item> data_;
   };
+
+
+  namespace detail
+  {
+    template <typename Key>
+    std::size_t hash(Key&& key);
+  }
 }
 
 #endif //LOXX_HASHTABLE_HPP
