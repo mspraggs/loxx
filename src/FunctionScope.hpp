@@ -81,6 +81,8 @@ namespace loxx
     FunctionType type() const { return type_; }
     unsigned int scope_depth() const { return scope_depth_; }
     std::size_t num_upvalues() const { return upvalues_.size(); }
+    std::size_t current_bytecode_size() const
+    { return code_object_->bytecode.size(); }
     const CodeObject& code_object() const { return *code_object_; }
 
     struct Local
