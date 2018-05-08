@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "Expr.hpp"
+#include "FunctionScope.hpp"
 #include "Instruction.hpp"
 #include "Optional.hpp"
 #include "Stack.hpp"
@@ -43,22 +44,12 @@ namespace loxx
   class VirtualMachine;
 
 
-  struct CodeObject
-  {
-    std::vector<std::uint8_t> bytecode;
-    std::vector<std::tuple<std::int8_t, std::uint8_t>> line_num_table;
-  };
-
-
   class Compiler : public Expr::Visitor, public Stmt::Visitor
   {
   public:
-    explicit Compiler(VirtualMachine& vm,
-                      std::vector<CodeObject>& code_objects)
-        : class_type_(ClassType::None),
-          current_function_type_(FunctionType::None), last_line_num_(0),
-          scope_depth_(0), last_instr_num_(0), vm_(&vm),
-          current_(0), code_objects_(code_objects)
+    explicit Compiler(VirtualMachine& vm, const bool debug)
+        : debug_(debug), class_type_(ClassType::None), vm_(&vm),
+          current_(0), func_(new FunctionScope(loxx::FunctionType::None))
     {
       locals_.push(std::vector<Local>());
       upvalues_.push(std::vector<Upvalue>());
@@ -89,19 +80,12 @@ namespace loxx
     void visit_var_stmt(const Var& stmt) override;
     void visit_while_stmt(const While& stmt) override;
 
-    const CodeObject& output() const { return code_objects_.get()[current_]; }
+    const CodeObject& output() const { return func_->code_object(); }
 
   private:
     enum class ClassType {
       Superclass,
       Subclass,
-      None
-    };
-
-    enum class FunctionType {
-      Function,
-      Initialiser,
-      Method,
       None
     };
 
@@ -141,43 +125,27 @@ namespace loxx
     template <typename T>
     void handle_variable_reference(const T& expr, const bool write);
     void handle_variable_reference(const Token& token, const bool write);
-    Optional<UByteCodeArg> resolve_local(
-        const Token& name, const bool in_function,
-        const std::size_t call_depth = detail::size_t_max) const;
-    Optional<UByteCodeArg> resolve_upvalue(
-        const std::size_t call_depth, const Token& name);
-    UByteCodeArg add_upvalue(
-        const std::size_t call_depth, const UByteCodeArg index,
-        const bool is_local);
-    void begin_scope();
-    void end_scope();
-    void update_line_num_table(const Token& token);
-    void add_instruction(const Instruction instruction);
-    template <typename T>
-    void add_integer(const T integer);
-    template <typename T>
-    void rewrite_integer(const std::size_t pos, const T integer);
-    std::size_t current_bytecode_size() const
-    { return code_objects_.get()[current_].bytecode.size(); }
+    Optional <UByteCodeArg> resolve_local(const Token& name,
+                                              const bool in_function) const;
+    Optional <UByteCodeArg> resolve_upvalue(const Token& name);
+
     inline UByteCodeArg make_string_constant(const std::string& str) const;
 
+    bool debug_;
     ClassType class_type_;
-    FunctionType current_function_type_;
-    unsigned int last_line_num_;
-    unsigned int scope_depth_;
-    std::size_t last_instr_num_;
     raw_ptr<VirtualMachine> vm_;
     std::size_t current_;
-    std::reference_wrapper<std::vector<CodeObject>> code_objects_;
     Stack<std::vector<Local>> locals_;
     Stack<std::vector<Upvalue>> upvalues_;
+    std::unique_ptr<FunctionScope> func_;
   };
 
 
   template <typename T>
-  T read_integer_at_pos(const raw_ptr<const std::uint8_t> pos)
+  T read_integer_at_pos(const std::vector<std::uint8_t>& bytecode,
+                        const std::size_t pos)
   {
-    const T integer = *reinterpret_cast<raw_ptr<const T>>(pos);
+    const T integer = *reinterpret_cast<raw_ptr<const T>>(&bytecode[pos]);
     return integer;
   }
 
@@ -204,21 +172,6 @@ namespace loxx
   }
 
 
-  template<typename T>
-  void Compiler::add_integer(const T integer)
-  {
-    auto& bytecode = code_objects_.get()[current_].bytecode;
-    const auto integer_ptr = reinterpret_cast<const std::uint8_t*>(&integer);
-    bytecode.insert(bytecode.end(), integer_ptr, integer_ptr + sizeof(T));
-  }
-
-
-  template<typename T>
-  void Compiler::rewrite_integer(const std::size_t pos, const T integer)
-  {
-    *reinterpret_cast<T*>(
-        &code_objects_.get()[current_].bytecode[pos]) = integer;
-  }
 }
 
 #endif //LOXX_COMPILER_HPP

@@ -40,9 +40,9 @@ namespace loxx
 
   void Compiler::visit_block_stmt(const Block& stmt)
   {
-    begin_scope();
+    func_->begin_scope();
     compile(stmt.statements);
-    end_scope();
+    func_->end_scope();
   }
 
 
@@ -55,9 +55,9 @@ namespace loxx
     // scope containing a reference to the superclass, which is then captured
     // as an upvalue if it's used anywhere via the super keyword
     if (stmt.superclass) {
-      begin_scope();
+      func_->begin_scope();
 
-      locals_.top().push_back({false, false, 0, "super"});
+      func_->add_local(func_->make_token(TokenType::Super, "super"));
       compile(*stmt.superclass);
     }
 
@@ -65,9 +65,9 @@ namespace loxx
     const auto op = stmt.superclass ?
                     Instruction::CreateSubclass : Instruction::CreateClass;
     const auto name_constant = make_string_constant(stmt.name.lexeme());
-    add_instruction(op);
-    add_integer<UByteCodeArg>(name_constant);
-    update_line_num_table(stmt.name);
+    func_->add_instruction(op);
+    func_->add_integer<UByteCodeArg>(name_constant);
+    func_->update_line_num_table(stmt.name);
 
     // Compile the class's methods
     for (const auto& method : stmt.methods) {
@@ -78,14 +78,14 @@ namespace loxx
           FunctionType::Method;
       compile_function(*method, type);
 
-      add_instruction(Instruction::CreateMethod);
-      add_integer<UByteCodeArg>(method_constant);
-      update_line_num_table(method->name);
+      func_->add_instruction(Instruction::CreateMethod);
+      func_->add_integer<UByteCodeArg>(method_constant);
+      func_->update_line_num_table(method->name);
     }
 
     // Close the scope we opened above, if applicable
     if (stmt.superclass) {
-      end_scope();
+      func_->end_scope();
     }
 
     define_variable(name_constant, stmt.name);
@@ -97,7 +97,7 @@ namespace loxx
   void Compiler::visit_expression_stmt(const Expression& stmt)
   {
     compile(*stmt.expression);
-    add_instruction(Instruction::Pop);
+    func_->add_instruction(Instruction::Pop);
   }
 
 
@@ -113,31 +113,31 @@ namespace loxx
   {
     compile(*stmt.condition);
 
-    add_instruction(Instruction::ConditionalJump);
-    const auto first_jump_pos = current_bytecode_size();
-    add_integer<ByteCodeArg>(0);
+    func_->add_instruction(Instruction::ConditionalJump);
+    const auto first_jump_pos = func_->current_bytecode_size();
+    func_->add_integer<UByteCodeArg>(0);
 
-    add_instruction(Instruction::Pop);
+    func_->add_instruction(Instruction::Pop);
 
     if (stmt.else_branch != nullptr) {
       compile(*stmt.else_branch);
     }
 
     const auto first_jump_size =
-        static_cast<ByteCodeArg>(current_bytecode_size() - first_jump_pos + 1);
-    rewrite_integer(first_jump_pos, first_jump_size);
+        static_cast<ByteCodeArg>(func_->current_bytecode_size() - first_jump_pos + 1);
+    func_->rewrite_integer(first_jump_pos, first_jump_size);
 
-    add_instruction(Instruction::Jump);
-    const auto second_jump_pos = current_bytecode_size();
-    add_integer<ByteCodeArg>(0);
+    func_->add_instruction(Instruction::Jump);
+    const auto second_jump_pos = func_->current_bytecode_size();
+    func_->add_integer<UByteCodeArg>(0);
 
-    add_instruction(Instruction::Pop);
+    func_->add_instruction(Instruction::Pop);
 
     compile(*stmt.then_branch);
 
     const auto second_jump_size = static_cast<ByteCodeArg>(
-            current_bytecode_size() - second_jump_pos - sizeof(ByteCodeArg));
-    rewrite_integer(second_jump_pos, second_jump_size);
+            func_->current_bytecode_size() - second_jump_pos - sizeof(ByteCodeArg));
+    func_->rewrite_integer(second_jump_pos, second_jump_size);
   }
 
 
@@ -145,21 +145,20 @@ namespace loxx
   {
     compile(*stmt.expression);
 
-    add_instruction(Instruction::Print);
+    func_->add_instruction(Instruction::Print);
   }
 
 
   void Compiler::visit_return_stmt(const Return& stmt)
   {
-    if (current_function_type_ == FunctionType::None) {
+    if (func_->type() == FunctionType::None) {
       error(stmt.keyword, "Cannot return from top-level code.");
     }
-    if (current_function_type_ == FunctionType::Initialiser and
-        stmt.value != nullptr) {
+    if (func_->type() == FunctionType::Initialiser and stmt.value != nullptr) {
       error(stmt.keyword, "Cannot return a value from an initialiser.");
     }
 
-    if (current_function_type_ == FunctionType::Initialiser) {
+    if (func_->type() == FunctionType::Initialiser) {
       compile_this_return();
       return;
     }
@@ -167,10 +166,10 @@ namespace loxx
       compile(*stmt.value);
     }
     else {
-      add_instruction(Instruction::Nil);
+      func_->add_instruction(Instruction::Nil);
     }
-    add_instruction(Instruction::Return);
-    update_line_num_table(stmt.keyword);
+    func_->add_instruction(Instruction::Return);
+    func_->update_line_num_table(stmt.keyword);
   }
 
 
@@ -182,7 +181,7 @@ namespace loxx
       compile(*stmt.initialiser);
     }
     else {
-      add_instruction(Instruction::Nil);
+      func_->add_instruction(Instruction::Nil);
     }
 
     define_variable(arg, stmt.name);
@@ -202,23 +201,23 @@ namespace loxx
     // end:
     // ...
 
-    const auto first_label_pos = current_bytecode_size();
+    const auto first_label_pos = func_->current_bytecode_size();
 
     compile(*stmt.condition);
 
-    add_instruction(Instruction::ConditionalJump);
+    func_->add_instruction(Instruction::ConditionalJump);
     // We want to jump over the jump that takes us out of the while loop, which
     // also involves jumping over a pop instruction (hence + 2 for two
     // instructions).
-    add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 2);
-    add_instruction(Instruction::Pop);
+    func_->add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 2);
+    func_->add_instruction(Instruction::Pop);
 
-    add_instruction(Instruction::Jump);
-    const auto second_jump_pos = current_bytecode_size();
-    add_integer<ByteCodeArg>(0);
+    func_->add_instruction(Instruction::Jump);
+    const auto second_jump_pos = func_->current_bytecode_size();
+    func_->add_integer<ByteCodeArg>(0);
 
     // Pop the condition value (used by ConditionalJump) off the stack.
-    add_instruction(Instruction::Pop);
+    func_->add_instruction(Instruction::Pop);
     // Compile the body of the while loop.
     compile(*stmt.body);
 
@@ -226,14 +225,14 @@ namespace loxx
     // automatically increments the instruction pointer when reading arguments.
 
     // Jump back to the start of the loop to check the condition again.
-    add_instruction(Instruction::Jump);
-    add_integer<ByteCodeArg>(
-        first_label_pos - current_bytecode_size() - sizeof(ByteCodeArg));
+    func_->add_instruction(Instruction::Jump);
+    func_->add_integer<ByteCodeArg>(
+        first_label_pos - func_->current_bytecode_size() - sizeof(ByteCodeArg));
 
     // Back-patch the jump over the body of the while loop.
-    rewrite_integer<ByteCodeArg>(
+    func_->rewrite_integer<ByteCodeArg>(
         second_jump_pos,
-        current_bytecode_size() - second_jump_pos - sizeof(ByteCodeArg));
+        func_->current_bytecode_size() - second_jump_pos - sizeof(ByteCodeArg));
   }
 
 
@@ -250,50 +249,60 @@ namespace loxx
 
     switch (expr.op.type()) {
 
-    case TokenType::Plus:
-      add_instruction(Instruction::Add);
+    case TokenType::Plus: {
+      func_->add_instruction(Instruction::Add);
+    }
       break;
 
-    case TokenType::Minus:
-      add_instruction(Instruction::Subtract);
+    case TokenType::Minus: {
+      func_->add_instruction(Instruction::Subtract);
+    }
       break;
 
-    case TokenType::Star:
-      add_instruction(Instruction::Multiply);
+    case TokenType::Star: {
+      func_->add_instruction(Instruction::Multiply);
+    }
       break;
 
-    case TokenType::Slash:
-      add_instruction(Instruction::Divide);
+    case TokenType::Slash: {
+      func_->add_instruction(Instruction::Divide);
+    }
       break;
 
-    case TokenType::Less:
-      add_instruction(Instruction::Less);
+    case TokenType::Less: {
+      func_->add_instruction(Instruction::Less);
+    }
       break;
 
-    case TokenType::LessEqual:
-      add_instruction(Instruction::LessEqual);
+    case TokenType::LessEqual: {
+      func_->add_instruction(Instruction::LessEqual);
+    }
       break;
 
-    case TokenType::Greater:
-      add_instruction(Instruction::Greater);
+    case TokenType::Greater: {
+      func_->add_instruction(Instruction::Greater);
+    }
       break;
 
-    case TokenType::GreaterEqual:
-      add_instruction(Instruction::GreaterEqual);
+    case TokenType::GreaterEqual: {
+      func_->add_instruction(Instruction::GreaterEqual);
+    }
       break;
 
-    case TokenType::EqualEqual:
-      add_instruction(Instruction::Equal);
+    case TokenType::EqualEqual: {
+      func_->add_instruction(Instruction::Equal);
+    }
       break;
 
-    case TokenType::BangEqual:
-      add_instruction(Instruction::NotEqual);
+    case TokenType::BangEqual: {
+      func_->add_instruction(Instruction::NotEqual);
+    }
       break;
 
     default:
       break;
     }
-    update_line_num_table(expr.op);
+    func_->update_line_num_table(expr.op);
   }
 
 
@@ -305,9 +314,9 @@ namespace loxx
       compile(*argument);
     }
 
-    add_instruction(Instruction::Call);
-    add_integer<UByteCodeArg>(expr.arguments.size());
-    update_line_num_table(expr.paren);
+    func_->add_instruction(Instruction::Call);
+    func_->add_integer<UByteCodeArg>(expr.arguments.size());
+    func_->update_line_num_table(expr.paren);
   }
 
 
@@ -316,9 +325,9 @@ namespace loxx
     compile(*expr.object);
 
     const auto name_constant = make_string_constant(expr.name.lexeme());
-    add_instruction(Instruction::GetProperty);
-    add_integer<UByteCodeArg>(name_constant);
-    update_line_num_table(expr.name);
+    func_->add_instruction(Instruction::GetProperty);
+    func_->add_integer<UByteCodeArg>(name_constant);
+    func_->update_line_num_table(expr.name);
   }
 
 
@@ -331,19 +340,20 @@ namespace loxx
   void Compiler::visit_literal_expr(const Literal& expr)
   {
     if (holds_alternative<bool>(expr.value)) {
-      add_instruction(
-          get<bool>(expr.value) ? Instruction::True : Instruction::False);
+      const Instruction instruction =
+          get<bool>(expr.value) ? Instruction::True : Instruction::False;
+      func_->add_instruction(instruction);
       return;
     }
     else if (expr.value.index() == Value::npos) {
-      add_instruction(Instruction::Nil);
+      func_->add_instruction(Instruction::Nil);
       return;
     }
 
     const auto index = vm_->add_named_constant(expr.lexeme, expr.value);
 
-    add_instruction(Instruction::LoadConstant);
-    add_integer(index);
+    func_->add_instruction(Instruction::LoadConstant);
+    func_->add_integer<UByteCodeArg>(index);
   }
 
 
@@ -352,30 +362,30 @@ namespace loxx
     compile(*expr.left);
 
     if (expr.op.type() == TokenType::Or) {
-      add_instruction(Instruction::ConditionalJump);
-      const auto jump_pos = current_bytecode_size();
-      add_integer<ByteCodeArg>(0);
-      update_line_num_table(expr.op);
+      func_->add_instruction(Instruction::ConditionalJump);
+      const auto jump_pos = func_->current_bytecode_size();
+      func_->add_integer<UByteCodeArg>(0);
+      func_->update_line_num_table(expr.op);
 
-      const auto skip_start = current_bytecode_size();
-      add_instruction(Instruction::Pop);
+      const auto skip_start = func_->current_bytecode_size();
+      func_->add_instruction(Instruction::Pop);
       compile(*expr.right);
 
-      rewrite_integer<ByteCodeArg>(
-          jump_pos, current_bytecode_size() - skip_start);
+      func_->rewrite_integer<ByteCodeArg>(
+          jump_pos, func_->current_bytecode_size() - skip_start);
     }
     else if (expr.op.type() == TokenType::And) {
-      add_instruction(Instruction::ConditionalJump);
-      add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 1);
-      update_line_num_table(expr.op);
-      add_instruction(Instruction::Jump);
-      const auto jump_pos = current_bytecode_size();
-      add_integer<ByteCodeArg>(0);
+      func_->add_instruction(Instruction::ConditionalJump);
+      func_->add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 1);
+      func_->update_line_num_table(expr.op);
+      func_->add_instruction(Instruction::Jump);
+      const auto jump_pos = func_->current_bytecode_size();
+      func_->add_integer<ByteCodeArg>(0);
 
-      const auto skip_start = current_bytecode_size();
+      const auto skip_start = func_->current_bytecode_size();
       compile(*expr.right);
-      rewrite_integer<ByteCodeArg>(
-          jump_pos, current_bytecode_size() - skip_start);
+      func_->rewrite_integer<ByteCodeArg>(
+          jump_pos, func_->current_bytecode_size() - skip_start);
     }
   }
 
@@ -386,9 +396,9 @@ namespace loxx
     compile(*expr.value);
 
     const auto name_constant = make_string_constant(expr.name.lexeme());
-    add_instruction(Instruction::SetProperty);
-    add_integer<UByteCodeArg>(name_constant);
-    update_line_num_table(expr.name);
+    func_->add_instruction(Instruction::SetProperty);
+    func_->add_integer<UByteCodeArg>(name_constant);
+    func_->update_line_num_table(expr.name);
   }
 
 
@@ -407,9 +417,9 @@ namespace loxx
     handle_variable_reference(expr.keyword, false);
 
     const auto func = make_string_constant(expr.method.lexeme());
-    add_instruction(Instruction::GetSuperFunc);
-    add_integer<UByteCodeArg>(func);
-    update_line_num_table(expr.keyword);
+    func_->add_instruction(Instruction::GetSuperFunc);
+    func_->add_integer<UByteCodeArg>(func);
+    func_->update_line_num_table(expr.keyword);
   }
 
 
@@ -427,12 +437,12 @@ namespace loxx
     compile(*expr.right);
 
     if (expr.op.type() == TokenType::Bang) {
-      add_instruction(Instruction::Not);
+      func_->add_instruction(Instruction::Not);
     }
     else if (expr.op.type() == TokenType::Minus) {
-      add_instruction(Instruction::Negate);
+      func_->add_instruction(Instruction::Negate);
     }
-    update_line_num_table(expr.op);
+    func_->update_line_num_table(expr.op);
   }
 
 
@@ -456,20 +466,8 @@ namespace loxx
 
   void Compiler::compile_function(const Function& stmt, const FunctionType type)
   {
-    const auto old_func_type = current_function_type_;
-    current_function_type_ = type;
-
-    // Because all code is compiled into one contiguous blob of bytecode,
-    // there's the risk that we end up walking straight into bytecode that
-    // belongs to functions. To avoid this we prepend a jump instruction before
-    // the function's bytecode so that we can skip over the latter.
-    add_instruction(Instruction::Jump);
-    const auto jump_pos = current_bytecode_size();
-    add_integer<ByteCodeArg>(0);
-
-    const auto bytecode_pos = current_bytecode_size();
-
-    begin_scope();
+    func_ = std::make_unique<FunctionScope>(type, std::move(func_));
+    func_->begin_scope();
     locals_.push({});
     upvalues_.push({});
 
@@ -489,75 +487,59 @@ namespace loxx
     compile(stmt.body);
 
     // Return "this" if in constructor
-    if (current_function_type_ == FunctionType::Initialiser) {
+    if (func_->type() == FunctionType::Initialiser) {
       compile_this_return();
     }
 
-    end_scope();
-    locals_.pop();
-    const auto upvalues = upvalues_.pop();
-
+    func_->end_scope();
     // Return "nil" if we haven't returned already.
-    add_instruction(Instruction::Nil);
-    add_instruction(Instruction::Return);
+    func_->add_instruction(Instruction::Nil);
+    func_->add_instruction(Instruction::Return);
 
-    // Back-patch the jump over the function definition
-    const auto jump_size =
-        static_cast<ByteCodeArg>(current_bytecode_size() - bytecode_pos);
-    rewrite_integer(jump_pos, jump_size);
+    const auto upvalues = func_->release_upvalues();
+    auto code_object = func_->release_code_object();
+    func_ = func_->release_enclosing();
+
+    if (debug_) {
+      print_bytecode(*vm_, stmt.name.lexeme(), *code_object);
+    }
 
     // Add the new function object as a constant
     auto func = make_object<FuncObject>(
-        stmt.name.lexeme(), &code_objects_.get()[current_].bytecode[bytecode_pos],
+        stmt.name.lexeme(), std::move(code_object),
         static_cast<unsigned int>(stmt.parameters.size()),
         upvalues.size());
     const auto index = vm_->add_constant(Value(InPlace<ObjectPtr>(), func));
 
-    add_instruction(Instruction::CreateClosure);
-    add_integer<UByteCodeArg>(index);
-    update_line_num_table(stmt.name);
+    func_->add_instruction(Instruction::CreateClosure);
+    func_->add_integer<UByteCodeArg>(index);
+    func_->update_line_num_table(stmt.name);
 
     for (const auto& upvalue : upvalues) {
-      add_integer<UByteCodeArg>(upvalue.is_local ? 1 : 0);
-      add_integer<UByteCodeArg>(upvalue.index);
+      func_->add_integer<UByteCodeArg>(upvalue.is_local ? 1 : 0);
+      func_->add_integer<UByteCodeArg>(upvalue.index);
     }
-
-    current_function_type_ = old_func_type;
   }
 
 
   void Compiler::compile_this_return()
   {
-    const auto this_token = Token(TokenType::This, "this", last_line_num_);
+    const auto this_token = func_->make_token(TokenType::This, "this");
     handle_variable_reference(this_token, false);
-    add_instruction(Instruction::Return);
-    update_line_num_table(this_token);
+    func_->add_instruction(Instruction::Return);
+    func_->update_line_num_table(this_token);
   }
 
 
   Optional<UByteCodeArg> Compiler::declare_variable(const Token& name)
   {
     const Optional<UByteCodeArg> arg =
-        scope_depth_ == 0 ?
+        func_->scope_depth() == 0 ?
         vm_->add_string_constant(name.lexeme()) :
         Optional<UByteCodeArg>();
 
     if (not arg) {
-      // Check to see if a variable with this name has been declared in this
-      // scope already
-      for (long int i = locals_.top().size() - 1; i >= 0; --i) {
-        const auto& local = locals_.top()[i];
-
-        if (local.defined and local.depth < scope_depth_) {
-          break;
-        }
-        if (local.name == name.lexeme()) {
-          throw CompileError(
-              name,
-              "Variable with this name already declared in this scope.");
-        }
-      }
-      locals_.top().push_back({false, false, 0, name.lexeme()});
+      func_->declare_local(name);
     }
 
     return arg;
@@ -568,13 +550,12 @@ namespace loxx
                                  const Token& name)
   {
     if (arg) {
-      add_instruction(Instruction::DefineGlobal);
-      add_integer(*arg);
-      update_line_num_table(name);
+      func_->add_instruction(Instruction::DefineGlobal);
+      func_->add_integer<UByteCodeArg>(*arg);
+      func_->update_line_num_table(name);
     }
     else {
-      locals_.top().back().defined = true;
-      locals_.top().back().depth = scope_depth_;
+      func_->define_local();
     }
   }
 
@@ -588,7 +569,7 @@ namespace loxx
       op = write ? Instruction::SetLocal : Instruction::GetLocal;
     }
     else {
-      arg = resolve_upvalue(locals_.size() - 1, token);
+      arg = resolve_upvalue(token);
 
       if (arg) {
         op = write ? Instruction::SetUpvalue : Instruction::GetUpvalue;
@@ -602,142 +583,22 @@ namespace loxx
       arg = make_string_constant(token.lexeme());
     }
 
-    add_instruction(op);
-    add_integer(*arg);
-    update_line_num_table(token);
+    func_->add_instruction(op);
+    func_->add_integer<UByteCodeArg>(*arg);
+    func_->update_line_num_table(token);
   }
 
 
-  Optional<UByteCodeArg> Compiler::resolve_local(
-      const Token& name, const bool in_function,
-      const std::size_t call_depth) const
+  Optional <UByteCodeArg> Compiler::resolve_local(
+      const Token& name, const bool in_function) const
   {
-    const auto& locals =
-        call_depth > locals_.size() ? locals_.top() : locals_.get(call_depth);
-
-    for (long int i = locals.size() - 1; i >= 0; --i) {
-      if (locals[i].name == name.lexeme()) {
-        if (not in_function and not locals[i].defined) {
-          throw CompileError(
-              name, "Cannot read local variable in its own initialiser.");
-        }
-        return static_cast<UByteCodeArg>(i);
-      }
-    }
-    return Optional<UByteCodeArg>();
+    return func_->resolve_local(name, in_function);
   }
 
 
-  Optional<UByteCodeArg> Compiler::resolve_upvalue(
-      const std::size_t call_depth, const Token& name)
+  Optional <UByteCodeArg> Compiler::resolve_upvalue(const Token& name)
   {
-    if (call_depth == 0) {
-      // There is only one scope, so we're not going to find an upvalue
-      return Optional<UByteCodeArg>();
-    }
-
-    auto local = resolve_local(name, true, call_depth - 1);
-
-    if (local) {
-      locals_.get(call_depth - 1)[*local].is_upvalue = true;
-      return add_upvalue(call_depth, *local, true);
-    }
-
-    local = resolve_upvalue(call_depth - 1, name);
-    if (local) {
-      return add_upvalue(call_depth, *local, false);
-    }
-
-    return Optional<UByteCodeArg>();
-  }
-
-
-  UByteCodeArg Compiler::add_upvalue(
-      const std::size_t call_depth, const UByteCodeArg index,
-      const bool is_local)
-  {
-    auto& upvalues = upvalues_.get(call_depth);
-
-    for (UByteCodeArg i = 0; i < upvalues.size(); ++i) {
-      if (upvalues[i].index == index and upvalues[i].is_local == is_local) {
-        return i;
-      }
-    }
-
-    upvalues.push_back(Upvalue{is_local, index});
-    return static_cast<UByteCodeArg>(upvalues.size() - 1);
-  }
-
-
-  void Compiler::begin_scope()
-  {
-    scope_depth_++;
-  }
-
-
-  void Compiler::end_scope()
-  {
-    scope_depth_--;
-
-    while (not locals_.top().empty() and
-           locals_.top().back().depth > scope_depth_) {
-      if (locals_.top().back().is_upvalue) {
-        add_instruction(Instruction::CloseUpvalue);
-      }
-      else {
-        add_instruction(Instruction::Pop);
-      }
-      locals_.top().pop_back();
-    }
-  }
-
-
-  void Compiler::update_line_num_table(const Token& token)
-  {
-    // Okay, so I totally ripped off CPython's strategy for encoding line
-    // numbers here, but what I can I say? It's a good strategy!
-
-    // The broad idea here is that for each instruction we encode the difference
-    // between the last line number number and the current line number, and the
-    // last instruction and the current instruction. If the last line number is
-    // different to the previous one, the difference in instruction and line is
-    // encoded as one or more pairs of bytes.
-
-    int line_num_diff = token.line() - last_line_num_;
-    auto line_num_diff_abs = static_cast<unsigned int>(std::abs(line_num_diff));
-    std::size_t instr_num_diff =
-        current_bytecode_size() - last_instr_num_;
-
-    const auto num_rows =
-        std::max(line_num_diff_abs / 128,
-                 static_cast<unsigned int>(instr_num_diff / 256));
-
-    if (num_rows > 0) {
-      const auto line_num_delta =
-          static_cast<std::int8_t>(line_num_diff / num_rows);
-      const auto instr_num_delta =
-          static_cast<std::int8_t>(instr_num_diff / num_rows);
-
-      for (unsigned int i = 0; i < num_rows; ++i) {
-        code_objects_.get()[current_].line_num_table.emplace_back(
-            line_num_delta, instr_num_delta);
-      }
-
-      line_num_diff -= num_rows * line_num_delta;
-      instr_num_diff -= num_rows * instr_num_delta;
-    }
-
-    code_objects_.get()[current_].line_num_table.emplace_back(
-        line_num_diff, instr_num_diff);
-    last_instr_num_ = current_bytecode_size();
-    last_line_num_ = token.line();
-  }
-
-
-  void Compiler::add_instruction(const Instruction instruction)
-  {
-    code_objects_.get()[current_].bytecode.push_back(
-        static_cast<std::uint8_t>(instruction));
+    return func_->resolve_upvalue(name);
   }
 
 

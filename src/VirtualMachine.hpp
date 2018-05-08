@@ -39,10 +39,9 @@ namespace loxx
   class VirtualMachine
   {
   public:
-    explicit VirtualMachine(const CodeObject& compiler_output,
-                            const bool debug);
+    explicit VirtualMachine(const bool debug);
 
-    void execute();
+    void execute(const CodeObject& code_object);
 
     UByteCodeArg add_named_constant(const std::string& lexeme,
                                     const Value& value);
@@ -76,8 +75,8 @@ namespace loxx
     RuntimeError runtime_error(const std::string& msg) const;
 
     bool debug_;
-    std::reference_wrapper<const CodeObject> current_;
     std::size_t ip_;
+    raw_ptr<const CodeObject> code_object_;
     std::unordered_map<std::string, UByteCodeArg> constant_map_;
     std::vector<Value> constants_;
     std::unordered_map<std::string, Value> globals_;

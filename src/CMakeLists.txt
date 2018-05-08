@@ -3,8 +3,10 @@ project(loxx)
 
 set(SRC
   AstPrinter.hpp
+  CodeObject.hpp
   Compiler.hpp
   Expr.hpp
+  FunctionScope.hpp
   globals.hpp
   Instruction.hpp
   logging.hpp
@@ -23,6 +25,7 @@ set(SRC
 
   AstPrinter.cpp
   Compiler.cpp
+  FunctionScope.cpp
   logging.cpp
   main.cpp
   ObjectTracker.cpp

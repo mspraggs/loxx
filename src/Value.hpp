@@ -25,6 +25,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "CodeObject.hpp"
 #include "globals.hpp"
 #include "Variant.hpp"
 
@@ -84,14 +85,15 @@ namespace loxx
   class FuncObject : public Object
   {
   public:
-    FuncObject(std::string lexeme, const raw_ptr<const std::uint8_t> first_ip,
+    FuncObject(std::string lexeme, std::unique_ptr<CodeObject> code_object,
                const unsigned int arity, const UByteCodeArg num_upvalues)
         : Object(ObjectType::Function),
           arity_(arity), num_upvalues_(num_upvalues),
-          first_ip_(first_ip), lexeme_(std::move(lexeme))
+          code_object_(std::move(code_object)), lexeme_(std::move(lexeme))
     {}
 
-    raw_ptr<const std::uint8_t> bytecode_offset() const { return first_ip_; }
+    raw_ptr<const CodeObject> code_object() const
+    { return code_object_.get(); }
 
     unsigned int arity() const { return arity_; }
     UByteCodeArg num_upvalues() const { return num_upvalues_; }
@@ -100,7 +102,7 @@ namespace loxx
   private:
     unsigned int arity_;
     UByteCodeArg num_upvalues_;
-    raw_ptr<const std::uint8_t> first_ip_;
+    std::unique_ptr<CodeObject> code_object_;
     std::string lexeme_;
   };
 

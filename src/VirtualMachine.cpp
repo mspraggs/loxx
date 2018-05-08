@@ -31,9 +31,8 @@
 
 namespace loxx
 {
-  VirtualMachine::VirtualMachine(const CodeObject& compiler_output,
-                                 const bool debug)
-      : debug_(debug), ip_(0), current_(compiler_output)
+  VirtualMachine::VirtualMachine(const bool debug)
+      : debug_(debug), ip_(0)
   {
     NativeObject::Fn fn =
         [] (raw_ptr<const Value>, const unsigned int)
@@ -54,16 +53,17 @@ namespace loxx
   }
 
 
-  void VirtualMachine::execute()
+  void VirtualMachine::execute(const CodeObject& code_object)
   {
-    call_stack_.push(StackFrame(ip_, 0, stack_.data(), nullptr));
+    code_object_ = &code_object;
     ip_ = 0;
+    call_stack_.push(StackFrame(ip_, code_object_, 0, stack_.data(), nullptr));
 
     while (ip_ < code_object_->bytecode.size()) {
 
       if (debug_) {
         print_stack();
-        print_instruction(*this, current_, ip_);
+        print_instruction(*this, *code_object_, ip_);
       }
 
       const auto instruction =
@@ -251,6 +251,7 @@ namespace loxx
           stack_.pop();
         }
         stack_.push(result);
+        code_object_ = frame.prev_code_object();
         ip_ = frame.prev_ip();
         break;
       }
@@ -533,9 +534,11 @@ namespace loxx
       }
       auto& base_slot = stack_.get(obj_pos + (closure->instance() ? 0 : 1));
 
-      call_stack_.push(StackFrame(ip_, stack_.size() - num_args - 1,
-                                  base_slot, closure));
-      ip_ = closure->function().bytecode_offset();
+      call_stack_.push(
+          StackFrame(ip_, code_object_, stack_.size() - num_args - 1,
+                     base_slot, closure));
+      code_object_ = closure->function().code_object();
+      ip_ = 0;
       break;
     }
 

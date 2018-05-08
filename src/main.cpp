@@ -53,9 +53,9 @@ namespace loxx
 
     static std::vector<CodeObject> code_objects{CodeObject{}};
     code_objects.front().bytecode.reserve(10240);
-    static VirtualMachine vm(code_objects.front(), debug_config.trace_exec);
+    static VirtualMachine vm(debug_config.trace_exec);
 
-    Compiler compiler(vm, code_objects);
+    Compiler compiler(vm, debug_config.print_bytecode);
     compiler.compile(statements);
 
     if (had_error) {
@@ -63,11 +63,11 @@ namespace loxx
     }
 
     if (debug_config.print_bytecode) {
-      print_bytecode(vm, compiler.output());
+      print_bytecode(vm, "top level", compiler.output());
     }
 
     try {
-      vm.execute();
+      vm.execute(compiler.output());
     }
     catch (const RuntimeError& e) {
       runtime_error(e);
