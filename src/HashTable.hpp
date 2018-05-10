@@ -66,13 +66,18 @@ namespace loxx
       rehash();
     }
 
-    auto pos = detail::hash(key, hash_func) % data_.size();
+    auto pos = detail::hash(key, hash_func_) % data_.size();
 
-    while (not data_set_[pos]) {
+    while (data_[pos].first != key) {
       pos = (pos + 1) % data.size();
     }
-    data_set_[pos] = true;
-    return data[pos]
+
+    if (not data_set_[pos]) {
+      data_set_[pos] = true;
+      --num_free_slots_;
+    }
+
+    return data_[pos].second;
   }
 
 
