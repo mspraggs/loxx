@@ -28,27 +28,62 @@
 
 namespace loxx
 {
-  template <typename Key, typename Value, typename Hash>
+  template <typename Key, typename Value, typename Hash = std::hash<Key>>
   class HashTable
   {
+    constexpr std::size_t default_size_ = 1024;
   public:
-    HashTable() : data_(1024) {}
+    HashTable()
+        : num_free_slots_(default_size), data_set_(default_size_),
+          data_(default_size_)
+    {}
 
     Value& operator[](const Key& key);
 
   private:
-    using Item = Optional<std::pair<Key, Value>>;
+    using Item = std::pair<Key, Value>;
+
+    void rehash();
 
     Hash hash_func_;
+    std::size_t num_free_slots_;
+    std::vector<bool> data_set_;
     std::vector<Item> data_;
   };
 
 
   namespace detail
   {
-    template <typename Key>
-    std::size_t hash(Key&& key);
+    template <typename Key, typename Hash>
+    std::size_t hash(Key&& key, Hash&& hash_func);
   }
+
+
+  template <typename Key, typename Value, typename Hash>
+  Value& HashTable::operator[](const Key& key)
+  {
+    if (num_free_slots_ == 0) {
+      rehash();
+    }
+
+    auto pos = detail::hash(key, hash_func) % data_.size();
+
+    while (not data_set_[pos]) {
+      pos = (pos + 1) % data.size();
+    }
+    data_set_[pos] = true;
+    return data[pos]
+  }
+
+
+  namespace detail
+  {
+    template <typename Key, typename Hash>
+    std::size_t hash(Key&& key, Hash&& hash_func)
+    {
+      return hash_func(key);
+    }
+  }  
 }
 
 #endif //LOXX_HASHTABLE_HPP
