@@ -20,22 +20,30 @@
 #ifndef LOXX_HASHTABLE_HPP
 #define LOXX_HASHTABLE_HPP
 
-#include <pair>
+#include <utility>
 #include <vector>
 
-#inclue "Optional.hpp"
+#include "Optional.hpp"
 
 
 namespace loxx
 {
+  namespace detail
+  {
+    constexpr std::size_t default_size_ = 1024;
+    constexpr double load_factor_ = 0.75;
+  }
+
   template <typename Key, typename Value, typename Hash = std::hash<Key>>
   class HashTable
   {
-    constexpr std::size_t default_size_ = 1024;
+    using namespace detail;
   public:
     HashTable()
-        : num_free_slots_(default_size), data_set_(default_size_),
-          data_(default_size_)
+        : num_free_slots_(default_size_),
+          min_free_slots_(
+              static_cast<std::size_t>(load_factor_ * default_size_)),
+          data_set_(default_size_), data_(default_size_)
     {}
 
     Value& operator[](const Key& key);
@@ -46,7 +54,7 @@ namespace loxx
     void rehash();
 
     Hash hash_func_;
-    std::size_t num_free_slots_;
+    std::size_t num_free_slots_, min_free_slots_;
     std::vector<bool> data_set_;
     std::vector<Item> data_;
   };
@@ -62,14 +70,14 @@ namespace loxx
   template <typename Key, typename Value, typename Hash>
   Value& HashTable::operator[](const Key& key)
   {
-    if (num_free_slots_ == 0) {
+    if (num_free_slots_ < min_free_slots_) {
       rehash();
     }
 
     auto pos = detail::hash(key, hash_func_) % data_.size();
 
-    while (data_[pos].first != key) {
-      pos = (pos + 1) % data.size();
+    while (data_set_[pos] and data_[pos].first != key) {
+      pos = (pos + 1) % data_.size();
     }
 
     if (not data_set_[pos]) {
@@ -81,6 +89,13 @@ namespace loxx
   }
 
 
+  template<typename Key, typename Value, typename Hash>
+  void HashTable<Key, Value, Hash>::rehash()
+  {
+
+  }
+
+
   namespace detail
   {
     template <typename Key, typename Hash>
@@ -88,7 +103,7 @@ namespace loxx
     {
       return hash_func(key);
     }
-  }  
+  }
 }
 
 #endif //LOXX_HASHTABLE_HPP
