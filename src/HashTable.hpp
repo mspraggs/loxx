@@ -30,33 +30,35 @@ namespace loxx
 {
   namespace detail
   {
-    constexpr std::size_t default_size_ = 1024;
-    constexpr double load_factor_ = 0.75;
+    constexpr std::size_t default_size = 1024;
+    constexpr double load_factor = 0.75;
+    constexpr double growth_factor = 2.0;
   }
 
   template <typename Key, typename Value, typename Hash = std::hash<Key>>
   class HashTable
   {
-    using namespace detail;
   public:
     HashTable()
-        : num_free_slots_(default_size_),
-          min_free_slots_(
-              static_cast<std::size_t>(load_factor_ * default_size_)),
-          data_set_(default_size_), data_(default_size_)
+        : num_free_slots_(detail::default_size),
+          min_free_slots_(static_cast<std::size_t>(
+                              detail::load_factor * detail::default_size)),
+          data_(detail::default_size)
     {}
 
     Value& operator[](const Key& key);
 
   private:
     using Item = std::pair<Key, Value>;
+    using Elem = Optional<Item>;
 
     void rehash();
+    static std::size_t find_pos(
+        const std::vector<Elem>& data, const Key& key, const std::size_t hash);
 
     Hash hash_func_;
     std::size_t num_free_slots_, min_free_slots_;
-    std::vector<bool> data_set_;
-    std::vector<Item> data_;
+    std::vector<Elem> data_;
   };
 
 
@@ -68,31 +70,45 @@ namespace loxx
 
 
   template <typename Key, typename Value, typename Hash>
-  Value& HashTable::operator[](const Key& key)
+  Value& HashTable<Key, Value, Hash>::operator[](const Key& key)
   {
     if (num_free_slots_ < min_free_slots_) {
       rehash();
     }
 
-    auto pos = detail::hash(key, hash_func_) % data_.size();
+    const auto pos = find_pos(data_, detail::hash(key, hash_func_), key);
 
-    while (data_set_[pos] and data_[pos].first != key) {
-      pos = (pos + 1) % data_.size();
-    }
-
-    if (not data_set_[pos]) {
-      data_set_[pos] = true;
+    if (not data_[pos]) {
+      data_[pos] = std::make_pair(key, Value());
       --num_free_slots_;
     }
 
-    return data_[pos].second;
+    return data_[pos]->second;
   }
 
 
   template<typename Key, typename Value, typename Hash>
   void HashTable<Key, Value, Hash>::rehash()
   {
+    const auto new_size =
+        static_cast<std::size_t>(data_.size() * detail::growth_factor);
 
+    std::vector<Elem> new_data(new_size);
+    data_.resize(new_size);
+  }
+
+
+  template<typename Key, typename Value, typename Hash>
+  std::size_t HashTable<Key, Value, Hash>::find_pos(
+      const std::vector<Elem>& data, const Key& key, const std::size_t hash)
+  {
+    auto pos = hash % data.size();
+
+    while (data[pos] and data[pos]->first != key) {
+      pos = (pos + 1) % data.size();
+    }
+
+    return pos;
   }
 
 
