@@ -47,6 +47,7 @@ namespace loxx
     {}
 
     Value& operator[](const Key& key);
+    void erase(const Key& key);
 
   private:
     using Item = std::pair<Key, Value>;
@@ -84,6 +85,27 @@ namespace loxx
     }
 
     return data_[pos]->second;
+  }
+
+
+  template<typename Key, typename Value, typename Hash>
+  void HashTable<Key, Value, Hash>::erase(const Key& key)
+  {
+    const auto hash = detail::hash(key, hash_func_);
+    auto pos = find_pos(data_, key, hash);
+
+    data_[pos] = {};
+
+    for (;;) {
+      pos = (pos + 1) % data_.size();
+
+      if (not data_[pos]) {
+        break;
+      }
+
+      const auto datum = std::move(data_[pos]);
+      (*this)[datum->first] = datum->second;
+    }
   }
 
 
