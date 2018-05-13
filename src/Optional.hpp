@@ -112,6 +112,8 @@ namespace loxx
       : has_value_(other.has_value_)
   {
     new (&storage_) T(std::move(*reinterpret_cast<T*>(&other.storage_)));
+
+    other.has_value_ = false;
   }
 
 
@@ -159,6 +161,7 @@ namespace loxx
   {
     has_value_ = other.has_value_;
     new (&storage_) T(std::move(*reinterpret_cast<T*>(&other.storage_)));
+    other.has_value_ = false;
     return *this;
   }
 
