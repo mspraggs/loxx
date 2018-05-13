@@ -76,7 +76,7 @@ namespace loxx
       rehash();
     }
 
-    const auto pos = find_pos(data_, detail::hash(key, hash_func_), key);
+    const auto pos = find_pos(data_, key, detail::hash(key, hash_func_));
 
     if (not data_[pos]) {
       data_[pos] = std::make_pair(key, Value());
