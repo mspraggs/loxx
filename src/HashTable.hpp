@@ -65,8 +65,35 @@ namespace loxx
 
   namespace detail
   {
+    template <typename T>
+    class has_hash
+    {
+      using Yes = char;
+      using No = Yes[2];
+
+      template <typename C>
+      static auto test(const void*)
+          -> decltype(std::size_t{std::declval<const C>().hash()}, Yes{});
+
+      template <typename C>
+      static No& test(...);
+
+    public:
+      static constexpr bool value = sizeof(test<T>(nullptr)) == sizeof(Yes);
+    };
+
     template <typename Key, typename Hash>
-    std::size_t hash(Key&& key, Hash&& hash_func);
+    auto hash(Key&& key, Hash&& hash_func)
+        -> std::enable_if_t<has_hash<Key>::value, std::size_t>
+    {
+      return key.hash();
+    }
+
+    template <typename Key, typename Hash>
+    std::size_t hash(Key&& key, Hash&& hash_func)
+    {
+      return hash_func(std::forward<Key>(key));
+    }
   }
 
 
@@ -146,16 +173,6 @@ namespace loxx
     }
 
     return pos;
-  }
-
-
-  namespace detail
-  {
-    template <typename Key, typename Hash>
-    std::size_t hash(Key&& key, Hash&& hash_func)
-    {
-      return hash_func(key);
-    }
   }
 }
 
