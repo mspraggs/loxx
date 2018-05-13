@@ -35,6 +35,44 @@ namespace loxx
     constexpr double growth_factor = 2.0;
   }
 
+
+  template <typename Key, typename Value, typename Hash = std::hash<Key>>
+  class HashTable;
+
+
+  template <typename Key, typename Value, typename Hash = std::hash<Key>>
+  class HashTableIterator
+  {
+    using Item = std::pair<Key, Value>;
+    using Elem = Optional<Item>;
+    using Iter = std::vector<Elem>::iterator;
+
+  public:
+    using difference_type   = std::ptrdiff_t;
+    using value_type        = Item;
+    using pointer           = Item*;
+    using reference         = Item&;
+    using iterator_category = std::forward_iterator_tag;
+
+    HashTableIterator() = default;
+    explicit HashTableIterator(Iter start, Iter last)
+        : it_(start), last_(last)
+    {}
+
+    HashTableIterator<Key, Value, Hash>& operator++();
+    HashTableIterator<Key, Value, Hash> operator++(int);
+
+    bool operator==(const HashTableIterator<Key, Value, Hash>& other) const;
+    bool operator!=(const HashTableIterator<Key, Value, Hash>& other) const;
+
+    reference operator*() { return *(*it_); }
+    pointer operator->() { return &(*this); }
+
+  private:
+    Iter it_, last_;
+  };
+
+
   template <typename Key, typename Value, typename Hash = std::hash<Key>>
   class HashTable
   {
