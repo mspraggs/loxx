@@ -94,7 +94,22 @@ namespace loxx
         static_cast<std::size_t>(data_.size() * detail::growth_factor);
 
     std::vector<Elem> new_data(new_size);
-    data_.resize(new_size);
+
+    for (auto& elem : data_) {
+
+      if (not elem) {
+        continue;
+      }
+
+      const auto hash = detail::hash(elem->first, hash_func_);
+      const auto new_pos = find_pos(new_data, elem->first, hash);
+      new_data[new_pos] = elem;
+    }
+
+    num_free_slots_ += new_size - data_.size();
+    min_free_slots_ = static_cast<std::size_t>(new_size * detail::load_factor);
+
+    std::swap(data_, new_data);
   }
 
 
