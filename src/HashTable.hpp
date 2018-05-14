@@ -93,6 +93,7 @@ namespace loxx
     Value& operator[](const Key& key);
     void erase(const Key& key);
 
+    std::size_t capacity() const { return data_.size(); }
     std::size_t size() const { return data_.size() - num_free_slots_; }
 
     HashTableIterator<Key, Value, Hash> begin()
