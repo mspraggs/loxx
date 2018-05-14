@@ -227,6 +227,7 @@ namespace loxx
   auto HashTableIterator<Key, Value, Hash>::operator++()
   -> HashTableIterator<Key, Value, Hash>&
   {
+    ++it_;
     while (it_ != finish_ and not *it_) {
       ++it_;
     }
@@ -241,6 +242,7 @@ namespace loxx
   {
     const auto ret = *this;
 
+    it_++;
     while (it_ != finish_ and not *it_) {
       it_++;
     }
