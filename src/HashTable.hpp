@@ -84,8 +84,9 @@ namespace loxx
   public:
     HashTable()
         : num_free_slots_(detail::default_size),
-          min_free_slots_(static_cast<std::size_t>(
-                              detail::load_factor * detail::default_size)),
+          min_free_slots_(
+              static_cast<std::size_t>(
+                  (1 - detail::load_factor) * detail::default_size)),
           data_(detail::default_size)
     {}
 
@@ -207,7 +208,8 @@ namespace loxx
     }
 
     num_free_slots_ += new_size - data_.size();
-    min_free_slots_ = static_cast<std::size_t>(new_size * detail::load_factor);
+    min_free_slots_ =
+        static_cast<std::size_t>(new_size * (1.0 - detail::load_factor));
 
     std::swap(data_, new_data);
   }
