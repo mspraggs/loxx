@@ -57,7 +57,11 @@ namespace loxx
     HashTableIterator() = default;
     explicit HashTableIterator(Iter start, Iter last)
         : it_(start), finish_(last)
-    {}
+    {
+      if (it_ != finish_ and not *it_) {
+        ++(*this);
+      }
+    }
 
     auto operator++() -> HashTableIterator<Key, Value, Hash>&;
     auto operator++(int) -> HashTableIterator<Key, Value, Hash>;
@@ -225,7 +229,7 @@ namespace loxx
 
   template <typename Key, typename Value, typename Hash>
   auto HashTableIterator<Key, Value, Hash>::operator++()
-  -> HashTableIterator<Key, Value, Hash>&
+      -> HashTableIterator<Key, Value, Hash>&
   {
     ++it_;
     while (it_ != finish_ and not *it_) {
