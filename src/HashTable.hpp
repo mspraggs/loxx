@@ -87,6 +87,8 @@ namespace loxx
     Value& operator[](const Key& key);
     void erase(const Key& key);
 
+    std::size_t size() const { return data_.size() - num_free_slots_; }
+
   private:
     using Item = std::pair<Key, Value>;
     using Elem = Optional<Item>;
