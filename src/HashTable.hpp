@@ -45,7 +45,7 @@ namespace loxx
   {
     using Item = std::pair<Key, Value>;
     using Elem = Optional<Item>;
-    using Iter = std::vector<Elem>::iterator;
+    using Iter = typename std::vector<Elem>::iterator;
 
   public:
     using difference_type   = std::ptrdiff_t;
@@ -56,24 +56,25 @@ namespace loxx
 
     HashTableIterator() = default;
     explicit HashTableIterator(Iter start, Iter last)
-        : it_(start), last_(last)
+        : it_(start), finish_(last)
     {}
 
-    HashTableIterator<Key, Value, Hash>& operator++();
-    HashTableIterator<Key, Value, Hash> operator++(int);
+    auto operator++() -> HashTableIterator<Key, Value, Hash>&;
+    auto operator++(int) -> HashTableIterator<Key, Value, Hash>;
 
     bool operator==(const HashTableIterator<Key, Value, Hash>& other) const;
     bool operator!=(const HashTableIterator<Key, Value, Hash>& other) const;
 
-    reference operator*() { return *(*it_); }
-    pointer operator->() { return &(*this); }
+    auto operator*() -> reference;
+    auto operator->() -> pointer;
 
   private:
-    Iter it_, last_;
+    Item back_;
+    Iter it_, finish_;
   };
 
 
-  template <typename Key, typename Value, typename Hash = std::hash<Key>>
+  template <typename Key, typename Value, typename Hash>
   class HashTable
   {
   public:
@@ -88,6 +89,12 @@ namespace loxx
     void erase(const Key& key);
 
     std::size_t size() const { return data_.size() - num_free_slots_; }
+
+    HashTableIterator<Key, Value, Hash> begin()
+    { return HashTableIterator<Key, Value, Hash>(data_.begin(), data_.end()); };
+
+    HashTableIterator<Key, Value, Hash> end()
+    { return HashTableIterator<Key, Value, Hash>(data_.end(), data_.end()); };
 
   private:
     using Item = std::pair<Key, Value>;
@@ -213,6 +220,70 @@ namespace loxx
     }
 
     return pos;
+  }
+
+
+  template <typename Key, typename Value, typename Hash>
+  auto HashTableIterator<Key, Value, Hash>::operator++()
+  -> HashTableIterator<Key, Value, Hash>&
+  {
+    while (it_ != finish_ and not *it_) {
+      ++it_;
+    }
+
+    return *this;
+  }
+
+
+  template <typename Key, typename Value, typename Hash>
+  auto HashTableIterator<Key, Value, Hash>::operator++(int)
+  -> HashTableIterator<Key, Value, Hash>
+  {
+    const auto ret = *this;
+
+    while (it_ != finish_ and not *it_) {
+      it_++;
+    }
+
+    return ret;
+  }
+
+
+  template <typename Key, typename Value, typename Hash>
+  bool HashTableIterator<Key, Value, Hash>::operator==(
+      const HashTableIterator<Key, Value, Hash>& other) const
+  {
+    return it_ == other.it_;
+  }
+
+
+  template <typename Key, typename Value, typename Hash>
+  bool HashTableIterator<Key, Value, Hash>::operator!=(
+      const HashTableIterator<Key, Value, Hash>& other) const
+  {
+    return not (*this == other);
+  }
+
+
+  template <typename Key, typename Value, typename Hash>
+  auto HashTableIterator<Key, Value, Hash>::operator*() -> reference
+  {
+    if (it_ == finish_) {
+      return back_;
+    }
+
+    return *(*it_);
+  }
+
+
+  template <typename Key, typename Value, typename Hash>
+  auto HashTableIterator<Key, Value, Hash>::operator->() -> pointer
+  {
+    if (it_ == finish_) {
+      return &back_;
+    }
+
+    return &(*(*it_));
   }
 }
 
