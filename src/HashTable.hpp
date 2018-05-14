@@ -23,6 +23,7 @@
 #include <utility>
 #include <vector>
 
+#include "HashTableHelpers.hpp"
 #include "Optional.hpp"
 
 
@@ -40,7 +41,7 @@ namespace loxx
   class HashTable;
 
 
-  template <typename Key, typename Value, typename Hash = std::hash<Key>>
+  template <typename Key, typename Value, typename Hash>
   class HashTableIterator
   {
     using Item = std::pair<Key, Value>;
@@ -116,40 +117,6 @@ namespace loxx
   };
 
 
-  namespace detail
-  {
-    template <typename T>
-    class has_hash
-    {
-      using Yes = char;
-      using No = Yes[2];
-
-      template <typename C>
-      static auto test(const void*)
-          -> decltype(std::size_t{std::declval<const C>().hash()}, Yes{});
-
-      template <typename C>
-      static No& test(...);
-
-    public:
-      static constexpr bool value = sizeof(test<T>(nullptr)) == sizeof(Yes);
-    };
-
-    template <typename Key, typename Hash>
-    auto hash(Key&& key, Hash&& hash_func)
-        -> std::enable_if_t<has_hash<Key>::value, std::size_t>
-    {
-      return key.hash();
-    }
-
-    template <typename Key, typename Hash>
-    std::size_t hash(Key&& key, Hash&& hash_func)
-    {
-      return hash_func(std::forward<Key>(key));
-    }
-  }
-
-
   template <typename Key, typename Value, typename Hash>
   Value& HashTable<Key, Value, Hash>::operator[](const Key& key)
   {
@@ -222,7 +189,7 @@ namespace loxx
   {
     auto pos = hash % data.size();
 
-    while (data[pos] and data[pos]->first != key) {
+    while (data[pos] and not detail::keys_equal(data[pos]->first, key)) {
       pos = (pos + 1) % data.size();
     }
 

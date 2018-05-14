@@ -9,6 +9,7 @@ set(SRC
   FunctionScope.hpp
   globals.hpp
   HashTable.hpp
+  HashTableHelpers.hpp
   Instruction.hpp
   logging.hpp
   ObjectTracker.hpp
