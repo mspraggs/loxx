@@ -49,7 +49,7 @@ namespace loxx
   public:
     explicit Compiler(VirtualMachine& vm, const bool debug)
         : debug_(debug), class_type_(ClassType::None), vm_(&vm),
-          current_(0), func_(new FunctionScope(loxx::FunctionType::None))
+          func_(new FunctionScope(loxx::FunctionType::None))
     {
       locals_.push(std::vector<Local>());
       upvalues_.push(std::vector<Upvalue>());
@@ -134,7 +134,6 @@ namespace loxx
     bool debug_;
     ClassType class_type_;
     raw_ptr<VirtualMachine> vm_;
-    std::size_t current_;
     Stack<std::vector<Local>> locals_;
     Stack<std::vector<Upvalue>> upvalues_;
     std::unique_ptr<FunctionScope> func_;
