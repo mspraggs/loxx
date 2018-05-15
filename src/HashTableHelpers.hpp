@@ -39,14 +39,14 @@ namespace loxx
 
       template <typename C>
       static auto test_ref(const void*)
-      -> decltype(std::size_t{std::declval<const C>().hash()}, Yes{});
+          -> decltype(std::size_t{std::declval<const C>().hash()}, Yes{});
 
       template <typename C>
       static No& test_ref(...);
 
       template <typename C>
       static auto test_pointer(const void*)
-      -> decltype(std::size_t{std::declval<const C>()->hash()}, Yes{});
+          -> decltype(std::size_t{std::declval<const C>()->hash()}, Yes{});
 
       template <typename C>
       static No& test_pointer(...);
@@ -64,7 +64,7 @@ namespace loxx
     };
 
     template <typename Key, typename Hash>
-    auto hash(Key&& key, Hash&& hash_func)
+    auto hash(Key&& key, Hash&&)
         -> std::enable_if_t<has_hash<Key>::impl == HashImpl::Reference,
                             std::size_t>
     {
@@ -72,7 +72,7 @@ namespace loxx
     }
 
     template <typename Key, typename Hash>
-    auto hash(Key&& key, Hash&& hash_func)
+    auto hash(Key&& key, Hash&&)
         -> std::enable_if_t<has_hash<Key>::impl == HashImpl::Pointer,
                             std::size_t>
     {
