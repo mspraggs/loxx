@@ -93,6 +93,8 @@ namespace loxx
 
     Value& operator[](const Key& key);
     void erase(const Key& key);
+    std::size_t count(const Key& key) const;
+    bool has_item(const Key& key) const { return count(key) == 1; }
 
     std::size_t capacity() const { return data_.size(); }
     std::size_t size() const { return data_.size() - num_free_slots_; }
@@ -153,6 +155,24 @@ namespace loxx
       const auto datum = std::move(data_[pos]);
       (*this)[datum->first] = datum->second;
     }
+  }
+
+
+  template <typename Key, typename Value, typename Hash>
+  std::size_t HashTable<Key, Value, Hash>::count(const Key& key) const
+  {
+    const auto hash = detail::hash(key, hash_func_);
+    const auto init_pos = hash % data_.size();
+
+    auto pos = init_pos;
+    do {
+      if (data_[pos] and data_[pos]->first == key) {
+        return 1;
+      }
+      pos = (pos + 1) % data_.size();
+    } while (pos != init_pos);
+
+    return 0;
   }
 
 
