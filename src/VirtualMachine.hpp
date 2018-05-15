@@ -68,7 +68,7 @@ namespace loxx
 
     template <typename T>
     T read_integer();
-    std::string read_string();
+    raw_ptr <loxx::StringObject> read_string();
     void check_number_operands(const Value& first,
                                const Value& second) const;
     bool are_equal(const Value& first, const Value& second) const;
@@ -78,9 +78,9 @@ namespace loxx
     bool debug_;
     std::size_t ip_;
     raw_ptr<const CodeObject> code_object_;
-    HashTable<std::string, UByteCodeArg> constant_map_;
+    HashTable<raw_ptr<StringObject>, UByteCodeArg> constant_map_;
     std::vector<Value> constants_;
-    HashTable<std::string, Value> globals_;
+    HashTable<raw_ptr<StringObject>, Value> globals_;
     Stack<Value> stack_;
     Stack<StackFrame> call_stack_;
     std::list<raw_ptr<UpvalueObject>> open_upvalues_;

@@ -44,8 +44,8 @@ namespace loxx
           return Value(static_cast<double>(millis) / 1000.0);
         };
 
-    add_string_constant("clock");
-    globals_["clock"] =
+    const auto idx = add_string_constant("clock");
+    globals_[get_object<StringObject>(constants_[idx])] =
         Value(InPlace<ObjectPtr>(), make_object<NativeObject>(fn));
 
     ObjectTracker::instance().set_roots(
@@ -102,7 +102,7 @@ namespace loxx
       }
 
       case Instruction::CreateClass: {
-        auto name = read_string();
+        auto name = read_string()->as_std_string();
         const auto cls = make_object<ClassObject>(std::move(name));
         stack_.push(Value(InPlace<ObjectPtr>(), cls));
         break;
@@ -115,9 +115,9 @@ namespace loxx
       case Instruction::CreateMethod: {
         const auto cls = get_object<ClassObject>(stack_.top(1));
         const auto closure = get_object<ClosureObject>(stack_.top());
-        const auto& name = read_string();
+        const auto name = read_string();
 
-        cls->set_method(name, closure);
+        cls->set_method(name->as_std_string(), closure);
         stack_.pop();
         break;
       }
@@ -129,7 +129,7 @@ namespace loxx
           throw runtime_error("Superclass must be a class.");
         }
 
-        auto name = read_string();
+        auto name = read_string()->as_std_string();
         const auto cls = make_object<ClassObject>(std::move(name), super);
         stack_.push(Value(InPlace<ObjectPtr>(), cls));
         break;
@@ -149,7 +149,8 @@ namespace loxx
         const auto varname = read_string();
 
         if (globals_.count(varname) != 1) {
-          throw runtime_error("Undefined variable '" + varname + "'.");
+          throw runtime_error(
+              "Undefined variable '" + varname->as_std_string() + "'.");
         }
 
         stack_.push(globals_[varname]);
@@ -168,7 +169,7 @@ namespace loxx
           throw runtime_error("Only instances have properties.");
         }
 
-        const auto& name = read_string();
+        const auto& name = read_string()->as_std_string();
 
         if (instance->has_field(name)) {
           stack_.pop();
@@ -190,7 +191,7 @@ namespace loxx
         const auto cls_value = stack_.pop();
         const auto cls = get_object<ClassObject>(cls_value);
         auto instance = get_object<InstanceObject>(stack_.top());
-        const auto& name = read_string();
+        const auto& name = read_string()->as_std_string();
 
         if (cls->has_method(name)) {
           auto method = cls->method(name);
@@ -260,7 +261,8 @@ namespace loxx
         const auto varname = read_string();
 
         if (globals_.count(varname) == 0) {
-          throw runtime_error("Undefined variable '" + varname + "'.");
+          throw runtime_error(
+              "Undefined variable '" + varname->as_std_string() + "'.");
         }
 
         globals_[varname] = stack_.top();
@@ -280,7 +282,7 @@ namespace loxx
         }
 
         const auto instance = static_cast<raw_ptr<InstanceObject>>(obj);
-        const auto& name = read_string();
+        const auto& name = read_string()->as_std_string();
 
         instance->set_field(name, stack_.top());
         const auto value = stack_.pop();
@@ -311,14 +313,15 @@ namespace loxx
   UByteCodeArg VirtualMachine::add_named_constant(const std::string& lexeme,
                                                   const Value& value)
   {
-    if (constant_map_.count(lexeme) != 0) {
-      return constant_map_[lexeme];
+    const auto s = make_object<StringObject>(lexeme);
+    if (constant_map_.count(s) != 0) {
+      return constant_map_[s];
     }
 
     const auto index = static_cast<UByteCodeArg>(constants_.size());
 
     constants_.push_back(value);
-    constant_map_[lexeme] = index;
+    constant_map_[s] = index;
 
     return index;
   }
@@ -589,11 +592,9 @@ namespace loxx
   }
 
 
-  std::string VirtualMachine::read_string()
+  raw_ptr<loxx::StringObject> VirtualMachine::read_string()
   {
-    const auto str_obj =
-        get_object<StringObject>(constants_[read_integer<UByteCodeArg>()]);
-    return str_obj->as_std_string();
+    return get_object<StringObject>(constants_[read_integer<UByteCodeArg>()]);
   }
 
 

@@ -39,7 +39,7 @@ namespace loxx
       std::vector<Value>* constants;
       Stack<Value>* stack;
       std::list<raw_ptr<UpvalueObject>>* upvalues;
-      HashTable<std::string, Value>* globals;
+      HashTable<raw_ptr<StringObject>, Value>* globals;
     };
 
     static ObjectTracker& instance();
