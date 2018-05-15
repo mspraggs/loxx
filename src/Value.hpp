@@ -239,14 +239,20 @@ namespace loxx
   public:
     explicit StringObject(std::string value)
         : Object(ObjectType::String),
-          value_(std::move(value))
+          hash_(std::hash<std::string>()(value)), value_(std::move(value))
     {}
 
     explicit operator std::string() { return value_; }
 
     const std::string& as_std_string() const { return value_; }
 
+    bool operator==(const StringObject& other) const
+    { return value_ == other.value_; }
+
+    std::size_t hash() const { return hash_; }
+
   private:
+    std::size_t hash_;
     std::string value_;
   };
 
