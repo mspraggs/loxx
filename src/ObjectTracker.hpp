@@ -24,6 +24,7 @@
 #include <memory>
 #include <vector>
 
+#include "HashTable.hpp"
 #include "Stack.hpp"
 #include "Value.hpp"
 
@@ -38,7 +39,7 @@ namespace loxx
       std::vector<Value>* constants;
       Stack<Value>* stack;
       std::list<raw_ptr<UpvalueObject>>* upvalues;
-      std::unordered_map<std::string, Value>* globals;
+      HashTable<std::string, Value>* globals;
     };
 
     static ObjectTracker& instance();

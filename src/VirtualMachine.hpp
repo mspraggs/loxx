@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "globals.hpp"
+#include "HashTable.hpp"
 #include "Instruction.hpp"
 #include "Variant.hpp"
 #include "VirtualMachine.hpp"
@@ -77,9 +78,9 @@ namespace loxx
     bool debug_;
     std::size_t ip_;
     raw_ptr<const CodeObject> code_object_;
-    std::unordered_map<std::string, UByteCodeArg> constant_map_;
+    HashTable<std::string, UByteCodeArg> constant_map_;
     std::vector<Value> constants_;
-    std::unordered_map<std::string, Value> globals_;
+    HashTable<std::string, Value> globals_;
     Stack<Value> stack_;
     Stack<StackFrame> call_stack_;
     std::list<raw_ptr<UpvalueObject>> open_upvalues_;
