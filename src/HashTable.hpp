@@ -166,7 +166,7 @@ namespace loxx
 
     auto pos = init_pos;
     do {
-      if (data_[pos] and data_[pos]->first == key) {
+      if (data_[pos] and detail::keys_equal(data_[pos]->first, key)) {
         return 1;
       }
       pos = (pos + 1) % data_.size();
