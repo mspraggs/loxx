@@ -33,6 +33,7 @@ namespace loxx
   class StackFrame
   {
   public:
+    StackFrame() = default;
     StackFrame(const std::size_t prev_ip,
                const raw_ptr<const CodeObject> prev_code_object,
                const std::size_t prev_stack_size, Value& slots_base,

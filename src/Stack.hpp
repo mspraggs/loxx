@@ -20,52 +20,52 @@
 #ifndef LOXX_STACK_HPP
 #define LOXX_STACK_HPP
 
+#include <array>
 #include <stdexcept>
 #include <vector>
 
 
 namespace loxx
 {
-  template <typename T>
+  template <typename T, std::size_t N = 4096>
   class Stack
   {
   public:
-    explicit Stack(const std::size_t reserved_size = 4096)
-    {
-      stack_.reserve(reserved_size);
-    }
+    explicit Stack() : top_(0) {}
 
     T* data() { return stack_.data(); }
     const T* data() const { return stack_.data(); }
     T& top(const std::size_t depth = 0)
-    { return stack_[stack_.size() - 1 - depth]; }
+    { return stack_[top_ - 1 - depth]; }
     const T& top(const std::size_t depth = 0) const
-    { return stack_[stack_.size() - 1 - depth]; }
+    { return stack_[top_ - 1 - depth]; }
     T& get(const std::size_t idx) { return stack_[idx]; }
     const T& get(const std::size_t idx) const { return stack_[idx]; }
     void push(T value);
     T pop();
 
-    std::size_t size() const { return stack_.size(); }
+    std::size_t size() const { return top_; }
 
   private:
-    std::vector<T> stack_;
+    std::size_t top_;
+    std::array<T, N> stack_;
   };
 
 
-  template <typename T>
-  void Stack<T>::push(T value)
+  template <typename T, std::size_t N>
+  void Stack<T, N>::push(T value)
   {
-    stack_.emplace_back(std::move(value));
+    if (top_ == N) {
+      throw std::overflow_error("Stack overflow!");
+    }
+    stack_[top_++] = std::move(value);
   }
 
 
-  template <typename T>
-  T Stack<T>::pop()
+  template <typename T, std::size_t N>
+  T Stack<T, N>::pop()
   {
-    const auto value = std::move(stack_.back());
-    stack_.pop_back();
-    return value;
+    return stack_[--top_];
   }
 }
 
