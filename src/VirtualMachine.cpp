@@ -420,9 +420,9 @@ namespace loxx
   {
     const auto num_args = read_integer<UByteCodeArg>();
     const auto obj_pos = stack_.size() - num_args - 1;
-    auto obj = select_object(stack_.get(obj_pos),
-                             {ObjectType::Class, ObjectType::Closure,
-                              ObjectType::Native});
+    const auto obj = select_object(
+        stack_.get(obj_pos),
+        ObjectType::Class, ObjectType::Closure, ObjectType::Native);
 
     if (not obj) {
       throw runtime_error("Can only call functions and classes.");
@@ -573,22 +573,6 @@ namespace loxx
       std::cout << " ] ";
     }
     std::cout << std::endl;
-  }
-
-
-  ObjectPtr VirtualMachine::select_object(
-      const Value& value, const std::vector<ObjectType>& valid_types)
-  {
-    if (holds_alternative<ObjectPtr>(value)) {
-      const auto obj_ptr = get<ObjectPtr>(value);
-
-      for (auto type : valid_types) {
-        if (obj_ptr->type() == type) {
-          return obj_ptr;
-        }
-      }
-    }
-    return ObjectPtr();
   }
 
 

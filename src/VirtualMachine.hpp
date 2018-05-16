@@ -63,8 +63,10 @@ namespace loxx
     void call_object(ObjectPtr obj, const std::size_t obj_pos,
                      const UByteCodeArg num_args);
     void print_stack() const;
+    static ObjectPtr select_object(const Value&) { return {}; }
+    template <typename... Ts>
     static ObjectPtr select_object(
-        const Value& value, const std::vector<ObjectType>& valid_types);
+        const Value& value, const ObjectType type0, const Ts... types);
 
     template <typename T>
     T read_integer();
@@ -85,6 +87,24 @@ namespace loxx
     Stack<StackFrame> call_stack_;
     std::list<raw_ptr<UpvalueObject>> open_upvalues_;
   };
+
+
+  template <typename... Ts>
+  ObjectPtr VirtualMachine::select_object(
+      const Value& value, const ObjectType type0, const Ts... types)
+  {
+    if (not holds_alternative<ObjectPtr>(value)) {
+      return {};
+    }
+
+    const auto obj_ptr = get<ObjectPtr>(value);
+
+    if (obj_ptr->type() == type0) {
+      return obj_ptr;
+    }
+
+    return select_object(value, types...);
+  }
 
 
   template <typename T>
