@@ -27,12 +27,14 @@
 
 #include "CodeObject.hpp"
 #include "globals.hpp"
+#include "HashTable.hpp"
 #include "Variant.hpp"
 
 namespace loxx
 {
   class Object;
   class InstanceObject;
+  class StringObject;
 
 
   enum class ObjectType
@@ -172,18 +174,19 @@ namespace loxx
 
     const std::string& lexeme() const { return lexeme_; }
 
-    bool has_method(const std::string& name) const;
-    raw_ptr<ClosureObject> method(const std::string& name) const;
-    raw_ptr<ClosureObject> method(const std::string& name);
+    bool has_method(raw_ptr<const StringObject> name) const;
+    raw_ptr<ClosureObject> method(raw_ptr<const StringObject> name) const;
+    raw_ptr<ClosureObject> method(raw_ptr<const StringObject> name);
 
-    void set_method(const std::string& name, raw_ptr<ClosureObject> method)
+    void set_method(raw_ptr<const StringObject> name,
+                    raw_ptr<ClosureObject> method)
     { methods_[name] = method; }
 
     void grey_references() override;
 
   private:
     std::string lexeme_;
-    std::unordered_map<std::string, raw_ptr<ClosureObject>> methods_;
+    HashTable<raw_ptr<const StringObject>, raw_ptr<ClosureObject>> methods_;
     raw_ptr<ClassObject> superclass_;
   };
 
@@ -196,14 +199,14 @@ namespace loxx
           cls_(cls)
     {}
 
-    bool has_field(const std::string& name) const
+    bool has_field(raw_ptr<const StringObject> name) const
     { return fields_.count(name) != 0; }
 
-    const Value& field(const std::string& name) const
+    const Value& field(raw_ptr<const StringObject> name) const
     { return fields_.at(name); }
-    Value& field(const std::string& name) { return fields_[name]; }
+    Value& field(raw_ptr<const StringObject> name) { return fields_[name]; }
 
-    void set_field(const std::string& name, const Value& value)
+    void set_field(raw_ptr<const StringObject> name, const Value& value)
     { fields_[name] = value; }
 
     const ClassObject& cls() const { return *cls_; }
@@ -212,7 +215,7 @@ namespace loxx
 
   private:
     raw_ptr<ClassObject> cls_;
-    std::unordered_map<std::string, Value> fields_;
+    HashTable<raw_ptr<const StringObject>, Value> fields_;
   };
 
 

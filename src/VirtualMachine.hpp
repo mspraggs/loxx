@@ -86,6 +86,7 @@ namespace loxx
     Stack<Value> stack_;
     Stack<StackFrame> call_stack_;
     std::list<raw_ptr<UpvalueObject>> open_upvalues_;
+    std::unique_ptr<StringObject> init_lexeme_;
   };
 
 

@@ -32,7 +32,7 @@
 namespace loxx
 {
   VirtualMachine::VirtualMachine(const bool debug)
-      : debug_(debug), ip_(0)
+      : debug_(debug), ip_(0), init_lexeme_(new StringObject("this"))
   {
     NativeObject::Fn fn =
         [] (raw_ptr<const Value>, const unsigned int)
@@ -117,7 +117,7 @@ namespace loxx
         const auto closure = get_object<ClosureObject>(stack_.top());
         const auto name = read_string();
 
-        cls->set_method(name->as_std_string(), closure);
+        cls->set_method(name, closure);
         stack_.pop();
         break;
       }
@@ -169,7 +169,7 @@ namespace loxx
           throw runtime_error("Only instances have properties.");
         }
 
-        const auto& name = read_string()->as_std_string();
+        const auto name = read_string();
 
         if (instance->has_field(name)) {
           stack_.pop();
@@ -182,7 +182,8 @@ namespace loxx
           stack_.push(Value(InPlace<ObjectPtr>(), method));
         }
         else {
-          throw runtime_error("Undefined property '" + name + "'.");
+          throw runtime_error(
+              "Undefined property '" + name->as_std_string() + "'.");
         }
         break;
       }
@@ -191,7 +192,7 @@ namespace loxx
         const auto cls_value = stack_.pop();
         const auto cls = get_object<ClassObject>(cls_value);
         auto instance = get_object<InstanceObject>(stack_.top());
-        const auto& name = read_string()->as_std_string();
+        const auto name = read_string();
 
         if (cls->has_method(name)) {
           auto method = cls->method(name);
@@ -200,7 +201,8 @@ namespace loxx
           stack_.push(Value(InPlace<ObjectPtr>(), method));
         }
         else {
-          throw runtime_error("Undefined property '" + name + "'.");
+          throw runtime_error(
+              "Undefined property '" + name->as_std_string() + "'.");
         }
         break;
       }
@@ -282,7 +284,7 @@ namespace loxx
         }
 
         const auto instance = static_cast<raw_ptr<InstanceObject>>(obj);
-        const auto& name = read_string()->as_std_string();
+        const auto name = read_string();
 
         instance->set_field(name, stack_.top());
         const auto value = stack_.pop();
@@ -507,8 +509,8 @@ namespace loxx
       auto instance = make_object<InstanceObject>(cls);
       get<ObjectPtr>(stack_.get(obj_pos)) = instance;
 
-      if (cls->has_method("init")) {
-        auto method = cls->method("init");
+      if (cls->has_method(init_lexeme_.get())) {
+        auto method = cls->method(init_lexeme_.get());
         method->bind(instance);
         call_object(method, obj_pos, num_args);
         break;
