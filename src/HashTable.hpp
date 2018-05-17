@@ -92,6 +92,7 @@ namespace loxx
     {}
 
     Value& operator[](const Key& key);
+    const Value& at(const Key& key) const;
     void erase(const Key& key);
     std::size_t count(const Key& key) const;
     bool has_item(const Key& key) const { return count(key) == 1; }
@@ -133,6 +134,18 @@ namespace loxx
       --num_free_slots_;
     }
 
+    return data_[pos]->second;
+  }
+
+
+  template <typename Key, typename Value, typename Hash>
+  const Value& HashTable<Key, Value, Hash>::at(const Key& key) const
+  {
+    if (count(key) == 0) {
+      throw std::out_of_range("HashTable instance does not have supplied key!");
+    }
+
+    const auto pos = find_pos(data_, key, detail::hash(key, hash_func_));
     return data_[pos]->second;
   }
 
@@ -232,7 +245,7 @@ namespace loxx
 
   template <typename Key, typename Value, typename Hash>
   auto HashTableIterator<Key, Value, Hash>::operator++(int)
-  -> HashTableIterator<Key, Value, Hash>
+      -> HashTableIterator<Key, Value, Hash>
   {
     const auto ret = *this;
 
