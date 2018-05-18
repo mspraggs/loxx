@@ -48,7 +48,7 @@ namespace loxx
   }
 
 
-  bool ClassObject::has_method(raw_ptr<const StringObject> name) const
+  bool ClassObject::has_method(const raw_ptr<StringObject> name) const
   {
     bool ret = methods_.count(name) != 0;
 
@@ -61,7 +61,7 @@ namespace loxx
 
 
   raw_ptr<ClosureObject> ClassObject::method(
-      raw_ptr<const StringObject> name) const
+      const raw_ptr<StringObject> name) const
   {
     if (methods_.count(name) != 0) {
       return make_object<ClosureObject>(*methods_.at(name));
@@ -73,7 +73,7 @@ namespace loxx
   }
 
 
-  raw_ptr<ClosureObject> ClassObject::method(raw_ptr<const StringObject> name)
+  raw_ptr<ClosureObject> ClassObject::method(const raw_ptr<StringObject> name)
   {
     if (methods_.count(name) != 0) {
       return make_object<ClosureObject>(*methods_[name]);
@@ -88,6 +88,7 @@ namespace loxx
   void ClassObject::grey_references()
   {
     for (auto& method : methods_) {
+      method.first->set_colour(TriColour::Grey);
       method.second->set_colour(TriColour::Grey);
     }
 
@@ -102,6 +103,8 @@ namespace loxx
     cls_->set_colour(TriColour::Grey);
 
     for (auto& field : fields_) {
+      field.first->set_colour(TriColour::Grey);
+
       if (not holds_alternative<ObjectPtr>(field.second)) {
         continue;
       }

@@ -59,7 +59,7 @@ namespace loxx
 
     void grey_roots();
 
-    static constexpr std::size_t gc_size_trigger_ = 1024 * 1024;
+    static constexpr std::size_t gc_size_trigger_ = 65536;
     std::vector<std::unique_ptr<Object>> objects_;
     Roots roots_;
   };

@@ -174,11 +174,11 @@ namespace loxx
 
     const std::string& lexeme() const { return lexeme_; }
 
-    bool has_method(raw_ptr<const StringObject> name) const;
-    raw_ptr<ClosureObject> method(raw_ptr<const StringObject> name) const;
-    raw_ptr<ClosureObject> method(raw_ptr<const StringObject> name);
+    bool has_method(const raw_ptr<StringObject> name) const;
+    raw_ptr<ClosureObject> method(const raw_ptr<StringObject> name) const;
+    raw_ptr<ClosureObject> method(const raw_ptr<StringObject> name);
 
-    void set_method(raw_ptr<const StringObject> name,
+    void set_method(const raw_ptr<StringObject> name,
                     raw_ptr<ClosureObject> method)
     { methods_[name] = method; }
 
@@ -186,7 +186,7 @@ namespace loxx
 
   private:
     std::string lexeme_;
-    HashTable<raw_ptr<const StringObject>, raw_ptr<ClosureObject>> methods_;
+    HashTable<raw_ptr<StringObject>, raw_ptr<ClosureObject>> methods_;
     raw_ptr<ClassObject> superclass_;
   };
 
@@ -199,14 +199,14 @@ namespace loxx
           cls_(cls)
     {}
 
-    bool has_field(raw_ptr<const StringObject> name) const
+    bool has_field(const raw_ptr<StringObject> name) const
     { return fields_.count(name) != 0; }
 
-    const Value& field(raw_ptr<const StringObject> name) const
+    const Value& field(const raw_ptr<StringObject> name) const
     { return fields_.at(name); }
-    Value& field(raw_ptr<const StringObject> name) { return fields_[name]; }
+    Value& field(const raw_ptr<StringObject> name) { return fields_[name]; }
 
-    void set_field(raw_ptr<const StringObject> name, const Value& value)
+    void set_field(const raw_ptr<StringObject> name, const Value& value)
     { fields_[name] = value; }
 
     const ClassObject& cls() const { return *cls_; }
@@ -215,7 +215,7 @@ namespace loxx
 
   private:
     raw_ptr<ClassObject> cls_;
-    HashTable<raw_ptr<const StringObject>, Value> fields_;
+    HashTable<raw_ptr<StringObject>, Value> fields_;
   };
 
 

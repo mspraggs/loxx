@@ -107,6 +107,8 @@ namespace loxx
     }
 
     for (auto& value : *roots_.globals) {
+      value.first->set_colour(TriColour::Grey);
+
       if (not holds_alternative<ObjectPtr>(value.second)) {
         continue;
       }
