@@ -73,7 +73,12 @@ namespace loxx
 
   private:
     bool has_value_;
-    std::aligned_storage_t<sizeof(T), alignof(T)> storage_;
+
+    union
+    {
+      T value_;
+      struct {} no_value_;
+    };
   };
 
 
@@ -103,7 +108,12 @@ namespace loxx
   constexpr Optional<T>::Optional(const Optional<T>& other)
       : has_value_(other.has_value_)
   {
-    new (&storage_) T(*reinterpret_cast<const T*>(&other.storage_));
+    if (other.has_value_) {
+      value_ = other.value_;
+    }
+    else {
+      no_value_ = {};
+    }
   }
 
 
@@ -111,9 +121,12 @@ namespace loxx
   constexpr Optional<T>::Optional(Optional<T>&& other) noexcept
       : has_value_(other.has_value_)
   {
-    new (&storage_) T(std::move(*reinterpret_cast<T*>(&other.storage_)));
+    if (has_value_) {
+      value_ = other.value_;
+    }
 
     other.has_value_ = false;
+    other.no_value_ = {};
   }
 
 
@@ -121,7 +134,7 @@ namespace loxx
   Optional<T>::~Optional()
   {
     if (has_value_) {
-      reinterpret_cast<T*>(&storage_)->~T();
+      (&value_)->~T();
     }
   }
 
@@ -129,18 +142,16 @@ namespace loxx
   template <typename T>
   template <typename U, typename>
   constexpr Optional<T>::Optional(U&& value) noexcept
+      : has_value_(true), value_(value)
   {
-    has_value_ = true;
-    new (&storage_) T(std::forward<U>(value));
   }
 
 
   template<typename T>
   template <typename U0, typename... Us>
   constexpr Optional<T>::Optional(InPlace<U0>, Us&&... args)
+      : has_value_(true), value_(std::forward<Us>(args)...)
   {
-    has_value_ = true;
-    new (&storage_) U0(std::forward<Us>(args)...);
   };
 
 
@@ -149,7 +160,9 @@ namespace loxx
   {
     if (&other != this) {
       has_value_ = other.has_value_;
-      new (&storage_) T(*reinterpret_cast<const T*>(&other.storage_));
+      if (other.has_value_) {
+        value_ = other.value_;
+      }
     }
 
     return *this;
@@ -160,8 +173,13 @@ namespace loxx
   constexpr Optional<T>& Optional<T>::operator=(Optional<T>&& other) noexcept
   {
     has_value_ = other.has_value_;
-    new (&storage_) T(std::move(*reinterpret_cast<T*>(&other.storage_)));
+
+    if (has_value_) {
+      value_ = other.value_;
+    }
+
     other.has_value_ = false;
+    other.no_value_ = {};
     return *this;
   }
 
@@ -171,7 +189,7 @@ namespace loxx
   constexpr Optional<T>& Optional<T>::operator=(U&& value) noexcept
   {
     has_value_ = true;
-    new (&storage_) T(std::forward<U>(value));
+    value_ = T(std::forward<U>(value));
     return *this;
   }
 
@@ -183,7 +201,7 @@ namespace loxx
       throw BadOptionalAccess("Optional is not set.");
     }
 
-    return reinterpret_cast<const T*>(&storage_);
+    return &value_;
   }
 
 
@@ -194,7 +212,7 @@ namespace loxx
       throw BadOptionalAccess("Optional is not set.");
     }
 
-    return reinterpret_cast<T*>(&storage_);
+    return &value_;
   }
 
 
@@ -205,7 +223,7 @@ namespace loxx
       throw BadOptionalAccess("Optional is not set.");
     }
 
-    return *reinterpret_cast<const T*>(&storage_);
+    return value_;
   }
 
 
@@ -216,7 +234,7 @@ namespace loxx
       throw BadOptionalAccess("Optional is not set.");
     }
 
-    return *reinterpret_cast<T*>(&storage_);
+    return value_;
   }
 
 
