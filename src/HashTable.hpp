@@ -23,7 +23,6 @@
 #include <utility>
 #include <vector>
 
-#include "HashTableHelpers.hpp"
 #include "Optional.hpp"
 
 
@@ -37,11 +36,12 @@ namespace loxx
   }
 
 
-  template <typename Key, typename Value, typename Hash = std::hash<Key>>
+  template <typename Key, typename Value, typename Hash = std::hash<Key>,
+            typename Compare = std::equal_to<Key>>
   class HashTable;
 
 
-  template <typename Key, typename Value, typename Hash>
+  template <typename Key, typename Value, typename Hash, typename Compare>
   class HashTableIterator
   {
     using Item = std::pair<Key, Value>;
@@ -64,11 +64,13 @@ namespace loxx
       }
     }
 
-    auto operator++() -> HashTableIterator<Key, Value, Hash>&;
-    auto operator++(int) -> HashTableIterator<Key, Value, Hash>;
+    auto operator++() -> HashTableIterator<Key, Value, Hash, Compare>&;
+    auto operator++(int) -> HashTableIterator<Key, Value, Hash, Compare>;
 
-    bool operator==(const HashTableIterator<Key, Value, Hash>& other) const;
-    bool operator!=(const HashTableIterator<Key, Value, Hash>& other) const;
+    bool operator==(
+        const HashTableIterator<Key, Value, Hash, Compare>& other) const;
+    bool operator!=(
+        const HashTableIterator<Key, Value, Hash, Compare>& other) const;
 
     auto operator*() -> reference;
     auto operator->() -> pointer;
@@ -79,12 +81,15 @@ namespace loxx
   };
 
 
-  template <typename Key, typename Value, typename Hash>
+  template <typename Key, typename Value, typename Hash, typename Compare>
   class HashTable
   {
+    using Iter = HashTableIterator<Key, Value, Hash, Compare>;
+
   public:
-    HashTable()
-        : num_free_slots_(detail::default_size),
+    explicit HashTable(Hash hash_func = Hash(), Compare compare = Compare())
+        : hash_func_(hash_func), compare_(compare),
+          num_free_slots_(detail::default_size),
           min_free_slots_(
               static_cast<std::size_t>(
                   (1 - detail::load_factor) * detail::default_size)),
@@ -100,36 +105,36 @@ namespace loxx
     std::size_t capacity() const { return data_.size(); }
     std::size_t size() const { return data_.size() - num_free_slots_; }
 
-    HashTableIterator<Key, Value, Hash> begin()
-    { return HashTableIterator<Key, Value, Hash>(data_.begin(), data_.end()); };
-
-    HashTableIterator<Key, Value, Hash> end()
-    { return HashTableIterator<Key, Value, Hash>(data_.end(), data_.end()); };
+    auto begin() -> Iter;
+    auto end() -> Iter;
 
   private:
     using Item = std::pair<Key, Value>;
     using Elem = Optional<Item>;
 
     void rehash();
-    static Optional<std::size_t> find_pos(
-        const std::vector<Elem>& data, const Key& key, const std::size_t hash);
-    static std::size_t find_new_pos(
-        const std::vector<Elem>& data, const Key& key, const std::size_t hash);
+    Optional<std::size_t> find_pos(
+        const std::vector<Elem>& data, const Key& key,
+        const std::size_t hash) const;
+    std::size_t find_new_pos(
+        const std::vector<Elem>& data, const Key& key,
+        const std::size_t hash) const;
 
     Hash hash_func_;
+    Compare compare_;
     std::size_t num_free_slots_, min_free_slots_;
     std::vector<Elem> data_;
   };
 
 
-  template <typename Key, typename Value, typename Hash>
-  Value& HashTable<Key, Value, Hash>::operator[](const Key& key)
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  Value& HashTable<Key, Value, Hash, Compare>::operator[](const Key& key)
   {
     if (num_free_slots_ < min_free_slots_) {
       rehash();
     }
 
-    const auto pos = find_new_pos(data_, key, detail::hash(key, hash_func_));
+    const auto pos = find_new_pos(data_, key, hash_func_(key));
 
     if (not data_[pos]) {
       data_[pos] = std::make_pair(key, Value());
@@ -140,10 +145,10 @@ namespace loxx
   }
 
 
-  template <typename Key, typename Value, typename Hash>
-  const Value& HashTable<Key, Value, Hash>::at(const Key& key) const
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  const Value& HashTable<Key, Value, Hash, Compare>::at(const Key& key) const
   {
-    const auto found_pos = find_pos(data_, key, detail::hash(key, hash_func_));
+    const auto found_pos = find_pos(data_, key, hash_func_(key));
 
     if (not found_pos) {
       throw std::out_of_range("HashTable instance does not have supplied key!");
@@ -153,10 +158,10 @@ namespace loxx
   }
 
 
-  template<typename Key, typename Value, typename Hash>
-  void HashTable<Key, Value, Hash>::erase(const Key& key)
+  template<typename Key, typename Value, typename Hash, typename Compare>
+  void HashTable<Key, Value, Hash, Compare>::erase(const Key& key)
   {
-    const auto hash = detail::hash(key, hash_func_);
+    const auto hash = hash_func_(key);
     const auto found_pos = find_pos(data_, key, hash);
 
     if (not found_pos) {
@@ -181,24 +186,24 @@ namespace loxx
   }
 
 
-  template <typename Key, typename Value, typename Hash>
-  std::size_t HashTable<Key, Value, Hash>::count(const Key& key) const
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  std::size_t HashTable<Key, Value, Hash, Compare>::count(const Key& key) const
   {
     return has_item(key) ? 1 : 0;
   }
 
 
-  template <typename Key, typename Value, typename Hash>
-  bool HashTable<Key, Value, Hash>::has_item(const Key& key) const
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  bool HashTable<Key, Value, Hash, Compare>::has_item(const Key& key) const
   {
-    const auto hash = detail::hash(key, hash_func_);
+    const auto hash = hash_func_(key);
     const auto pos = find_pos(data_, key, hash);
     return pos.has_value();
   }
 
 
-  template<typename Key, typename Value, typename Hash>
-  void HashTable<Key, Value, Hash>::rehash()
+  template<typename Key, typename Value, typename Hash, typename Compare>
+  void HashTable<Key, Value, Hash, Compare>::rehash()
   {
     const auto new_size =
         static_cast<std::size_t>(data_.size() * detail::growth_factor);
@@ -224,16 +229,17 @@ namespace loxx
   }
 
 
-  template<typename Key, typename Value, typename Hash>
-  Optional<std::size_t> HashTable<Key, Value, Hash>::find_pos(
-      const std::vector<Elem>& data, const Key& key, const std::size_t hash)
+  template<typename Key, typename Value, typename Hash, typename Compare>
+  Optional<std::size_t> HashTable<Key, Value, Hash, Compare>::find_pos(
+      const std::vector<Elem>& data, const Key& key,
+      const std::size_t hash) const
   {
     const auto size = data.size();
     const auto init_pos = hash % size;
 
     auto pos = init_pos;
     do {
-      if (data[pos] and detail::keys_equal(data[pos]->first, key)) {
+      if (data[pos] and compare_(data[pos]->first, key)) {
         return pos;
       }
       pos = (pos + 1) % size;
@@ -243,16 +249,17 @@ namespace loxx
   }
 
 
-  template<typename Key, typename Value, typename Hash>
-  std::size_t HashTable<Key, Value, Hash>::find_new_pos(
-      const std::vector<Elem>& data, const Key& key, const std::size_t hash)
+  template<typename Key, typename Value, typename Hash, typename Compare>
+  std::size_t HashTable<Key, Value, Hash, Compare>::find_new_pos(
+      const std::vector<Elem>& data, const Key& key,
+      const std::size_t hash) const
   {
     const auto size = data.size();
     const auto init_pos = hash >= size ? hash % size : hash;
 
     auto pos = init_pos;
     do {
-      if (not data[pos] or detail::keys_equal(data[pos]->first, key)) {
+      if (not data[pos] or compare_(data[pos]->first, key)) {
         return pos;
       }
       pos = pos + 1 >= size ? (pos + 1) % size : pos + 1;
@@ -262,9 +269,23 @@ namespace loxx
   }
 
 
-  template <typename Key, typename Value, typename Hash>
-  auto HashTableIterator<Key, Value, Hash>::operator++()
-      -> HashTableIterator<Key, Value, Hash>&
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  auto HashTable<Key, Value, Hash, Compare>::begin() -> HashTable::Iter
+  {
+    return Iter(data_.begin(), data_.end());
+  }
+
+
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  auto HashTable<Key, Value, Hash, Compare>::end() -> HashTable::Iter
+  {
+    return Iter(data_.end(), data_.end());
+  }
+
+
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  auto HashTableIterator<Key, Value, Hash, Compare>::operator++()
+      -> HashTableIterator<Key, Value, Hash, Compare>&
   {
     ++it_;
     while (it_ != finish_ and not *it_) {
@@ -275,9 +296,9 @@ namespace loxx
   }
 
 
-  template <typename Key, typename Value, typename Hash>
-  auto HashTableIterator<Key, Value, Hash>::operator++(int)
-      -> HashTableIterator<Key, Value, Hash>
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  auto HashTableIterator<Key, Value, Hash, Compare>::operator++(int)
+      -> HashTableIterator<Key, Value, Hash, Compare>
   {
     const auto ret = *this;
 
@@ -290,24 +311,24 @@ namespace loxx
   }
 
 
-  template <typename Key, typename Value, typename Hash>
-  bool HashTableIterator<Key, Value, Hash>::operator==(
-      const HashTableIterator<Key, Value, Hash>& other) const
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  bool HashTableIterator<Key, Value, Hash, Compare>::operator==(
+      const HashTableIterator<Key, Value, Hash, Compare>& other) const
   {
     return it_ == other.it_;
   }
 
 
-  template <typename Key, typename Value, typename Hash>
-  bool HashTableIterator<Key, Value, Hash>::operator!=(
-      const HashTableIterator<Key, Value, Hash>& other) const
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  bool HashTableIterator<Key, Value, Hash, Compare>::operator!=(
+      const HashTableIterator<Key, Value, Hash, Compare>& other) const
   {
     return not (*this == other);
   }
 
 
-  template <typename Key, typename Value, typename Hash>
-  auto HashTableIterator<Key, Value, Hash>::operator*() -> reference
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  auto HashTableIterator<Key, Value, Hash, Compare>::operator*() -> reference
   {
     if (it_ == finish_) {
       return back_;
@@ -317,8 +338,8 @@ namespace loxx
   }
 
 
-  template <typename Key, typename Value, typename Hash>
-  auto HashTableIterator<Key, Value, Hash>::operator->() -> pointer
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  auto HashTableIterator<Key, Value, Hash, Compare>::operator->() -> pointer
   {
     if (it_ == finish_) {
       return &back_;
