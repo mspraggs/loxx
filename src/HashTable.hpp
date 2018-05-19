@@ -95,7 +95,7 @@ namespace loxx
     const Value& at(const Key& key) const;
     void erase(const Key& key);
     std::size_t count(const Key& key) const;
-    bool has_item(const Key& key) const { return count(key) == 1; }
+    bool has_item(const Key& key) const;
 
     std::size_t capacity() const { return data_.size(); }
     std::size_t size() const { return data_.size() - num_free_slots_; }
@@ -111,7 +111,9 @@ namespace loxx
     using Elem = Optional<Item>;
 
     void rehash();
-    static std::size_t find_pos(
+    static Optional<std::size_t> find_pos(
+        const std::vector<Elem>& data, const Key& key, const std::size_t hash);
+    static std::size_t find_new_pos(
         const std::vector<Elem>& data, const Key& key, const std::size_t hash);
 
     Hash hash_func_;
@@ -127,7 +129,7 @@ namespace loxx
       rehash();
     }
 
-    const auto pos = find_pos(data_, key, detail::hash(key, hash_func_));
+    const auto pos = find_new_pos(data_, key, detail::hash(key, hash_func_));
 
     if (not data_[pos]) {
       data_[pos] = std::make_pair(key, Value());
@@ -141,12 +143,13 @@ namespace loxx
   template <typename Key, typename Value, typename Hash>
   const Value& HashTable<Key, Value, Hash>::at(const Key& key) const
   {
-    if (count(key) == 0) {
+    const auto found_pos = find_pos(data_, key, detail::hash(key, hash_func_));
+
+    if (not found_pos) {
       throw std::out_of_range("HashTable instance does not have supplied key!");
     }
 
-    const auto pos = find_pos(data_, key, detail::hash(key, hash_func_));
-    return data_[pos]->second;
+    return data_[*found_pos]->second;
   }
 
 
@@ -154,12 +157,19 @@ namespace loxx
   void HashTable<Key, Value, Hash>::erase(const Key& key)
   {
     const auto hash = detail::hash(key, hash_func_);
-    auto pos = find_pos(data_, key, hash);
+    const auto found_pos = find_pos(data_, key, hash);
 
+    if (not found_pos) {
+      return;
+    }
+
+    const auto size = data_.size();
+    auto pos = *found_pos;
     data_[pos] = {};
+    --num_free_slots_;
 
     for (;;) {
-      pos = (pos + 1) % data_.size();
+      pos = (pos + 1) % size;
 
       if (not data_[pos]) {
         break;
@@ -174,18 +184,16 @@ namespace loxx
   template <typename Key, typename Value, typename Hash>
   std::size_t HashTable<Key, Value, Hash>::count(const Key& key) const
   {
+    return has_item(key) ? 1 : 0;
+  }
+
+
+  template <typename Key, typename Value, typename Hash>
+  bool HashTable<Key, Value, Hash>::has_item(const Key& key) const
+  {
     const auto hash = detail::hash(key, hash_func_);
-    const auto init_pos = hash % data_.size();
-
-    auto pos = init_pos;
-    do {
-      if (data_[pos] and detail::keys_equal(data_[pos]->first, key)) {
-        return 1;
-      }
-      pos = (pos + 1) % data_.size();
-    } while (pos != init_pos);
-
-    return 0;
+    const auto pos = find_pos(data_, key, hash);
+    return pos.has_value();
   }
 
 
@@ -204,7 +212,7 @@ namespace loxx
       }
 
       const auto hash = detail::hash(elem->first, hash_func_);
-      const auto new_pos = find_pos(new_data, elem->first, hash);
+      const auto new_pos = find_new_pos(new_data, elem->first, hash);
       new_data[new_pos] = elem;
     }
 
@@ -217,16 +225,40 @@ namespace loxx
 
 
   template<typename Key, typename Value, typename Hash>
-  std::size_t HashTable<Key, Value, Hash>::find_pos(
+  Optional<std::size_t> HashTable<Key, Value, Hash>::find_pos(
       const std::vector<Elem>& data, const Key& key, const std::size_t hash)
   {
-    auto pos = hash % data.size();
+    const auto size = data.size();
+    const auto init_pos = hash % size;
 
-    while (data[pos] and not detail::keys_equal(data[pos]->first, key)) {
-      pos = (pos + 1) % data.size();
-    }
+    auto pos = init_pos;
+    do {
+      if (data[pos] and detail::keys_equal(data[pos]->first, key)) {
+        return pos;
+      }
+      pos = (pos + 1) % size;
+    } while (pos != init_pos);
 
-    return pos;
+    return {};
+  }
+
+
+  template<typename Key, typename Value, typename Hash>
+  std::size_t HashTable<Key, Value, Hash>::find_new_pos(
+      const std::vector<Elem>& data, const Key& key, const std::size_t hash)
+  {
+    const auto size = data.size();
+    const auto init_pos = hash >= size ? hash % size : hash;
+
+    auto pos = init_pos;
+    do {
+      if (not data[pos] or detail::keys_equal(data[pos]->first, key)) {
+        return pos;
+      }
+      pos = pos + 1 >= size ? (pos + 1) % size : pos + 1;
+    } while (pos != init_pos);
+
+    throw std::out_of_range("HashTable instance does not have supplied key!");
   }
 
 
