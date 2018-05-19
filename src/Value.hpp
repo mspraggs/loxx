@@ -282,7 +282,8 @@ namespace loxx
   bool compare_string_ptrs(const raw_ptr<StringObject> p1,
                            const raw_ptr<StringObject> p2)
   {
-    return p1->as_std_string() == p2->as_std_string();
+    return p1->hash() == p2->hash() or
+           p1->as_std_string() == p2->as_std_string();
   }
 
 
