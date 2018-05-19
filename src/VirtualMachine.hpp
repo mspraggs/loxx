@@ -80,9 +80,9 @@ namespace loxx
     bool debug_;
     std::size_t ip_;
     raw_ptr<const CodeObject> code_object_;
-    HashTable<raw_ptr<StringObject>, UByteCodeArg> constant_map_;
+    StringHashTable<UByteCodeArg> constant_map_;
     std::vector<Value> constants_;
-    HashTable<raw_ptr<StringObject>, Value> globals_;
+    StringHashTable<Value> globals_;
     Stack<Value> stack_;
     Stack<StackFrame> call_stack_;
     std::list<raw_ptr<UpvalueObject>> open_upvalues_;

@@ -37,6 +37,20 @@ namespace loxx
   class StringObject;
 
 
+  inline std::size_t hash_string_object(const raw_ptr<StringObject> p);
+  inline bool compare_string_ptrs(const raw_ptr<StringObject> p1,
+                                  const raw_ptr<StringObject> p2);
+
+  using StringObjectHashFunc = std::size_t (*) (const raw_ptr<StringObject>);
+  using StringObjectCompare =
+      bool (*) (const raw_ptr<StringObject>, const raw_ptr<StringObject>);
+
+  template <typename T>
+  using StringHashTable =
+      HashTable<raw_ptr<StringObject>, T, StringObjectHashFunc,
+                StringObjectCompare>;
+
+
   enum class ObjectType
   {
     Class,
@@ -169,7 +183,9 @@ namespace loxx
     explicit ClassObject(std::string lexeme,
                          raw_ptr<ClassObject> superclass = {})
         : Object(ObjectType::Class),
-          lexeme_(std::move(lexeme)), superclass_(superclass)
+          lexeme_(std::move(lexeme)),
+          methods_(hash_string_object, compare_string_ptrs),
+          superclass_(superclass)
     {}
 
     const std::string& lexeme() const { return lexeme_; }
@@ -186,7 +202,7 @@ namespace loxx
 
   private:
     std::string lexeme_;
-    HashTable<raw_ptr<StringObject>, raw_ptr<ClosureObject>> methods_;
+    StringHashTable<raw_ptr<ClosureObject>> methods_;
     raw_ptr<ClassObject> superclass_;
   };
 
@@ -196,7 +212,7 @@ namespace loxx
   public:
     explicit InstanceObject(raw_ptr<ClassObject> cls)
         : Object(ObjectType::Instance),
-          cls_(cls)
+          cls_(cls), fields_(hash_string_object, compare_string_ptrs)
     {}
 
     bool has_field(const raw_ptr<StringObject> name) const
@@ -215,7 +231,7 @@ namespace loxx
 
   private:
     raw_ptr<ClassObject> cls_;
-    HashTable<raw_ptr<StringObject>, Value> fields_;
+    StringHashTable<Value> fields_;
   };
 
 
@@ -249,15 +265,25 @@ namespace loxx
 
     const std::string& as_std_string() const { return value_; }
 
-    bool operator==(const StringObject& other) const
-    { return value_ == other.value_; }
-
     std::size_t hash() const { return hash_; }
 
   private:
     std::size_t hash_;
     std::string value_;
   };
+
+
+  std::size_t hash_string_object(const raw_ptr<StringObject> p)
+  {
+    return p->hash();
+  }
+
+
+  bool compare_string_ptrs(const raw_ptr<StringObject> p1,
+                           const raw_ptr<StringObject> p2)
+  {
+    return p1->as_std_string() == p2->as_std_string();
+  }
 
 
   namespace detail

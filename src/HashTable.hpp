@@ -216,7 +216,7 @@ namespace loxx
         continue;
       }
 
-      const auto hash = detail::hash(elem->first, hash_func_);
+      const auto hash = hash_func_(elem->first);
       const auto new_pos = find_new_pos(new_data, elem->first, hash);
       new_data[new_pos] = elem;
     }
