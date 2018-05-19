@@ -33,6 +33,11 @@ namespace loxx
     constexpr std::size_t default_size = 1024;
     constexpr double load_factor = 0.75;
     constexpr double growth_factor = 2.0;
+
+    inline std::size_t base_2_mod(const std::size_t value, const size_t div)
+    {
+      return value & (div - 1);
+    }
   }
 
 
@@ -174,7 +179,7 @@ namespace loxx
     --num_free_slots_;
 
     for (;;) {
-      pos = (pos + 1) % size;
+      pos = detail::base_2_mod(pos + 1, size);
 
       if (not data_[pos]) {
         break;
@@ -235,14 +240,14 @@ namespace loxx
       const std::size_t hash) const
   {
     const auto size = data.size();
-    const auto init_pos = hash % size;
+    const auto init_pos = detail::base_2_mod(hash, size);
 
     auto pos = init_pos;
     do {
       if (data[pos] and compare_(data[pos]->first, key)) {
         return pos;
       }
-      pos = (pos + 1) % size;
+      pos = detail::base_2_mod(pos + 1, size);
     } while (pos != init_pos);
 
     return {};
@@ -255,14 +260,14 @@ namespace loxx
       const std::size_t hash) const
   {
     const auto size = data.size();
-    const auto init_pos = hash >= size ? hash % size : hash;
+    const auto init_pos = detail::base_2_mod(hash, size);
 
     auto pos = init_pos;
     do {
       if (not data[pos] or compare_(data[pos]->first, key)) {
         return pos;
       }
-      pos = pos + 1 >= size ? (pos + 1) % size : pos + 1;
+      pos = detail::base_2_mod(pos + 1, size);
     } while (pos != init_pos);
 
     throw std::out_of_range("HashTable instance does not have supplied key!");
