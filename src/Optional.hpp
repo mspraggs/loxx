@@ -71,6 +71,8 @@ namespace loxx
     template <typename U>
     constexpr T value_or(U&& default_value);
 
+    void reset();
+
   private:
     bool has_value_;
 
@@ -133,9 +135,7 @@ namespace loxx
   template<typename T>
   Optional<T>::~Optional()
   {
-    if (has_value_) {
-      (&value_)->~T();
-    }
+    reset();
   }
 
 
@@ -257,6 +257,16 @@ namespace loxx
       return value();
     }
     return default_value;
+  }
+
+
+  template<typename T>
+  void Optional<T>::reset()
+  {
+    if (has_value_) {
+      (&value_)->~T();
+    }
+    has_value_ = false;
   }
 
 
