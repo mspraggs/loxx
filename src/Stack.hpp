@@ -55,9 +55,6 @@ namespace loxx
   template <typename T, std::size_t N>
   void Stack<T, N>::push(T value)
   {
-    if (top_ == N) {
-      throw std::overflow_error("Stack overflow!");
-    }
     stack_[top_++] = std::move(value);
   }
 
