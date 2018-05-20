@@ -84,7 +84,7 @@ namespace loxx
     std::vector<Value> constants_;
     StringHashTable<Value> globals_;
     Stack<Value> stack_;
-    Stack<StackFrame> call_stack_;
+    Stack<StackFrame, 256> call_stack_;
     std::list<raw_ptr<UpvalueObject>> open_upvalues_;
     raw_ptr<StringObject> init_lexeme_;
   };
