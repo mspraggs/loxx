@@ -37,18 +37,22 @@ namespace loxx
   class StringObject;
 
 
-  inline std::size_t hash_string_object(const raw_ptr<StringObject> p);
-  inline bool compare_string_ptrs(const raw_ptr<StringObject> p1,
-                                  const raw_ptr<StringObject> p2);
+  struct HashStringObject
+  {
+    inline std::size_t operator()(raw_ptr<const StringObject> obj) const;
+  };
 
-  using StringObjectHashFunc = std::size_t (*) (const raw_ptr<StringObject>);
-  using StringObjectCompare =
-      bool (*) (const raw_ptr<StringObject>, const raw_ptr<StringObject>);
+
+  struct CompareStringObject
+  {
+    inline bool operator()(raw_ptr<const StringObject> p1,
+                           raw_ptr<const StringObject> p2) const;
+  };
 
   template <typename T>
   using StringHashTable =
-      HashTable<raw_ptr<StringObject>, T, StringObjectHashFunc,
-                StringObjectCompare>;
+      HashTable<raw_ptr<StringObject>, T, HashStringObject,
+                CompareStringObject>;
 
 
   enum class ObjectType
@@ -184,7 +188,6 @@ namespace loxx
                          raw_ptr<ClassObject> superclass = {})
         : Object(ObjectType::Class),
           lexeme_(std::move(lexeme)),
-          methods_(hash_string_object, compare_string_ptrs),
           superclass_(superclass)
     {}
 
@@ -212,7 +215,7 @@ namespace loxx
   public:
     explicit InstanceObject(raw_ptr<ClassObject> cls)
         : Object(ObjectType::Instance),
-          cls_(cls), fields_(hash_string_object, compare_string_ptrs)
+          cls_(cls)
     {}
 
     bool has_field(const raw_ptr<StringObject> name) const
@@ -273,14 +276,15 @@ namespace loxx
   };
 
 
-  std::size_t hash_string_object(const raw_ptr<StringObject> p)
+  std::size_t HashStringObject::operator()(
+      raw_ptr<const StringObject> obj) const
   {
-    return p->hash();
+    return obj->hash();
   }
 
 
-  bool compare_string_ptrs(const raw_ptr<StringObject> p1,
-                           const raw_ptr<StringObject> p2)
+  bool CompareStringObject::operator()(raw_ptr<const StringObject> p1,
+                                       raw_ptr<const StringObject> p2) const
   {
     return p1->hash() == p2->hash() or
            p1->as_std_string() == p2->as_std_string();

@@ -32,9 +32,7 @@
 namespace loxx
 {
   VirtualMachine::VirtualMachine(const bool debug)
-      : debug_(debug), ip_(0),
-        constant_map_(hash_string_object, compare_string_ptrs),
-        globals_(hash_string_object, compare_string_ptrs)
+      : debug_(debug), ip_(0)
   {
     NativeObject::Fn fn =
         [] (raw_ptr<const Value>, const unsigned int)
