@@ -181,7 +181,8 @@ namespace loxx
           stack_.push(instance->field(name));
         }
         else if (instance->cls().has_method(name)) {
-          auto method = instance->cls().method(name);
+          const auto method =
+              make_object<ClosureObject>(*instance->cls().method(name));
           method->bind(instance);
           stack_.pop();
           stack_.push(Value(InPlace<ObjectPtr>(), method));
@@ -200,7 +201,7 @@ namespace loxx
         const auto name = read_string();
 
         if (cls->has_method(name)) {
-          auto method = cls->method(name);
+          auto method = make_object<ClosureObject>(*cls->method(name));
           method->bind(instance);
           stack_.pop();
           stack_.push(Value(InPlace<ObjectPtr>(), method));

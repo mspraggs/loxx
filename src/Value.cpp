@@ -64,7 +64,7 @@ namespace loxx
       const raw_ptr<StringObject> name) const
   {
     if (methods_.count(name) != 0) {
-      return make_object<ClosureObject>(*methods_.at(name));
+      return methods_.at(name);
     }
     if (superclass_) {
       return superclass_->method(name);
@@ -76,7 +76,7 @@ namespace loxx
   raw_ptr<ClosureObject> ClassObject::method(const raw_ptr<StringObject> name)
   {
     if (methods_.count(name) != 0) {
-      return make_object<ClosureObject>(*methods_[name]);
+      return methods_[name];
     }
     if (superclass_) {
       return superclass_->method(name);
