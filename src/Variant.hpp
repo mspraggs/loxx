@@ -20,6 +20,7 @@
 #ifndef LOXX_VARIANT_HPP
 #define LOXX_VARIANT_HPP
 
+#include <limits>
 #include <memory>
 #include <type_traits>
 
@@ -180,8 +181,9 @@ namespace loxx
   template <typename... Ts>
   class Variant
   {
+    static_assert(sizeof...(Ts) <= std::numeric_limits<std::uint8_t>::max());
   public:
-    static constexpr std::size_t npos = sizeof...(Ts);
+    static constexpr std::uint8_t npos = sizeof...(Ts);
 
     constexpr Variant();
     constexpr Variant(const Variant<Ts...>& other);
@@ -215,7 +217,7 @@ namespace loxx
     template <typename T, typename... Us>
     friend constexpr bool holds_alternative(Variant<Us...>& variant);
 
-    std::size_t type_index_;
+    std::uint8_t type_index_;
     std::aligned_storage_t<
         detail::static_max(sizeof(Ts)...),
         detail::static_max(alignof(Ts)...)> storage_;
@@ -257,6 +259,7 @@ namespace loxx
       : type_index_(other.type_index_)
   {
     detail::VariantHelper<Ts...>::move(type_index_, &storage_, &other.storage_);
+    other.type_index_ = npos;
   }
 
 
@@ -320,6 +323,7 @@ namespace loxx
   {
     type_index_ = other.type_index_;
     detail::VariantHelper<Ts...>::move(type_index_, &storage_, &other.storage_);
+    other.type_index_ = npos;
 
     return *this;
   }
