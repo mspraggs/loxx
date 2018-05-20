@@ -30,7 +30,7 @@ namespace loxx
 {
   namespace detail
   {
-    constexpr std::size_t default_size = 1024;
+    constexpr std::size_t default_size = 4;
     constexpr std::size_t growth_factor = 2;
     constexpr double load_factor = 0.75;
     constexpr std::size_t default_max_used_slots =
