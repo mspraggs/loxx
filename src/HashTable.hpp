@@ -35,11 +35,6 @@ namespace loxx
     constexpr double load_factor = 0.75;
     constexpr std::size_t default_max_used_slots =
         static_cast<std::size_t>(default_size * load_factor);
-
-    inline std::size_t base_2_mod(const std::size_t value, const size_t div)
-    {
-      return value & (div - 1);
-    }
   }
 
 
@@ -96,7 +91,7 @@ namespace loxx
   public:
     explicit HashTable()
         : num_used_slots_(0), max_used_slots_(detail::default_max_used_slots),
-          data_(detail::default_size)
+          mask_(detail::default_size - 1), data_(detail::default_size)
     {}
 
     Value& operator[](const Key& key);
@@ -121,7 +116,7 @@ namespace loxx
 
     Hash hash_func_;
     Compare compare_;
-    std::size_t num_used_slots_, max_used_slots_;
+    std::size_t num_used_slots_, max_used_slots_, mask_;
     std::vector<Elem> data_;
   };
 
@@ -167,12 +162,11 @@ namespace loxx
       return;
     }
 
-    const auto size = data_.size();
     data_[pos].reset();
     --num_used_slots_;
 
     for (;;) {
-      pos = detail::base_2_mod(pos + 1, size);
+      pos = (pos + 1) & mask_;
 
       if (not data_[pos]) {
         break;
@@ -204,6 +198,8 @@ namespace loxx
   void HashTable<Key, Value, Hash, Compare>::rehash()
   {
     const auto new_capacity = data_.size() * detail::growth_factor;
+    mask_ = new_capacity - 1;
+    max_used_slots_ *= detail::growth_factor;
 
     std::vector<Elem> old_data(new_capacity);
     std::swap(data_, old_data);
@@ -218,8 +214,6 @@ namespace loxx
       const auto new_pos = find_new_pos(elem->first, hash);
       data_[new_pos] = elem;
     }
-
-    max_used_slots_ *= detail::growth_factor;
   }
 
 
@@ -227,18 +221,17 @@ namespace loxx
   std::size_t HashTable<Key, Value, Hash, Compare>::find_pos(
       const Key& key, const std::size_t hash) const
   {
-    const auto size = data_.size();
-    const auto init_pos = detail::base_2_mod(hash, size);
+    const auto init_pos = hash & mask_;
 
     auto pos = init_pos;
     do {
       if (data_[pos] and compare_(data_[pos]->first, key)) {
         return pos;
       }
-      pos = detail::base_2_mod(pos + 1, size);
+      pos = (pos + 1) & mask_;
     } while (pos != init_pos);
 
-    return size;
+    return data_.size();
   }
 
 
@@ -246,18 +239,17 @@ namespace loxx
   std::size_t HashTable<Key, Value, Hash, Compare>::find_new_pos(
       const Key& key, const std::size_t hash) const
   {
-    const auto size = data_.size();
-    const auto init_pos = detail::base_2_mod(hash, size);
+    const auto init_pos = hash & mask_;
 
     auto pos = init_pos;
     do {
       if (not data_[pos] or compare_(data_[pos]->first, key)) {
         return pos;
       }
-      pos = detail::base_2_mod(pos + 1, size);
+      pos = (pos + 1) & mask_;
     } while (pos != init_pos);
 
-    throw std::out_of_range("HashTable instance does not have supplied key!");
+    return data_.size();
   }
 
 
