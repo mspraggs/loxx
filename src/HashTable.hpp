@@ -31,8 +31,10 @@ namespace loxx
   namespace detail
   {
     constexpr std::size_t default_size = 1024;
+    constexpr std::size_t growth_factor = 2;
     constexpr double load_factor = 0.75;
-    constexpr double growth_factor = 2.0;
+    constexpr std::size_t default_max_used_slots =
+        static_cast<std::size_t>(default_size * load_factor);
 
     inline std::size_t base_2_mod(const std::size_t value, const size_t div)
     {
@@ -92,12 +94,8 @@ namespace loxx
     using Iter = HashTableIterator<Key, Value, Hash, Compare>;
 
   public:
-    explicit HashTable(Hash hash_func = Hash(), Compare compare = Compare())
-        : hash_func_(hash_func), compare_(compare),
-          num_free_slots_(detail::default_size),
-          min_free_slots_(
-              static_cast<std::size_t>(
-                  (1 - detail::load_factor) * detail::default_size)),
+    explicit HashTable()
+        : num_used_slots_(0), max_used_slots_(detail::default_max_used_slots),
           data_(detail::default_size)
     {}
 
@@ -108,7 +106,7 @@ namespace loxx
     bool has_item(const Key& key) const;
 
     std::size_t capacity() const { return data_.size(); }
-    std::size_t size() const { return data_.size() - num_free_slots_; }
+    std::size_t size() const { return num_used_slots_; }
 
     auto begin() -> Iter;
     auto end() -> Iter;
@@ -118,16 +116,12 @@ namespace loxx
     using Elem = Optional<Item>;
 
     void rehash();
-    Optional<std::size_t> find_pos(
-        const std::vector<Elem>& data, const Key& key,
-        const std::size_t hash) const;
-    std::size_t find_new_pos(
-        const std::vector<Elem>& data, const Key& key,
-        const std::size_t hash) const;
+    std::size_t find_pos(const Key& key, const std::size_t hash) const;
+    std::size_t find_new_pos(const Key& key, const std::size_t hash) const;
 
     Hash hash_func_;
     Compare compare_;
-    std::size_t num_free_slots_, min_free_slots_;
+    std::size_t num_used_slots_, max_used_slots_;
     std::vector<Elem> data_;
   };
 
@@ -135,15 +129,15 @@ namespace loxx
   template <typename Key, typename Value, typename Hash, typename Compare>
   Value& HashTable<Key, Value, Hash, Compare>::operator[](const Key& key)
   {
-    if (num_free_slots_ < min_free_slots_) {
+    if (num_used_slots_ > max_used_slots_) {
       rehash();
     }
 
-    const auto pos = find_new_pos(data_, key, hash_func_(key));
+    const auto pos = find_new_pos(key, hash_func_(key));
 
     if (not data_[pos]) {
       data_[pos] = std::make_pair(key, Value());
-      --num_free_slots_;
+      ++num_used_slots_;
     }
 
     return data_[pos]->second;
@@ -153,13 +147,13 @@ namespace loxx
   template <typename Key, typename Value, typename Hash, typename Compare>
   const Value& HashTable<Key, Value, Hash, Compare>::at(const Key& key) const
   {
-    const auto found_pos = find_pos(data_, key, hash_func_(key));
+    const auto found_pos = find_pos(key, hash_func_(key));
 
-    if (not found_pos) {
+    if (found_pos == data_.size()) {
       throw std::out_of_range("HashTable instance does not have supplied key!");
     }
 
-    return data_[*found_pos]->second;
+    return data_[found_pos]->second;
   }
 
 
@@ -167,16 +161,15 @@ namespace loxx
   void HashTable<Key, Value, Hash, Compare>::erase(const Key& key)
   {
     const auto hash = hash_func_(key);
-    const auto found_pos = find_pos(data_, key, hash);
+    auto pos = find_pos(key, hash);
 
-    if (not found_pos) {
+    if (pos == data_.size()) {
       return;
     }
 
     const auto size = data_.size();
-    auto pos = *found_pos;
-    data_[pos] = {};
-    --num_free_slots_;
+    data_[pos].reset();
+    --num_used_slots_;
 
     for (;;) {
       pos = detail::base_2_mod(pos + 1, size);
@@ -202,69 +195,63 @@ namespace loxx
   bool HashTable<Key, Value, Hash, Compare>::has_item(const Key& key) const
   {
     const auto hash = hash_func_(key);
-    const auto pos = find_pos(data_, key, hash);
-    return pos.has_value();
+    const auto pos = find_pos(key, hash);
+    return pos != data_.size();
   }
 
 
   template<typename Key, typename Value, typename Hash, typename Compare>
   void HashTable<Key, Value, Hash, Compare>::rehash()
   {
-    const auto new_size =
-        static_cast<std::size_t>(data_.size() * detail::growth_factor);
+    const auto new_capacity = data_.size() * detail::growth_factor;
 
-    std::vector<Elem> new_data(new_size);
+    std::vector<Elem> old_data(new_capacity);
+    std::swap(data_, old_data);
 
-    for (auto& elem : data_) {
+    for (auto& elem : old_data) {
 
       if (not elem) {
         continue;
       }
 
       const auto hash = hash_func_(elem->first);
-      const auto new_pos = find_new_pos(new_data, elem->first, hash);
-      new_data[new_pos] = elem;
+      const auto new_pos = find_new_pos(elem->first, hash);
+      data_[new_pos] = elem;
     }
 
-    num_free_slots_ += new_size - data_.size();
-    min_free_slots_ =
-        static_cast<std::size_t>(new_size * (1.0 - detail::load_factor));
-
-    std::swap(data_, new_data);
+    max_used_slots_ *= detail::growth_factor;
   }
 
 
   template<typename Key, typename Value, typename Hash, typename Compare>
-  Optional<std::size_t> HashTable<Key, Value, Hash, Compare>::find_pos(
-      const std::vector<Elem>& data, const Key& key,
-      const std::size_t hash) const
+  std::size_t HashTable<Key, Value, Hash, Compare>::find_pos(
+      const Key& key, const std::size_t hash) const
   {
-    const auto size = data.size();
+    const auto size = data_.size();
     const auto init_pos = detail::base_2_mod(hash, size);
 
     auto pos = init_pos;
     do {
-      if (data[pos] and compare_(data[pos]->first, key)) {
+      if (data_[pos] and compare_(data_[pos]->first, key)) {
         return pos;
       }
       pos = detail::base_2_mod(pos + 1, size);
     } while (pos != init_pos);
 
-    return {};
+    return size;
   }
 
 
   template<typename Key, typename Value, typename Hash, typename Compare>
   std::size_t HashTable<Key, Value, Hash, Compare>::find_new_pos(
-      const std::vector<Elem>& data, const Key& key,
-      const std::size_t hash) const
+      const Key& key, const std::size_t hash) const
   {
-    const auto size = data.size();
+    const auto size = data_.size();
     const auto init_pos = detail::base_2_mod(hash, size);
 
     auto pos = init_pos;
     do {
-      if (not data[pos] or compare_(data[pos]->first, key)) {
+      if (not data_[pos] or compare_(data_[pos]->first, key)) {
         return pos;
       }
       pos = detail::base_2_mod(pos + 1, size);
