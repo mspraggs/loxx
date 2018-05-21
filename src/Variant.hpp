@@ -181,7 +181,8 @@ namespace loxx
   template <typename... Ts>
   class Variant
   {
-    static_assert(sizeof...(Ts) <= std::numeric_limits<std::uint8_t>::max());
+    static_assert(sizeof...(Ts) < std::numeric_limits<std::uint8_t>::max(),
+                  "Variant supports up to 255 types.");
   public:
     static constexpr std::uint8_t npos = sizeof...(Ts);
 
