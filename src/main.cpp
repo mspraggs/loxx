@@ -23,6 +23,40 @@ namespace loxx
   };
 
 
+  DebugConfig parse_debug_config(ez::ezOptionParser& opt)
+  {
+    DebugConfig ret{false, false, false, false};
+
+    if (opt.isSet("-d") != 0) {
+      std::vector<std::string> selections;
+      opt.get("-d")->getStrings(selections);
+
+      if (selections.size() == 0) {
+        throw std::runtime_error("No options supplied to --debug.");
+      }
+
+      for (const auto& s : selections) {
+        if (s == "tokens") {
+          ret.print_tokens = true;
+        }
+        else if (s == "ast") {
+          ret.print_ast = true;
+        }
+        else if (s == "bytecode") {
+          ret.print_bytecode = true;
+        }
+        else if (s == "trace") {
+          ret.trace_exec = true;
+        }
+        else {
+          throw std::runtime_error("Unknown argument to --debug: " + s);
+        }
+      }
+    }
+    return ret;
+  }
+
+
   void run(const std::string& src, const DebugConfig& debug_config,
            const bool in_repl)
   {
@@ -132,26 +166,18 @@ int main(int argc, const char* argv[])
 
   opt.parse(argc, argv);
 
-  loxx::DebugConfig debug_config{false, false, false, false};
-
-  if (opt.isSet("-d") != 0) {
-    std::vector<std::string> selections;
-    opt.get("-d")->getStrings(selections);
-    for (const auto& s : selections) {
-      debug_config.print_tokens   |= s == "tokens";
-      debug_config.print_ast      |= s == "ast";
-      debug_config.print_bytecode |= s == "bytecode";
-      debug_config.trace_exec     |= s == "trace";
-    }
-  }
-
   try {
+    const auto debug_config = loxx::parse_debug_config(opt);
+    
     if (opt.lastArgs.size() == 1) {
       loxx::run_file(*opt.lastArgs[0], debug_config);
     }
     else {
       loxx::run_prompt(debug_config);
     }
+  }
+  catch (const std::runtime_error& e) {
+    std::cerr << "Runtime error: " << e.what() << '\n';
   }
   catch (const std::exception& e) {
     std::cerr << "Unhandled exception: " << e.what() << '\n';
