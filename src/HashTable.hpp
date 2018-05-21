@@ -20,6 +20,7 @@
 #ifndef LOXX_HASHTABLE_HPP
 #define LOXX_HASHTABLE_HPP
 
+#include <functional>
 #include <utility>
 #include <vector>
 
