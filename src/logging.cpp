@@ -179,17 +179,23 @@ namespace loxx
     case Instruction::CreateSubclass:
     case Instruction::DefineGlobal:
     case Instruction::GetGlobal:
-    case Instruction::GetLocal:
     case Instruction::GetProperty:
     case Instruction::GetSuperFunc:
-    case Instruction::GetUpvalue:
     case Instruction::SetGlobal:
-    case Instruction::SetLocal:
     case Instruction::SetProperty:
-    case Instruction::SetUpvalue:
     case Instruction::LoadConstant: {
       const auto param = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
       std::cout << param << " '" << vm.get_constant(param) << "'";
+      ret += sizeof(UByteCodeArg);
+      break;
+    }
+
+    case Instruction::GetLocal:
+    case Instruction::GetUpvalue:
+    case Instruction::SetLocal:
+    case Instruction::SetUpvalue: {
+      const auto param = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
+      std::cout << param;
       ret += sizeof(UByteCodeArg);
       break;
     }
