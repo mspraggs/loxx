@@ -38,4 +38,4 @@ before_install:
 script:
   - mkdir build && cd build
   - cmake .. && make -j 4
-  - python ../tests/run_tests.py src/loxx  
+  - python ../tests/run_tests.py ./loxx
