@@ -1,9 +1,5 @@
 language: cpp
 
-branches:
-  except:
-    - devel
-
 matrix:
   include:
     - os: linux
