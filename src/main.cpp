@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-#include <ezOptionParser.hpp>
+#include <args.hxx>
 
 #include "AstPrinter.hpp"
 #include "logging.hpp"
@@ -23,36 +23,31 @@ namespace loxx
   };
 
 
-  DebugConfig parse_debug_config(ez::ezOptionParser& opt)
+  Optional<DebugConfig> parse_debug_config(
+      args::ValueFlagList<std::string>& opts)
   {
     DebugConfig ret{false, false, false, false};
 
-    if (opt.isSet("-d") != 0) {
-      std::vector<std::string> selections;
-      opt.get("-d")->getStrings(selections);
-
-      if (selections.size() == 0) {
-        throw std::runtime_error("No options supplied to --debug.");
-      }
-
-      for (const auto& s : selections) {
-        if (s == "tokens") {
+    if (opts) {
+      for (const auto& opt : args::get(opts)) {
+        if (opt == "tokens") {
           ret.print_tokens = true;
         }
-        else if (s == "ast") {
+        else if (opt == "ast") {
           ret.print_ast = true;
         }
-        else if (s == "bytecode") {
+        else if (opt == "bytecode") {
           ret.print_bytecode = true;
         }
-        else if (s == "trace") {
+        else if (opt == "trace") {
           ret.trace_exec = true;
         }
         else {
-          throw std::runtime_error("Unknown argument to --debug: " + s);
+          return {};
         }
       }
     }
+
     return ret;
   }
 
@@ -151,33 +146,54 @@ namespace loxx
 
 int main(int argc, const char* argv[])
 {
-  ez::ezOptionParser opt;
-
-  opt.overview = "Interpreter for the Lox language";
-  opt.syntax = "loxx [OPTIONS] [script]";
-  opt.add(
-      "",
-      false,
-      -1,
-      ',',
-      "Enable debugging output.",
-      "-d", "--debug"
+  args::ArgumentParser parser("Loxx - a C++ interpreter for the lox "
+                              "programming language.");
+  args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
+  args::ValueFlagList<std::string> debug(
+      parser,
+      "debug",
+      "Print debugging output (one of 'tokens', 'ast', 'bytecode' or 'trace'.",
+      {'d', "debug"}
   );
-
-  opt.parse(argc, argv);
+  args::Positional<std::string> source_file(
+      parser, "source file", "File containing source code to execute.");
 
   try {
-    const auto debug_config = loxx::parse_debug_config(opt);
-    
-    if (opt.lastArgs.size() == 1) {
-      loxx::run_file(*opt.lastArgs[0], debug_config);
+    parser.ParseCLI(argc, argv);
+  }
+  catch (const args::Help&) {
+    std::cout << parser;
+    return EXIT_SUCCESS;
+  }
+  catch (const args::ParseError& e) {
+    std::cerr << e.what() << '\n';
+    std::cerr << parser;
+    return EXIT_FAILURE;
+  }
+  catch (const args::ValidationError& e) {
+    std::cerr << e.what() << '\n';
+    std::cerr << parser;
+    return EXIT_FAILURE;
+  }
+
+  const auto debug_config = loxx::parse_debug_config(debug);
+
+  if (not debug_config) {
+    std::cerr << "Invalid option to --debug flag.\n";
+    std::cerr << parser;
+    return EXIT_FAILURE;
+  }
+
+  try {
+    if (source_file) {
+      loxx::run_file(args::get(source_file), *debug_config);
     }
     else {
-      loxx::run_prompt(debug_config);
+      loxx::run_prompt(*debug_config);
     }
   }
-  catch (const std::runtime_error& e) {
-    std::cerr << "Runtime error: " << e.what() << '\n';
+  catch (const std::ios_base::failure& e) {
+    std::cerr << e.what() << '\n';
   }
   catch (const std::exception& e) {
     std::cerr << "Unhandled exception: " << e.what() << '\n';
