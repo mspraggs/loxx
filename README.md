@@ -40,7 +40,7 @@ Loxx is implemented as a bytecode virtual machine. Here are some execution times
 times on an Intel i5-2430M (2.40 GHz) with a 3 MB L3 cache:
 
 | **File**            | **Min.** | **Mean** | **Median** | **Max.** | **Std. Dev.** |
-|---------------------|----------|----------|------------|----------|---------------|
+|---------------------|---------:|---------:|-----------:|---------:|--------------:|
 | binary_trees.lox    |     1.97 |     2.07 |       2.06 |     2.26 |          0.06 |
 | equality.lox        |    11.43 |    11.59 |      11.54 |    12.50 |          0.18 |
 | fib.lox             |     0.42 |     0.49 |       0.51 |     0.57 |          0.04 |
