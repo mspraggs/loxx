@@ -129,7 +129,7 @@ namespace loxx
         auto super = get_object<ClassObject>(stack_.top());
 
         if (not super) {
-          throw runtime_error("Superclass must be a class.");
+          throw make_runtime_error("Superclass must be a class.");
         }
 
         auto name = read_string()->as_std_string();
@@ -152,7 +152,7 @@ namespace loxx
         const auto varname = read_string();
 
         if (globals_.count(varname) != 1) {
-          throw runtime_error(
+          throw make_runtime_error(
               "Undefined variable '" + varname->as_std_string() + "'.");
         }
 
@@ -169,7 +169,7 @@ namespace loxx
       case Instruction::GetProperty: {
         auto instance = get_object<InstanceObject>(stack_.top());
         if (not instance) {
-          throw runtime_error("Only instances have properties.");
+          throw make_runtime_error("Only instances have properties.");
         }
 
         const auto name = read_string();
@@ -186,7 +186,7 @@ namespace loxx
           stack_.push(Value(InPlace<ObjectPtr>(), method));
         }
         else {
-          throw runtime_error(
+          throw make_runtime_error(
               "Undefined property '" + name->as_std_string() + "'.");
         }
         break;
@@ -205,7 +205,7 @@ namespace loxx
           stack_.push(Value(InPlace<ObjectPtr>(), method));
         }
         else {
-          throw runtime_error(
+          throw make_runtime_error(
               "Undefined property '" + name->as_std_string() + "'.");
         }
         break;
@@ -227,7 +227,7 @@ namespace loxx
 
       case Instruction::Negate: {
         if (not holds_alternative<double>(stack_.top())) {
-          throw runtime_error("Unary operand must be a number.");
+          throw make_runtime_error("Unary operand must be a number.");
         }
         const auto number = get<double>(stack_.pop());
         stack_.push(-number);
@@ -267,7 +267,7 @@ namespace loxx
         const auto varname = read_string();
 
         if (globals_.count(varname) == 0) {
-          throw runtime_error(
+          throw make_runtime_error(
               "Undefined variable '" + varname->as_std_string() + "'.");
         }
 
@@ -284,7 +284,7 @@ namespace loxx
       case Instruction::SetProperty: {
         const auto obj = get_object<InstanceObject>(stack_.top(1));
         if (not obj) {
-          throw runtime_error("Only instances have fields.");
+          throw make_runtime_error("Only instances have fields.");
         }
 
         const auto instance = static_cast<raw_ptr<InstanceObject>>(obj);
@@ -411,7 +411,7 @@ namespace loxx
         stack_.push(get<double>(first) + get<double>(second));
       }
       else {
-        throw runtime_error(
+        throw make_runtime_error(
             "Binary operands must be two numbers or two strings.");
       }
       break;
@@ -431,7 +431,7 @@ namespace loxx
         ObjectType::Class, ObjectType::Closure, ObjectType::Native);
 
     if (not obj) {
-      throw runtime_error("Can only call functions and classes.");
+      throw make_runtime_error("Can only call functions and classes.");
     }
 
     call_object(obj, obj_pos, num_args);
@@ -523,7 +523,7 @@ namespace loxx
       if (num_args != 0) {
         std::stringstream ss;
         ss << "Expected 0 arguments but got " << num_args << '.';
-        throw runtime_error(ss.str());
+        throw make_runtime_error(ss.str());
       }
       break;
     }
@@ -535,7 +535,7 @@ namespace loxx
         std::stringstream ss;
         ss << "Expected " << closure->function().arity()
            << " arguments but got " << num_args << '.';
-        throw runtime_error(ss.str());
+        throw make_runtime_error(ss.str());
       }
 
       if (closure->instance()) {
@@ -593,7 +593,7 @@ namespace loxx
   {
     if (not holds_alternative<double>(first) or
         not holds_alternative<double>(second)) {
-      throw runtime_error("Binary operands must both be numbers.");
+      throw make_runtime_error("Binary operands must both be numbers.");
     }
   }
 
@@ -625,7 +625,7 @@ namespace loxx
   }
 
 
-  RuntimeError VirtualMachine::runtime_error(const std::string& msg) const
+  RuntimeError VirtualMachine::make_runtime_error(const std::string& msg) const
   {
     return RuntimeError(get_current_line(*code_object_, ip_), msg);
   }

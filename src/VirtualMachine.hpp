@@ -75,7 +75,7 @@ namespace loxx
                                const Value& second) const;
     bool are_equal(const Value& first, const Value& second) const;
     bool is_truthy(const Value& value) const;
-    RuntimeError runtime_error(const std::string& msg) const;
+    RuntimeError make_runtime_error(const std::string& msg) const;
 
     bool debug_;
     std::size_t ip_;
