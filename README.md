@@ -45,7 +45,7 @@ python tests/run_tests.py build/loxx
 
 ## Benchmarks
 
-Loxx is implemented as a bytecode virtual machine, and performs reasonably well
+Loxx is implemented as a bytecode virtual machine and performs reasonably well
 without having to micro-optimise the code and fine-tune compiler arguments. Here
 are some execution times (in seconds) from running each of the files in the
 benchmarks directory 100 times on an Intel i5-2430M (2.40 GHz) with a 3 MB L3
