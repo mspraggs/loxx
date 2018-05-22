@@ -10,7 +10,7 @@ matrix:
           packages:
             - g++-5
       env:
-        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+        - COMPILER=g++-5
   include:
     - os: linux
       addons:
@@ -20,7 +20,7 @@ matrix:
           packages:
             - g++-6
       env:
-        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+        - COMPILER=g++-6
   include:
     - os: linux
       addons:
@@ -30,10 +30,7 @@ matrix:
           packages:
             - g++-7
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-
-before_install:
-  - eval "${MATRIX_EVAL}"
+        - COMPILER=g++-7
 
 script:
   - mkdir build && cd build
