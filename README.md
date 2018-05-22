@@ -33,11 +33,23 @@ Alternatively, execute source files like so
 ./loxx <your source filename>
 ```
 
+## Tests
+
+Testing takes the form of a series of functional end-to-end tests that I
+effectively stole from [Bob Nystrom's implemenations of Lox](https://github.com/munificent/craftinginterpreters).
+To run the tests, use the python test-runner in the tests directory:
+
+```
+python tests/run_tests.py build/loxx
+```
+
 ## Benchmarks
 
-Loxx is implemented as a bytecode virtual machine. Here are some execution times
-(in seconds) from running each of the files in the benchmarks directory 100
-times on an Intel i5-2430M (2.40 GHz) with a 3 MB L3 cache:
+Loxx is implemented as a bytecode virtual machine, and performs reasonably well
+without having to micro-optimise the code and fine-tune compiler arguments. Here
+are some execution times (in seconds) from running each of the files in the
+benchmarks directory 100 times on an Intel i5-2430M (2.40 GHz) with a 3 MB L3
+cache:
 
 | **File**            | **Min.** | **Mean** | **Median** | **Max.** | **Std. Dev.** |
 |---------------------|---------:|---------:|-----------:|---------:|--------------:|
