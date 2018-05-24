@@ -123,8 +123,8 @@ namespace loxx
       compile(*stmt.else_branch);
     }
 
-    const auto first_jump_size =
-        static_cast<ByteCodeArg>(func_->current_bytecode_size() - first_jump_pos + 1);
+    const auto first_jump_size = static_cast<ByteCodeArg>(
+        func_->current_bytecode_size() - first_jump_pos + 1);
     func_->rewrite_integer(first_jump_pos, first_jump_size);
 
     func_->add_instruction(Instruction::Jump);
@@ -136,7 +136,8 @@ namespace loxx
     compile(*stmt.then_branch);
 
     const auto second_jump_size = static_cast<ByteCodeArg>(
-            func_->current_bytecode_size() - second_jump_pos - sizeof(ByteCodeArg));
+            func_->current_bytecode_size() - second_jump_pos -
+            sizeof(ByteCodeArg));
     func_->rewrite_integer(second_jump_pos, second_jump_size);
   }
 
