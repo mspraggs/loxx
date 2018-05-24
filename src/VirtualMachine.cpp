@@ -46,7 +46,7 @@ namespace loxx
 
     auto idx = add_string_constant("clock");
     globals_[get_object<StringObject>(constants_[idx])] =
-        Value(InPlace<ObjectPtr>(), make_object<NativeObject>(fn));
+        Value(InPlace<ObjectPtr>(), make_object<NativeObject>(fn, 0));
 
     idx = add_string_constant("init");
     init_lexeme_ = get_object<StringObject>(constants_[idx]);
@@ -553,6 +553,14 @@ namespace loxx
 
     case ObjectType::Native: {
       const auto native = static_cast<raw_ptr<NativeObject>>(obj);
+
+      if (native->arity() != num_args) {
+        std::stringstream ss;
+        ss << "Expected " << native->arity() << " arguments but got "
+           << num_args << '.';
+        throw make_runtime_error(ss.str());
+      }
+
       const auto result = native->call(&stack_.top(num_args),
                                        static_cast<unsigned int>(num_args));
 
