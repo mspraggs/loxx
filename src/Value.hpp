@@ -243,15 +243,18 @@ namespace loxx
   public:
     using Fn = Value (*) (raw_ptr<const Value>, const unsigned int);
 
-    explicit NativeObject(Fn func)
+    explicit NativeObject(Fn func, const unsigned int arity)
         : Object(ObjectType::Native),
-          func_(func)
+          arity_(arity), func_(func)
     {}
+
+    unsigned int arity() const { return arity_; }
 
     Value call(raw_ptr<const Value> args, const unsigned int num_args)
     { return func_(args, num_args); }
 
   private:
+    unsigned int arity_;
     Fn func_;
   };
 
