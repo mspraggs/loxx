@@ -5,7 +5,7 @@
 **Development**|[![Build Status](https://travis-ci.org/mspraggs/loxx.svg?branch=devel)](https://travis-ci.org/mspraggs/loxx)
 
 Loxx is a C++14 implementation of Bob Nystrom's toy language, [Lox](https://craftinginterpreters.com).
-Lox is syntatically similar to C and uses a strong, dynamic types. For example:
+Lox is syntatically similar to C and uses strong, dynamic types. For example:
 
 ```
 var sum = 0;
