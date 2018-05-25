@@ -5,6 +5,20 @@
 **Development**|[![Build Status](https://travis-ci.org/mspraggs/loxx.svg?branch=devel)](https://travis-ci.org/mspraggs/loxx)
 
 Loxx is a C++14 implementation of Bob Nystrom's toy language, [Lox](https://craftinginterpreters.com).
+Lox is syntatically similar to C and uses a strong, dynamic types. For example:
+
+```
+var sum = 0;
+
+for (var i = 0; i < 10; i = i + 1) {
+  sum = sum + i;
+}
+
+print sum;
+```
+
+For more details on Lox's syntax, check out the [description](http://craftinginterpreters.com/the-lox-language.html)
+in Bob's book.
 
 ## Compilation
 
