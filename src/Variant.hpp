@@ -380,13 +380,13 @@ namespace loxx
 
 
   template <typename Fn, typename... Ts>
-  constexpr auto visit(Fn&& func, const Ts&... variants)
+  constexpr auto visit(Fn&& func, Ts&&... variants)
   {
     using Ret = decltype(func(get<0>(variants)...));
     return detail::visit<Ret>(std::forward<Fn>(func),
                               detail::common_index(variants...),
                               detail::variant_index_sequence(variants...),
-                              variants...);
+                              std::forward<Ts>(variants)...);
   }
 
 
