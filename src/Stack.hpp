@@ -41,7 +41,7 @@ namespace loxx
     { return stack_[top_ - 1 - depth]; }
     T& get(const std::size_t idx) { return stack_[idx]; }
     const T& get(const std::size_t idx) const { return stack_[idx]; }
-    void push(T value);
+    void push(const T& value);
     T pop();
 
     std::size_t size() const { return top_; }
@@ -53,12 +53,12 @@ namespace loxx
 
 
   template <typename T, std::size_t N>
-  void Stack<T, N>::push(T value)
+  void Stack<T, N>::push(const T& value)
   {
     if (top_ == N) {
       throw std::overflow_error("Stack overflow!");
     }
-    stack_[top_++] = std::move(value);
+    stack_[top_++] = value;
   }
 
 
