@@ -37,7 +37,7 @@ namespace loxx
     constexpr Optional(const Optional<T>& other);
     constexpr Optional(Optional<T>&& other) noexcept;
 
-    virtual ~Optional();
+    ~Optional();
 
     template <typename U,
         typename = std::enable_if_t<
