@@ -190,7 +190,7 @@ namespace loxx
     constexpr Variant(const Variant<Ts...>& other);
     constexpr Variant(Variant<Ts...>&& other) noexcept;
 
-    virtual ~Variant();
+    ~Variant();
 
     template <typename T,
               typename = std::enable_if_t<
@@ -242,7 +242,7 @@ namespace loxx
 
   template <typename... Ts>
   constexpr Variant<Ts...>::Variant()
-      : type_index_(sizeof...(Ts))
+      : type_index_(npos)
   {
   }
 
@@ -350,7 +350,7 @@ namespace loxx
   template <std::size_t I, typename... Ts>
   constexpr auto get(Variant<Ts...>& variant) -> detail::LookupType<I, Ts...>&
   {
-    if (variant.type_index_ != I) {
+    if (variant.index() != I) {
       throw BadVariantAccess("Variant does not contain requested object.");
     }
     using T = detail::LookupType<I, Ts...>;
@@ -396,14 +396,14 @@ namespace loxx
   template <typename T0, typename... Ts>
   constexpr bool holds_alternative(Variant<Ts...>& variant)
   {
-    return variant.type_index_ == detail::type_index<T0, Ts...>();
+    return variant.index() == detail::type_index<T0, Ts...>();
   }
 
 
   template <typename T0, typename... Ts>
   constexpr bool holds_alternative(const Variant<Ts...>& variant)
   {
-    return holds_alternative<T0>(const_cast<Variant<Ts...>&>(variant));;
+    return variant.index() == detail::type_index<T0, Ts...>();
   }
 
 
