@@ -215,9 +215,6 @@ namespace loxx
     friend constexpr auto get(Variant<Us...>& variant)
         -> detail::LookupType<I, Us...>&;
 
-    template <typename T, typename... Us>
-    friend constexpr bool holds_alternative(Variant<Us...>& variant);
-
     std::uint8_t type_index_;
     std::aligned_storage_t<
         detail::static_max(sizeof(Ts)...),
