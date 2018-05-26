@@ -88,6 +88,8 @@ namespace loxx
   class HashTable
   {
     using Iter = HashTableIterator<Key, Value, Hash, Compare>;
+    using Item = std::pair<Key, Value>;
+    using Elem = Optional<Item>;
 
   public:
     explicit HashTable()
@@ -97,6 +99,7 @@ namespace loxx
 
     Value& operator[](const Key& key);
     const Value& at(const Key& key) const;
+    const Elem& get(const Key& key) const;
     void erase(const Key& key);
     std::size_t count(const Key& key) const;
     bool has_item(const Key& key) const;
@@ -108,9 +111,6 @@ namespace loxx
     auto end() -> Iter;
 
   private:
-    using Item = std::pair<Key, Value>;
-    using Elem = Optional<Item>;
-
     void rehash();
     std::size_t find_pos(const Key& key, const std::size_t hash) const;
     std::size_t find_new_pos(const Key& key, const std::size_t hash) const;
@@ -150,6 +150,15 @@ namespace loxx
     }
 
     return data_[found_pos]->second;
+  }
+
+
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  auto HashTable<Key, Value, Hash, Compare>::get(const Key& key) const
+      -> const Elem&
+  {
+    const auto found_pos = find_new_pos(key, hash_func_(key));
+    return data_[found_pos];
   }
 
 
