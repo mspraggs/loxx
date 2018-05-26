@@ -613,9 +613,6 @@ namespace loxx
         second.index() == Value::npos) {
       return true;
     }
-    if (first.index() == Value::npos) {
-      return false;
-    }
 
     return first == second;
   }
