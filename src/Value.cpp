@@ -50,21 +50,26 @@ namespace loxx
 
   bool ClassObject::has_method(const raw_ptr<StringObject> name) const
   {
-    bool ret = methods_.count(name) != 0;
+    bool ret = methods_.has_item(name);
 
-    if (superclass_) {
-      ret |= superclass_->has_method(name);
+    if (ret) {
+      return ret;
     }
 
-    return ret;
+    if (superclass_) {
+      return superclass_->has_method(name);
+    }
+
+    return false;
   }
 
 
   raw_ptr<ClosureObject> ClassObject::method(
       const raw_ptr<StringObject> name) const
   {
-    if (methods_.count(name) != 0) {
-      return methods_.at(name);
+    const auto& elem = methods_.get(name);
+    if (elem) {
+      return elem->second;
     }
     if (superclass_) {
       return superclass_->method(name);
