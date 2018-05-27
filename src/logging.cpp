@@ -126,7 +126,6 @@ namespace loxx
     case Instruction::Print:
     case Instruction::Push:
     case Instruction::Return:
-    case Instruction::SetBase:
     case Instruction::Subtract:
     case Instruction::True:
       break;
