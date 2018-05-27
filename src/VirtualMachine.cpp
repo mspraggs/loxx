@@ -252,15 +252,6 @@ namespace loxx
         break;
       }
 
-      case Instruction::GreaterEqual: {
-        const auto second = stack_.pop();
-        const auto first = stack_.pop();
-        check_number_operands(first, second);
-        stack_.push(
-            Value(InPlace<bool>(), get<double>(first) >= get<double>(second)));
-        break;
-      }
-
       case Instruction::Jump:
         ip_ += read_integer<ByteCodeArg>();
         break;
@@ -271,15 +262,6 @@ namespace loxx
         check_number_operands(first, second);
         stack_.push(
             Value(InPlace<bool>(), get<double>(first) < get<double>(second)));
-        break;
-      }
-
-      case Instruction::LessEqual: {
-        const auto second = stack_.pop();
-        const auto first = stack_.pop();
-        check_number_operands(first, second);
-        stack_.push(
-            Value(InPlace<bool>(), get<double>(first) <= get<double>(second)));
         break;
       }
 
@@ -311,13 +293,6 @@ namespace loxx
       case Instruction::Not:
         stack_.push(Value(InPlace<bool>(), not is_truthy(stack_.pop())));
         break;
-
-      case Instruction::NotEqual: {
-        const auto second = stack_.pop();
-        const auto first = stack_.pop();
-        stack_.push(Value(InPlace<bool>(), not are_equal(first, second)));
-        break;
-      }
 
       case Instruction::Pop:
         stack_.pop();
@@ -444,9 +419,6 @@ namespace loxx
     const auto first = stack_.pop();
 
     switch (instruction) {
-    case Instruction::NotEqual:
-      stack_.push(Value(InPlace<bool>(), not are_equal(first, second)));
-      break;
     case Instruction::Equal:
       stack_.push(Value(InPlace<bool>(), are_equal(first, second)));
       break;
@@ -455,20 +427,10 @@ namespace loxx
       stack_.push(Value(InPlace<bool>(),
                            get<double>(first) < get<double>(second)));
       break;
-    case Instruction::LessEqual:
-      check_number_operands(first, second);
-      stack_.push(Value(InPlace<bool>(),
-                           get<double>(first) <= get<double>(second)));
-      break;
     case Instruction::Greater:
       check_number_operands(first, second);
       stack_.push(Value(InPlace<bool>(),
                            get<double>(first) > get<double>(second)));
-      break;
-    case Instruction::GreaterEqual:
-      check_number_operands(first, second);
-      stack_.push(Value(InPlace<bool>(),
-                           get<double>(first) >= get<double>(second)));
       break;
     case Instruction::Multiply:
       check_number_operands(first, second);

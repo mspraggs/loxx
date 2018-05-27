@@ -276,7 +276,8 @@ namespace loxx
       break;
 
     case TokenType::LessEqual: {
-      func_->add_instruction(Instruction::LessEqual);
+      func_->add_instruction(Instruction::Greater);
+      func_->add_instruction(Instruction::Not);
     }
       break;
 
@@ -286,7 +287,8 @@ namespace loxx
       break;
 
     case TokenType::GreaterEqual: {
-      func_->add_instruction(Instruction::GreaterEqual);
+      func_->add_instruction(Instruction::Less);
+      func_->add_instruction(Instruction::Not);
     }
       break;
 
@@ -296,7 +298,8 @@ namespace loxx
       break;
 
     case TokenType::BangEqual: {
-      func_->add_instruction(Instruction::NotEqual);
+      func_->add_instruction(Instruction::Equal);
+      func_->add_instruction(Instruction::Not);
     }
       break;
 

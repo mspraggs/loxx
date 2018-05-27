@@ -114,14 +114,11 @@ namespace loxx
     case Instruction::Equal:
     case Instruction::False:
     case Instruction::Greater:
-    case Instruction::GreaterEqual:
     case Instruction::Less:
-    case Instruction::LessEqual:
     case Instruction::Multiply:
     case Instruction::Negate:
     case Instruction::Nil:
     case Instruction::Not:
-    case Instruction::NotEqual:
     case Instruction::Pop:
     case Instruction::Print:
     case Instruction::Push:

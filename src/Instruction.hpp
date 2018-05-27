@@ -45,16 +45,13 @@ namespace loxx
     GetSuperFunc,
     GetUpvalue,
     Greater,
-    GreaterEqual,
     Jump,
     Less,
-    LessEqual,
     LoadConstant,
     Multiply,
     Negate,
     Nil,
     Not,
-    NotEqual,
     Pop,
     Print,
     Push,
@@ -126,17 +123,11 @@ namespace loxx
     case Instruction::Greater:
       stream << "GREATER";
       break;
-    case Instruction::GreaterEqual:
-      stream << "GREATER_EQUAL";
-      break;
     case Instruction::Jump:
       stream << "JUMP";
       break;
     case Instruction::Less:
       stream << "LESS";
-      break;
-    case Instruction::LessEqual:
-      stream << "LESS_EQUAL";
       break;
     case Instruction::LoadConstant:
       stream << "LOAD_CONST";
@@ -152,9 +143,6 @@ namespace loxx
       break;
     case Instruction::Not:
       stream << "NOT";
-      break;
-    case Instruction::NotEqual:
-      stream << "NOT_EQUAL";
       break;
     case Instruction::Pop:
       stream << "POP";
