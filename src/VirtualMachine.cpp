@@ -74,18 +74,28 @@ namespace loxx
 
       switch (instruction) {
 
-      case Instruction::Add:
-      case Instruction::Subtract:
-      case Instruction::Multiply:
-      case Instruction::Divide:
-      case Instruction::Equal:
-      case Instruction::NotEqual:
-      case Instruction::Greater:
-      case Instruction::GreaterEqual:
-      case Instruction::Less:
-      case Instruction::LessEqual:
-        execute_binary_op(instruction);
+      case Instruction::Add: {
+        const auto second = stack_.pop();
+        const auto first = stack_.pop();
+
+        const auto first_str = get_object<StringObject>(first);
+        const auto second_str = get_object<StringObject>(second);
+
+        if (first_str and second_str) {
+          const auto combined_str = make_object<StringObject>(
+              first_str->as_std_string() + second_str->as_std_string());
+          stack_.push(Value(InPlace<ObjectPtr>(), combined_str));
+        }
+        else if (holds_alternative<double>(first) and
+                 holds_alternative<double>(second)) {
+          stack_.push(get<double>(first) + get<double>(second));
+        }
+        else {
+          throw make_runtime_error(
+              "Binary operands must be two numbers or two strings.");
+        }
         break;
+      }
 
       case Instruction::Call:
         execute_call();
@@ -141,6 +151,22 @@ namespace loxx
       case Instruction::DefineGlobal: {
         const auto varname = read_string();
         globals_[varname] = stack_.pop();
+        break;
+      }
+
+      case Instruction::Divide: {
+        const auto second = stack_.pop();
+        const auto first = stack_.pop();
+        check_number_operands(first, second);
+        stack_.push(get<double>(first) / get<double>(second));
+        break;
+      }
+
+      case Instruction::Equal: {
+        const auto second = stack_.pop();
+        const auto first = stack_.pop();
+
+        stack_.push(Value(InPlace<bool>(), are_equal(first, second)));
         break;
       }
 
@@ -217,13 +243,57 @@ namespace loxx
         break;
       }
 
+      case Instruction::Greater: {
+        const auto second = stack_.pop();
+        const auto first = stack_.pop();
+        check_number_operands(first, second);
+        stack_.push(
+            Value(InPlace<bool>(), get<double>(first) > get<double>(second)));
+        break;
+      }
+
+      case Instruction::GreaterEqual: {
+        const auto second = stack_.pop();
+        const auto first = stack_.pop();
+        check_number_operands(first, second);
+        stack_.push(
+            Value(InPlace<bool>(), get<double>(first) >= get<double>(second)));
+        break;
+      }
+
       case Instruction::Jump:
         ip_ += read_integer<ByteCodeArg>();
         break;
 
+      case Instruction::Less: {
+        const auto second = stack_.pop();
+        const auto first = stack_.pop();
+        check_number_operands(first, second);
+        stack_.push(
+            Value(InPlace<bool>(), get<double>(first) < get<double>(second)));
+        break;
+      }
+
+      case Instruction::LessEqual: {
+        const auto second = stack_.pop();
+        const auto first = stack_.pop();
+        check_number_operands(first, second);
+        stack_.push(
+            Value(InPlace<bool>(), get<double>(first) <= get<double>(second)));
+        break;
+      }
+
       case Instruction::LoadConstant:
         stack_.push(constants_[read_integer<UByteCodeArg>()]);
         break;
+
+      case Instruction::Multiply: {
+        const auto second = stack_.pop();
+        const auto first = stack_.pop();
+        check_number_operands(first, second);
+        stack_.push(get<double>(first) * get<double>(second));
+        break;
+      }
 
       case Instruction::Negate: {
         if (not holds_alternative<double>(stack_.top())) {
@@ -241,6 +311,13 @@ namespace loxx
       case Instruction::Not:
         stack_.push(Value(InPlace<bool>(), not is_truthy(stack_.pop())));
         break;
+
+      case Instruction::NotEqual: {
+        const auto second = stack_.pop();
+        const auto first = stack_.pop();
+        stack_.push(Value(InPlace<bool>(), not are_equal(first, second)));
+        break;
+      }
 
       case Instruction::Pop:
         stack_.pop();
@@ -300,6 +377,14 @@ namespace loxx
       case Instruction::SetUpvalue: {
         const auto slot = read_integer<UByteCodeArg>();
         call_stack_.top().closure()->upvalue(slot)->set_value(stack_.top());
+        break;
+      }
+
+      case Instruction::Subtract: {
+        const auto second = stack_.pop();
+        const auto first = stack_.pop();
+        check_number_operands(first, second);
+        stack_.push(get<double>(first) - get<double>(second));
         break;
       }
 
