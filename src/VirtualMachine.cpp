@@ -413,62 +413,6 @@ namespace loxx
   }
 
 
-  void VirtualMachine::execute_binary_op(const Instruction instruction)
-  {
-    const auto second = stack_.pop();
-    const auto first = stack_.pop();
-
-    switch (instruction) {
-    case Instruction::Equal:
-      stack_.push(Value(InPlace<bool>(), are_equal(first, second)));
-      break;
-    case Instruction::Less:
-      check_number_operands(first, second);
-      stack_.push(Value(InPlace<bool>(),
-                           get<double>(first) < get<double>(second)));
-      break;
-    case Instruction::Greater:
-      check_number_operands(first, second);
-      stack_.push(Value(InPlace<bool>(),
-                           get<double>(first) > get<double>(second)));
-      break;
-    case Instruction::Multiply:
-      check_number_operands(first, second);
-      stack_.push(get<double>(first) * get<double>(second));
-      break;
-    case Instruction::Divide:
-      check_number_operands(first, second);
-      stack_.push(get<double>(first) / get<double>(second));
-      break;
-    case Instruction::Subtract:
-      check_number_operands(first, second);
-      stack_.push(get<double>(first) - get<double>(second));
-      break;
-    case Instruction::Add: {
-      raw_ptr<StringObject> str1 = nullptr, str2 = nullptr;
-      if ((str1 = get_object<StringObject>(first)) and
-          (str2 = get_object<StringObject>(second))) {
-        const auto new_obj =
-            make_object<StringObject>(str1->as_std_string() +
-                                      str2->as_std_string());
-        stack_.push(Value(InPlace<ObjectPtr>(), new_obj));
-      }
-      else if (holds_alternative<double>(first) and
-               holds_alternative<double>(second)) {
-        stack_.push(get<double>(first) + get<double>(second));
-      }
-      else {
-        throw make_runtime_error(
-            "Binary operands must be two numbers or two strings.");
-      }
-      break;
-    }
-    default:
-      break;
-    }
-  }
-
-
   void VirtualMachine::execute_call()
   {
     const auto num_args = read_integer<UByteCodeArg>();

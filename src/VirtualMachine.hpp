@@ -53,7 +53,6 @@ namespace loxx
 
   private:
     void print_object(Value object) const;
-    void execute_binary_op(const Instruction instruction);
     void execute_call();
     void execute_create_closure();
 
