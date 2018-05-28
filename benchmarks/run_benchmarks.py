@@ -4,7 +4,6 @@ import argparse
 import os
 import re
 import subprocess
-import sys
 import time
 
 import numpy as np
@@ -73,8 +72,10 @@ if __name__ == "__main__":
                         help="Print iteration numbers when benchmarking.")
     parser.add_argument("-x", "--exclude", action="store_true",
                         help="Exclude tests matching regex.")
+    parser.add_argument("-n", "--num-iters", type=int, default=100,
+                        help="Number of iterations to run each benchmark for.")
     args = parser.parse_args()
 
     run_benchmarks(args.interpreter,
-                   gather_files(args.bench_regex, args.exclude), 100,
+                   gather_files(args.bench_regex, args.exclude), args.num_iters,
                    args.verbose)
