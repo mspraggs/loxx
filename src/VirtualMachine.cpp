@@ -103,7 +103,7 @@ namespace loxx
 
       case Instruction::CloseUpvalue:
         close_upvalues(stack_.top());
-        stack_.pop();
+        stack_.discard();
         break;
 
       case Instruction::ConditionalJump: {
@@ -131,7 +131,7 @@ namespace loxx
         const auto name = read_string();
 
         cls->set_method(name, closure);
-        stack_.pop();
+        stack_.discard();
         break;
       }
 
@@ -201,14 +201,14 @@ namespace loxx
         const auto name = read_string();
 
         if (instance->has_field(name)) {
-          stack_.pop();
+          stack_.discard();
           stack_.push(instance->field(name));
         }
         else if (instance->cls().has_method(name)) {
           const auto method =
               make_object<ClosureObject>(*instance->cls().method(name));
           method->bind(instance);
-          stack_.pop();
+          stack_.discard();
           stack_.emplace(InPlace<ObjectPtr>(), method);
         }
         else {
@@ -227,7 +227,7 @@ namespace loxx
         if (cls->has_method(name)) {
           auto method = make_object<ClosureObject>(*cls->method(name));
           method->bind(instance);
-          stack_.pop();
+          stack_.discard();
           stack_.emplace(InPlace<ObjectPtr>(), method);
         }
         else {
@@ -306,9 +306,7 @@ namespace loxx
         const auto result = stack_.pop();
         close_upvalues(call_stack_.top().slot(0));
         const auto frame = call_stack_.pop();
-        while (stack_.size() != frame.prev_stack_size()) {
-          stack_.pop();
-        }
+        stack_.discard(stack_.size() - frame.prev_stack_size());
         stack_.push(result);
         code_object_ = frame.prev_code_object();
         ip_ = frame.prev_ip();
