@@ -64,29 +64,17 @@ namespace loxx
   }
 
 
-  raw_ptr<ClosureObject> ClassObject::method(
-      const raw_ptr<StringObject> name) const
+  auto ClassObject::method(const raw_ptr<StringObject> name) const
+      -> const StringHashTable<raw_ptr<ClosureObject>>::Elem&
   {
     const auto& elem = methods_.get(name);
     if (elem) {
-      return elem->second;
+      return elem;
     }
     if (superclass_) {
       return superclass_->method(name);
     }
-    return nullptr;
-  }
-
-
-  raw_ptr<ClosureObject> ClassObject::method(const raw_ptr<StringObject> name)
-  {
-    if (methods_.count(name) != 0) {
-      return methods_[name];
-    }
-    if (superclass_) {
-      return superclass_->method(name);
-    }
-    return nullptr;
+    return elem;
   }
 
 

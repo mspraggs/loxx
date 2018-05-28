@@ -199,17 +199,17 @@ namespace loxx
         }
 
         const auto name = read_string();
+        const auto& field = instance->field(name);
 
-        if (instance->has_field(name)) {
+        if (field) {
           stack_.discard();
-          stack_.push(instance->field(name));
+          stack_.push(field->second);
         }
-        else if (instance->cls().has_method(name)) {
-          const auto method =
-              make_object<ClosureObject>(*instance->cls().method(name));
-          method->bind(instance);
+        else if (const auto& method = instance->cls().method(name)) {
+          const auto new_method = make_object<ClosureObject>(*method->second);
+          new_method->bind(instance);
           stack_.discard();
-          stack_.emplace(InPlace<ObjectPtr>(), method);
+          stack_.emplace(InPlace<ObjectPtr>(), new_method);
         }
         else {
           throw make_runtime_error(
@@ -224,8 +224,8 @@ namespace loxx
         auto instance = get_object<InstanceObject>(stack_.top());
         const auto name = read_string();
 
-        if (cls->has_method(name)) {
-          auto method = make_object<ClosureObject>(*cls->method(name));
+        if (const auto& method_elem = cls->method(name)) {
+          auto method = make_object<ClosureObject>(*method_elem->second);
           method->bind(instance);
           stack_.discard();
           stack_.emplace(InPlace<ObjectPtr>(), method);
@@ -502,10 +502,9 @@ namespace loxx
       auto instance = make_object<InstanceObject>(cls);
       get<ObjectPtr>(stack_.get(obj_pos)) = instance;
 
-      if (cls->has_method(init_lexeme_)) {
-        auto method = cls->method(init_lexeme_);
-        method->bind(instance);
-        call_object(method, obj_pos, num_args);
+      if (const auto& method = cls->method(init_lexeme_)) {
+        method->second->bind(instance);
+        call_object(method->second, obj_pos, num_args);
         break;
       }
 

@@ -87,11 +87,11 @@ namespace loxx
   template <typename Key, typename Value, typename Hash, typename Compare>
   class HashTable
   {
+  public:
     using Iter = HashTableIterator<Key, Value, Hash, Compare>;
     using Item = std::pair<Key, Value>;
     using Elem = Optional<Item>;
 
-  public:
     explicit HashTable()
         : num_used_slots_(0), max_used_slots_(detail::default_max_used_slots),
           mask_(detail::default_size - 1), data_(detail::default_size)

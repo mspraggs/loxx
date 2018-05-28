@@ -194,8 +194,8 @@ namespace loxx
     const std::string& lexeme() const { return lexeme_; }
 
     bool has_method(const raw_ptr<StringObject> name) const;
-    raw_ptr<ClosureObject> method(const raw_ptr<StringObject> name) const;
-    raw_ptr<ClosureObject> method(const raw_ptr<StringObject> name);
+    auto method(const raw_ptr<StringObject> name) const
+        -> const StringHashTable<raw_ptr<ClosureObject>>::Elem&;
 
     void set_method(const raw_ptr<StringObject> name,
                     raw_ptr<ClosureObject> method)
@@ -221,9 +221,9 @@ namespace loxx
     bool has_field(const raw_ptr<StringObject> name) const
     { return fields_.count(name) != 0; }
 
-    const Value& field(const raw_ptr<StringObject> name) const
-    { return fields_.at(name); }
-    Value& field(const raw_ptr<StringObject> name) { return fields_[name]; }
+    auto field(const raw_ptr<StringObject> name) const
+        -> const StringHashTable<Value>::Elem&
+    { return fields_.get(name); }
 
     void set_field(const raw_ptr<StringObject> name, const Value& value)
     { fields_[name] = value; }
