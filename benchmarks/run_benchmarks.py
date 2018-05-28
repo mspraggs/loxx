@@ -35,12 +35,14 @@ def run_benchmarks(interpreter_path, bench_paths, num_iters=100, verbose=False):
 
     for bench_path in bench_paths:
 
-        print("Running benchmark file '{}'...".format(bench_path))
+        benchmark_name = os.path.relpath(bench_path, directory)
+        print("Running benchmark file '{}'...".format(benchmark_name))
         durations = np.zeros(num_iters)
 
         for i in range(num_iters):
             if verbose:
-                print("  - Iteration {} of {}".format(i + 1, num_iters))
+                print("  - Iteration {} of {}:".format(i + 1, num_iters),
+                      end='', flush=True)
 
             start = time.time()
             process = subprocess.Popen([interpreter_path, bench_path],
@@ -48,6 +50,9 @@ def run_benchmarks(interpreter_path, bench_paths, num_iters=100, verbose=False):
                                        stderr=subprocess.PIPE)
             process.communicate()
             durations[i] = time.time() - start
+
+            if verbose:
+                print(" {:>4.3f} s".format(durations[i]))
 
         print("Results:")
         print("* Min. = {:>4.3f} s".format(np.min(durations)))
