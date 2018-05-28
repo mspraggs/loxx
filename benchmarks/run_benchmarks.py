@@ -32,6 +32,8 @@ def run_benchmarks(interpreter_path, bench_paths, num_iters=100, verbose=False):
     bench_paths = sorted(bench_paths,
                          key=lambda p: os.path.relpath(p, directory))
 
+    stats = {}
+
     for bench_path in bench_paths:
 
         benchmark_name = os.path.relpath(bench_path, directory)
@@ -53,12 +55,18 @@ def run_benchmarks(interpreter_path, bench_paths, num_iters=100, verbose=False):
             if verbose:
                 print(" {:>4.3f} s".format(durations[i]))
 
-        print("Results:")
-        print("* Min. = {:>4.3f} s".format(np.min(durations)))
-        print("* Mean = {:>4.3f} s".format(np.mean(durations)))
-        print("* Med. = {:>4.3f} s".format(np.median(durations)))
-        print("* Max. = {:>4.3f} s".format(np.max(durations)))
-        print("* Std. = {:>4.3f} s".format(np.std(durations)))
+        print("Done!")
+
+        bench_stats = (
+            ("Min.", np.min(durations)),
+            ("Mean", np.mean(durations)),
+            ("Med.", np.median(durations)),
+            ("Max.", np.max(durations)),
+            ("Std.", np.std(durations)))
+
+        stats[benchmark_name] = bench_stats
+
+    return stats
 
 
 if __name__ == "__main__":
@@ -76,6 +84,12 @@ if __name__ == "__main__":
                         help="Number of iterations to run each benchmark for.")
     args = parser.parse_args()
 
-    run_benchmarks(args.interpreter,
-                   gather_files(args.bench_regex, args.exclude), args.num_iters,
-                   args.verbose)
+    files = gather_files(args.bench_regex, args.exclude)
+    results = run_benchmarks(args.interpreter, files,
+                             args.num_iters, args.verbose)
+
+    for name, stats in results.items():
+        print("Results for benchmark '{}':".format(name))
+
+        for label, stat in stats:
+            print("* {:<20} = {:>4.3f} s".format(label, stat))
