@@ -500,7 +500,7 @@ namespace loxx
     case ObjectType::Class: {
       const auto cls = static_cast<raw_ptr<ClassObject>>(obj);
       auto instance = make_object<InstanceObject>(cls);
-      get<ObjectPtr>(stack_.get(obj_pos)) = instance;
+      stack_.get(obj_pos) = instance;
 
       if (const auto& method = cls->method(init_lexeme_)) {
         method->second->bind(instance);
@@ -527,7 +527,7 @@ namespace loxx
       }
 
       if (closure->instance()) {
-        get<ObjectPtr>(stack_.get(obj_pos)) = closure->instance();
+        stack_.get(obj_pos) = closure->instance();
       }
       auto& base_slot = stack_.get(obj_pos + (closure->instance() ? 0 : 1));
 
