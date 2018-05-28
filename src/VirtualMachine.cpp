@@ -60,7 +60,7 @@ namespace loxx
   {
     code_object_ = &code_object;
     ip_ = 0;
-    call_stack_.push(StackFrame(ip_, code_object_, 0, stack_.data(), nullptr));
+    call_stack_.emplace(ip_, code_object_, 0, stack_.data(), nullptr);
 
     while (ip_ < code_object_->bytecode.size()) {
 
@@ -84,11 +84,11 @@ namespace loxx
         if (first_str and second_str) {
           const auto combined_str = make_object<StringObject>(
               first_str->as_std_string() + second_str->as_std_string());
-          stack_.push(Value(InPlace<ObjectPtr>(), combined_str));
+          stack_.emplace(InPlace<ObjectPtr>(), combined_str);
         }
         else if (holds_alternative<double>(first) and
                  holds_alternative<double>(second)) {
-          stack_.push(get<double>(first) + get<double>(second));
+          stack_.emplace(get<double>(first) + get<double>(second));
         }
         else {
           throw make_runtime_error(
@@ -117,7 +117,7 @@ namespace loxx
       case Instruction::CreateClass: {
         auto name = read_string()->as_std_string();
         const auto cls = make_object<ClassObject>(std::move(name));
-        stack_.push(Value(InPlace<ObjectPtr>(), cls));
+        stack_.emplace(InPlace<ObjectPtr>(), cls);
         break;
       }
 
@@ -144,7 +144,7 @@ namespace loxx
 
         auto name = read_string()->as_std_string();
         const auto cls = make_object<ClassObject>(std::move(name), super);
-        stack_.push(Value(InPlace<ObjectPtr>(), cls));
+        stack_.emplace(InPlace<ObjectPtr>(), cls);
         break;
       }
 
@@ -158,7 +158,7 @@ namespace loxx
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
-        stack_.push(get<double>(first) / get<double>(second));
+        stack_.emplace(get<double>(first) / get<double>(second));
         break;
       }
 
@@ -166,12 +166,12 @@ namespace loxx
         const auto second = stack_.pop();
         const auto first = stack_.pop();
 
-        stack_.push(Value(InPlace<bool>(), are_equal(first, second)));
+        stack_.emplace(InPlace<bool>(), are_equal(first, second));
         break;
       }
 
       case Instruction::False:
-        stack_.push(Value(InPlace<bool>(), false));
+        stack_.emplace(InPlace<bool>(), false);
         break;
 
       case Instruction::GetGlobal: {
@@ -209,7 +209,7 @@ namespace loxx
               make_object<ClosureObject>(*instance->cls().method(name));
           method->bind(instance);
           stack_.pop();
-          stack_.push(Value(InPlace<ObjectPtr>(), method));
+          stack_.emplace(InPlace<ObjectPtr>(), method);
         }
         else {
           throw make_runtime_error(
@@ -228,7 +228,7 @@ namespace loxx
           auto method = make_object<ClosureObject>(*cls->method(name));
           method->bind(instance);
           stack_.pop();
-          stack_.push(Value(InPlace<ObjectPtr>(), method));
+          stack_.emplace(InPlace<ObjectPtr>(), method);
         }
         else {
           throw make_runtime_error(
@@ -247,8 +247,8 @@ namespace loxx
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
-        stack_.push(
-            Value(InPlace<bool>(), get<double>(first) > get<double>(second)));
+        stack_.emplace(
+            InPlace<bool>(), get<double>(first) > get<double>(second));
         break;
       }
 
@@ -260,8 +260,8 @@ namespace loxx
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
-        stack_.push(
-            Value(InPlace<bool>(), get<double>(first) < get<double>(second)));
+        stack_.emplace(
+            InPlace<bool>(), get<double>(first) < get<double>(second));
         break;
       }
 
@@ -273,7 +273,7 @@ namespace loxx
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
-        stack_.push(get<double>(first) * get<double>(second));
+        stack_.emplace(get<double>(first) * get<double>(second));
         break;
       }
 
@@ -282,16 +282,16 @@ namespace loxx
           throw make_runtime_error("Unary operand must be a number.");
         }
         const auto number = get<double>(stack_.pop());
-        stack_.push(-number);
+        stack_.emplace(-number);
         break;
       }
 
       case Instruction::Nil:
-        stack_.push(Value());
+        stack_.emplace();
         break;
 
       case Instruction::Not:
-        stack_.push(Value(InPlace<bool>(), not is_truthy(stack_.pop())));
+        stack_.emplace(InPlace<bool>(), not is_truthy(stack_.pop()));
         break;
 
       case Instruction::Pop:
@@ -359,12 +359,12 @@ namespace loxx
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
-        stack_.push(get<double>(first) - get<double>(second));
+        stack_.emplace(get<double>(first) - get<double>(second));
         break;
       }
 
       case Instruction::True:
-        stack_.push(Value(InPlace<bool>(), true));
+        stack_.emplace(InPlace<bool>(), true);
         break;
 
       default:
