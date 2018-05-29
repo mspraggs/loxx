@@ -125,7 +125,7 @@ namespace loxx
   template <typename Key, typename Value, typename Hash, typename Compare>
   Value& HashTable<Key, Value, Hash, Compare>::operator[](const Key& key)
   {
-    if (num_used_slots_ > max_used_slots_) {
+    if (num_used_slots_ >= max_used_slots_) {
       rehash();
     }
 
