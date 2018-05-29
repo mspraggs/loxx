@@ -566,14 +566,14 @@ namespace loxx
 
   void Compiler::handle_variable_reference(const Token& token, const bool write)
   {
-    auto arg = resolve_local(token, false);
+    auto arg = func_->resolve_local(token, false);
 
     Instruction op;
     if (arg) {
       op = write ? Instruction::SetLocal : Instruction::GetLocal;
     }
     else {
-      arg = resolve_upvalue(token);
+      arg = func_->resolve_upvalue(token);
 
       if (arg) {
         op = write ? Instruction::SetUpvalue : Instruction::GetUpvalue;
@@ -590,19 +590,6 @@ namespace loxx
     func_->add_instruction(op);
     func_->add_integer<UByteCodeArg>(*arg);
     func_->update_line_num_table(token);
-  }
-
-
-  Optional <UByteCodeArg> Compiler::resolve_local(
-      const Token& name, const bool in_function) const
-  {
-    return func_->resolve_local(name, in_function);
-  }
-
-
-  Optional <UByteCodeArg> Compiler::resolve_upvalue(const Token& name)
-  {
-    return func_->resolve_upvalue(name);
   }
 
 

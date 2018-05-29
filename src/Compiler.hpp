@@ -125,9 +125,6 @@ namespace loxx
     template <typename T>
     void handle_variable_reference(const T& expr, const bool write);
     void handle_variable_reference(const Token& token, const bool write);
-    Optional <UByteCodeArg> resolve_local(const Token& name,
-                                              const bool in_function) const;
-    Optional <UByteCodeArg> resolve_upvalue(const Token& name);
 
     inline UByteCodeArg make_string_constant(const std::string& str) const;
 
