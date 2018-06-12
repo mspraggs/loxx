@@ -110,6 +110,12 @@ namespace loxx
       std::cout << "> ";
       std::string src;
       std::getline(std::cin, src);
+
+      if (std::cin.bad() or std::cin.eof()) {
+        std::cout << '\n';
+        return;
+      }
+
       run(src, debug_config, true);
       had_error = false;
     }
