@@ -80,8 +80,6 @@ namespace loxx
       std::cout << printer.print(statements) << std::endl;
     }
 
-    static std::vector<CodeObject> code_objects{CodeObject{}};
-    code_objects.front().bytecode.reserve(10240);
     static VirtualMachine vm(debug_config.trace_exec);
 
     Compiler compiler(vm, debug_config.print_bytecode);
