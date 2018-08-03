@@ -136,7 +136,7 @@ namespace loxx
       }
 
       case Instruction::CreateSubclass: {
-        auto super = get_object<ClassObject>(stack_.top());
+        const auto super = get_object<ClassObject>(stack_.top());
 
         if (not super) {
           throw make_runtime_error("Superclass must be a class.");
@@ -193,7 +193,7 @@ namespace loxx
       }
 
       case Instruction::GetProperty: {
-        auto instance = get_object<InstanceObject>(stack_.top());
+        const auto instance = get_object<InstanceObject>(stack_.top());
         if (not instance) {
           throw make_runtime_error("Only instances have properties.");
         }
@@ -221,7 +221,7 @@ namespace loxx
       case Instruction::GetSuperFunc: {
         const auto cls_value = stack_.pop();
         const auto cls = get_object<ClassObject>(cls_value);
-        auto instance = get_object<InstanceObject>(stack_.top());
+        const auto instance = get_object<InstanceObject>(stack_.top());
         const auto name = read_string();
 
         if (const auto& method_elem = cls->method(name)) {
