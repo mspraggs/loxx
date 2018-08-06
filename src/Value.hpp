@@ -39,20 +39,25 @@ namespace loxx
 
   struct HashStringObject
   {
-    inline std::size_t operator()(raw_ptr<const StringObject> obj) const;
+    inline std::size_t operator()(const StringObject* obj) const;
   };
 
 
   struct CompareStringObject
   {
-    inline bool operator()(raw_ptr<const StringObject> p1,
-                           raw_ptr<const StringObject> p2) const;
+    inline bool operator()(const StringObject* p1,
+                           const StringObject* p2) const;
   };
 
   template <typename T>
-  using StringHashTable =
-      HashTable<raw_ptr<StringObject>, T, HashStringObject,
+  using ConstStringHashTable =
+      HashTable<const StringObject*, T, HashStringObject,
                 CompareStringObject>;
+
+  template <typename T>
+  using StringHashTable =
+      HashTable<StringObject*, T, HashStringObject,
+          CompareStringObject>;
 
 
   enum class ObjectType
@@ -75,7 +80,7 @@ namespace loxx
   };
 
 
-  using ObjectPtr = raw_ptr<Object>;
+  using ObjectPtr = Object*;
   using Value = Variant<double, bool, ObjectPtr>;
 
 
@@ -112,7 +117,7 @@ namespace loxx
           code_object_(std::move(code_object)), lexeme_(std::move(lexeme))
     {}
 
-    raw_ptr<const CodeObject> code_object() const
+    const CodeObject* code_object() const
     { return code_object_.get(); }
 
     unsigned int arity() const { return arity_; }
@@ -146,7 +151,7 @@ namespace loxx
     void grey_references() override;
 
   private:
-    raw_ptr<Value> value_;
+    Value* value_;
     Value closed_;
   };
 
@@ -154,30 +159,30 @@ namespace loxx
   class ClosureObject : public Object
   {
   public:
-    explicit ClosureObject(raw_ptr<FuncObject> func)
+    explicit ClosureObject(FuncObject* func)
         : Object(ObjectType::Closure),
           instance_(), function_(func), upvalues_(function_->num_upvalues())
     {
     }
 
-    raw_ptr<UpvalueObject> upvalue(const std::size_t i) const
+    UpvalueObject* upvalue(const std::size_t i) const
     { return upvalues_[i]; }
-    void set_upvalue(const std::size_t i, raw_ptr<UpvalueObject> value)
+    void set_upvalue(const std::size_t i, UpvalueObject* value)
     { upvalues_[i] = value; }
 
     std::size_t num_upvalues() const { return upvalues_.size(); }
 
     const FuncObject& function() const { return *function_; }
 
-    void bind(raw_ptr<InstanceObject> instance) { instance_ = instance; }
-    raw_ptr<InstanceObject> instance() const { return instance_; }
+    void bind(InstanceObject* instance) { instance_ = instance; }
+    InstanceObject* instance() const { return instance_; }
 
     void grey_references() override;
 
   private:
-    raw_ptr<InstanceObject> instance_;
-    raw_ptr<FuncObject> function_;
-    std::vector<raw_ptr<UpvalueObject>> upvalues_;
+    InstanceObject* instance_;
+    FuncObject* function_;
+    std::vector<UpvalueObject*> upvalues_;
   };
 
 
@@ -185,7 +190,7 @@ namespace loxx
   {
   public:
     explicit ClassObject(std::string lexeme,
-                         raw_ptr<ClassObject> superclass = {})
+                         ClassObject* superclass = {})
         : Object(ObjectType::Class),
           lexeme_(std::move(lexeme)),
           superclass_(superclass)
@@ -193,39 +198,37 @@ namespace loxx
 
     const std::string& lexeme() const { return lexeme_; }
 
-    bool has_method(const raw_ptr<StringObject> name) const;
-    auto method(const raw_ptr<StringObject> name) const
-        -> const StringHashTable<raw_ptr<ClosureObject>>::Elem&;
+    bool has_method(StringObject* name) const;
+    auto method(StringObject* name) const
+        -> const StringHashTable<ClosureObject*>::Elem&;
 
-    void set_method(const raw_ptr<StringObject> name,
-                    raw_ptr<ClosureObject> method)
+    void set_method(StringObject* name, ClosureObject* method)
     { methods_[name] = method; }
 
     void grey_references() override;
 
   private:
     std::string lexeme_;
-    StringHashTable<raw_ptr<ClosureObject>> methods_;
-    raw_ptr<ClassObject> superclass_;
+    StringHashTable<ClosureObject*> methods_;
+    ClassObject* superclass_;
   };
 
 
   class InstanceObject : public Object
   {
   public:
-    explicit InstanceObject(raw_ptr<ClassObject> cls)
+    explicit InstanceObject(ClassObject* cls)
         : Object(ObjectType::Instance),
           cls_(cls)
     {}
 
-    bool has_field(const raw_ptr<StringObject> name) const
+    bool has_field(StringObject* name) const
     { return fields_.count(name) != 0; }
 
-    auto field(const raw_ptr<StringObject> name) const
-        -> const StringHashTable<Value>::Elem&
+    auto field(StringObject* name) const -> const StringHashTable<Value>::Elem&
     { return fields_.get(name); }
 
-    void set_field(const raw_ptr<StringObject> name, const Value& value)
+    void set_field(StringObject* name, const Value& value)
     { fields_[name] = value; }
 
     const ClassObject& cls() const { return *cls_; }
@@ -233,7 +236,7 @@ namespace loxx
     void grey_references() override;
 
   private:
-    raw_ptr<ClassObject> cls_;
+    ClassObject* cls_;
     StringHashTable<Value> fields_;
   };
 
@@ -241,7 +244,7 @@ namespace loxx
   class NativeObject : public Object
   {
   public:
-    using Fn = Value (*) (raw_ptr<const Value>, const unsigned int);
+    using Fn = Value (*) (const Value*, const unsigned int);
 
     explicit NativeObject(Fn func, const unsigned int arity)
         : Object(ObjectType::Native),
@@ -250,7 +253,7 @@ namespace loxx
 
     unsigned int arity() const { return arity_; }
 
-    Value call(raw_ptr<const Value> args, const unsigned int num_args)
+    Value call(const Value* args, const unsigned int num_args)
     { return func_(args, num_args); }
 
   private:
@@ -280,14 +283,14 @@ namespace loxx
 
 
   std::size_t HashStringObject::operator()(
-      raw_ptr<const StringObject> obj) const
+      const StringObject* obj) const
   {
     return obj->hash();
   }
 
 
-  bool CompareStringObject::operator()(raw_ptr<const StringObject> p1,
-                                       raw_ptr<const StringObject> p2) const
+  bool CompareStringObject::operator()(const StringObject* p1,
+                                       const StringObject* p2) const
   {
     return p1->hash() == p2->hash() or
            p1->as_std_string() == p2->as_std_string();
@@ -351,12 +354,12 @@ namespace loxx
 
 
   template <typename T>
-  constexpr raw_ptr<T> get_object(const Value& value)
+  constexpr T* get_object(const Value& value)
   {
     if (holds_alternative<ObjectPtr>(value) and
         get<ObjectPtr>(value)->type() == detail::object_type<T>())
     {
-      return static_cast<raw_ptr<T>>(get<ObjectPtr>(value));
+      return static_cast<T*>(get<ObjectPtr>(value));
     }
 
     return nullptr;
@@ -386,15 +389,15 @@ namespace loxx
 
       switch (ptr->type()) {
       case ObjectType::Function:
-        os << "<fn " << static_cast<raw_ptr<FuncObject>>(ptr)->lexeme() << '>';
+        os << "<fn " << static_cast<FuncObject*>(ptr)->lexeme() << '>';
         break;
       case ObjectType::Class: {
-        const auto cls = static_cast<raw_ptr<ClassObject>>(ptr);
+        const auto cls = static_cast<ClassObject*>(ptr);
         os << "<class " << cls->lexeme() << '>';
         break;
       }
       case ObjectType::Closure: {
-        const auto closure = static_cast<raw_ptr<ClosureObject>>(ptr);
+        const auto closure = static_cast<ClosureObject*>(ptr);
         os << "<fn " << closure->function().lexeme() << '>';
         break;
       }

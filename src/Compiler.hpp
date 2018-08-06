@@ -130,7 +130,7 @@ namespace loxx
 
     bool debug_;
     ClassType class_type_;
-    raw_ptr<VirtualMachine> vm_;
+    VirtualMachine* vm_;
     Stack<std::vector<Local>> locals_;
     Stack<std::vector<Upvalue>> upvalues_;
     std::unique_ptr<FunctionScope> func_;
@@ -141,7 +141,7 @@ namespace loxx
   T read_integer_at_pos(const std::vector<std::uint8_t>& bytecode,
                         const std::size_t pos)
   {
-    const T integer = *reinterpret_cast<raw_ptr<const T>>(&bytecode[pos]);
+    const T integer = *reinterpret_cast<const T*>(&bytecode[pos]);
     return integer;
   }
 

@@ -56,7 +56,7 @@ namespace loxx
     void execute_call();
     void execute_create_closure();
 
-    raw_ptr<UpvalueObject> capture_upvalue(Value& local);
+    UpvalueObject* capture_upvalue(Value& local);
     void close_upvalues(Value& last);
 
     void call_object(ObjectPtr obj, const std::size_t obj_pos,
@@ -78,14 +78,14 @@ namespace loxx
 
     bool debug_;
     std::size_t ip_;
-    raw_ptr<const CodeObject> code_object_;
-    StringHashTable<UByteCodeArg> constant_map_;
+    const CodeObject* code_object_;
+    ConstStringHashTable<UByteCodeArg> constant_map_;
     std::vector<Value> constants_;
     StringHashTable<Value> globals_;
     Stack<Value> stack_;
     Stack<StackFrame, 256> call_stack_;
-    std::list<raw_ptr<UpvalueObject>> open_upvalues_;
-    raw_ptr<StringObject> init_lexeme_;
+    std::list<UpvalueObject*> open_upvalues_;
+    StringObject* init_lexeme_;
   };
 
 

@@ -61,7 +61,7 @@ namespace loxx
     std::vector<std::unique_ptr<Function>> methods;
     while (not check(TokenType::RightBrace) and not is_at_end()) {
       std::unique_ptr<Stmt> ptr = function("method");
-      methods.emplace_back(static_cast<raw_ptr<Function>>(ptr.release()));
+      methods.emplace_back(static_cast<Function*>(ptr.release()));
     }
 
     consume(TokenType::RightBrace, "Expected '}' after class body.");
@@ -261,11 +261,11 @@ namespace loxx
       auto value = assignment();
 
       if (typeid(*expr) == typeid(Variable)) {
-        Token name = static_cast<raw_ptr<Variable>>(expr.get())->name;
+        Token name = static_cast<Variable*>(expr.get())->name;
         return std::make_unique<Assign>(std::move(name), std::move(value));
       }
       if (typeid(*expr) == typeid(Get)) {
-        auto get = static_cast<raw_ptr<Get>>(expr.get());
+        auto get = static_cast<Get*>(expr.get());
         return std::make_unique<Set>(std::move(get->object), get->name,
                                      std::move(value));
       }

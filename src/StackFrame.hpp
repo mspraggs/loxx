@@ -35,38 +35,38 @@ namespace loxx
   public:
     StackFrame() = default;
     StackFrame(const std::size_t prev_ip,
-               const raw_ptr<const CodeObject> prev_code_object,
+               const CodeObject* prev_code_object,
                const std::size_t prev_stack_size, Value& slots_base,
-               raw_ptr<ClosureObject> closure)
+               ClosureObject* closure)
         : StackFrame(prev_ip, prev_code_object, prev_stack_size, &slots_base,
                      closure)
     {}
     StackFrame(const std::size_t prev_ip,
-               const raw_ptr<const CodeObject> prev_code_object,
-               const std::size_t prev_stack_size, raw_ptr<Value> slots_base,
-               raw_ptr<ClosureObject> closure)
+               const CodeObject* prev_code_object,
+               const std::size_t prev_stack_size, Value* slots_base,
+               ClosureObject* closure)
         : prev_ip_(prev_ip), prev_code_object_(prev_code_object),
           prev_stack_size_(prev_stack_size), slots_(slots_base),
           closure_(closure)
     {}
 
     std::size_t prev_ip() const { return prev_ip_; }
-    raw_ptr<const CodeObject> prev_code_object() const
+    const CodeObject* prev_code_object() const
     { return prev_code_object_; }
     std::size_t prev_stack_size() const { return prev_stack_size_; }
 
     const Value& slot(const std::size_t i) const { return slots_[i]; }
     Value& slot(const std::size_t i) { return slots_[i]; }
 
-    raw_ptr<const ClosureObject> closure() const { return closure_; }
-    raw_ptr<ClosureObject> closure() { return closure_; }
+    const ClosureObject* closure() const { return closure_; }
+    ClosureObject* closure() { return closure_; }
 
   private:
     std::size_t prev_ip_;
-    raw_ptr<const CodeObject> prev_code_object_;
+    const CodeObject* prev_code_object_;
     std::size_t prev_stack_size_;
-    raw_ptr<Value> slots_;
-    raw_ptr<ClosureObject> closure_;
+    Value* slots_;
+    ClosureObject* closure_;
   };
 }
 

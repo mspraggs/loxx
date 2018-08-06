@@ -48,7 +48,7 @@ namespace loxx
   }
 
 
-  bool ClassObject::has_method(const raw_ptr<StringObject> name) const
+  bool ClassObject::has_method(StringObject* name) const
   {
     bool ret = methods_.has_item(name);
 
@@ -64,8 +64,8 @@ namespace loxx
   }
 
 
-  auto ClassObject::method(const raw_ptr<StringObject> name) const
-      -> const StringHashTable<raw_ptr<ClosureObject>>::Elem&
+  auto ClassObject::method(StringObject* name) const
+      -> const StringHashTable<ClosureObject*>::Elem&
   {
     const auto& elem = methods_.get(name);
     if (elem) {

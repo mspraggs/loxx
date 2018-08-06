@@ -38,7 +38,7 @@ namespace loxx
     {
       std::vector<Value>* constants;
       Stack<Value>* stack;
-      std::list<raw_ptr<UpvalueObject>>* upvalues;
+      std::list<UpvalueObject*>* upvalues;
       StringHashTable<Value>* globals;
     };
 
@@ -66,7 +66,7 @@ namespace loxx
 
 
   template <typename T0, typename... Ts>
-  raw_ptr<T0> make_object(Ts&& ... args)
+  T0* make_object(Ts&& ... args)
   {
     auto ptr = std::make_unique<T0>(std::forward<Ts>(args)...);
     const auto ret = ptr.get();

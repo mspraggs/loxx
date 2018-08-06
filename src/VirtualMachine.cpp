@@ -35,7 +35,7 @@ namespace loxx
       : debug_(debug), ip_(0)
   {
     NativeObject::Fn fn =
-        [] (raw_ptr<const Value>, const unsigned int)
+        [] (const Value*, const unsigned int)
         {
           using namespace std::chrono;
           const auto millis =
@@ -337,7 +337,7 @@ namespace loxx
           throw make_runtime_error("Only instances have fields.");
         }
 
-        const auto instance = static_cast<raw_ptr<InstanceObject>>(obj);
+        const auto instance = static_cast<InstanceObject*>(obj);
         const auto name = read_string();
 
         instance->set_field(name, stack_.top());
@@ -431,7 +431,7 @@ namespace loxx
   {
     const auto& func_value = constants_[read_integer<UByteCodeArg>()];
     const auto& func_obj = get<ObjectPtr>(func_value);
-    auto func = static_cast<raw_ptr<FuncObject>>(func_obj);
+    auto func = static_cast<FuncObject*>(func_obj);
 
     auto closure = make_object<ClosureObject>(func);
 
@@ -453,7 +453,7 @@ namespace loxx
   }
 
 
-  raw_ptr<UpvalueObject> VirtualMachine::capture_upvalue(Value& local)
+  UpvalueObject* VirtualMachine::capture_upvalue(Value& local)
   {
     if (open_upvalues_.empty()) {
       open_upvalues_.push_back(make_object<UpvalueObject>(local));
@@ -498,7 +498,7 @@ namespace loxx
   {
     switch (obj->type()) {
     case ObjectType::Class: {
-      const auto cls = static_cast<raw_ptr<ClassObject>>(obj);
+      const auto cls = static_cast<ClassObject*>(obj);
       auto instance = make_object<InstanceObject>(cls);
       get<ObjectPtr>(stack_.get(obj_pos)) = instance;
 
@@ -517,7 +517,7 @@ namespace loxx
     }
 
     case ObjectType::Closure: {
-      const auto closure = static_cast<raw_ptr<ClosureObject>>(obj);
+      const auto closure = static_cast<ClosureObject*>(obj);
 
       if (closure->function().arity() != num_args) {
         std::stringstream ss;
@@ -540,7 +540,7 @@ namespace loxx
     }
 
     case ObjectType::Native: {
-      const auto native = static_cast<raw_ptr<NativeObject>>(obj);
+      const auto native = static_cast<NativeObject*>(obj);
 
       if (native->arity() != num_args) {
         std::stringstream ss;
