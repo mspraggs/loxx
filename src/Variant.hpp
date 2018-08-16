@@ -24,151 +24,12 @@
 #include <memory>
 #include <type_traits>
 
+#include "detail/VariantImpl.hpp"
+
 
 namespace loxx
 {
   // A half-baked replacement for the Boost variant
-  template <typename... Ts>
-  class Variant;
-
-  // Helper functions
-  namespace detail
-  {
-    template<typename T0>
-    constexpr std::size_t type_index(std::size_t i = 0)
-    {
-      return i;
-    }
-
-
-    template<typename T0, typename T1, typename... Ts>
-    constexpr std::size_t type_index(std::size_t i = 0)
-    {
-      return std::is_same<T0, T1>::value ? i : type_index<T0, Ts...>(i + 1);
-    }
-
-
-    constexpr std::size_t static_max()
-    {
-      return 0;
-    }
-
-
-    template<typename... Is>
-    constexpr std::size_t static_max(std::size_t i0, Is... is)
-    {
-      return i0 > static_max(is...) ? i0 : static_max(is...);
-    }
-
-
-    template<std::size_t I, typename T0, typename... Ts>
-    struct TypeIndexLookup : TypeIndexLookup<I - 1, Ts...>
-    {
-    };
-
-
-    template<typename T0, typename... Ts>
-    struct TypeIndexLookup<0, T0, Ts...>
-    {
-      using type = T0;
-    };
-
-
-    template<std::size_t I, typename... Ts>
-    using LookupType = typename TypeIndexLookup<I, Ts...>::type;
-
-
-    constexpr std::size_t index_lookup(std::size_t i,
-                                       std::integer_sequence<bool>)
-    {
-      return i;
-    }
-
-
-    template <bool B0, bool... Bs>
-    constexpr std::size_t index_lookup(std::size_t i,
-                                       std::integer_sequence<bool, B0, Bs...>)
-    {
-      return B0 ? i : index_lookup(i + 1, std::integer_sequence<bool, Bs...>());
-    }
-
-
-    template <bool... Bs>
-    constexpr std::size_t index_lookup(std::integer_sequence<bool, Bs...> seq)
-    {
-      return index_lookup(0, seq);
-    }
-
-
-    template <typename T0, typename... Ts>
-    constexpr std::size_t convertible_type_index()
-    {
-      constexpr auto can_convert =
-          std::integer_sequence<bool, std::is_convertible<T0, Ts>::value...>();
-      return detail::index_lookup(can_convert);
-    };
-
-
-    template <typename T0, typename T1>
-    constexpr bool validate_variants(const T0& first, const T1& second);
-
-
-    template <typename T0, typename T1, typename... Ts>
-    constexpr bool validate_variants(const T0& first, const T1& second,
-                                     const Ts&... subsequent);
-
-
-    template <typename T0, typename... Ts>
-    constexpr std::size_t common_index(const T0& first, const Ts&... subsequent);
-
-
-    template <typename... Ts, typename... Us>
-    auto variant_index_sequence(const Variant<Ts...>&, const Us&...)
-        -> std::index_sequence_for<Ts...>
-    {
-      return std::index_sequence_for<Ts...>();
-    };
-
-
-    template <typename Ret, typename Fn, typename... Ts>
-    Ret visit(Fn&&, const std::size_t, std::index_sequence<>,
-              const Ts& ... operands);
-
-
-    template <typename Ret, typename Fn,
-              std::size_t I0, std::size_t... Is, typename... Ts>
-    Ret visit(Fn&& func, const std::size_t shared_index,
-              std::index_sequence<I0, Is...>, const Ts& ... operands);
-
-
-    template <std::size_t N, typename... Ts>
-    struct VariantHelperImpl;
-
-
-    template <std::size_t N, typename T0, typename... Ts>
-    struct VariantHelperImpl<N, T0, Ts...>
-    {
-      static void destroy(const std::size_t type_index, void* data);
-      static void copy(const std::size_t type_index,
-                       void* new_data, const void* old_data);
-      static void move(const std::size_t type_index,
-                       void* new_data, void* old_data);
-    };
-
-
-    template <std::size_t N>
-    struct VariantHelperImpl<N>
-    {
-      static void destroy(const std::size_t, void*) {}
-      static void copy(const std::size_t, void*, const void*) {}
-      static void move(const std::size_t, void*, void*) {}
-    };
-
-
-    template <typename... Ts>
-    using VariantHelper = VariantHelperImpl<sizeof...(Ts), Ts...>;
-  }
-
 
   template <typename T>
   struct InPlace
@@ -180,6 +41,10 @@ namespace loxx
   // Variant class template
   template <typename... Ts>
   class Variant
+      : private detail::VariantImpl<
+          detail::all_types_trivial<Ts...>(),
+          detail::static_max(sizeof(Ts)...),
+          Ts...>
   {
     static_assert(sizeof...(Ts) < std::numeric_limits<std::uint8_t>::max(),
                   "Variant supports up to 255 types.");
@@ -248,15 +113,19 @@ namespace loxx
   constexpr Variant<Ts...>::Variant(const Variant<Ts...>& other)
       : type_index_(other.type_index_)
   {
-    detail::VariantHelper<Ts...>::copy(type_index_, &storage_, &other.storage_);
+    this->copy_construct(type_index_, &storage_, &other.storage_);
   }
 
 
   template<typename... Ts>
   constexpr Variant<Ts...>::Variant(Variant<Ts...>&& other) noexcept
-      : type_index_(other.type_index_)
   {
-    detail::VariantHelper<Ts...>::move(type_index_, &storage_, &other.storage_);
+    if (type_index_ != npos and type_index_ != other.type_index_) {
+      this->destroy(type_index_, &storage_);
+    }
+
+    type_index_ = other.type_index_;
+    this->move_construct(type_index_, &storage_, &other.storage_);
     other.type_index_ = npos;
   }
 
@@ -265,7 +134,7 @@ namespace loxx
   Variant<Ts...>::~Variant()
   {
     if (type_index_ != npos) {
-      detail::VariantHelper<Ts...>::destroy(type_index_, &storage_);
+      this->destroy(type_index_, &storage_);
     }
   }
 
@@ -306,9 +175,12 @@ namespace loxx
       const Variant<Ts...>& other)
   {
     if (&other != this) {
+      if (type_index_ != npos and type_index_ != other.type_index_) {
+        this->destroy(type_index_, &storage_);
+      }
+
       type_index_ = other.type_index_;
-      detail::VariantHelper<Ts...>::copy(
-          type_index_, &storage_, &other.storage_);
+      this->copy_construct(type_index_, &storage_, &other.storage_);
     }
 
     return *this;
@@ -319,8 +191,12 @@ namespace loxx
   constexpr Variant<Ts...>& Variant<Ts...>::operator=(
       Variant<Ts...>&& other) noexcept
   {
+    if (type_index_ != npos and type_index_ != other.type_index_) {
+      this->destroy(type_index_, &storage_);
+    }
+
     type_index_ = other.type_index_;
-    detail::VariantHelper<Ts...>::move(type_index_, &storage_, &other.storage_);
+    this->move_assign(type_index_, &storage_, &other.storage_);
     other.type_index_ = npos;
 
     return *this;
@@ -462,42 +338,6 @@ namespace loxx
     }
     return detail::visit<Ret>(std::forward<Fn>(func), shared_index,
                               std::index_sequence<Is...>(), operands...);
-  }
-
-
-  template <std::size_t N, typename T0, typename... Ts>
-  void detail::VariantHelperImpl<N, T0, Ts...>::destroy(
-      const std::size_t type_index, void* data)
-  {
-    if (type_index == N - sizeof...(Ts) - 1) {
-      reinterpret_cast<T0*>(data)->~T0();
-      return;
-    }
-    detail::VariantHelperImpl<N, Ts...>::destroy(type_index, data);
-  }
-
-
-  template <std::size_t N, typename T0, typename... Ts>
-  void detail::VariantHelperImpl<N, T0, Ts...>::copy(
-      const std::size_t type_index, void* new_data, const void* old_data)
-  {
-    if (type_index == N - sizeof...(Ts) - 1) {
-      new (new_data) T0(*reinterpret_cast<const T0*>(old_data));
-      return;
-    }
-    detail::VariantHelperImpl<N, Ts...>::copy(type_index, new_data, old_data);
-  }
-
-
-  template <std::size_t N, typename T0, typename... Ts>
-  void detail::VariantHelperImpl<N, T0, Ts...>::move(
-      const std::size_t type_index, void* new_data, void* old_data)
-  {
-    if (type_index == N - sizeof...(Ts) - 1) {
-      new (new_data) T0(std::move(*reinterpret_cast<T0*>(old_data)));
-      return;
-    }
-    detail::VariantHelperImpl<N, Ts...>::move(type_index, new_data, old_data);
   }
 }
 

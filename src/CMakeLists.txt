@@ -23,6 +23,7 @@ set(SRC
   Value.hpp
   Variant.hpp
   VirtualMachine.hpp
+  detail/VariantImpl.hpp
 
   AstPrinter.cpp
   Compiler.cpp
