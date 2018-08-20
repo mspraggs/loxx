@@ -88,7 +88,8 @@ namespace loxx
         }
         else if (holds_alternative<double>(first) and
                  holds_alternative<double>(second)) {
-          stack_.emplace(get<double>(first) + get<double>(second));
+          stack_.emplace(
+              unsafe_get<double>(first) + unsafe_get<double>(second));
         }
         else {
           throw make_runtime_error(
@@ -158,7 +159,7 @@ namespace loxx
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
-        stack_.emplace(get<double>(first) / get<double>(second));
+        stack_.emplace(unsafe_get<double>(first) / unsafe_get<double>(second));
         break;
       }
 
@@ -247,8 +248,8 @@ namespace loxx
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
-        stack_.emplace(
-            InPlace<bool>(), get<double>(first) > get<double>(second));
+        stack_.emplace(InPlace<bool>(),
+                       unsafe_get<double>(first) > unsafe_get<double>(second));
         break;
       }
 
@@ -260,8 +261,8 @@ namespace loxx
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
-        stack_.emplace(
-            InPlace<bool>(), get<double>(first) < get<double>(second));
+        stack_.emplace(InPlace<bool>(),
+                       unsafe_get<double>(first) < unsafe_get<double>(second));
         break;
       }
 
@@ -273,7 +274,7 @@ namespace loxx
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
-        stack_.emplace(get<double>(first) * get<double>(second));
+        stack_.emplace(unsafe_get<double>(first) * unsafe_get<double>(second));
         break;
       }
 
@@ -281,7 +282,7 @@ namespace loxx
         if (not holds_alternative<double>(stack_.top())) {
           throw make_runtime_error("Unary operand must be a number.");
         }
-        const auto number = get<double>(stack_.pop());
+        const auto number = unsafe_get<double>(stack_.pop());
         stack_.emplace(-number);
         break;
       }
@@ -357,7 +358,7 @@ namespace loxx
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
-        stack_.emplace(get<double>(first) - get<double>(second));
+        stack_.emplace(unsafe_get<double>(first) - unsafe_get<double>(second));
         break;
       }
 
@@ -435,7 +436,7 @@ namespace loxx
   void VirtualMachine::execute_create_closure()
   {
     const auto& func_value = constants_[read_integer<UByteCodeArg>()];
-    const auto& func_obj = get<ObjectPtr>(func_value);
+    const auto& func_obj = unsafe_get<ObjectPtr>(func_value);
     auto func = static_cast<FuncObject*>(func_obj);
 
     auto closure = make_object<ClosureObject>(func);
@@ -617,7 +618,7 @@ namespace loxx
       return false;
     }
     if (holds_alternative<bool>(value)) {
-      return get<bool>(value);
+      return unsafe_get<bool>(value);
     }
     return true;
   }
