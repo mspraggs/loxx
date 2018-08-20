@@ -62,10 +62,10 @@ namespace loxx
     void call_object(ObjectPtr obj, const std::size_t obj_pos,
                      const UByteCodeArg num_args);
     void print_stack() const;
-    static ObjectPtr select_object(const Value&) { return {}; }
+    static ObjectPtr select_object(const ObjectPtr) { return {}; }
     template <typename... Ts>
     static ObjectPtr select_object(
-        const Value& value, const ObjectType type0, const Ts... types);
+        const ObjectPtr value, const ObjectType type0, const Ts... types);
 
     template <typename T>
     T read_integer();
@@ -91,19 +91,13 @@ namespace loxx
 
   template <typename... Ts>
   ObjectPtr VirtualMachine::select_object(
-      const Value& value, const ObjectType type0, const Ts... types)
+      const ObjectPtr obj_ptr, const ObjectType type0, const Ts... types)
   {
-    if (not holds_alternative<ObjectPtr>(value)) {
-      return {};
-    }
-
-    const auto obj_ptr = get<ObjectPtr>(value);
-
     if (obj_ptr->type() == type0) {
       return obj_ptr;
     }
 
-    return select_object(value, types...);
+    return select_object(obj_ptr, types...);
   }
 
 

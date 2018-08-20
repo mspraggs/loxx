@@ -415,8 +415,13 @@ namespace loxx
   {
     const auto num_args = read_integer<UByteCodeArg>();
     const auto obj_pos = stack_.size() - num_args - 1;
+
+    if (not holds_alternative<ObjectPtr>(stack_.get(obj_pos))) {
+      throw make_runtime_error("Can only call functions and classes.");
+    }
+
     const auto obj = select_object(
-        stack_.get(obj_pos),
+        unsafe_get<ObjectPtr>(stack_.get(obj_pos)),
         ObjectType::Class, ObjectType::Closure, ObjectType::Native);
 
     if (not obj) {
