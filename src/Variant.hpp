@@ -77,6 +77,9 @@ namespace loxx
 
   private:
     template <std::size_t I, typename... Us>
+    friend constexpr auto unsafe_get(Variant<Us...>& variant)
+        -> detail::LookupType<I, Us...>&;
+    template <std::size_t I, typename... Us>
     friend constexpr auto get(Variant<Us...>& variant)
         -> detail::LookupType<I, Us...>&;
 
@@ -252,6 +255,39 @@ namespace loxx
   constexpr decltype(auto) get(const Variant<Ts...>& variant)
   {
     return get<detail::type_index<T0, Ts...>()>(variant);
+  }
+
+
+  template <std::size_t I, typename... Ts>
+  constexpr auto unsafe_get(Variant<Ts...>& variant) -> detail::LookupType<I, Ts...>&
+  {
+    static_assert(I < Variant<Ts...>::npos,
+                  "Variant cannot contain requested type.");
+    using T = detail::LookupType<I, Ts...>;
+    return *reinterpret_cast<T*>(&variant.storage_);
+  }
+
+
+  template <std::size_t I, typename... Ts>
+  constexpr decltype(auto) unsafe_get(const Variant<Ts...>& variant)
+  {
+    using T = detail::LookupType<I, Ts...>;
+    return const_cast<const T&>(unsafe_get<I>(
+        const_cast<Variant<Ts...>&>(variant)));
+  }
+
+
+  template <typename T0, typename... Ts>
+  constexpr decltype(auto) unsafe_get(Variant<Ts...>& variant)
+  {
+    return unsafe_get<detail::type_index<T0, Ts...>()>(variant);
+  }
+
+
+  template <typename T0, typename... Ts>
+  constexpr decltype(auto) unsafe_get(const Variant<Ts...>& variant)
+  {
+    return unsafe_get<detail::type_index<T0, Ts...>()>(variant);
   }
 
 
