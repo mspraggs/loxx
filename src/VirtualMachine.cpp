@@ -32,7 +32,7 @@
 namespace loxx
 {
   VirtualMachine::VirtualMachine(const bool debug)
-      : debug_(debug), ip_(0)
+      : debug_(debug), ip_(0), init_lexeme_(new StringObject("init"))
   {
     NativeObject::Fn fn =
         [] (const Value*, const unsigned int)
@@ -47,9 +47,6 @@ namespace loxx
     auto idx = add_string_constant("clock");
     globals_[get_object<StringObject>(constants_[idx])] =
         Value(InPlace<ObjectPtr>(), make_object<NativeObject>(fn, 0));
-
-    idx = add_string_constant("init");
-    init_lexeme_ = get_object<StringObject>(constants_[idx]);
 
     ObjectTracker::instance().set_roots(
         ObjectTracker::Roots{&constants_, &stack_, &open_upvalues_, &globals_});
@@ -508,7 +505,7 @@ namespace loxx
       auto instance = make_object<InstanceObject>(cls);
       get<ObjectPtr>(stack_.get(obj_pos)) = instance;
 
-      if (const auto& method = cls->method(init_lexeme_)) {
+      if (const auto& method = cls->method(init_lexeme_.get())) {
         method->second->bind(instance);
         call_object(method->second, obj_pos, num_args);
         break;
