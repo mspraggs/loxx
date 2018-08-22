@@ -44,8 +44,8 @@ namespace loxx
           return Value(static_cast<double>(millis) / 1000.0);
         };
 
-    auto idx = add_string_constant("clock");
-    globals_[get_object<StringObject>(constants_[idx])] =
+    auto str = make_object<StringObject>("clock");
+    globals_[str] =
         Value(InPlace<ObjectPtr>(), make_object<NativeObject>(fn, 0));
 
     ObjectTracker::instance().set_roots(
