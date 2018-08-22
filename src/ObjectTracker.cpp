@@ -81,15 +81,6 @@ namespace loxx
 
   void ObjectTracker::grey_roots()
   {
-    for (auto& constant : *roots_.constants) {
-      if (not holds_alternative<ObjectPtr>(constant)) {
-        continue;
-      }
-
-      auto object = get<ObjectPtr>(constant);
-      object->set_colour(TriColour::Grey);
-    }
-
     for (std::size_t i = 0; i < roots_.stack->size(); ++i) {
       auto& value = roots_.stack->get(i);
 
