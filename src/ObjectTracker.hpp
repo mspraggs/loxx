@@ -36,8 +36,7 @@ namespace loxx
   public:
     struct Roots
     {
-      std::vector<Value>* constants;
-      Stack<Value>* stack;
+      Stack<Value, max_stack_size>* stack;
       std::list<UpvalueObject*>* upvalues;
       StringHashTable<Value>* globals;
     };
@@ -50,7 +49,7 @@ namespace loxx
 
   private:
     ObjectTracker()
-        : roots_{nullptr, nullptr, nullptr, nullptr}
+        : roots_{nullptr, nullptr, nullptr}
     {
       objects_.reserve(gc_size_trigger_);
     }
