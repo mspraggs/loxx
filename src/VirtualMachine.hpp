@@ -76,8 +76,8 @@ namespace loxx
     std::size_t ip_;
     const CodeObject* code_object_;
     StringHashTable<Value> globals_;
-    Stack<Value> stack_;
-    Stack<StackFrame, 256> call_stack_;
+    Stack<Value, max_stack_size> stack_;
+    Stack<StackFrame, max_call_frames> call_stack_;
     std::list<UpvalueObject*> open_upvalues_;
     std::unique_ptr<StringObject> init_lexeme_;
   };
