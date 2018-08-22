@@ -551,7 +551,7 @@ namespace loxx
   }
 
 
-  raw_ptr<loxx::StringObject> VirtualMachine::read_string()
+  loxx::StringObject* VirtualMachine::read_string()
   {
     return get_object<StringObject>(
         code_object_->constants[read_integer<UByteCodeArg>()]);

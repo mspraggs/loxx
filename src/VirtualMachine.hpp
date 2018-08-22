@@ -65,7 +65,7 @@ namespace loxx
 
     template <typename T>
     T read_integer();
-    raw_ptr <loxx::StringObject> read_string();
+    loxx::StringObject* read_string();
     void check_number_operands(const Value& first,
                                const Value& second) const;
     bool are_equal(const Value& first, const Value& second) const;
