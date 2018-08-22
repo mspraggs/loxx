@@ -372,37 +372,6 @@ namespace loxx
   }
 
 
-  UByteCodeArg VirtualMachine::add_named_constant(const std::string& lexeme,
-                                                  const Value& value)
-  {
-    const auto s = make_object<StringObject>(lexeme);
-    if (constant_map_.count(s) != 0) {
-      return constant_map_[s];
-    }
-
-    const auto index = static_cast<UByteCodeArg>(constants_.size());
-
-    constants_.push_back(value);
-    constant_map_[s] = index;
-
-    return index;
-  }
-
-
-  UByteCodeArg VirtualMachine::add_string_constant(const std::string& str)
-  {
-    const auto ptr = make_object<StringObject>(str);
-    return add_named_constant(str, Value(InPlace<ObjectPtr>(), ptr));
-  }
-
-
-  UByteCodeArg VirtualMachine::add_constant(const Value& value)
-  {
-    constants_.push_back(value);
-    return constants_.size() - 1;
-  }
-
-
   void VirtualMachine::print_object(Value variant) const
   {
     std::cout << variant << std::endl;

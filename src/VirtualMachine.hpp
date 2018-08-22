@@ -44,10 +44,6 @@ namespace loxx
 
     void execute(const CodeObject& code_object);
 
-    UByteCodeArg add_named_constant(const std::string& lexeme,
-                                    const Value& value);
-    UByteCodeArg add_string_constant(const std::string& str);
-    UByteCodeArg add_constant(const Value& value);
     const Value& get_constant(const UByteCodeArg index) const
     { return code_object_->constants[index]; }
 
@@ -79,8 +75,6 @@ namespace loxx
     bool debug_;
     std::size_t ip_;
     const CodeObject* code_object_;
-    ConstStringHashTable<UByteCodeArg> constant_map_;
-    std::vector<Value> constants_;
     StringHashTable<Value> globals_;
     Stack<Value> stack_;
     Stack<StackFrame, 256> call_stack_;
