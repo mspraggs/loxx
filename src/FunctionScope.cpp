@@ -20,6 +20,7 @@
 #include "FunctionScope.hpp"
 #include "logging.hpp"
 #include "Value.hpp"
+#include "ObjectTracker.hpp"
 
 
 namespace loxx
@@ -102,6 +103,44 @@ namespace loxx
 
     upvalues_.push_back(Upvalue{is_local, index});
     return static_cast<UByteCodeArg>(upvalues_.size() - 1);
+  }
+
+
+  UByteCodeArg FunctionScope::add_named_constant(const std::string& lexeme,
+                                                 const Value& value)
+  {
+    const auto s = make_object<StringObject>(lexeme);
+    if (code_object_->constant_map.count(s) != 0) {
+      return code_object_->constant_map[s];
+    }
+
+    if (code_object_->constants.size() == max_scope_constants) {
+      error(last_line_num_, "Too many constants in one scope.");
+    }
+
+    const auto index =
+        static_cast<UByteCodeArg>(code_object_->constants.size());
+
+    code_object_->constants.push_back(value);
+    code_object_->constant_map[s] = index;
+
+    return index;
+  }
+
+  UByteCodeArg FunctionScope::add_string_constant(const std::string& str)
+  {
+    const auto ptr = make_object<StringObject>(str);
+    return add_named_constant(str, Value(InPlace<ObjectPtr>(), ptr));
+  }
+
+  UByteCodeArg FunctionScope::add_constant(const Value& value)
+  {
+    if (code_object_->constants.size() == max_scope_constants) {
+      error(last_line_num_, "Too many constants in one scope.");
+    }
+
+    code_object_->constants.push_back(value);
+    return code_object_->constants.size() - 1;
   }
 
 

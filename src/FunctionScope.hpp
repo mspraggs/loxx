@@ -62,6 +62,11 @@ namespace loxx
     Optional <UByteCodeArg> resolve_upvalue(const Token& name);
     UByteCodeArg add_upvalue(const UByteCodeArg index, const bool is_local);
 
+    UByteCodeArg add_named_constant(const std::string& lexeme,
+                                    const Value& value);
+    UByteCodeArg add_string_constant(const std::string& str);
+    UByteCodeArg add_constant(const Value& value);
+
     void begin_scope();
     void end_scope();
 
@@ -80,6 +85,7 @@ namespace loxx
 
     FunctionType type() const { return type_; }
     unsigned int scope_depth() const { return scope_depth_; }
+    unsigned int last_line_num() const { return last_line_num_; }
     std::size_t num_upvalues() const { return upvalues_.size(); }
     std::size_t current_bytecode_size() const
     { return code_object_->bytecode.size(); }
