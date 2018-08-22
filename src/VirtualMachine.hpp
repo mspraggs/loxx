@@ -49,7 +49,7 @@ namespace loxx
     UByteCodeArg add_string_constant(const std::string& str);
     UByteCodeArg add_constant(const Value& value);
     const Value& get_constant(const UByteCodeArg index) const
-    { return constants_[index]; }
+    { return code_object_->constants[index]; }
 
   private:
     void print_object(Value object) const;

@@ -354,7 +354,7 @@ namespace loxx
       return;
     }
 
-    const auto index = vm_->add_named_constant(expr.lexeme, expr.value);
+    const auto index = func_->add_named_constant(expr.lexeme, expr.value);
 
     func_->add_instruction(Instruction::LoadConstant);
     func_->add_integer<UByteCodeArg>(index);
@@ -513,7 +513,7 @@ namespace loxx
         stmt.name.lexeme(), std::move(code_object),
         static_cast<unsigned int>(stmt.parameters.size()),
         upvalues.size());
-    const auto index = vm_->add_constant(Value(InPlace<ObjectPtr>(), func));
+    const auto index = func_->add_constant(Value(InPlace<ObjectPtr>(), func));
 
     func_->add_instruction(Instruction::CreateClosure);
     func_->add_integer<UByteCodeArg>(index);
@@ -539,7 +539,7 @@ namespace loxx
   {
     const Optional<UByteCodeArg> arg =
         func_->scope_depth() == 0 ?
-        vm_->add_string_constant(name.lexeme()) :
+        func_->add_string_constant(name.lexeme()) :
         Optional<UByteCodeArg>();
 
     if (not arg) {
@@ -595,7 +595,7 @@ namespace loxx
 
   UByteCodeArg Compiler::make_string_constant(const std::string& str) const
   {
-    return vm_->add_string_constant(str);
+    return func_->add_string_constant(str);
   }
 
 

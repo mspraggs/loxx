@@ -264,7 +264,7 @@ namespace loxx
       }
 
       case Instruction::LoadConstant:
-        stack_.push(constants_[read_integer<UByteCodeArg>()]);
+        stack_.push(code_object_->constants[read_integer<UByteCodeArg>()]);
         break;
 
       case Instruction::Multiply: {
@@ -432,7 +432,8 @@ namespace loxx
 
   void VirtualMachine::execute_create_closure()
   {
-    const auto& func_value = constants_[read_integer<UByteCodeArg>()];
+    const auto& func_value =
+        code_object_->constants[read_integer<UByteCodeArg>()];
     const auto& func_obj = unsafe_get<ObjectPtr>(func_value);
     auto func = static_cast<FuncObject*>(func_obj);
 
@@ -583,7 +584,8 @@ namespace loxx
 
   raw_ptr<loxx::StringObject> VirtualMachine::read_string()
   {
-    return get_object<StringObject>(constants_[read_integer<UByteCodeArg>()]);
+    return get_object<StringObject>(
+        code_object_->constants[read_integer<UByteCodeArg>()]);
   }
 
 
