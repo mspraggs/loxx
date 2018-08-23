@@ -60,9 +60,6 @@ namespace loxx
   template<typename... Us>
   void Stack<T, N>::emplace(Us&& ... args)
   {
-    if (top_ == N) {
-      throw std::overflow_error("Stack overflow!");
-    }
     stack_[top_++] = T(std::forward<Us>(args)...);
   }
 
@@ -70,9 +67,6 @@ namespace loxx
   template <typename T, std::size_t N>
   void Stack<T, N>::push(const T& value)
   {
-    if (top_ == N) {
-      throw std::overflow_error("Stack overflow!");
-    }
     stack_[top_++] = value;
   }
 
