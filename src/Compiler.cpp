@@ -472,8 +472,6 @@ namespace loxx
   {
     func_ = std::make_unique<FunctionScope>(type, std::move(func_));
     func_->begin_scope();
-    locals_.push({});
-    upvalues_.push({});
 
     // Declare/define "this"
     if (type == FunctionType::Method or type == FunctionType::Initialiser) {

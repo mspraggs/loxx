@@ -51,8 +51,6 @@ namespace loxx
         : debug_(debug), class_type_(ClassType::None),
           func_(new FunctionScope(loxx::FunctionType::None))
     {
-      locals_.push(std::vector<Local>());
-      upvalues_.push(std::vector<Upvalue>());
     }
 
     void compile(const std::vector<std::unique_ptr<Stmt>>& statements);
@@ -102,20 +100,6 @@ namespace loxx
       Token name_;
     };
 
-    struct Local
-    {
-      bool defined;
-      bool is_upvalue;
-      std::size_t depth;
-      std::string name;
-    };
-
-    struct Upvalue
-    {
-      bool is_local;
-      UByteCodeArg index;
-    };
-
     void compile(const Expr& expr);
     void compile(const Stmt& stmt);
     void compile_function(const Function& stmt, const FunctionType type);
@@ -130,8 +114,6 @@ namespace loxx
 
     bool debug_;
     ClassType class_type_;
-    Stack<std::vector<Local>> locals_;
-    Stack<std::vector<Upvalue>> upvalues_;
     std::unique_ptr<FunctionScope> func_;
   };
 
