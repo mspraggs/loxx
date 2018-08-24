@@ -388,13 +388,7 @@ namespace loxx
       throw make_runtime_error("Can only call functions and classes.");
     }
 
-    const auto obj = select_object(
-        unsafe_get<ObjectPtr>(stack_.get(obj_pos)),
-        ObjectType::Class, ObjectType::Closure, ObjectType::Native);
-
-    if (not obj) {
-      throw make_runtime_error("Can only call functions and classes.");
-    }
+    const auto obj = unsafe_get<ObjectPtr>(stack_.get(obj_pos));
 
     call_object(obj, obj_pos, num_args);
   }
@@ -474,7 +468,7 @@ namespace loxx
     case ObjectType::Class: {
       const auto cls = static_cast<ClassObject*>(obj);
       auto instance = make_object<InstanceObject>(cls);
-      get<ObjectPtr>(stack_.get(obj_pos)) = instance;
+      unsafe_get<ObjectPtr>(stack_.top(num_args)) = instance;
 
       if (const auto& method = cls->method(init_lexeme_.get())) {
         method->second->bind(instance);
@@ -493,6 +487,10 @@ namespace loxx
     case ObjectType::Closure: {
       const auto closure = static_cast<ClosureObject*>(obj);
 
+      if (closure->instance()) {
+        unsafe_get<ObjectPtr>(stack_.top(num_args)) = closure->instance();
+      }
+
       if (closure->function().arity() != num_args) {
         std::stringstream ss;
         ss << "Expected " << closure->function().arity()
@@ -500,14 +498,8 @@ namespace loxx
         throw make_runtime_error(ss.str());
       }
 
-      if (closure->instance()) {
-        get<ObjectPtr>(stack_.get(obj_pos)) = closure->instance();
-      }
-      auto& base_slot = stack_.get(obj_pos + (closure->instance() ? 0 : 1));
-
-      call_stack_.push(
-          StackFrame(ip_, code_object_, stack_.size() - num_args - 1,
-                     base_slot, closure));
+      call_stack_.emplace(ip_, code_object_, stack_.size() - num_args - 1,
+                          stack_.top(num_args), closure);
       code_object_ = closure->function().code_object();
       ip_ = 0;
       break;
@@ -525,16 +517,14 @@ namespace loxx
 
       const auto result = native->call(&stack_.top(num_args),
                                        static_cast<unsigned int>(num_args));
-
-      for (unsigned int i = 0; i < num_args; ++i) {
-        stack_.pop();
-      }
-
+      stack_.discard(num_args);
       stack_.get(obj_pos) = result;
+
+      break;
     }
 
     default:
-      break;
+      throw make_runtime_error("Can only call functions and classes.");
     }
   }
 
