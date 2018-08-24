@@ -69,22 +69,20 @@ namespace loxx
   }
 
 
-  void print_bytecode(const VirtualMachine& vm, const std::string& name,
-                      const CodeObject& output)
+  void print_bytecode(const std::string& name, const CodeObject& output)
   {
     std::cout << "=== " << name << " ===\n";
     std::size_t pos = 0;
     while (pos < output.bytecode.size()) {
-      pos = print_instruction(vm, output, pos);
+      pos = print_instruction(output, pos);
     }
   }
 
 
-  std::size_t print_instruction(
-      const VirtualMachine& vm, const CodeObject& output,
-      const std::size_t pos)
+  std::size_t print_instruction(const CodeObject& output, const std::size_t pos)
   {
     const auto& bytecode = output.bytecode;
+    const auto& constants = output.constants;
     const auto instruction = static_cast<Instruction>(bytecode[pos]);
 
     static unsigned int last_line_num = 0;
@@ -137,7 +135,7 @@ namespace loxx
 
     case Instruction::CreateClosure: {
       const auto& func_value =
-          vm.get_constant(read_integer_at_pos<UByteCodeArg>(bytecode, ret));
+          constants[read_integer_at_pos<UByteCodeArg>(bytecode, ret)];
       const auto& func_obj = get<ObjectPtr>(func_value);
       auto func = static_cast<FuncObject*>(func_obj);
 
@@ -181,7 +179,7 @@ namespace loxx
     case Instruction::SetProperty:
     case Instruction::LoadConstant: {
       const auto param = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
-      std::cout << param << " '" << vm.get_constant(param) << "'";
+      std::cout << param << " '" << constants[param] << "'";
       ret += sizeof(UByteCodeArg);
       break;
     }

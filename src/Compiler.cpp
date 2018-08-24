@@ -505,7 +505,7 @@ namespace loxx
     func_ = func_->release_enclosing();
 
     if (debug_) {
-      print_bytecode(*vm_, stmt.name.lexeme(), *code_object);
+      print_bytecode(stmt.name.lexeme(), *code_object);
     }
 
     // Add the new function object as a constant

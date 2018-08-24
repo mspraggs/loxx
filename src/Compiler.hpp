@@ -47,8 +47,8 @@ namespace loxx
   class Compiler : public Expr::Visitor, public Stmt::Visitor
   {
   public:
-    explicit Compiler(VirtualMachine& vm, const bool debug)
-        : debug_(debug), class_type_(ClassType::None), vm_(&vm),
+    explicit Compiler(const bool debug)
+        : debug_(debug), class_type_(ClassType::None),
           func_(new FunctionScope(loxx::FunctionType::None))
     {
       locals_.push(std::vector<Local>());
@@ -130,7 +130,6 @@ namespace loxx
 
     bool debug_;
     ClassType class_type_;
-    VirtualMachine* vm_;
     Stack<std::vector<Local>> locals_;
     Stack<std::vector<Upvalue>> upvalues_;
     std::unique_ptr<FunctionScope> func_;

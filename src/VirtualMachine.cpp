@@ -63,7 +63,7 @@ namespace loxx
 
       if (debug_) {
         print_stack();
-        print_instruction(*this, *code_object_, ip_);
+        print_instruction(*code_object_, ip_);
       }
 
       const auto instruction =
