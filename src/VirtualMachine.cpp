@@ -337,10 +337,9 @@ namespace loxx
           throw make_runtime_error("Only instances have fields.");
         }
 
-        const auto instance = static_cast<InstanceObject*>(obj);
         const auto name = read_string();
 
-        instance->set_field(name, stack_.top());
+        obj->set_field(name, stack_.top());
         const auto value = stack_.pop();
         stack_.pop();
         stack_.push(value);
