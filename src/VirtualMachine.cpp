@@ -175,12 +175,14 @@ namespace loxx
       case Instruction::GetGlobal: {
         const auto varname = read_string();
 
-        if (globals_.count(varname) != 1) {
+        const auto global = globals_.get(varname);
+
+        if (not global) {
           throw make_runtime_error(
               "Undefined variable '" + varname->as_std_string() + "'.");
         }
 
-        stack_.push(globals_[varname]);
+        stack_.push(global->second);
         break;
       }
 
