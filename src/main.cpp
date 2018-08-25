@@ -80,8 +80,6 @@ namespace loxx
       std::cout << printer.print(statements) << std::endl;
     }
 
-    static VirtualMachine vm(debug_config.trace_exec);
-
     Compiler compiler(debug_config.print_bytecode);
     compiler.compile(statements);
 
@@ -92,6 +90,8 @@ namespace loxx
     if (debug_config.print_bytecode) {
       print_bytecode("top level", compiler.output());
     }
+
+    static VirtualMachine vm(debug_config.trace_exec);
 
     try {
       vm.execute(compiler.output());
