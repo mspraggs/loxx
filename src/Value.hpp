@@ -370,9 +370,9 @@ namespace loxx
   constexpr T* get_object(const Value& value)
   {
     if (holds_alternative<ObjectPtr>(value) and
-        get<ObjectPtr>(value)->type() == detail::object_type<T>())
+        unsafe_get<ObjectPtr>(value)->type() == detail::object_type<T>())
     {
-      return static_cast<T*>(get<ObjectPtr>(value));
+      return static_cast<T*>(unsafe_get<ObjectPtr>(value));
     }
 
     return nullptr;
