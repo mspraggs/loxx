@@ -58,10 +58,6 @@ namespace loxx
 
     void call(ClosureObject* closure, const std::size_t num_args);
     void print_stack() const;
-    static ObjectPtr select_object(const ObjectPtr) { return {}; }
-    template <typename... Ts>
-    static ObjectPtr select_object(
-        const ObjectPtr value, const ObjectType type0, const Ts... types);
 
     template <typename T>
     T read_integer();
@@ -81,18 +77,6 @@ namespace loxx
     std::list<UpvalueObject*> open_upvalues_;
     std::unique_ptr<StringObject> init_lexeme_;
   };
-
-
-  template <typename... Ts>
-  ObjectPtr VirtualMachine::select_object(
-      const ObjectPtr obj_ptr, const ObjectType type0, const Ts... types)
-  {
-    if (obj_ptr->type() == type0) {
-      return obj_ptr;
-    }
-
-    return select_object(obj_ptr, types...);
-  }
 
 
   template <typename T>
