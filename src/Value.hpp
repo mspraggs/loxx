@@ -160,7 +160,7 @@ namespace loxx
   public:
     explicit ClosureObject(FuncObject* func)
         : Object(ObjectType::Closure),
-          instance_(), function_(func), upvalues_(function_->num_upvalues())
+          function_(func), upvalues_(function_->num_upvalues())
     {
     }
 
@@ -173,13 +173,9 @@ namespace loxx
 
     const FuncObject& function() const { return *function_; }
 
-    void bind(InstanceObject* instance) { instance_ = instance; }
-    InstanceObject* instance() const { return instance_; }
-
     void grey_references() override;
 
   private:
-    InstanceObject* instance_;
     FuncObject* function_;
     std::vector<UpvalueObject*> upvalues_;
   };
@@ -207,8 +203,7 @@ namespace loxx
   class ClassObject : public Object
   {
   public:
-    explicit ClassObject(std::string lexeme,
-                         ClassObject* superclass = {})
+    explicit ClassObject(std::string lexeme, ClassObject* superclass = {})
         : Object(ObjectType::Class),
           lexeme_(std::move(lexeme)),
           superclass_(superclass)

@@ -47,10 +47,6 @@ namespace loxx
   {
     function_->set_colour(TriColour::Grey);
 
-    if (instance_) {
-      instance_->set_colour(TriColour::Grey);
-    }
-
     for (auto upvalue : upvalues_) {
       if (upvalue) {
         upvalue->set_colour(TriColour::Grey);
