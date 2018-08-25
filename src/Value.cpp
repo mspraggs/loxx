@@ -89,6 +89,13 @@ namespace loxx
   }
 
 
+  void MethodObject::grey_references()
+  {
+    closure_->set_colour(TriColour::Grey);
+    instance_->set_colour(TriColour::Grey);
+  }
+
+
   void ClassObject::grey_references()
   {
     for (auto& method : methods_) {
@@ -117,6 +124,4 @@ namespace loxx
       obj->set_colour(TriColour::Grey);
     }
   }
-
-
 }

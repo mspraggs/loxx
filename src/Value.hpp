@@ -68,6 +68,7 @@ namespace loxx
     Closure,
     Function,
     Instance,
+    Method,
     Native,
     String,
     Upvalue,
@@ -181,6 +182,25 @@ namespace loxx
     InstanceObject* instance_;
     FuncObject* function_;
     std::vector<UpvalueObject*> upvalues_;
+  };
+
+
+  class MethodObject : public Object
+  {
+  public:
+    MethodObject(ClosureObject& closure, InstanceObject& instance)
+        : Object(ObjectType::Method),
+          closure_(&closure), instance_(&instance)
+    {}
+
+    ClosureObject* closure() { return closure_; }
+    InstanceObject* instance() { return instance_; }
+
+    void grey_references() override;
+
+  private:
+    ClosureObject* closure_;
+    InstanceObject* instance_;
   };
 
 
