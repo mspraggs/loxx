@@ -56,8 +56,7 @@ namespace loxx
     UpvalueObject* capture_upvalue(Value& local);
     void close_upvalues(Value& last);
 
-    void call_object(ObjectPtr obj, const std::size_t obj_pos,
-                     const UByteCodeArg num_args);
+    void call(ClosureObject* closure, const std::size_t num_args);
     void print_stack() const;
     static ObjectPtr select_object(const ObjectPtr) { return {}; }
     template <typename... Ts>

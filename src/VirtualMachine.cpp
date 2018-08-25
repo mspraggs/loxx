@@ -206,8 +206,8 @@ namespace loxx
           stack_.push(field->second);
         }
         else if (const auto& method = instance->cls().method(name)) {
-          const auto new_method = make_object<ClosureObject>(*method->second);
-          new_method->bind(instance);
+          const auto new_method =
+              make_object<MethodObject>(*method->second, *instance);
           stack_.discard();
           stack_.emplace(InPlace<ObjectPtr>(), new_method);
         }
@@ -225,8 +225,8 @@ namespace loxx
         const auto name = read_string();
 
         if (const auto& method_elem = cls->method(name)) {
-          auto method = make_object<ClosureObject>(*method_elem->second);
-          method->bind(instance);
+          auto method =
+              make_object<MethodObject>(*method_elem->second, *instance);
           stack_.discard();
           stack_.emplace(InPlace<ObjectPtr>(), method);
         }
@@ -382,15 +382,65 @@ namespace loxx
   void VirtualMachine::execute_call()
   {
     const auto num_args = read_integer<UByteCodeArg>();
-    const auto obj_pos = stack_.size() - num_args - 1;
 
-    if (not holds_alternative<ObjectPtr>(stack_.get(obj_pos))) {
+    if (not holds_alternative<ObjectPtr>(stack_.top(num_args))) {
       throw make_runtime_error("Can only call functions and classes.");
     }
 
-    const auto obj = unsafe_get<ObjectPtr>(stack_.get(obj_pos));
+    const auto obj = unsafe_get<ObjectPtr>(stack_.top(num_args));
 
-    call_object(obj, obj_pos, num_args);
+    switch (obj->type()) {
+      case ObjectType::Class: {
+        const auto cls = static_cast<ClassObject*>(obj);
+        unsafe_get<ObjectPtr>(stack_.top(num_args)) =
+            make_object<InstanceObject>(cls);
+
+        if (const auto& method = cls->method(init_lexeme_.get())) {
+          call(method->second, num_args);
+          break;
+        }
+
+        if (num_args != 0) {
+          std::stringstream ss;
+          ss << "Expected 0 arguments but got " << num_args << '.';
+          throw make_runtime_error(ss.str());
+        }
+        break;
+      }
+
+      case ObjectType::Closure: {
+        call(static_cast<ClosureObject*>(obj), num_args);
+        break;
+      }
+
+      case ObjectType::Method: {
+        const auto method = static_cast<MethodObject*>(obj);
+        unsafe_get<ObjectPtr>(stack_.top(num_args)) = method->instance();
+        call(method->closure(), num_args);
+        break;
+      }
+
+      case ObjectType::Native: {
+        const auto native = static_cast<NativeObject*>(obj);
+
+        if (native->arity() != num_args) {
+          std::stringstream ss;
+          ss << "Expected " << native->arity() << " arguments but got "
+             << num_args << '.';
+          throw make_runtime_error(ss.str());
+        }
+
+        const auto result = native->call(&stack_.top(num_args),
+                                         static_cast<unsigned int>(num_args));
+        stack_.discard(num_args);
+        stack_.top(num_args) = result;
+
+        break;
+      }
+
+      default:
+        throw make_runtime_error("Can only call functions and classes.");
+    }
   }
 
 
@@ -460,72 +510,20 @@ namespace loxx
   }
 
 
-  void VirtualMachine::call_object(
-      ObjectPtr obj, const std::size_t obj_pos,
-      const UByteCodeArg num_args)
+  void VirtualMachine::call(ClosureObject* closure,
+                            const std::size_t num_args)
   {
-    switch (obj->type()) {
-    case ObjectType::Class: {
-      const auto cls = static_cast<ClassObject*>(obj);
-      auto instance = make_object<InstanceObject>(cls);
-      unsafe_get<ObjectPtr>(stack_.top(num_args)) = instance;
-
-      if (const auto& method = cls->method(init_lexeme_.get())) {
-        method->second->bind(instance);
-        call_object(method->second, obj_pos, num_args);
-        break;
-      }
-
-      if (num_args != 0) {
-        std::stringstream ss;
-        ss << "Expected 0 arguments but got " << num_args << '.';
-        throw make_runtime_error(ss.str());
-      }
-      break;
+    if (closure->function().arity() != num_args) {
+      std::stringstream ss;
+      ss << "Expected " << closure->function().arity()
+         << " arguments but got " << num_args << '.';
+      throw make_runtime_error(ss.str());
     }
 
-    case ObjectType::Closure: {
-      const auto closure = static_cast<ClosureObject*>(obj);
-
-      if (closure->instance()) {
-        unsafe_get<ObjectPtr>(stack_.top(num_args)) = closure->instance();
-      }
-
-      if (closure->function().arity() != num_args) {
-        std::stringstream ss;
-        ss << "Expected " << closure->function().arity()
-           << " arguments but got " << num_args << '.';
-        throw make_runtime_error(ss.str());
-      }
-
-      call_stack_.emplace(ip_, code_object_, stack_.size() - num_args - 1,
-                          stack_.top(num_args), closure);
-      code_object_ = closure->function().code_object();
-      ip_ = 0;
-      break;
-    }
-
-    case ObjectType::Native: {
-      const auto native = static_cast<NativeObject*>(obj);
-
-      if (native->arity() != num_args) {
-        std::stringstream ss;
-        ss << "Expected " << native->arity() << " arguments but got "
-           << num_args << '.';
-        throw make_runtime_error(ss.str());
-      }
-
-      const auto result = native->call(&stack_.top(num_args),
-                                       static_cast<unsigned int>(num_args));
-      stack_.discard(num_args);
-      stack_.get(obj_pos) = result;
-
-      break;
-    }
-
-    default:
-      throw make_runtime_error("Can only call functions and classes.");
-    }
+    call_stack_.emplace(ip_, code_object_, stack_.size() - num_args - 1,
+                        stack_.top(num_args), closure);
+    code_object_ = closure->function().code_object();
+    ip_ = 0;
   }
 
 
