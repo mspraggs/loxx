@@ -305,8 +305,7 @@ namespace loxx
   bool CompareStringObject::operator()(const StringObject* p1,
                                        const StringObject* p2) const
   {
-    return p1->hash() == p2->hash() or
-           p1->as_std_string() == p2->as_std_string();
+    return p1 == p2;
   }
 
 

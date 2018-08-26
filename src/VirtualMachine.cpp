@@ -32,7 +32,8 @@
 namespace loxx
 {
   VirtualMachine::VirtualMachine(const bool debug)
-      : debug_(debug), ip_(0), init_lexeme_(new StringObject("init"))
+      : debug_(debug), ip_(0),
+        init_lexeme_(make_object<StringObject>("init"))
   {
     NativeObject::Fn fn =
         [] (const Value*, const unsigned int)
@@ -395,7 +396,7 @@ namespace loxx
         unsafe_get<ObjectPtr>(stack_.top(num_args)) =
             make_object<InstanceObject>(cls);
 
-        if (const auto& method = cls->method(init_lexeme_.get())) {
+        if (const auto& method = cls->method(init_lexeme_)) {
           call(method->second, num_args);
           break;
         }
