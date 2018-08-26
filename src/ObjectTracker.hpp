@@ -45,7 +45,7 @@ namespace loxx
     static ObjectTracker& instance();
 
     StringObject* add_string(std::unique_ptr<StringObject> str);
-    void add_object(std::unique_ptr<Object> object);
+    ObjectPtr add_object(std::unique_ptr<Object> object);
     void set_roots(const Roots roots) { roots_ = roots; }
 
   private:
@@ -66,13 +66,32 @@ namespace loxx
   };
 
 
+  namespace detail
+  {
+    template <typename T0, typename... Ts>
+    T0* make_object_impl(std::false_type, Ts&&... args)
+    {
+      auto ptr = std::make_unique<T0>(std::forward<Ts>(args)...);
+      return static_cast<T0*>(
+          ObjectTracker::instance().add_object(std::move(ptr)));
+    }
+
+
+    template <typename T0, typename... Ts>
+    T0* make_object_impl(std::true_type, Ts&&... args)
+    {
+      auto ptr = std::make_unique<T0>(std::forward<Ts>(args)...);
+      return ObjectTracker::instance().add_string(std::move(ptr));
+    }
+  }
+
+
   template <typename T0, typename... Ts>
   T0* make_object(Ts&& ... args)
   {
-    auto ptr = std::make_unique<T0>(std::forward<Ts>(args)...);
-    const auto ret = ptr.get();
-    ObjectTracker::instance().add_object(std::move(ptr));
-    return ret;
+    return detail::make_object_impl<T0>(
+        std::is_same<std::decay_t<T0>, StringObject>(),
+        std::forward<Ts>(args)...);
   };
 }
 

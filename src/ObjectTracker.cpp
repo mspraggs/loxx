@@ -50,13 +50,14 @@ namespace loxx
   }
 
 
-  void ObjectTracker::add_object(std::unique_ptr<Object> object)
+  ObjectPtr ObjectTracker::add_object(std::unique_ptr<Object> object)
   {
     if (objects_.size() > gc_size_trigger_) {
       collect_garbage();
     }
 
     objects_.push_back(std::move(object));
+    return objects_.back().get();
   }
 
 
