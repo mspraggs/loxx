@@ -176,7 +176,7 @@ namespace loxx
       case Instruction::GetGlobal: {
         const auto varname = read_string();
 
-        const auto global = globals_.get(varname);
+        const auto& global = globals_.get(varname);
 
         if (not global) {
           throw make_runtime_error(
