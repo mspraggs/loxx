@@ -23,6 +23,8 @@ set(SRC
   Value.hpp
   Variant.hpp
   VirtualMachine.hpp
+  detail/HashImpl.hpp
+  detail/HashStructIterator.hpp
   detail/VariantImpl.hpp
 
   AstPrinter.cpp
