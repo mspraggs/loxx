@@ -31,6 +31,25 @@ namespace loxx
   }
 
 
+  StringObject* ObjectTracker::add_string(std::unique_ptr<StringObject> str)
+  {
+    const auto cached = strings_.find(
+        str.get(),
+        [&] (StringObject* candidate) {
+          return candidate->as_std_string() == str->as_std_string();
+        });
+
+    if (cached) {
+      return *cached;
+    }
+
+    const auto ret = str.get();
+    strings_.insert(static_cast<StringObject*>(ret));
+    add_object(std::move(str));
+    return ret;
+  }
+
+
   void ObjectTracker::add_object(std::unique_ptr<Object> object)
   {
     if (objects_.size() > gc_size_trigger_) {

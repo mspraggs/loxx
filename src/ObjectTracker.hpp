@@ -24,6 +24,7 @@
 #include <memory>
 #include <vector>
 
+#include "HashSet.hpp"
 #include "HashTable.hpp"
 #include "Stack.hpp"
 #include "Value.hpp"
@@ -43,8 +44,8 @@ namespace loxx
 
     static ObjectTracker& instance();
 
+    StringObject* add_string(std::unique_ptr<StringObject> str);
     void add_object(std::unique_ptr<Object> object);
-
     void set_roots(const Roots roots) { roots_ = roots; }
 
   private:
@@ -60,6 +61,7 @@ namespace loxx
 
     static constexpr std::size_t gc_size_trigger_ = 65536;
     std::vector<std::unique_ptr<Object>> objects_;
+    HashSet<StringObject*, HashStringObject, CompareStringObject> strings_;
     Roots roots_;
   };
 
