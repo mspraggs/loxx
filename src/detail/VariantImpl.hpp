@@ -156,191 +156,176 @@ namespace loxx
       return std::is_trivial<T0>::value and all_types_trivial<T1, Ts...>();
     }
 
+    template <std::size_t N>
+    void destroy(const std::size_t type_index, void* data) {}
 
-    template<std::size_t N, typename... Ts>
-    struct VariantHelperImpl;
+    template <std::size_t N>
+    void copy_construct(const std::size_t type_index,
+                        void* new_data, const void* old_data) {}
 
+    template <std::size_t N>
+    void move_construct(const std::size_t type_index,
+                        void* new_data, void* old_data) {}
 
-    template<std::size_t N, typename T0, typename... Ts>
-    struct VariantHelperImpl<N, T0, Ts...>
-    {
-      static void destroy(const std::size_t type_index, void* data);
+    template <std::size_t N>
+    void copy_assign(const std::size_t type_index,
+                     void* new_data, const void* old_data) {}
 
-      static void copy_construct(const std::size_t type_index,
-                                 void* new_data, const void* old_data);
+    template <std::size_t N>
+    void move_assign(const std::size_t type_index,
+                     void* new_data, void* old_data) {}
 
-      static void move_construct(const std::size_t type_index,
-                                 void* new_data, void* old_data);
+    template <std::size_t N, typename T0, typename... Ts>
+    void destroy(const std::size_t type_index, void* data);
 
-      static void copy_assign(const std::size_t type_index,
-                              void* new_data, const void* old_data);
+    template <std::size_t N, typename T0, typename... Ts>
+    void copy_construct(const std::size_t type_index,
+                        void* new_data, const void* old_data);
 
-      static void move_assign(const std::size_t type_index,
-                              void* new_data, void* old_data);
-    };
+    template <std::size_t N, typename T0, typename... Ts>
+    void move_construct(const std::size_t type_index,
+                        void* new_data, void* old_data);
 
+    template <std::size_t N, typename T0, typename... Ts>
+    void copy_assign(const std::size_t type_index,
+                     void* new_data, const void* old_data);
 
-    template<std::size_t N>
-    struct VariantHelperImpl<N>
-    {
-      static void destroy(const std::size_t, void*)
-      {}
-
-      static void copy_construct(const std::size_t, void*, const void*)
-      {}
-
-      static void move_construct(const std::size_t, void*, void*)
-      {}
-
-      static void copy_assign(const std::size_t, void*, const void*)
-      {}
-
-      static void move_assign(const std::size_t, void*, void*)
-      {}
-    };
+    template <std::size_t N, typename T0, typename... Ts>
+    void move_assign(const std::size_t type_index,
+                     void* new_data, void* old_data);
 
 
-    template<typename... Ts>
-    using VariantHelper = VariantHelperImpl<sizeof...(Ts), Ts...>;
-
-
-    template <bool Pod, std::size_t Size, typename... Ts>
+    template <bool Pod, typename Var, typename... Ts>
     class VariantImpl
     {
     public:
-      static void destroy(const std::size_t index, void* target);
-      static void copy_construct(const std::size_t index,
-                                 void* dest, const void* src);
-      static void move_construct(const std::size_t index,
-                                 void* dest, void* src);
-      static void copy_assign(const std::size_t index,
-                              void* dest, const void* src);
-      static void move_assign(const std::size_t index,
-                              void* dest, void* src);
+      static void destroy(Var& data);
+      static void copy_construct(Var& dest, const Var& src);
+      static void move_construct(Var& dest, Var& src);
+      static void copy_assign(Var& dest, const Var& src);
+      static void move_assign(Var& dest, Var& src);
     };
 
 
-    template <std::size_t Size, typename... Ts>
-    class VariantImpl<true, Size, Ts...>
+    template <typename Var, typename... Ts>
+    class VariantImpl<true, Var, Ts...>
     {
     public:
-      static void destroy(const std::size_t index, void* target);
-      static void copy_construct(const std::size_t index,
-                                 void* dest, const void* src);
-      static void move_construct(const std::size_t index,
-                                 void* dest, void* src);
-      static void copy_assign(const std::size_t index,
-                              void* dest, const void* src);
-      static void move_assign(const std::size_t index,
-                              void* dest, void* src);
+      static void destroy(Var&);
+      static void copy_construct(Var& dest, const Var& src);
+      static void move_construct(Var& dest, Var& src);
+      static void copy_assign(Var& dest, const Var& src);
+      static void move_assign(Var& dest, Var& src);
     };
 
 
-    template<bool Pod, std::size_t Size, typename... Ts>
-    void VariantImpl<Pod, Size, Ts...>::destroy(const std::size_t index,
-                                                void* target)
+    template <bool Pod, typename Var, typename... Ts>
+    void VariantImpl<Pod, Var, Ts...>::destroy(Var& data)
     {
-      VariantHelper<Ts...>::destroy(index, target);
+      detail::destroy<sizeof...(Ts), Ts...>(
+          data.data_.type_index_, &data.data_.storage_);
     }
 
 
-    template<bool Pod, std::size_t Size, typename... Ts>
-    void VariantImpl<Pod, Size, Ts...>::copy_construct(
-        const std::size_t index, void* dest, const void* src)
+    template <bool Pod, typename Var, typename... Ts>
+    void VariantImpl<Pod, Var, Ts...>::copy_construct(Var& dest, const Var& src)
     {
-      VariantHelper<Ts...>::copy_construct(index, dest, src);
+      dest.data_.type_index = src.data_.type_index;
+      detail::copy_construct<sizeof...(Ts), Ts...>(
+          src.data_.type_index_, &dest.data_.storage_, &src.data_.storage_);
     }
 
 
-    template<bool Pod, std::size_t Size, typename... Ts>
-    void VariantImpl<Pod, Size, Ts...>::move_construct(
-        const std::size_t index, void* dest, void* src)
+    template <bool Pod, typename Var, typename... Ts>
+    void VariantImpl<Pod, Var, Ts...>::move_construct(Var& dest, Var& src)
     {
-      VariantHelper<Ts...>::move_construct(index, dest, src);
+      dest.data_.type_index = src.data_.type_index;
+      detail::move_construct<sizeof...(Ts), Ts...>(
+          src.data_.type_index_, &dest.data_.storage_, &src.data_.storage_);
+      src.data_.type_index = src.npos;
     }
 
 
-    template<bool Pod, std::size_t Size, typename... Ts>
-    void VariantImpl<Pod, Size, Ts...>::copy_assign(
-        const std::size_t index, void* dest, const void* src)
+    template <bool Pod, typename Var, typename... Ts>
+    void VariantImpl<Pod, Var, Ts...>::copy_assign(Var& dest, const Var& src)
     {
-      VariantHelper<Ts...>::copy_assign(index, dest, src);
+      dest.data_.type_index = src.data_.type_index;
+      detail::copy_assign<sizeof...(Ts), Ts...>(
+          src.data_.type_index_, &dest.data_.storage_, &src.data_.storage_);
     }
 
 
-    template<bool Pod, std::size_t Size, typename... Ts>
-    void VariantImpl<Pod, Size, Ts...>::move_assign(
-        const std::size_t index, void* dest, void* src)
+    template <bool Pod, typename Var, typename... Ts>
+    void VariantImpl<Pod, Var, Ts...>::move_assign(Var& dest, Var& src)
     {
-      VariantHelper<Ts...>::copy_assign(index, dest, src);
+      dest.data_.type_index = src.data_.type_index;
+      detail::move_assign<sizeof...(Ts), Ts...>(
+          src.data_.type_index, &dest.data_.storage, &src.data_.storage);
+      src.data_.type_index = src.npos;
     }
 
 
-    template<std::size_t Size, typename... Ts>
-    void VariantImpl<true, Size, Ts...>::destroy(const std::size_t, void*)
+    template <typename Var, typename... Ts>
+    void VariantImpl<true, Var, Ts...>::destroy(Var&)
     {
     }
 
 
-    template<std::size_t Size, typename... Ts>
-    void VariantImpl<true, Size, Ts...>::copy_construct(
-        const std::size_t, void* dest, const void* src)
+    template <typename Var, typename... Ts>
+    void VariantImpl<true, Var, Ts...>::copy_construct(Var& dest, const Var& src)
     {
-      std::memcpy(dest, src, Size);
+      dest.data_ = src.data_;
     }
 
 
-    template<std::size_t Size, typename... Ts>
-    void VariantImpl<true, Size, Ts...>::move_construct(
-        const std::size_t, void* dest, void* src)
+    template <typename Var, typename... Ts>
+    void VariantImpl<true, Var, Ts...>::move_construct(Var& dest, Var& src)
     {
-      std::memcpy(dest, src, Size);
+      dest.data_ = src.data_;
+      src.data_.type_index = src.npos;
     }
 
 
-    template<std::size_t Size, typename... Ts>
-    void VariantImpl<true, Size, Ts...>::copy_assign(
-        const std::size_t, void* dest, const void* src)
+    template <typename Var, typename... Ts>
+    void VariantImpl<true, Var, Ts...>::copy_assign(Var& dest, const Var& src)
     {
-      std::memcpy(dest, src, Size);
+      dest.data_ = src.data_;
     }
 
 
-    template<std::size_t Size, typename... Ts>
-    void VariantImpl<true, Size, Ts...>::move_assign(
-        const std::size_t, void* dest, void* src)
+    template <typename Var, typename... Ts>
+    void VariantImpl<true, Var, Ts...>::move_assign(Var& dest, Var& src)
     {
-      std::memcpy(dest, src, Size);
+      dest.data_ = src.data_;
+      src.data_.type_index = src.npos;
     }
 
 
-    template<std::size_t N, typename T0, typename... Ts>
-    void VariantHelperImpl<N, T0, Ts...>::destroy(
-        const std::size_t type_index, void* data)
+    template <std::size_t N, typename T0, typename... Ts>
+    void destroy(const std::size_t type_index, void* data)
     {
       if (type_index == N - sizeof...(Ts) - 1) {
         reinterpret_cast<T0*>(data)->~T0();
         return;
       }
-      detail::VariantHelperImpl<N, Ts...>::destroy(type_index, data);
+      detail::destroy<N, Ts...>(type_index, data);
     }
 
 
-    template<std::size_t N, typename T0, typename... Ts>
-    void VariantHelperImpl<N, T0, Ts...>::copy_construct(
+    template <std::size_t N, typename T0, typename... Ts>
+    void copy_construct(
         const std::size_t type_index, void* new_data, const void* old_data)
     {
       if (type_index == N - sizeof...(Ts) - 1) {
         new(new_data) T0(*reinterpret_cast<const T0*>(old_data));
         return;
       }
-      VariantHelperImpl<N, Ts...>::copy_construct(type_index, new_data,
-                                                  old_data);
+      copy_construct<N, Ts...>(type_index, new_data, old_data);
     }
 
 
-    template<std::size_t N, typename T0, typename... Ts>
-    void VariantHelperImpl<N, T0, Ts...>::move_construct(
+    template <std::size_t N, typename T0, typename... Ts>
+    void move_construct(
         const std::size_t type_index, void* new_data, void* old_data)
     {
       if (type_index == N - sizeof...(Ts) - 1) {
@@ -348,13 +333,12 @@ namespace loxx
         reinterpret_cast<T0*>(old_data)->~T0();
         return;
       }
-      VariantHelperImpl<N, Ts...>::move_construct(type_index, new_data,
-                                                  old_data);
+      move_construct<N, Ts...>(type_index, new_data, old_data);
     }
 
 
-    template<std::size_t N, typename T0, typename... Ts>
-    void VariantHelperImpl<N, T0, Ts...>::copy_assign(
+    template <std::size_t N, typename T0, typename... Ts>
+    void copy_assign(
         const std::size_t type_index, void* new_data, const void* old_data)
     {
       if (type_index == N - sizeof...(Ts) - 1) {
@@ -362,12 +346,12 @@ namespace loxx
             *reinterpret_cast<const T0*>(old_data);
         return;
       }
-      VariantHelperImpl<N, Ts...>::copy_assign(type_index, new_data, old_data);
+      copy_assign<N, Ts...>(type_index, new_data, old_data);
     }
 
 
-    template<std::size_t N, typename T0, typename... Ts>
-    void VariantHelperImpl<N, T0, Ts...>::move_assign(
+    template <std::size_t N, typename T0, typename... Ts>
+    void move_assign(
         const std::size_t type_index, void* new_data, void* old_data)
     {
       if (type_index == N - sizeof...(Ts) - 1) {
@@ -376,7 +360,7 @@ namespace loxx
         reinterpret_cast<T0*>(old_data)->~T0();
         return;
       }
-      VariantHelperImpl<N, Ts...>::move_assign(type_index, new_data, old_data);
+      move_assign<N, Ts...>(type_index, new_data, old_data);
     }
   }
 }

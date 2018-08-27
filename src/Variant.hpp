@@ -37,8 +37,7 @@ namespace loxx
   class Variant
       : private detail::VariantImpl<
           detail::all_types_trivial<Ts...>(),
-          detail::static_max(sizeof(Ts)...),
-          Ts...>
+          Variant<Ts...>, Ts...>
   {
     static_assert(sizeof...(Ts) < std::numeric_limits<std::uint8_t>::max(),
                   "Variant supports up to 255 types.");
@@ -46,41 +45,54 @@ namespace loxx
     static constexpr std::uint8_t npos = sizeof...(Ts);
 
     constexpr Variant();
+
     constexpr Variant(const Variant<Ts...>& other);
+
     constexpr Variant(Variant<Ts...>&& other) noexcept;
 
     ~Variant();
 
     template <typename T,
-              typename = std::enable_if_t<
-                  not std::is_same<std::decay_t<T>, Variant<Ts...>>::value>>
+        typename = std::enable_if_t<
+            not std::is_same<std::decay_t<T>, Variant<Ts...>>::value>>
     constexpr Variant(T&& value) noexcept;
 
     template <typename T0, typename... Us>
-    constexpr Variant(InPlace<T0>, Us&&... args);
+    constexpr Variant(InPlace<T0>, Us&& ... args);
 
     constexpr Variant<Ts...>& operator=(const Variant<Ts...>& other);
+
     constexpr Variant<Ts...>& operator=(Variant<Ts...>&& other) noexcept;
 
     template <typename T,
-              typename = std::enable_if_t<
-                  not std::is_same<std::decay_t<T>, Variant<Ts...>>::value>>
+        typename = std::enable_if_t<
+            not std::is_same<std::decay_t<T>, Variant<Ts...>>::value>>
     constexpr Variant<Ts...>& operator=(T&& value) noexcept;
 
-    constexpr std::size_t index() const { return type_index_; }
+    constexpr std::size_t index() const { return data_.type_index; }
 
   private:
     template <std::size_t I, typename... Us>
     friend constexpr auto unsafe_get(Variant<Us...>& variant)
         -> detail::LookupType<I, Us...>&;
+
     template <std::size_t I, typename... Us>
     friend constexpr auto get(Variant<Us...>& variant)
         -> detail::LookupType<I, Us...>&;
 
-    std::uint8_t type_index_;
-    std::aligned_storage_t<
-        detail::static_max(sizeof(Ts)...),
-        detail::static_max(alignof(Ts)...)> storage_;
+    friend class detail::VariantImpl<
+        detail::all_types_trivial<Ts...>(), Variant<Ts...>, Ts...>;
+
+    static constexpr std::size_t max_size = detail::static_max(sizeof(Ts)...);
+    static constexpr std::size_t max_align = detail::static_max(alignof(Ts)...);
+
+    struct Data
+    {
+      std::size_t type_index;
+      std::aligned_storage_t<max_size, max_align> storage;
+    };
+
+    Data data_;
   };
 
 
@@ -101,37 +113,34 @@ namespace loxx
 
   template <typename... Ts>
   constexpr Variant<Ts...>::Variant()
-      : type_index_(npos)
+      : data_{npos, {}}
   {
   }
 
 
   template<typename... Ts>
   constexpr Variant<Ts...>::Variant(const Variant<Ts...>& other)
-      : type_index_(other.type_index_)
   {
-    this->copy_construct(type_index_, &storage_, &other.storage_);
+    this->copy_construct(*this, other);
   }
 
 
   template<typename... Ts>
   constexpr Variant<Ts...>::Variant(Variant<Ts...>&& other) noexcept
   {
-    if (type_index_ != npos and type_index_ != other.type_index_) {
-      this->destroy(type_index_, &storage_);
+    if (index() != npos and index() != other.index()) {
+      this->destroy(*this);
     }
 
-    type_index_ = other.type_index_;
-    this->move_construct(type_index_, &storage_, &other.storage_);
-    other.type_index_ = npos;
+    this->move_construct(*this, other);
   }
 
 
   template<typename... Ts>
   Variant<Ts...>::~Variant()
   {
-    if (type_index_ != npos) {
-      this->destroy(type_index_, &storage_);
+    if (index() != npos) {
+      this->destroy(*this);
     }
   }
 
@@ -145,10 +154,9 @@ namespace loxx
     static_assert(index < sizeof...(Ts),
                   "Unable to construct variant using supplied type.");
 
-    type_index_ = index;
+    data_.type_index = index;
     using U = detail::LookupType<index, Ts...>;
-
-    new (&storage_) U(std::forward<T>(value));
+    new (&data_.storage) U(std::forward<T>(value));
   }
 
 
@@ -161,9 +169,8 @@ namespace loxx
     static_assert(index < sizeof...(Ts),
                   "Unable to construct variant using supplied type.");
 
-    type_index_ = index;
-
-    new (&storage_) T0(std::forward<Us>(args)...);
+    data_.type_index = index;
+    new (&data_.storage) T0(std::forward<Us>(args)...);
   };
 
 
@@ -172,12 +179,11 @@ namespace loxx
       const Variant<Ts...>& other)
   {
     if (&other != this) {
-      if (type_index_ != npos and type_index_ != other.type_index_) {
-        this->destroy(type_index_, &storage_);
+      if (index() != npos and index() != other.index()) {
+        this->destroy(*this);
       }
 
-      type_index_ = other.type_index_;
-      this->copy_construct(type_index_, &storage_, &other.storage_);
+      this->copy_assign(*this, other);
     }
 
     return *this;
@@ -188,13 +194,11 @@ namespace loxx
   constexpr Variant<Ts...>& Variant<Ts...>::operator=(
       Variant<Ts...>&& other) noexcept
   {
-    if (type_index_ != npos and type_index_ != other.type_index_) {
-      this->destroy(type_index_, &storage_);
+    if (index() != npos and index() != other.index()) {
+      this->destroy(*this);
     }
 
-    type_index_ = other.type_index_;
-    this->move_assign(type_index_, &storage_, &other.storage_);
-    other.type_index_ = npos;
+    this->move_assign(*this, other);
 
     return *this;
   }
@@ -209,9 +213,9 @@ namespace loxx
     static_assert(index < sizeof...(Ts),
                   "Unable to construct variant using supplied type.");
 
-    type_index_ = index;
+    data_.type_index = index;
     using U = detail::LookupType<index, Ts...>;
-    new (&storage_) U(std::forward<T>(value));
+    new (&data_.storage) U(std::forward<T>(value));
 
     return *this;
   }
@@ -224,7 +228,7 @@ namespace loxx
       throw BadVariantAccess("Variant does not contain requested object.");
     }
     using T = detail::LookupType<I, Ts...>;
-    return *reinterpret_cast<T*>(&variant.storage_);
+    return *reinterpret_cast<T*>(&variant.data_.storage);
   }
 
 
@@ -253,12 +257,13 @@ namespace loxx
 
 
   template <std::size_t I, typename... Ts>
-  constexpr auto unsafe_get(Variant<Ts...>& variant) -> detail::LookupType<I, Ts...>&
+  constexpr auto unsafe_get(Variant<Ts...>& variant)
+      -> detail::LookupType<I, Ts...>&
   {
     static_assert(I < Variant<Ts...>::npos,
                   "Variant cannot contain requested type.");
     using T = detail::LookupType<I, Ts...>;
-    return *reinterpret_cast<T*>(&variant.storage_);
+    return *reinterpret_cast<T*>(&variant.data_.storage);
   }
 
 

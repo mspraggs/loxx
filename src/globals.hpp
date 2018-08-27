@@ -29,8 +29,8 @@ namespace loxx
   using UByteCodeArg = std::size_t;
   using ByteCodeArg = std::make_signed_t<UByteCodeArg>;
 
-  constexpr std::size_t max_scope_constants = 4096;
-  constexpr std::size_t max_call_frames     = 256;
+  constexpr std::size_t max_scope_constants = 256;
+  constexpr std::size_t max_call_frames     = 64;
   constexpr std::size_t max_stack_size      =
       max_call_frames * max_scope_constants;
 }
