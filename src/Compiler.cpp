@@ -111,6 +111,16 @@ namespace loxx
 
   void Compiler::visit_if_stmt(const If& stmt)
   {
+    // If statements are implemented like this:
+    // if (not expr) goto else <- Instruction::ConditionalJump
+    // ...
+    // goto end
+    // --- else is compiled only if it exists in stmt
+    // else:
+    // ...
+    // --- /else compilation
+    // end:
+    // ...
     compile(*stmt.condition);
 
     func_->add_instruction(Instruction::ConditionalJump);
@@ -119,9 +129,7 @@ namespace loxx
 
     func_->add_instruction(Instruction::Pop);
 
-    if (stmt.else_branch != nullptr) {
-      compile(*stmt.else_branch);
-    }
+    compile(*stmt.then_branch);
 
     const auto first_jump_size = static_cast<ByteCodeArg>(
         func_->current_bytecode_size() - first_jump_pos + 1);
@@ -133,7 +141,9 @@ namespace loxx
 
     func_->add_instruction(Instruction::Pop);
 
-    compile(*stmt.then_branch);
+    if (stmt.else_branch != nullptr) {
+      compile(*stmt.else_branch);
+    }
 
     const auto second_jump_size = static_cast<ByteCodeArg>(
             func_->current_bytecode_size() - second_jump_pos -
@@ -194,8 +204,7 @@ namespace loxx
     // While loops are modelled around this structure:
     //
     // begin: <- first_label_pos
-    // if (expr) goto body <- Instruction::ConditionalJump -
-    // goto end <- Instruction::Jump - second_jump_pos
+    // if (not expr) goto end <- Instruction::ConditionalJump - first_jump_pos
     // body:
     // ...
     // goto begin <- Instruction::Jump
@@ -207,18 +216,13 @@ namespace loxx
     compile(*stmt.condition);
 
     func_->add_instruction(Instruction::ConditionalJump);
+    const auto first_jump_pos = func_->current_bytecode_size();
     // We want to jump over the jump that takes us out of the while loop, which
     // also involves jumping over a pop instruction (hence + 2 for two
     // instructions).
-    func_->add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 2);
-    func_->add_instruction(Instruction::Pop);
-
-    func_->add_instruction(Instruction::Jump);
-    const auto second_jump_pos = func_->current_bytecode_size();
     func_->add_integer<ByteCodeArg>(0);
-
-    // Pop the condition value (used by ConditionalJump) off the stack.
     func_->add_instruction(Instruction::Pop);
+
     // Compile the body of the while loop.
     compile(*stmt.body);
 
@@ -232,8 +236,9 @@ namespace loxx
 
     // Back-patch the jump over the body of the while loop.
     func_->rewrite_integer<ByteCodeArg>(
-        second_jump_pos,
-        func_->current_bytecode_size() - second_jump_pos - sizeof(ByteCodeArg));
+        first_jump_pos,
+        func_->current_bytecode_size() - first_jump_pos - sizeof(ByteCodeArg));
+    func_->add_instruction(Instruction::Pop);
   }
 
 
@@ -367,27 +372,27 @@ namespace loxx
 
     if (expr.op.type() == TokenType::Or) {
       func_->add_instruction(Instruction::ConditionalJump);
-      const auto jump_pos = func_->current_bytecode_size();
-      func_->add_integer<UByteCodeArg>(0);
       func_->update_line_num_table(expr.op);
-
-      const auto skip_start = func_->current_bytecode_size();
-      func_->add_instruction(Instruction::Pop);
-      compile(*expr.right);
-
-      func_->rewrite_integer<ByteCodeArg>(
-          jump_pos, func_->current_bytecode_size() - skip_start);
-    }
-    else if (expr.op.type() == TokenType::And) {
-      func_->add_instruction(Instruction::ConditionalJump);
       func_->add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 1);
-      func_->update_line_num_table(expr.op);
       func_->add_instruction(Instruction::Jump);
       const auto jump_pos = func_->current_bytecode_size();
       func_->add_integer<ByteCodeArg>(0);
 
       const auto skip_start = func_->current_bytecode_size();
       compile(*expr.right);
+      func_->rewrite_integer<ByteCodeArg>(
+          jump_pos, func_->current_bytecode_size() - skip_start);
+    }
+    else if (expr.op.type() == TokenType::And) {
+      func_->add_instruction(Instruction::ConditionalJump);
+      func_->update_line_num_table(expr.op);
+      const auto jump_pos = func_->current_bytecode_size();
+      func_->add_integer<UByteCodeArg>(0);
+
+      const auto skip_start = func_->current_bytecode_size();
+      func_->add_instruction(Instruction::Pop);
+      compile(*expr.right);
+
       func_->rewrite_integer<ByteCodeArg>(
           jump_pos, func_->current_bytecode_size() - skip_start);
     }

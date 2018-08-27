@@ -106,7 +106,7 @@ namespace loxx
 
       case Instruction::ConditionalJump: {
         const auto jmp = read_integer<ByteCodeArg>();
-        if (is_truthy(stack_.top())) {
+        if (not is_truthy(stack_.top())) {
           ip_ += jmp;
         }
         break;
