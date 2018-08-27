@@ -19,6 +19,7 @@
 
 #include <unordered_map>
 
+#include "Object.hpp"
 #include "Token.hpp"
 
 

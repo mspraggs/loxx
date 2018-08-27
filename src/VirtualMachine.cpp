@@ -22,7 +22,6 @@
 #include <iostream>
 #include <sstream>
 
-#include "Compiler.hpp"
 #include "logging.hpp"
 #include "ObjectTracker.hpp"
 #include "RuntimeError.hpp"

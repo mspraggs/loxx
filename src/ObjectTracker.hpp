@@ -24,6 +24,7 @@
 #include <memory>
 #include <vector>
 
+#include "Object.hpp"
 #include "HashSet.hpp"
 #include "HashTable.hpp"
 #include "Stack.hpp"

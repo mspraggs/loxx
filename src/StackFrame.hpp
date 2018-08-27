@@ -24,7 +24,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "CodeObject.hpp"
 #include "globals.hpp"
+#include "Object.hpp"
 #include "Value.hpp"
 
 

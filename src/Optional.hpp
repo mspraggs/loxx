@@ -23,7 +23,7 @@
 #include <memory>
 #include <type_traits>
 
-#include "Variant.hpp"
+#include "detail/common.hpp"
 
 
 namespace loxx

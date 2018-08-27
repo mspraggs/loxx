@@ -22,8 +22,6 @@
 
 #include <stdexcept>
 
-#include "Token.hpp"
-
 
 namespace loxx
 {

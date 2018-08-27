@@ -24,19 +24,13 @@
 #include <memory>
 #include <type_traits>
 
+#include "detail/common.hpp"
 #include "detail/VariantImpl.hpp"
 
 
 namespace loxx
 {
   // A half-baked replacement for the Boost variant
-
-  template <typename T>
-  struct InPlace
-  {
-    using type = T;
-  };
-
 
   // Variant class template
   template <typename... Ts>

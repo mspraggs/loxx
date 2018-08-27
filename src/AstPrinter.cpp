@@ -20,6 +20,7 @@
 #include <iostream>
 
 #include "AstPrinter.hpp"
+#include "Object.hpp"
 
 
 namespace loxx

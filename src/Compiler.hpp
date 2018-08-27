@@ -118,15 +118,6 @@ namespace loxx
   };
 
 
-  template <typename T>
-  T read_integer_at_pos(const std::vector<std::uint8_t>& bytecode,
-                        const std::size_t pos)
-  {
-    const T integer = *reinterpret_cast<const T*>(&bytecode[pos]);
-    return integer;
-  }
-
-
   namespace detail
   {
     template <typename T>

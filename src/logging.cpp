@@ -21,9 +21,11 @@
 #include <iostream>
 #include <sstream>
 
-#include "Compiler.hpp"
+#include "detail/common.hpp"
+#include "CodeObject.hpp"
 #include "Instruction.hpp"
 #include "logging.hpp"
+#include "Object.hpp"
 #include "VirtualMachine.hpp"
 
 

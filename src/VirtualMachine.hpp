@@ -25,15 +25,15 @@
 #include <unordered_map>
 #include <vector>
 
+#include "CodeObject.hpp"
 #include "globals.hpp"
 #include "HashTable.hpp"
 #include "Instruction.hpp"
+#include "Object.hpp"
 #include "RuntimeError.hpp"
 #include "Stack.hpp"
 #include "StackFrame.hpp"
 #include "Value.hpp"
-#include "Variant.hpp"
-#include "VirtualMachine.hpp"
 
 
 namespace loxx

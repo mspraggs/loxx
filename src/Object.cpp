@@ -19,7 +19,7 @@
 
 #include "CodeObject.hpp"
 #include "ObjectTracker.hpp"
-#include "Value.hpp"
+#include "Object.hpp"
 
 
 namespace loxx

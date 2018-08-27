@@ -12,6 +12,7 @@ set(SRC
   HashTable.hpp
   Instruction.hpp
   logging.hpp
+  Object.hpp
   ObjectTracker.hpp
   Optional.hpp
   Parser.hpp
@@ -20,10 +21,12 @@ set(SRC
   Stack.hpp
   StackFrame.hpp
   Stmt.hpp
+  StringHashTable.hpp
   Token.hpp
   Value.hpp
   Variant.hpp
   VirtualMachine.hpp
+  detail/common.hpp
   detail/HashImpl.hpp
   detail/HashStructIterator.hpp
   detail/VariantImpl.hpp
@@ -33,12 +36,13 @@ set(SRC
   FunctionScope.cpp
   logging.cpp
   main.cpp
+  Object.cpp
   ObjectTracker.cpp
   Parser.cpp
   Scanner.cpp
   StackFrame.cpp
+  StringHashTable.cpp
   Token.cpp
-  Value.cpp
   VirtualMachine.cpp)
 
 add_executable(loxx ${SRC})
