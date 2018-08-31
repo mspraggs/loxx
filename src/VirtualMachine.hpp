@@ -51,6 +51,7 @@ namespace loxx
   private:
     void print_object(Value object) const;
     void execute_call();
+    void call_object(const UByteCodeArg num_args, ObjectPtr const obj);
     void execute_create_closure();
 
     UpvalueObject* capture_upvalue(Value& local);

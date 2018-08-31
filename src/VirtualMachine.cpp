@@ -389,6 +389,13 @@ namespace loxx
 
     const auto obj = unsafe_get<ObjectPtr>(stack_.top(num_args));
 
+    call_object(num_args, obj);
+  }
+
+
+  void VirtualMachine::call_object(
+      const UByteCodeArg num_args, const ObjectPtr obj)
+  {
     switch (obj->type()) {
       case ObjectType::Class: {
         const auto cls = static_cast<ClassObject*>(obj);
