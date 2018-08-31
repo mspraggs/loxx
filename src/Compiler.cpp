@@ -317,15 +317,33 @@ namespace loxx
 
   void Compiler::visit_call_expr(const Call& expr)
   {
-    compile(*expr.callee);
+    const auto callee_is_property = typeid(*expr.callee) == typeid(Get);
+
+    if (callee_is_property) {
+      const auto get = static_cast<const Get*>(expr.callee.get());
+      compile(*get->object);
+    }
+    else {
+      compile(*expr.callee);
+    }
 
     for (const auto& argument : expr.arguments) {
       compile(*argument);
     }
 
-    func_->add_instruction(Instruction::Call);
-    func_->add_integer<UByteCodeArg>(expr.arguments.size());
-    func_->update_line_num_table(expr.paren);
+    if (callee_is_property) {
+      const auto get = static_cast<const Get*>(expr.callee.get());
+      func_->add_instruction(Instruction::Invoke);
+      func_->update_line_num_table(expr.paren);
+      func_->add_integer<UByteCodeArg>(
+          func_->add_string_constant(get->name.lexeme()));
+      func_->add_integer<UByteCodeArg>(expr.arguments.size());
+    }
+    else {
+      func_->add_instruction(Instruction::Call);
+      func_->update_line_num_table(expr.paren);
+      func_->add_integer<UByteCodeArg>(expr.arguments.size());
+    }
   }
 
 
