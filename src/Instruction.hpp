@@ -45,6 +45,7 @@ namespace loxx
     GetSuperFunc,
     GetUpvalue,
     Greater,
+    Invoke,
     Jump,
     Less,
     LoadConstant,
@@ -122,6 +123,9 @@ namespace loxx
       break;
     case Instruction::Greater:
       stream << "GREATER";
+      break;
+    case Instruction::Invoke:
+      stream << "INVOKE";
       break;
     case Instruction::Jump:
       stream << "JUMP";
