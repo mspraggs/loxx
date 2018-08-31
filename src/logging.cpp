@@ -195,6 +195,13 @@ namespace loxx
       ret += sizeof(UByteCodeArg);
       break;
     }
+
+    case Instruction::Invoke:
+      const auto param = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
+      ret += sizeof(UByteCodeArg);
+      const auto num_args = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
+      ret += sizeof(UByteCodeArg);
+      std::cout << num_args << ", " << param << " '" << constants[param] << "'";
     }
 
     std::cout << '\n';
