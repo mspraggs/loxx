@@ -252,6 +252,33 @@ namespace loxx
         break;
       }
 
+      case Instruction::Invoke: {
+        const auto name = read_string();
+        const auto num_args = read_integer<UByteCodeArg>();
+
+        const auto instance = get_object<InstanceObject>(stack_.top(num_args));
+        if (not instance) {
+          throw make_runtime_error("Only instances have methods.");
+        }
+
+        const auto& field = instance->field(name);
+
+        if (field) {
+          if (not holds_alternative<ObjectPtr>(field->second)) {
+            throw make_runtime_error("Can only call functions and classes.");
+          }
+          call_object(num_args, unsafe_get<ObjectPtr>(field->second));
+        }
+        else if (const auto& method = instance->cls().method(name)) {
+          call_object(num_args, method->second);
+        }
+        else {
+          throw make_runtime_error(
+              "Undefined property '" + name->as_std_string() + "'.");
+        }
+        break;
+      }
+
       case Instruction::Jump:
         ip_ += read_integer<ByteCodeArg>();
         break;
