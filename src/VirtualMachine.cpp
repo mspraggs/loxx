@@ -56,18 +56,17 @@ namespace loxx
   void VirtualMachine::execute(const CodeObject& code_object)
   {
     code_object_ = &code_object;
-    ip_ = 0;
+    ip_ = code_object_->bytecode.data();
     call_stack_.emplace(ip_, code_object_, stack_.data(), nullptr);
 
-    while (ip_ < code_object_->bytecode.size()) {
+    while (ip_) {
 
       if (debug_) {
         print_stack();
         print_instruction(*code_object_, ip_);
       }
 
-      const auto instruction =
-          static_cast<Instruction>(code_object_->bytecode[ip_++]);
+      const auto instruction = static_cast<Instruction>(*ip_++);
 
       switch (instruction) {
 
@@ -333,6 +332,11 @@ namespace loxx
         const auto result = stack_.pop();
         close_upvalues(call_stack_.top().slot(0));
         const auto frame = call_stack_.pop();
+
+        if (call_stack_.size() == 0) {
+          return;
+        }
+
         // We add one here to discard the function that was previously called
         stack_.discard(
             static_cast<std::size_t>(&stack_.top() - &frame.slot(0)) + 1);
@@ -554,7 +558,7 @@ namespace loxx
 
     call_stack_.emplace(ip_, code_object_, stack_.top(num_args), closure);
     code_object_ = closure->function().code_object();
-    ip_ = 0;
+    ip_ = code_object_->bytecode.data();
   }
 
 
@@ -623,6 +627,8 @@ namespace loxx
 
   RuntimeError VirtualMachine::make_runtime_error(const std::string& msg) const
   {
-    return RuntimeError(get_current_line(*code_object_, ip_), msg);
+    const auto pos =
+        static_cast<std::size_t>(ip_ - code_object_->bytecode.data());
+    return RuntimeError(get_current_line(*code_object_, pos), msg);
   }
 }

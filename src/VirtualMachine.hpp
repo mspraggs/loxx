@@ -72,7 +72,7 @@ namespace loxx
     RuntimeError make_runtime_error(const std::string& msg) const;
 
     bool debug_;
-    std::size_t ip_;
+    const std::uint8_t* ip_;
     const CodeObject* code_object_;
     StringHashTable<Value> globals_;
     Stack<Value, max_stack_size> stack_;
@@ -85,7 +85,7 @@ namespace loxx
   template <typename T>
   T VirtualMachine::read_integer()
   {
-    const T integer = read_integer_at_pos<T>(code_object_->bytecode, ip_);
+    const T integer = read_integer_at_pos<T>(ip_);
     ip_ += sizeof(T);
 
     return integer;

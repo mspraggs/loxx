@@ -54,8 +54,8 @@ namespace loxx
   void print_bytecode(const std::string& name, const CodeObject& output);
 
 
-  std::size_t print_instruction(const CodeObject& output,
-                                const std::size_t pos);
+  const std::uint8_t* print_instruction(const CodeObject& output,
+                                        const std::uint8_t* ip);
 
 
   unsigned int get_current_line(const CodeObject& output,

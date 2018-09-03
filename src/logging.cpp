@@ -74,19 +74,21 @@ namespace loxx
   void print_bytecode(const std::string& name, const CodeObject& output)
   {
     std::cout << "=== " << name << " ===\n";
-    std::size_t pos = 0;
-    while (pos < output.bytecode.size()) {
-      pos = print_instruction(output, pos);
+    const std::uint8_t* ip = output.bytecode.data();
+    while (ip <= &output.bytecode.back()) {
+      ip = print_instruction(output, ip);
     }
   }
 
 
-  std::size_t print_instruction(const CodeObject& output, const std::size_t pos)
+  const std::uint8_t* print_instruction(const CodeObject& output,
+                                        const std::uint8_t* ip)
   {
     const auto& bytecode = output.bytecode;
     const auto& constants = output.constants;
-    const auto instruction = static_cast<Instruction>(bytecode[pos]);
+    const auto instruction = static_cast<Instruction>(*ip);
 
+    const auto pos = static_cast<std::size_t>(ip - bytecode.data());
     static unsigned int last_line_num = 0;
     const unsigned int current_line_num = get_current_line(output, pos);
 
@@ -104,7 +106,7 @@ namespace loxx
     std::cout << line_num_ss.str() << ' ';
     std::cout << std::setw(20) << std::setfill(' ') << std::left << instruction;
 
-    std::size_t ret = pos + 1;
+    const std::uint8_t* ret = ip + 1;
 
     switch (instruction) {
 
@@ -129,7 +131,7 @@ namespace loxx
 
     case Instruction::ConditionalJump:
     case Instruction::Jump: {
-      const auto param = read_integer_at_pos<ByteCodeArg>(bytecode, ret);
+      const auto param = read_integer_at_pos<ByteCodeArg>(ret);
       std::cout << pos << " -> " << pos + param + sizeof(ByteCodeArg) + 1;
       ret += sizeof(ByteCodeArg);
       break;
@@ -137,7 +139,7 @@ namespace loxx
 
     case Instruction::CreateClosure: {
       const auto& func_value =
-          constants[read_integer_at_pos<UByteCodeArg>(bytecode, ret)];
+          constants[read_integer_at_pos<UByteCodeArg>(ret)];
       const auto& func_obj = get<ObjectPtr>(func_value);
       auto func = static_cast<FuncObject*>(func_obj);
 
@@ -146,10 +148,9 @@ namespace loxx
       std::cout << func->lexeme() << ' ';
 
       for (unsigned int i = 0; i < func->num_upvalues(); ++i) {
-        const auto is_local =
-            read_integer_at_pos<UByteCodeArg>(bytecode, ret) != 0;
+        const auto is_local = read_integer_at_pos<UByteCodeArg>(ret) != 0;
         ret += sizeof(UByteCodeArg);
-        const auto index = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
+        const auto index = read_integer_at_pos<UByteCodeArg>(ret);
         ret += sizeof(UByteCodeArg);
 
         std::cout << '(' << (is_local ? "local" : "upvalue") << ", "
@@ -164,7 +165,7 @@ namespace loxx
     }
 
     case Instruction::Call: {
-      const auto num_args = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
+      const auto num_args = read_integer_at_pos<UByteCodeArg>(ret);
       ret += sizeof(UByteCodeArg);
       std::cout << num_args;
       break;
@@ -180,7 +181,7 @@ namespace loxx
     case Instruction::SetGlobal:
     case Instruction::SetProperty:
     case Instruction::LoadConstant: {
-      const auto param = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
+      const auto param = read_integer_at_pos<UByteCodeArg>(ret);
       std::cout << param << " '" << constants[param] << "'";
       ret += sizeof(UByteCodeArg);
       break;
@@ -190,16 +191,16 @@ namespace loxx
     case Instruction::GetUpvalue:
     case Instruction::SetLocal:
     case Instruction::SetUpvalue: {
-      const auto param = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
+      const auto param = read_integer_at_pos<UByteCodeArg>(ret);
       std::cout << param;
       ret += sizeof(UByteCodeArg);
       break;
     }
 
     case Instruction::Invoke:
-      const auto param = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
+      const auto param = read_integer_at_pos<UByteCodeArg>(ret);
       ret += sizeof(UByteCodeArg);
-      const auto num_args = read_integer_at_pos<UByteCodeArg>(bytecode, ret);
+      const auto num_args = read_integer_at_pos<UByteCodeArg>(ret);
       ret += sizeof(UByteCodeArg);
       std::cout << num_args << ", " << param << " '" << constants[param] << "'";
     }
