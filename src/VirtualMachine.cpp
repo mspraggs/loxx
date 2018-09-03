@@ -437,9 +437,7 @@ namespace loxx
         }
 
         if (num_args != 0) {
-          std::stringstream ss;
-          ss << "Expected 0 arguments but got " << num_args << '.';
-          throw make_runtime_error(ss.str());
+          incorrect_arg_num(0, num_args);
         }
         break;
       }
@@ -460,10 +458,7 @@ namespace loxx
         const auto native = static_cast<NativeObject*>(obj);
 
         if (native->arity() != num_args) {
-          std::stringstream ss;
-          ss << "Expected " << native->arity() << " arguments but got "
-             << num_args << '.';
-          throw make_runtime_error(ss.str());
+          incorrect_arg_num(native->arity(), num_args);
         }
 
         const auto result = native->call(&stack_.top(num_args),
@@ -550,10 +545,7 @@ namespace loxx
                             const std::size_t num_args)
   {
     if (closure->function().arity() != num_args) {
-      std::stringstream ss;
-      ss << "Expected " << closure->function().arity()
-         << " arguments but got " << num_args << '.';
-      throw make_runtime_error(ss.str());
+      incorrect_arg_num(closure->function().arity(), num_args);
     }
 
     call_stack_.emplace(ip_, code_object_, stack_.top(num_args), closure);
@@ -613,6 +605,15 @@ namespace loxx
       return unsafe_get<bool>(value);
     }
     return true;
+  }
+
+
+  void VirtualMachine::incorrect_arg_num(const UByteCodeArg arity,
+                                         const UByteCodeArg num_args) const
+  {
+    std::stringstream ss;
+    ss << "Expected " << arity << " arguments but got " << num_args << '.';
+    throw make_runtime_error(ss.str());
   }
 
 
