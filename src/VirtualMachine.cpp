@@ -548,6 +548,10 @@ namespace loxx
       incorrect_arg_num(closure->function().arity(), num_args);
     }
 
+    if (call_stack_.size() == max_call_frames) {
+      throw make_runtime_error("Stack overflow.");
+    }
+
     call_stack_.emplace(ip_, code_object_, stack_.top(num_args), closure);
     code_object_ = closure->function().code_object();
     ip_ = 0;
