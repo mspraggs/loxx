@@ -27,7 +27,7 @@
 
 namespace loxx
 {
-  template <typename T, std::size_t N = 4096>
+  template <typename T, std::size_t N>
   class Stack
   {
   public:
