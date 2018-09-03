@@ -100,6 +100,7 @@ namespace loxx
       Token name_;
     };
 
+    void compile_stmts(const std::vector<std::unique_ptr<Stmt>>& statements);
     void compile(const Expr& expr);
     void compile(const Stmt& stmt);
     void compile_function(const Function& stmt, const FunctionType type);

@@ -27,21 +27,15 @@ namespace loxx
 {
   void Compiler::compile(const std::vector<std::unique_ptr<Stmt>>& statements)
   {
-    for (const auto& stmt : statements) {
-      try {
-        compile(*stmt);
-      }
-      catch (const CompileError& e) {
-        error(e.name(), e.what());
-      }
-    }
+    compile_stmts(statements);
+    func_->add_instruction(Instruction::Return);
   }
 
 
   void Compiler::visit_block_stmt(const Block& stmt)
   {
     func_->begin_scope();
-    compile(stmt.statements);
+    compile_stmts(stmt.statements);
     func_->end_scope();
   }
 
@@ -479,6 +473,20 @@ namespace loxx
   }
 
 
+  void Compiler::compile_stmts(
+      const std::vector<std::unique_ptr<Stmt>>& statements)
+  {
+    for (const auto& stmt : statements) {
+      try {
+        compile(*stmt);
+      }
+      catch (const CompileError& e) {
+        error(e.name(), e.what());
+      }
+    }
+  }
+
+
   void Compiler::compile(const Expr& expr)
   {
     expr.accept(*this);
@@ -509,7 +517,7 @@ namespace loxx
       define_variable(param_index, param);
     }
 
-    compile(stmt.body);
+    compile_stmts(stmt.body);
 
     // Return "this" if in constructor
     if (func_->type() == FunctionType::Initialiser) {
