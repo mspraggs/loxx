@@ -57,7 +57,7 @@ namespace loxx
   {
     code_object_ = &code_object;
     ip_ = 0;
-    call_stack_.emplace(ip_, code_object_, 0, stack_.data(), nullptr);
+    call_stack_.emplace(ip_, code_object_, stack_.data(), nullptr);
 
     while (ip_ < code_object_->bytecode.size()) {
 
@@ -333,7 +333,9 @@ namespace loxx
         const auto result = stack_.pop();
         close_upvalues(call_stack_.top().slot(0));
         const auto frame = call_stack_.pop();
-        stack_.discard(stack_.size() - frame.prev_stack_size());
+        // We add one here to discard the function that was previously called
+        stack_.discard(
+            static_cast<std::size_t>(&stack_.top() - &frame.slot(0)) + 1);
         stack_.push(result);
         code_object_ = frame.prev_code_object();
         ip_ = frame.prev_ip();
@@ -554,8 +556,7 @@ namespace loxx
       throw make_runtime_error(ss.str());
     }
 
-    call_stack_.emplace(ip_, code_object_, stack_.size() - num_args - 1,
-                        stack_.top(num_args), closure);
+    call_stack_.emplace(ip_, code_object_, stack_.top(num_args), closure);
     code_object_ = closure->function().code_object();
     ip_ = 0;
   }

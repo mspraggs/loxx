@@ -36,26 +36,20 @@ namespace loxx
   {
   public:
     StackFrame() = default;
-    StackFrame(const std::size_t prev_ip,
-               const CodeObject* prev_code_object,
-               const std::size_t prev_stack_size, Value& slots_base,
-               ClosureObject* closure)
-        : StackFrame(prev_ip, prev_code_object, prev_stack_size, &slots_base,
+    StackFrame(const std::size_t prev_ip, const CodeObject* prev_code_object,
+               Value& slots_base, ClosureObject* closure)
+        : StackFrame(prev_ip, prev_code_object, &slots_base,
                      closure)
     {}
-    StackFrame(const std::size_t prev_ip,
-               const CodeObject* prev_code_object,
-               const std::size_t prev_stack_size, Value* slots_base,
-               ClosureObject* closure)
+    StackFrame(const std::size_t prev_ip, const CodeObject* prev_code_object,
+               Value* slots_base, ClosureObject* closure)
         : prev_ip_(prev_ip), prev_code_object_(prev_code_object),
-          prev_stack_size_(prev_stack_size), slots_(slots_base),
-          closure_(closure)
+          slots_(slots_base), closure_(closure)
     {}
 
     std::size_t prev_ip() const { return prev_ip_; }
     const CodeObject* prev_code_object() const
     { return prev_code_object_; }
-    std::size_t prev_stack_size() const { return prev_stack_size_; }
 
     const Value& slot(const std::size_t i) const { return slots_[i]; }
     Value& slot(const std::size_t i) { return slots_[i]; }
@@ -66,7 +60,6 @@ namespace loxx
   private:
     std::size_t prev_ip_;
     const CodeObject* prev_code_object_;
-    std::size_t prev_stack_size_;
     Value* slots_;
     ClosureObject* closure_;
   };
