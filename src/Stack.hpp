@@ -31,7 +31,7 @@ namespace loxx
   class Stack
   {
   public:
-    explicit Stack() : top_(0) {}
+    Stack() : top_(0) {}
 
     T* data() { return stack_.data(); }
     const T* data() const { return stack_.data(); }
