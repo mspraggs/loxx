@@ -60,7 +60,7 @@ namespace loxx
                     Instruction::CreateSubclass : Instruction::CreateClass;
     const auto name_constant = make_string_constant(stmt.name.lexeme());
     func_->add_instruction(op);
-    func_->add_integer<UByteCodeArg>(name_constant);
+    func_->add_integer<InstrArgUByte>(name_constant);
     func_->update_line_num_table(stmt.name);
 
     // Compile the class's methods
@@ -73,7 +73,7 @@ namespace loxx
       compile_function(*method, type);
 
       func_->add_instruction(Instruction::CreateMethod);
-      func_->add_integer<UByteCodeArg>(method_constant);
+      func_->add_integer<InstrArgUByte>(method_constant);
       func_->update_line_num_table(method->name);
     }
 
@@ -119,19 +119,19 @@ namespace loxx
 
     func_->add_instruction(Instruction::ConditionalJump);
     const auto first_jump_pos = func_->current_bytecode_size();
-    func_->add_integer<UByteCodeArg>(0);
+    func_->add_integer<InstrArgUByte>(0);
 
     func_->add_instruction(Instruction::Pop);
 
     compile(*stmt.then_branch);
 
-    const auto first_jump_size = static_cast<ByteCodeArg>(
+    const auto first_jump_size = static_cast<InstrArgSByte>(
         func_->current_bytecode_size() - first_jump_pos + 1);
     func_->rewrite_integer(first_jump_pos, first_jump_size);
 
     func_->add_instruction(Instruction::Jump);
     const auto second_jump_pos = func_->current_bytecode_size();
-    func_->add_integer<UByteCodeArg>(0);
+    func_->add_integer<InstrArgUByte>(0);
 
     func_->add_instruction(Instruction::Pop);
 
@@ -139,9 +139,9 @@ namespace loxx
       compile(*stmt.else_branch);
     }
 
-    const auto second_jump_size = static_cast<ByteCodeArg>(
+    const auto second_jump_size = static_cast<InstrArgSByte>(
             func_->current_bytecode_size() - second_jump_pos -
-            sizeof(ByteCodeArg));
+            sizeof(InstrArgSByte));
     func_->rewrite_integer(second_jump_pos, second_jump_size);
   }
 
@@ -214,7 +214,7 @@ namespace loxx
     // We want to jump over the jump that takes us out of the while loop, which
     // also involves jumping over a pop instruction (hence + 2 for two
     // instructions).
-    func_->add_integer<ByteCodeArg>(0);
+    func_->add_integer<InstrArgSByte>(0);
     func_->add_instruction(Instruction::Pop);
 
     // Compile the body of the while loop.
@@ -225,13 +225,13 @@ namespace loxx
 
     // Jump back to the start of the loop to check the condition again.
     func_->add_instruction(Instruction::Jump);
-    func_->add_integer<ByteCodeArg>(
-        first_label_pos - func_->current_bytecode_size() - sizeof(ByteCodeArg));
+    func_->add_integer<InstrArgSByte>(
+        first_label_pos - func_->current_bytecode_size() - sizeof(InstrArgSByte));
 
     // Back-patch the jump over the body of the while loop.
-    func_->rewrite_integer<ByteCodeArg>(
+    func_->rewrite_integer<InstrArgSByte>(
         first_jump_pos,
-        func_->current_bytecode_size() - first_jump_pos - sizeof(ByteCodeArg));
+        func_->current_bytecode_size() - first_jump_pos - sizeof(InstrArgSByte));
     func_->add_instruction(Instruction::Pop);
   }
 
@@ -329,14 +329,14 @@ namespace loxx
       const auto get = static_cast<const Get*>(expr.callee.get());
       func_->add_instruction(Instruction::Invoke);
       func_->update_line_num_table(expr.paren);
-      func_->add_integer<UByteCodeArg>(
+      func_->add_integer<InstrArgUByte>(
           func_->add_string_constant(get->name.lexeme()));
-      func_->add_integer<UByteCodeArg>(expr.arguments.size());
+      func_->add_integer<InstrArgUByte>(expr.arguments.size());
     }
     else {
       func_->add_instruction(Instruction::Call);
       func_->update_line_num_table(expr.paren);
-      func_->add_integer<UByteCodeArg>(expr.arguments.size());
+      func_->add_integer<InstrArgUByte>(expr.arguments.size());
     }
   }
 
@@ -347,7 +347,7 @@ namespace loxx
 
     const auto name_constant = make_string_constant(expr.name.lexeme());
     func_->add_instruction(Instruction::GetProperty);
-    func_->add_integer<UByteCodeArg>(name_constant);
+    func_->add_integer<InstrArgUByte>(name_constant);
     func_->update_line_num_table(expr.name);
   }
 
@@ -374,7 +374,7 @@ namespace loxx
     const auto index = func_->add_named_constant(expr.lexeme, expr.value);
 
     func_->add_instruction(Instruction::LoadConstant);
-    func_->add_integer<UByteCodeArg>(index);
+    func_->add_integer<InstrArgUByte>(index);
   }
 
 
@@ -385,27 +385,27 @@ namespace loxx
     if (expr.op.type() == TokenType::Or) {
       func_->add_instruction(Instruction::ConditionalJump);
       func_->update_line_num_table(expr.op);
-      func_->add_integer<ByteCodeArg>(sizeof(ByteCodeArg) + 1);
+      func_->add_integer<InstrArgSByte>(sizeof(InstrArgSByte) + 1);
       func_->add_instruction(Instruction::Jump);
       const auto jump_pos = func_->current_bytecode_size();
-      func_->add_integer<ByteCodeArg>(0);
+      func_->add_integer<InstrArgSByte>(0);
 
       const auto skip_start = func_->current_bytecode_size();
       compile(*expr.right);
-      func_->rewrite_integer<ByteCodeArg>(
+      func_->rewrite_integer<InstrArgSByte>(
           jump_pos, func_->current_bytecode_size() - skip_start);
     }
     else if (expr.op.type() == TokenType::And) {
       func_->add_instruction(Instruction::ConditionalJump);
       func_->update_line_num_table(expr.op);
       const auto jump_pos = func_->current_bytecode_size();
-      func_->add_integer<UByteCodeArg>(0);
+      func_->add_integer<InstrArgUByte>(0);
 
       const auto skip_start = func_->current_bytecode_size();
       func_->add_instruction(Instruction::Pop);
       compile(*expr.right);
 
-      func_->rewrite_integer<ByteCodeArg>(
+      func_->rewrite_integer<InstrArgSByte>(
           jump_pos, func_->current_bytecode_size() - skip_start);
     }
   }
@@ -418,7 +418,7 @@ namespace loxx
 
     const auto name_constant = make_string_constant(expr.name.lexeme());
     func_->add_instruction(Instruction::SetProperty);
-    func_->add_integer<UByteCodeArg>(name_constant);
+    func_->add_integer<InstrArgUByte>(name_constant);
     func_->update_line_num_table(expr.name);
   }
 
@@ -439,7 +439,7 @@ namespace loxx
 
     const auto func = make_string_constant(expr.method.lexeme());
     func_->add_instruction(Instruction::GetSuperFunc);
-    func_->add_integer<UByteCodeArg>(func);
+    func_->add_integer<InstrArgUByte>(func);
     func_->update_line_num_table(expr.keyword);
   }
 
@@ -545,12 +545,12 @@ namespace loxx
     const auto index = func_->add_constant(Value(InPlace<ObjectPtr>(), func));
 
     func_->add_instruction(Instruction::CreateClosure);
-    func_->add_integer<UByteCodeArg>(index);
+    func_->add_integer<InstrArgUByte>(index);
     func_->update_line_num_table(stmt.name);
 
     for (const auto& upvalue : upvalues) {
-      func_->add_integer<UByteCodeArg>(upvalue.is_local ? 1 : 0);
-      func_->add_integer<UByteCodeArg>(upvalue.index);
+      func_->add_integer<InstrArgUByte>(upvalue.is_local ? 1 : 0);
+      func_->add_integer<InstrArgUByte>(upvalue.index);
     }
   }
 
@@ -564,12 +564,12 @@ namespace loxx
   }
 
 
-  Optional<UByteCodeArg> Compiler::declare_variable(const Token& name)
+  Optional<InstrArgUByte> Compiler::declare_variable(const Token& name)
   {
-    const Optional<UByteCodeArg> arg =
+    const Optional<InstrArgUByte> arg =
         func_->scope_depth() == 0 ?
         func_->add_string_constant(name.lexeme()) :
-        Optional<UByteCodeArg>();
+        Optional<InstrArgUByte>();
 
     if (not arg) {
       func_->declare_local(name);
@@ -579,12 +579,12 @@ namespace loxx
   }
 
 
-  void Compiler::define_variable(const Optional<UByteCodeArg>& arg,
+  void Compiler::define_variable(const Optional<InstrArgUByte>& arg,
                                  const Token& name)
   {
     if (arg) {
       func_->add_instruction(Instruction::DefineGlobal);
-      func_->add_integer<UByteCodeArg>(*arg);
+      func_->add_integer<InstrArgUByte>(*arg);
       func_->update_line_num_table(name);
     }
     else {
@@ -617,12 +617,12 @@ namespace loxx
     }
 
     func_->add_instruction(op);
-    func_->add_integer<UByteCodeArg>(*arg);
+    func_->add_integer<InstrArgUByte>(*arg);
     func_->update_line_num_table(token);
   }
 
 
-  UByteCodeArg Compiler::make_string_constant(const std::string& str) const
+  InstrArgUByte Compiler::make_string_constant(const std::string& str) const
   {
     return func_->add_string_constant(str);
   }

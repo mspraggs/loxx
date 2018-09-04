@@ -85,18 +85,18 @@ namespace loxx
   {
   public:
     FuncObject(std::string lexeme, std::unique_ptr<CodeObject> code_object,
-               const unsigned int arity, const UByteCodeArg num_upvalues);
+               const unsigned int arity, const InstrArgUByte num_upvalues);
 
     const CodeObject* code_object() const
     { return code_object_.get(); }
 
     unsigned int arity() const { return arity_; }
-    UByteCodeArg num_upvalues() const { return num_upvalues_; }
+    InstrArgUByte num_upvalues() const { return num_upvalues_; }
     const std::string& lexeme() const { return lexeme_; }
 
   private:
     unsigned int arity_;
-    UByteCodeArg num_upvalues_;
+    InstrArgUByte num_upvalues_;
     std::unique_ptr<CodeObject> code_object_;
     std::string lexeme_;
   };

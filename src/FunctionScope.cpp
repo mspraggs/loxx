@@ -54,7 +54,7 @@ namespace loxx
   }
 
 
-  Optional<UByteCodeArg> FunctionScope::resolve_local(
+  Optional<InstrArgUByte> FunctionScope::resolve_local(
       const Token& name, const bool in_function) const
   {
     for (long int i = locals_.size() - 1; i >= 0; --i) {
@@ -62,18 +62,18 @@ namespace loxx
         if (not in_function and not locals_[i].defined) {
           error(name, "Cannot read local variable in its own initialiser.");
         }
-        return static_cast<UByteCodeArg>(i);
+        return static_cast<InstrArgUByte>(i);
       }
     }
-    return Optional<UByteCodeArg>();
+    return Optional<InstrArgUByte>();
   }
 
 
-  Optional <UByteCodeArg> FunctionScope::resolve_upvalue(const Token& name)
+  Optional <InstrArgUByte> FunctionScope::resolve_upvalue(const Token& name)
   {
     if (enclosing_ == nullptr) {
       // There is only one scope, so we're not going to find an upvalue
-      return Optional<UByteCodeArg>();
+      return Optional<InstrArgUByte>();
     }
 
     auto local = enclosing_->resolve_local(name, true);
@@ -88,25 +88,25 @@ namespace loxx
       return add_upvalue(*local, false);
     }
 
-    return Optional<UByteCodeArg>();
+    return Optional<InstrArgUByte>();
   }
 
 
-  UByteCodeArg FunctionScope::add_upvalue(const UByteCodeArg index,
+  InstrArgUByte FunctionScope::add_upvalue(const InstrArgUByte index,
                                           const bool is_local)
   {
-    for (UByteCodeArg i = 0; i < upvalues_.size(); ++i) {
+    for (InstrArgUByte i = 0; i < upvalues_.size(); ++i) {
       if (upvalues_[i].index == index and upvalues_[i].is_local == is_local) {
         return i;
       }
     }
 
     upvalues_.push_back(Upvalue{is_local, index});
-    return static_cast<UByteCodeArg>(upvalues_.size() - 1);
+    return static_cast<InstrArgUByte>(upvalues_.size() - 1);
   }
 
 
-  UByteCodeArg FunctionScope::add_named_constant(const std::string& lexeme,
+  InstrArgUByte FunctionScope::add_named_constant(const std::string& lexeme,
                                                  const Value& value)
   {
     const auto s = make_object<StringObject>(lexeme);
@@ -119,7 +119,7 @@ namespace loxx
     }
 
     const auto index =
-        static_cast<UByteCodeArg>(code_object_->constants.size());
+        static_cast<InstrArgUByte>(code_object_->constants.size());
 
     code_object_->constants.push_back(value);
     code_object_->constant_map[s] = index;
@@ -127,13 +127,13 @@ namespace loxx
     return index;
   }
 
-  UByteCodeArg FunctionScope::add_string_constant(const std::string& str)
+  InstrArgUByte FunctionScope::add_string_constant(const std::string& str)
   {
     const auto ptr = make_object<StringObject>(str);
     return add_named_constant(str, Value(InPlace<ObjectPtr>(), ptr));
   }
 
-  UByteCodeArg FunctionScope::add_constant(const Value& value)
+  InstrArgUByte FunctionScope::add_constant(const Value& value)
   {
     if (code_object_->constants.size() == max_scope_constants) {
       error(last_line_num_, "Too many constants in one scope.");

@@ -105,13 +105,13 @@ namespace loxx
     void compile(const Stmt& stmt);
     void compile_function(const Function& stmt, const FunctionType type);
     void compile_this_return();
-    Optional<UByteCodeArg> declare_variable(const Token& name);
-    void define_variable(const Optional <UByteCodeArg>& arg, const Token& name);
+    Optional<InstrArgUByte> declare_variable(const Token& name);
+    void define_variable(const Optional <InstrArgUByte>& arg, const Token& name);
     template <typename T>
     void handle_variable_reference(const T& expr, const bool write);
     void handle_variable_reference(const Token& token, const bool write);
 
-    inline UByteCodeArg make_string_constant(const std::string& str) const;
+    inline InstrArgUByte make_string_constant(const std::string& str) const;
 
     bool debug_;
     ClassType class_type_;

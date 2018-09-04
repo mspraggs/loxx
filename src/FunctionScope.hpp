@@ -61,15 +61,15 @@ namespace loxx
     void define_local();
     void add_local(const Token& name);
 
-    Optional<UByteCodeArg> resolve_local(
+    Optional<InstrArgUByte> resolve_local(
         const Token& name, const bool in_function) const;
-    Optional <UByteCodeArg> resolve_upvalue(const Token& name);
-    UByteCodeArg add_upvalue(const UByteCodeArg index, const bool is_local);
+    Optional <InstrArgUByte> resolve_upvalue(const Token& name);
+    InstrArgUByte add_upvalue(const InstrArgUByte index, const bool is_local);
 
-    UByteCodeArg add_named_constant(const std::string& lexeme,
+    InstrArgUByte add_named_constant(const std::string& lexeme,
                                     const Value& value);
-    UByteCodeArg add_string_constant(const std::string& str);
-    UByteCodeArg add_constant(const Value& value);
+    InstrArgUByte add_string_constant(const std::string& str);
+    InstrArgUByte add_constant(const Value& value);
 
     void begin_scope();
     void end_scope();
@@ -106,7 +106,7 @@ namespace loxx
     struct Upvalue
     {
       bool is_local;
-      UByteCodeArg index;
+      InstrArgUByte index;
     };
 
   private:

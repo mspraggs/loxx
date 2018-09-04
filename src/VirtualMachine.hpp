@@ -45,13 +45,13 @@ namespace loxx
 
     void execute(const CodeObject& code_object);
 
-    const Value& get_constant(const UByteCodeArg index) const
+    const Value& get_constant(const InstrArgUByte index) const
     { return code_object_->constants[index]; }
 
   private:
     void print_object(Value object) const;
     void execute_call();
-    void call_object(const UByteCodeArg num_args, ObjectPtr const obj);
+    void call_object(const InstrArgUByte num_args, ObjectPtr const obj);
     void execute_create_closure();
 
     UpvalueObject* capture_upvalue(Value& local);
@@ -67,8 +67,8 @@ namespace loxx
                                const Value& second) const;
     bool are_equal(const Value& first, const Value& second) const;
     bool is_truthy(const Value& value) const;
-    void incorrect_arg_num(const UByteCodeArg arity,
-                           const UByteCodeArg num_args) const;
+    void incorrect_arg_num(const InstrArgUByte arity,
+                           const InstrArgUByte num_args) const;
     RuntimeError make_runtime_error(const std::string& msg) const;
 
     bool debug_;

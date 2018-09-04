@@ -26,7 +26,7 @@ namespace loxx
 {
   FuncObject::FuncObject(
       std::string lexeme, std::unique_ptr<CodeObject> code_object,
-      const unsigned int arity, const UByteCodeArg num_upvalues)
+      const unsigned int arity, const InstrArgUByte num_upvalues)
       : Object(ObjectType::Function),
         arity_(arity), num_upvalues_(num_upvalues),
         code_object_(std::move(code_object)), lexeme_(std::move(lexeme))

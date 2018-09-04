@@ -131,27 +131,27 @@ namespace loxx
 
     case Instruction::ConditionalJump:
     case Instruction::Jump: {
-      const auto param = read_integer_at_pos<ByteCodeArg>(ret);
-      std::cout << pos << " -> " << pos + param + sizeof(ByteCodeArg) + 1;
-      ret += sizeof(ByteCodeArg);
+      const auto param = read_integer_at_pos<InstrArgSByte>(ret);
+      std::cout << pos << " -> " << pos + param + sizeof(InstrArgSByte) + 1;
+      ret += sizeof(InstrArgSByte);
       break;
     }
 
     case Instruction::CreateClosure: {
       const auto& func_value =
-          constants[read_integer_at_pos<UByteCodeArg>(ret)];
+          constants[read_integer_at_pos<InstrArgUByte>(ret)];
       const auto& func_obj = get<ObjectPtr>(func_value);
       auto func = static_cast<FuncObject*>(func_obj);
 
-      ret += sizeof(UByteCodeArg);
+      ret += sizeof(InstrArgUByte);
 
       std::cout << func->lexeme() << ' ';
 
       for (unsigned int i = 0; i < func->num_upvalues(); ++i) {
-        const auto is_local = read_integer_at_pos<UByteCodeArg>(ret) != 0;
-        ret += sizeof(UByteCodeArg);
-        const auto index = read_integer_at_pos<UByteCodeArg>(ret);
-        ret += sizeof(UByteCodeArg);
+        const auto is_local = read_integer_at_pos<InstrArgUByte>(ret) != 0;
+        ret += sizeof(InstrArgUByte);
+        const auto index = read_integer_at_pos<InstrArgUByte>(ret);
+        ret += sizeof(InstrArgUByte);
 
         std::cout << '(' << (is_local ? "local" : "upvalue") << ", "
                   << index << ')';
@@ -165,8 +165,8 @@ namespace loxx
     }
 
     case Instruction::Call: {
-      const auto num_args = read_integer_at_pos<UByteCodeArg>(ret);
-      ret += sizeof(UByteCodeArg);
+      const auto num_args = read_integer_at_pos<InstrArgUByte>(ret);
+      ret += sizeof(InstrArgUByte);
       std::cout << num_args;
       break;
     }
@@ -181,9 +181,9 @@ namespace loxx
     case Instruction::SetGlobal:
     case Instruction::SetProperty:
     case Instruction::LoadConstant: {
-      const auto param = read_integer_at_pos<UByteCodeArg>(ret);
+      const auto param = read_integer_at_pos<InstrArgUByte>(ret);
       std::cout << param << " '" << constants[param] << "'";
-      ret += sizeof(UByteCodeArg);
+      ret += sizeof(InstrArgUByte);
       break;
     }
 
@@ -191,17 +191,17 @@ namespace loxx
     case Instruction::GetUpvalue:
     case Instruction::SetLocal:
     case Instruction::SetUpvalue: {
-      const auto param = read_integer_at_pos<UByteCodeArg>(ret);
+      const auto param = read_integer_at_pos<InstrArgUByte>(ret);
       std::cout << param;
-      ret += sizeof(UByteCodeArg);
+      ret += sizeof(InstrArgUByte);
       break;
     }
 
     case Instruction::Invoke:
-      const auto param = read_integer_at_pos<UByteCodeArg>(ret);
-      ret += sizeof(UByteCodeArg);
-      const auto num_args = read_integer_at_pos<UByteCodeArg>(ret);
-      ret += sizeof(UByteCodeArg);
+      const auto param = read_integer_at_pos<InstrArgUByte>(ret);
+      ret += sizeof(InstrArgUByte);
+      const auto num_args = read_integer_at_pos<InstrArgUByte>(ret);
+      ret += sizeof(InstrArgUByte);
       std::cout << num_args << ", " << param << " '" << constants[param] << "'";
     }
 

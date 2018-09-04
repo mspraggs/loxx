@@ -104,7 +104,7 @@ namespace loxx
         break;
 
       case Instruction::ConditionalJump: {
-        const auto jmp = read_integer<ByteCodeArg>();
+        const auto jmp = read_integer<InstrArgSByte>();
         if (not is_truthy(stack_.top())) {
           ip_ += jmp;
         }
@@ -186,7 +186,7 @@ namespace loxx
       }
 
       case Instruction::GetLocal: {
-        const auto arg = read_integer<UByteCodeArg>();
+        const auto arg = read_integer<InstrArgUByte>();
         stack_.push(call_stack_.top().slot(arg));
         break;
       }
@@ -237,7 +237,7 @@ namespace loxx
       }
 
       case Instruction::GetUpvalue: {
-        const auto slot = read_integer<UByteCodeArg>();
+        const auto slot = read_integer<InstrArgUByte>();
         stack_.push(call_stack_.top().closure()->upvalue(slot)->value());
         break;
       }
@@ -253,7 +253,7 @@ namespace loxx
 
       case Instruction::Invoke: {
         const auto name = read_string();
-        const auto num_args = read_integer<UByteCodeArg>();
+        const auto num_args = read_integer<InstrArgUByte>();
 
         const auto instance = get_object<InstanceObject>(stack_.top(num_args));
         if (not instance) {
@@ -279,7 +279,7 @@ namespace loxx
       }
 
       case Instruction::Jump:
-        ip_ += read_integer<ByteCodeArg>();
+        ip_ += read_integer<InstrArgSByte>();
         break;
 
       case Instruction::Less: {
@@ -292,7 +292,7 @@ namespace loxx
       }
 
       case Instruction::LoadConstant:
-        stack_.push(code_object_->constants[read_integer<UByteCodeArg>()]);
+        stack_.push(code_object_->constants[read_integer<InstrArgUByte>()]);
         break;
 
       case Instruction::Multiply: {
@@ -359,7 +359,7 @@ namespace loxx
       }
 
       case Instruction::SetLocal: {
-        const auto arg = read_integer<UByteCodeArg>();
+        const auto arg = read_integer<InstrArgUByte>();
         call_stack_.top().slot(arg) = stack_.top();
         break;
       }
@@ -380,7 +380,7 @@ namespace loxx
       }
 
       case Instruction::SetUpvalue: {
-        const auto slot = read_integer<UByteCodeArg>();
+        const auto slot = read_integer<InstrArgUByte>();
         call_stack_.top().closure()->upvalue(slot)->set_value(stack_.top());
         break;
       }
@@ -414,7 +414,7 @@ namespace loxx
 
   void VirtualMachine::execute_call()
   {
-    const auto num_args = read_integer<UByteCodeArg>();
+    const auto num_args = read_integer<InstrArgUByte>();
 
     if (not holds_alternative<ObjectPtr>(stack_.top(num_args))) {
       throw make_runtime_error("Can only call functions and classes.");
@@ -427,7 +427,7 @@ namespace loxx
 
 
   void VirtualMachine::call_object(
-      const UByteCodeArg num_args, const ObjectPtr obj)
+      const InstrArgUByte num_args, const ObjectPtr obj)
   {
     switch (obj->type()) {
       case ObjectType::Class: {
@@ -482,15 +482,15 @@ namespace loxx
   void VirtualMachine::execute_create_closure()
   {
     const auto& func_value =
-        code_object_->constants[read_integer<UByteCodeArg>()];
+        code_object_->constants[read_integer<InstrArgUByte>()];
     const auto& func_obj = unsafe_get<ObjectPtr>(func_value);
     auto func = static_cast<FuncObject*>(func_obj);
 
     auto closure = make_object<ClosureObject>(func);
 
     for (unsigned int i = 0; i < closure->num_upvalues(); ++i) {
-      const auto is_local = read_integer<UByteCodeArg>() != 0;
-      const auto index = read_integer<UByteCodeArg>();
+      const auto is_local = read_integer<InstrArgUByte>() != 0;
+      const auto index = read_integer<InstrArgUByte>();
 
       if (is_local) {
         closure->set_upvalue(
@@ -578,7 +578,7 @@ namespace loxx
   loxx::StringObject* VirtualMachine::read_string()
   {
     return get_object<StringObject>(
-        code_object_->constants[read_integer<UByteCodeArg>()]);
+        code_object_->constants[read_integer<InstrArgUByte>()]);
   }
 
 
@@ -616,8 +616,8 @@ namespace loxx
   }
 
 
-  void VirtualMachine::incorrect_arg_num(const UByteCodeArg arity,
-                                         const UByteCodeArg num_args) const
+  void VirtualMachine::incorrect_arg_num(const InstrArgUByte arity,
+                                         const InstrArgUByte num_args) const
   {
     std::stringstream ss;
     ss << "Expected " << arity << " arguments but got " << num_args << '.';
