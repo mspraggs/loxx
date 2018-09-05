@@ -207,7 +207,7 @@ namespace loxx
   {
     add_instruction(instruction);
     const auto ret = current_bytecode_size();
-    add_integer<InstrArgSByte>(0);
+    add_integer<InstrArgUShort>(0);
     return ret;
   }
 
@@ -215,14 +215,13 @@ namespace loxx
   void FunctionScope::patch_jump(const std::size_t pos)
   {
     const auto jump_size = static_cast<std::make_signed_t<std::size_t>>(
-        current_bytecode_size() - pos - sizeof(InstrArgSByte));
+        current_bytecode_size() - pos - sizeof(InstrArgUShort));
 
-    if (jump_size >= std::numeric_limits<InstrArgSByte>::max() or
-        jump_size <= std::numeric_limits<InstrArgSByte>::min()) {
+    if (jump_size > std::numeric_limits<InstrArgUShort>::max()) {
       error(last_line_num(), "Too much code to jump over.");
     }
 
-    rewrite_integer(pos, static_cast<InstrArgSByte>(jump_size));
+    rewrite_integer(pos, static_cast<InstrArgUShort>(jump_size));
   }
 
 
@@ -231,14 +230,13 @@ namespace loxx
   {
     add_instruction(instruction);
     std::make_signed_t<std::size_t> jump_size =
-        current_bytecode_size() + sizeof(InstrArgSByte) - pos;
+        current_bytecode_size() + sizeof(InstrArgUShort) - pos;
 
-    if (jump_size >= std::numeric_limits<InstrArgSByte>::max() or
-        jump_size <= std::numeric_limits<InstrArgSByte>::min()) {
+    if (jump_size >= std::numeric_limits<InstrArgUShort>::max()) {
       error(last_line_num(), "Loop body is too large.");
     }
 
-    add_integer(static_cast<InstrArgSByte>(jump_size));
+    add_integer(static_cast<InstrArgUShort>(jump_size));
   }
 
 

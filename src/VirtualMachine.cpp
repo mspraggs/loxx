@@ -104,7 +104,7 @@ namespace loxx
         break;
 
       case Instruction::ConditionalJump: {
-        const auto jmp = read_integer<InstrArgSByte>();
+        const auto jmp = read_integer<InstrArgUShort>();
         if (not is_truthy(stack_.top())) {
           ip_ += jmp;
         }
@@ -279,7 +279,7 @@ namespace loxx
       }
 
       case Instruction::Jump:
-        ip_ += read_integer<InstrArgSByte>();
+        ip_ += read_integer<InstrArgUShort>();
         break;
 
       case Instruction::Less: {
@@ -296,7 +296,7 @@ namespace loxx
         break;
 
       case Instruction::Loop:
-        ip_ -= read_integer<InstrArgSByte>();
+        ip_ -= read_integer<InstrArgUShort>();
         break;
 
       case Instruction::Multiply: {
