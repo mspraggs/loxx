@@ -203,6 +203,29 @@ namespace loxx
   }
 
 
+  std::size_t FunctionScope::add_jump(const Instruction instruction)
+  {
+    add_instruction(instruction);
+    const auto ret = current_bytecode_size();
+    add_integer<InstrArgSByte>(0);
+    return ret;
+  }
+
+
+  void FunctionScope::patch_jump(const std::size_t pos)
+  {
+    const auto jump_size = static_cast<std::make_signed_t<std::size_t>>(
+        current_bytecode_size() - pos - sizeof(InstrArgSByte));
+
+    if (jump_size >= std::numeric_limits<InstrArgSByte>::max() or
+        jump_size <= std::numeric_limits<InstrArgSByte>::min()) {
+      error(last_line_num(), "Too much code to jump over.");
+    }
+
+    rewrite_integer(pos, static_cast<InstrArgSByte>(jump_size));
+  }
+
+
   void FunctionScope::update_line_num_table(const Token& token)
   {
     // Okay, so I totally ripped off CPython's strategy for encoding line
