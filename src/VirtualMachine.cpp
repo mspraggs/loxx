@@ -620,7 +620,8 @@ namespace loxx
                                          const InstrArgUByte num_args) const
   {
     std::stringstream ss;
-    ss << "Expected " << arity << " arguments but got " << num_args << '.';
+    ss << "Expected " << static_cast<unsigned>(arity)
+       << " arguments but got " << static_cast<unsigned>(num_args) << '.';
     throw make_runtime_error(ss.str());
   }
 

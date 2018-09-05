@@ -154,7 +154,7 @@ namespace loxx
         ret += sizeof(InstrArgUByte);
 
         std::cout << '(' << (is_local ? "local" : "upvalue") << ", "
-                  << index << ')';
+                  << static_cast<unsigned int>(index) << ')';
 
         if (i < func->num_upvalues() - 1) {
           std::cout << ", ";
@@ -182,7 +182,8 @@ namespace loxx
     case Instruction::SetProperty:
     case Instruction::LoadConstant: {
       const auto param = read_integer_at_pos<InstrArgUByte>(ret);
-      std::cout << param << " '" << constants[param] << "'";
+      std::cout << static_cast<unsigned int>(param)
+                << " '" << constants[param] << "'";
       ret += sizeof(InstrArgUByte);
       break;
     }
@@ -192,7 +193,7 @@ namespace loxx
     case Instruction::SetLocal:
     case Instruction::SetUpvalue: {
       const auto param = read_integer_at_pos<InstrArgUByte>(ret);
-      std::cout << param;
+      std::cout << static_cast<unsigned int>(param);
       ret += sizeof(InstrArgUByte);
       break;
     }

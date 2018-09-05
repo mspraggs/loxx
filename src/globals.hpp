@@ -21,12 +21,13 @@
 #define LOXX_GLOBALS_HPP
 
 #include <cstddef>
+#include <cstdint>
 #include <type_traits>
 
 
 namespace loxx
 {
-  using InstrArgUByte = std::size_t;
+  using InstrArgUByte = std::uint8_t;
   using InstrArgSByte = std::make_signed_t<InstrArgUByte>;
 
   constexpr std::size_t max_scope_constants = 256;
