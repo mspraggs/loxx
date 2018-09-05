@@ -49,6 +49,7 @@ namespace loxx
     Jump,
     Less,
     LoadConstant,
+    Loop,
     Multiply,
     Negate,
     Nil,
@@ -135,6 +136,9 @@ namespace loxx
       break;
     case Instruction::LoadConstant:
       stream << "LOAD_CONST";
+      break;
+    case Instruction::Loop:
+      stream << "LOOP";
       break;
     case Instruction::Multiply:
       stream << "MULTIPLY";
