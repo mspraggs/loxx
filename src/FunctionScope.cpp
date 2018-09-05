@@ -226,6 +226,22 @@ namespace loxx
   }
 
 
+  void FunctionScope::add_loop(const Instruction instruction,
+                               const std::size_t pos)
+  {
+    add_instruction(instruction);
+    std::make_signed_t<std::size_t> jump_size =
+        current_bytecode_size() + sizeof(InstrArgSByte) - pos;
+
+    if (jump_size >= std::numeric_limits<InstrArgSByte>::max() or
+        jump_size <= std::numeric_limits<InstrArgSByte>::min()) {
+      error(last_line_num(), "Loop body is too large.");
+    }
+
+    add_integer(static_cast<InstrArgSByte>(jump_size));
+  }
+
+
   void FunctionScope::update_line_num_table(const Token& token)
   {
     // Okay, so I totally ripped off CPython's strategy for encoding line

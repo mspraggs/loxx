@@ -85,6 +85,7 @@ namespace loxx
     void add_integer(const T integer);
     std::size_t add_jump(const Instruction instruction);
     void patch_jump(const std::size_t pos);
+    void add_loop(const Instruction instruction, const std::size_t pos);
     template <typename T>
     void rewrite_integer(const std::size_t pos, const T integer);
     void update_line_num_table(const Token& token);
