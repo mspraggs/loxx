@@ -201,15 +201,11 @@ namespace loxx
     //func_->add_instruction(Instruction::ConditionalJump);
     const auto first_jump_pos = func_->add_jump(Instruction::ConditionalJump);
     // We want to jump over the jump that takes us out of the while loop, which
-    // also involves jumping over a pop instruction (hence + 2 for two
-    // instructions).
+    // also involves jumping over a pop instruction
     func_->add_instruction(Instruction::Pop);
 
     // Compile the body of the while loop.
     compile(*stmt.body);
-
-    // N.B. Size of bytecode argument needs to be subtracted because the VM
-    // automatically increments the instruction pointer when reading arguments.
 
     // Jump back to the start of the loop to check the condition again.
     func_->add_loop(Instruction::Loop, first_label_pos);
