@@ -198,12 +198,21 @@ namespace loxx
       break;
     }
 
-    case Instruction::Invoke:
+    case Instruction::Invoke: {
       const auto param = read_integer_at_pos<InstrArgUByte>(ret);
       ret += sizeof(InstrArgUByte);
       const auto num_args = read_integer_at_pos<InstrArgUByte>(ret);
       ret += sizeof(InstrArgUByte);
       std::cout << num_args << ", " << param << " '" << constants[param] << "'";
+      break;
+    }
+
+    case Instruction::Loop: {
+      const auto param = read_integer_at_pos<InstrArgUByte>(ret);
+      ret += sizeof(InstrArgUByte);
+      std::cout << pos << " -> " << pos - param + sizeof(InstrArgSByte) + 1;
+      break;
+    }
     }
 
     std::cout << '\n';
