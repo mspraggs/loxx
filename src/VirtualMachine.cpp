@@ -295,6 +295,10 @@ namespace loxx
         stack_.push(code_object_->constants[read_integer<InstrArgUByte>()]);
         break;
 
+      case Instruction::Loop:
+        ip_ -= read_integer<InstrArgSByte>();
+        break;
+
       case Instruction::Multiply: {
         const auto second = stack_.pop();
         const auto first = stack_.pop();
