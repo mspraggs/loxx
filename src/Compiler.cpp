@@ -212,9 +212,9 @@ namespace loxx
     // automatically increments the instruction pointer when reading arguments.
 
     // Jump back to the start of the loop to check the condition again.
-    func_->add_instruction(Instruction::Jump);
+    func_->add_instruction(Instruction::Loop);
     std::make_signed_t<std::size_t> jump_size =
-        first_label_pos - func_->current_bytecode_size() - sizeof(InstrArgSByte);
+        func_->current_bytecode_size() + sizeof(InstrArgSByte) - first_label_pos;
 
     if (jump_size >= std::numeric_limits<InstrArgSByte>::max() or
         jump_size <= std::numeric_limits<InstrArgSByte>::min()) {
