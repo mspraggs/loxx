@@ -109,36 +109,21 @@ namespace loxx
     // if (not expr) goto else <- Instruction::ConditionalJump
     // ...
     // goto end
-    // --- else is compiled only if it exists in stmt
     // else:
     // ...
-    // --- /else compilation
     // end:
     // ...
     compile(*stmt.condition);
 
-    func_->add_instruction(Instruction::ConditionalJump);
-    const auto first_jump_pos = func_->current_bytecode_size();
-    func_->add_integer<InstrArgSByte>(0);
+    const auto first_jump_pos = func_->add_jump(Instruction::ConditionalJump);
 
     func_->add_instruction(Instruction::Pop);
 
     compile(*stmt.then_branch);
 
-    const auto first_jump_size = static_cast<std::make_signed_t<std::size_t>>(
-        func_->current_bytecode_size() - first_jump_pos + 1);
+    const auto second_jump_pos = func_->add_jump(Instruction::Jump);
 
-    if (first_jump_size >= std::numeric_limits<InstrArgSByte>::max() or
-        first_jump_size <= std::numeric_limits<InstrArgSByte>::min()) {
-      error(func_->last_line_num(), "Too much code to jump over.");
-    }
-
-    func_->rewrite_integer(
-        first_jump_pos, static_cast<InstrArgSByte>(first_jump_size));
-
-    func_->add_instruction(Instruction::Jump);
-    const auto second_jump_pos = func_->current_bytecode_size();
-    func_->add_integer<InstrArgSByte>(0);
+    func_->patch_jump(first_jump_pos);
 
     func_->add_instruction(Instruction::Pop);
 
@@ -146,16 +131,7 @@ namespace loxx
       compile(*stmt.else_branch);
     }
 
-    const auto second_jump_size = static_cast<std::make_signed_t<std::size_t>>(
-            func_->current_bytecode_size() - second_jump_pos -
-            sizeof(InstrArgSByte));
-
-    if (second_jump_size >= std::numeric_limits<InstrArgSByte>::max() or
-        second_jump_size <= std::numeric_limits<InstrArgSByte>::min()) {
-      error(func_->last_line_num(), "Too much code to jump over.");
-    }
-    func_->rewrite_integer(
-        second_jump_pos, static_cast<InstrArgSByte>(second_jump_size));
+    func_->patch_jump(second_jump_pos);
   }
 
 
@@ -222,12 +198,11 @@ namespace loxx
 
     compile(*stmt.condition);
 
-    func_->add_instruction(Instruction::ConditionalJump);
-    const auto first_jump_pos = func_->current_bytecode_size();
+    //func_->add_instruction(Instruction::ConditionalJump);
+    const auto first_jump_pos = func_->add_jump(Instruction::ConditionalJump);
     // We want to jump over the jump that takes us out of the while loop, which
     // also involves jumping over a pop instruction (hence + 2 for two
     // instructions).
-    func_->add_integer<InstrArgSByte>(0);
     func_->add_instruction(Instruction::Pop);
 
     // Compile the body of the while loop.
@@ -248,17 +223,7 @@ namespace loxx
 
     func_->add_integer(static_cast<InstrArgSByte>(jump_size));
 
-    jump_size =
-        func_->current_bytecode_size() - first_jump_pos - sizeof(InstrArgSByte);
-
-    if (jump_size >= std::numeric_limits<InstrArgSByte>::max() or
-        jump_size <= std::numeric_limits<InstrArgSByte>::min()) {
-      error(func_->last_line_num(), "Loop body is too large.");
-    }
-
-    // Back-patch the jump over the body of the while loop.
-    func_->rewrite_integer(
-        first_jump_pos, static_cast<InstrArgSByte>(jump_size));
+    func_->patch_jump(first_jump_pos);
     func_->add_instruction(Instruction::Pop);
   }
 
@@ -414,43 +379,17 @@ namespace loxx
     compile(*expr.left);
 
     if (expr.op.type() == TokenType::Or) {
-      func_->add_instruction(Instruction::ConditionalJump);
-      func_->update_line_num_table(expr.op);
-      func_->add_integer<InstrArgSByte>(sizeof(InstrArgSByte) + 1);
-      func_->add_instruction(Instruction::Jump);
-      const auto jump_pos = func_->current_bytecode_size();
-      func_->add_integer<InstrArgSByte>(0);
-
-      const auto skip_start = func_->current_bytecode_size();
+      const auto first_jump_pos = func_->add_jump(Instruction::ConditionalJump);
+      const auto second_jump_pos = func_->add_jump(Instruction::Jump);
+      func_->patch_jump(first_jump_pos);
       compile(*expr.right);
-      auto jump_size = static_cast<std::make_signed_t<std::size_t>>(
-          func_->current_bytecode_size() - skip_start);
-
-      if (jump_size >= std::numeric_limits<InstrArgSByte>::max() or
-          jump_size <= std::numeric_limits<InstrArgSByte>::min()) {
-        error(expr.op, "Too much code to jump over.");
-      }
-
-      func_->rewrite_integer(jump_pos, static_cast<InstrArgSByte>(jump_size));
+      func_->patch_jump(second_jump_pos);
     }
     else if (expr.op.type() == TokenType::And) {
-      func_->add_instruction(Instruction::ConditionalJump);
-      func_->update_line_num_table(expr.op);
-      const auto jump_pos = func_->current_bytecode_size();
-      func_->add_integer<InstrArgUByte>(0);
-
-      const auto skip_start = func_->current_bytecode_size();
+      const auto first_jump_pos = func_->add_jump(Instruction::ConditionalJump);
       func_->add_instruction(Instruction::Pop);
       compile(*expr.right);
-      auto jump_size = static_cast<std::make_signed_t<std::size_t>>(
-          func_->current_bytecode_size() - skip_start);
-
-      if (jump_size >= std::numeric_limits<InstrArgSByte>::max() or
-          jump_size <= std::numeric_limits<InstrArgSByte>::min()) {
-        error(expr.op, "Too much code to jump over.");
-      }
-
-      func_->rewrite_integer(jump_pos, static_cast<InstrArgSByte>(jump_size));
+      func_->patch_jump(first_jump_pos);
     }
   }
 
