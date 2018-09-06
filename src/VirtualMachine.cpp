@@ -55,15 +55,22 @@ namespace loxx
 
   void VirtualMachine::execute(std::unique_ptr<CodeObject> code_object)
   {
-    code_object_ = code_object.get();
-    ip_ = code_object_->bytecode.data();
-    call_stack_.emplace(ip_, code_object_, stack_.data(), nullptr);
+    const auto top_level_func =
+        std::make_unique<FuncObject>("top level", std::move(code_object), 0, 0);
+    const auto top_level_closure =
+        std::make_unique<ClosureObject>(top_level_func.get());
+
+    code_object_ = top_level_func->code_object();
+    ip_ = top_level_func->code_object()->bytecode.data();
+    call_stack_.emplace(ip_, code_object_, stack_.data(),
+                        top_level_closure.get());
 
     while (ip_) {
 
       if (debug_) {
         print_stack();
-        print_instruction(*code_object_, ip_);
+        print_instruction(
+            *call_stack_.top().closure()->function().code_object(), ip_);
       }
 
       const auto instruction = static_cast<Instruction>(*ip_++);
@@ -292,7 +299,7 @@ namespace loxx
       }
 
       case Instruction::LoadConstant:
-        stack_.push(code_object_->constants[read_integer<InstrArgUByte>()]);
+        stack_.push(read_constant());
         break;
 
       case Instruction::Loop:
@@ -485,8 +492,7 @@ namespace loxx
 
   void VirtualMachine::execute_create_closure()
   {
-    const auto& func_value =
-        code_object_->constants[read_integer<InstrArgUByte>()];
+    const auto& func_value = read_constant();
     const auto& func_obj = unsafe_get<ObjectPtr>(func_value);
     auto func = static_cast<FuncObject*>(func_obj);
 
@@ -581,15 +587,13 @@ namespace loxx
 
   Value VirtualMachine::read_constant()
   {
-    return call_stack_.top().closure()->function().code_object()
-        ->constants[read_integer<InstrArgUByte>()];
+    return code_object_->constants[read_integer<InstrArgUByte>()];
   }
 
 
   loxx::StringObject* VirtualMachine::read_string()
   {
-    return get_object<StringObject>(
-        code_object_->constants[read_integer<InstrArgUByte>()]);
+    return get_object<StringObject>(read_constant());
   }
 
 
