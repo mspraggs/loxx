@@ -94,7 +94,7 @@ namespace loxx
     static VirtualMachine vm(debug_config.trace_exec);
 
     try {
-      vm.execute(compiler.output());
+      vm.execute(compiler.release_output());
     }
     catch (const RuntimeError& e) {
       runtime_error(e);

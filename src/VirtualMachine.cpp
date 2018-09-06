@@ -53,9 +53,9 @@ namespace loxx
   }
 
 
-  void VirtualMachine::execute(const CodeObject& code_object)
+  void VirtualMachine::execute(std::unique_ptr<CodeObject> code_object)
   {
-    code_object_ = &code_object;
+    code_object_ = code_object.get();
     ip_ = code_object_->bytecode.data();
     call_stack_.emplace(ip_, code_object_, stack_.data(), nullptr);
 

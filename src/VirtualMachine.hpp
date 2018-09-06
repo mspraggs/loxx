@@ -43,7 +43,7 @@ namespace loxx
   public:
     explicit VirtualMachine(const bool debug);
 
-    void execute(const CodeObject& code_object);
+    void execute(std::unique_ptr<CodeObject> code_object);
 
     const Value& get_constant(const InstrArgUByte index) const
     { return code_object_->constants[index]; }
