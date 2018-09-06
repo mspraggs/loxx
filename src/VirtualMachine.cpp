@@ -579,6 +579,13 @@ namespace loxx
   }
 
 
+  Value VirtualMachine::read_constant()
+  {
+    return call_stack_.top().closure()->function().code_object()
+        ->constants[read_integer<InstrArgUByte>()];
+  }
+
+
   loxx::StringObject* VirtualMachine::read_string()
   {
     return get_object<StringObject>(
