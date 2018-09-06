@@ -45,9 +45,6 @@ namespace loxx
 
     void execute(std::unique_ptr<CodeObject> code_object);
 
-    const Value& get_constant(const InstrArgUByte index) const
-    { return code_object_->constants[index]; }
-
   private:
     void print_object(Value object) const;
     void execute_call();
