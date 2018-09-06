@@ -79,6 +79,8 @@ namespace loxx
     void visit_while_stmt(const While& stmt) override;
 
     const CodeObject& output() const { return func_->code_object(); }
+    std::unique_ptr<CodeObject> release_output()
+    { return func_->release_code_object(); }
 
   private:
     enum class ClassType {
