@@ -62,27 +62,27 @@ python tests/run_tests.py build/loxx
 Loxx is implemented as a bytecode virtual machine and performs reasonably well
 without having to micro-optimise the code and fine-tune compiler arguments. Here
 are some execution times (in seconds) from running each of the files in the
-benchmarks directory 100 times on an Intel i5-2430M (2.40 GHz) with a 3 MB L3
+benchmarks directory 20 times on an Intel i5-4300U (1.90 GHz) with a 3 MB L3
 cache:
 
 | **File**            | **Min.** | **Mean** | **Median** | **Max.** | **Std. Dev.** |
 |---------------------|---------:|---------:|-----------:|---------:|--------------:|
-| binary_trees.lox    |     1.58 |     1.64 |       1.63 |     1.78 |          0.05 |
-| equality.lox        |    15.81 |    15.98 |      15.94 |    17.15 |          0.17 |
-| fib.lox             |     0.40 |     0.43 |       0.44 |     0.51 |          0.03 |
-| invocation.lox      |     2.70 |     2.85 |       2.82 |     4.71 |          0.21 |
-| method_call.lox     |     1.26 |     1.32 |       1.31 |     1.44 |          0.04 |
-| properties.lox      |     3.18 |     3.28 |       3.26 |     3.77 |          0.08 |
-| string_equality.lox |     9.71 |     9.89 |       9.86 |    10.45 |          0.21 |
+| binary_trees.lox    |     0.78 |     0.81 |       0.81 |     0.85 |          0.02 |
+| equality.lox        |     5.24 |     5.30 |       5.27 |     5.56 |          0.08 |
+| fib.lox             |     0.19 |     0.19 |       0.19 |     0.20 |          0.00 |
+| invocation.lox      |     0.73 |     0.74 |       0.73 |     0.76 |          0.01 |
+| method_call.lox     |     0.35 |     0.36 |       0.36 |     0.41 |          0.02 |
+| properties.lox      |     0.81 |     0.82 |       0.82 |     0.85 |          0.01 |
+| string_equality.lox |     2.08 |     2.11 |       2.10 |     2.16 |          0.02 |
 
 Compared to Clox, Bob Nystrom's C implementation, this isn't so bad:
 
 | **File**            | **Min.** | **Mean** | **Median** | **Max.** | **Std. Dev.** |
 |---------------------|---------:|---------:|-----------:|---------:|--------------:|
-| binary_trees.lox    |     0.83 |     0.90 |       0.90 |     1.02 |          0.04 |
-| equality.lox        |    10.54 |    10.69 |      10.67 |    11.18 |          0.10 |
-| fib.lox             |     0.14 |     0.18 |       0.18 |     0.24 |          0.03 |
-| invocation.lox      |     0.51 |     0.55 |       0.56 |     0.61 |          0.03 |
-| method_call.lox     |     0.37 |     0.41 |       0.42 |     0.48 |          0.03 |
-| properties.lox      |     0.86 |     0.90 |       0.90 |     0.97 |          0.03 |
+| binary_trees.lox    |     0.58 |     0.59 |       0.59 |     0.60 |          0.01 |
+| equality.lox        |     5.32 |     5.35 |       5.33 |     5.51 |          0.05 |
+| fib.lox             |     0.12 |     0.12 |       0.12 |     0.13 |          0.00 |
+| invocation.lox      |     0.48 |     0.49 |       0.49 |     0.49 |          0.00 |
+| method_call.lox     |     0.27 |     0.27 |       0.27 |     0.28 |          0.00 |
+| properties.lox      |     0.66 |     0.66 |       0.66 |     0.67 |          0.00 |
 
