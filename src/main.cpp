@@ -62,11 +62,13 @@ namespace loxx
       return;
     }
 
+#ifndef NDEBUG
     if (debug_config.print_tokens) {
       for (const auto& token : tokens) {
         std::cout << token << '\n';
       }
     }
+#endif
 
     Parser parser(std::move(tokens), in_repl);
     const auto statements = parser.parse();
@@ -75,10 +77,12 @@ namespace loxx
       return;
     }
 
+#ifndef NDEBUG
     if (debug_config.print_ast) {
       AstPrinter printer;
       std::cout << printer.print(statements) << std::endl;
     }
+#endif
 
     Compiler compiler(debug_config.print_bytecode);
     compiler.compile(statements);
@@ -87,9 +91,11 @@ namespace loxx
       return;
     }
 
+#ifndef NDEBUG
     if (debug_config.print_bytecode) {
       print_bytecode("top level", compiler.output());
     }
+#endif
 
     static VirtualMachine vm(debug_config.trace_exec);
 

@@ -67,11 +67,13 @@ namespace loxx
 
     while (ip_) {
 
+#ifndef NDEBUG
       if (debug_) {
         print_stack();
         print_instruction(
             *call_stack_.top().closure()->function().code_object(), ip_);
       }
+#endif
 
       const auto instruction = static_cast<Instruction>(*ip_++);
 
