@@ -33,6 +33,7 @@
 #include "RuntimeError.hpp"
 #include "Stack.hpp"
 #include "StackFrame.hpp"
+#include "utils.hpp"
 #include "Value.hpp"
 
 
@@ -70,7 +71,7 @@ namespace loxx
     RuntimeError make_runtime_error(const std::string& msg) const;
 
     bool debug_;
-    const std::uint8_t* ip_;
+    CodeObject::InsPtr ip_;
     const CodeObject* code_object_;
     StringHashTable<Value> globals_;
     Stack<Value, max_stack_size> stack_;
@@ -85,7 +86,6 @@ namespace loxx
   {
     const T integer = read_integer_at_pos<T>(ip_);
     ip_ += sizeof(T);
-
     return integer;
   }
 }

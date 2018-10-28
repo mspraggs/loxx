@@ -14,32 +14,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Created by Matt Spraggs on 07/05/18.
+ * Created by Matt Spraggs on 27/08/18.
  */
 
-#ifndef LOXX_CODEOBJECT_HPP
-#define LOXX_CODEOBJECT_HPP
+#ifndef LOXX_UTILS_HPP
+#define LOXX_UTILS_HPP
 
 #include <cstdint>
-#include <tuple>
 #include <vector>
 
-#include "globals.hpp"
-#include "StringHashTable.hpp"
-#include "Value.hpp"
-
+#include "CodeObject.hpp"
 
 namespace loxx
 {
-  struct CodeObject
+  template <typename T>
+  T read_integer_at_pos(const CodeObject::InsPtr pos)
   {
-    using InsPtr = std::vector<std::uint8_t>::const_iterator;
-
-    std::vector<std::uint8_t> bytecode;
-    ConstStringHashTable<InstrArgUByte> constant_map;
-    std::vector<Value> constants;
-    std::vector<std::tuple<std::int8_t, std::uint8_t>> line_num_table;
-  };
+    T integer;
+    std::copy(pos, pos + sizeof(T), reinterpret_cast<std::uint8_t*>(&integer));
+    return integer;
+  }
 }
 
-#endif //LOXX_CODEOBJECT_HPP
+#endif //LOXX_UTILS_HPP

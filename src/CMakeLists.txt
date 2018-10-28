@@ -23,6 +23,7 @@ set(SRC
   Stmt.hpp
   StringHashTable.hpp
   Token.hpp
+  utils.hpp
   Value.hpp
   Variant.hpp
   VirtualMachine.hpp

@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "CodeObject.hpp"
 #include "Instruction.hpp"
 #include "RuntimeError.hpp"
 #include "Token.hpp"
@@ -54,8 +55,8 @@ namespace loxx
   void print_bytecode(const std::string& name, const CodeObject& output);
 
 
-  const std::uint8_t* print_instruction(const CodeObject& output,
-                                        const std::uint8_t* ip);
+  CodeObject::InsPtr print_instruction(const CodeObject& output,
+                                       const CodeObject::InsPtr ip);
 
 
   unsigned int get_current_line(const CodeObject& output,

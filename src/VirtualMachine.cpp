@@ -61,11 +61,11 @@ namespace loxx
         std::make_unique<ClosureObject>(top_level_func.get());
 
     code_object_ = top_level_func->code_object();
-    ip_ = top_level_func->code_object()->bytecode.data();
+    ip_ = top_level_func->code_object()->bytecode.begin();
     call_stack_.emplace(ip_, code_object_, stack_.data(),
                         top_level_closure.get());
 
-    while (ip_) {
+    while (true) {
 
 #ifndef NDEBUG
       if (debug_) {
@@ -570,7 +570,7 @@ namespace loxx
 
     call_stack_.emplace(ip_, code_object_, stack_.top(num_args), closure);
     code_object_ = closure->function().code_object();
-    ip_ = code_object_->bytecode.data();
+    ip_ = code_object_->bytecode.begin();
   }
 
 
@@ -645,8 +645,7 @@ namespace loxx
 
   RuntimeError VirtualMachine::make_runtime_error(const std::string& msg) const
   {
-    const auto pos =
-        static_cast<std::size_t>(ip_ - code_object_->bytecode.data());
+    const auto pos = std::distance(code_object_->bytecode.begin(), ip_);
     return RuntimeError(get_current_line(*code_object_, pos), msg);
   }
 }

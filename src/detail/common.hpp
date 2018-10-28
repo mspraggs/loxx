@@ -30,14 +30,6 @@ namespace loxx
   {
     using type = T;
   };
-
-
-  template <typename T>
-  T read_integer_at_pos(const std::uint8_t* pos)
-  {
-    const T integer = *reinterpret_cast<const T*>(pos);
-    return integer;
-  }
 }
 
 #endif //LOXX_COMMON_HPP

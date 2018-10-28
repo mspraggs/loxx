@@ -21,11 +21,11 @@
 #include <iostream>
 #include <sstream>
 
-#include "detail/common.hpp"
 #include "CodeObject.hpp"
 #include "Instruction.hpp"
 #include "logging.hpp"
 #include "Object.hpp"
+#include "utils.hpp"
 #include "VirtualMachine.hpp"
 
 
@@ -74,21 +74,21 @@ namespace loxx
   void print_bytecode(const std::string& name, const CodeObject& output)
   {
     std::cout << "=== " << name << " ===\n";
-    const std::uint8_t* ip = output.bytecode.data();
-    while (ip <= &output.bytecode.back()) {
+    auto ip = output.bytecode.begin();
+    while (ip != output.bytecode.end()) {
       ip = print_instruction(output, ip);
     }
   }
 
 
-  const std::uint8_t* print_instruction(const CodeObject& output,
-                                        const std::uint8_t* ip)
+  CodeObject::InsPtr print_instruction(const CodeObject& output,
+                                       const CodeObject::InsPtr ip)
   {
     const auto& bytecode = output.bytecode;
     const auto& constants = output.constants;
     const auto instruction = static_cast<Instruction>(*ip);
 
-    const auto pos = static_cast<std::size_t>(ip - bytecode.data());
+    const auto pos = std::distance(bytecode.begin(), ip);
     static unsigned int last_line_num = 0;
     const unsigned int current_line_num = get_current_line(output, pos);
 
@@ -106,7 +106,7 @@ namespace loxx
     std::cout << line_num_ss.str() << ' ';
     std::cout << std::setw(20) << std::setfill(' ') << std::left << instruction;
 
-    const std::uint8_t* ret = ip + 1;
+    auto ret = ip + 1;
 
     switch (instruction) {
 
