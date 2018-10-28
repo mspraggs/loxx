@@ -58,10 +58,10 @@ namespace loxx
     constexpr const T* operator->() const;
     constexpr T* operator->();
 
-    constexpr const T& operator*() const;
-    constexpr const T& value() const { return *(*this); }
-    constexpr T& operator*();
-    constexpr T& value() { return *(*this); }
+    constexpr const T& operator*() const { return value_; };
+    constexpr const T& value() const;
+    constexpr T& operator*() { return value_; }
+    constexpr T& value();
 
     constexpr bool has_value() const { return has_value_; }
     constexpr explicit operator bool() const { return has_value_; }
@@ -217,7 +217,7 @@ namespace loxx
 
 
   template<typename T>
-  constexpr const T& Optional<T>::operator*() const
+  constexpr const T& Optional<T>::value() const
   {
     if (not has_value_) {
       throw BadOptionalAccess("Optional is not set.");
@@ -228,7 +228,7 @@ namespace loxx
 
 
   template<typename T>
-  constexpr T& Optional<T>::operator*()
+  constexpr T& Optional<T>::value()
   {
     if (not has_value_) {
       throw BadOptionalAccess("Optional is not set.");
