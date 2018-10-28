@@ -67,13 +67,13 @@ cache:
 
 | **File**            | **Min.** | **Mean** | **Median** | **Max.** | **Std. Dev.** |
 |---------------------|---------:|---------:|-----------:|---------:|--------------:|
-| binary_trees.lox    |     0.78 |     0.81 |       0.81 |     0.85 |          0.02 |
-| equality.lox        |     5.24 |     5.30 |       5.27 |     5.56 |          0.08 |
-| fib.lox             |     0.19 |     0.19 |       0.19 |     0.20 |          0.00 |
-| invocation.lox      |     0.73 |     0.74 |       0.73 |     0.76 |          0.01 |
-| method_call.lox     |     0.35 |     0.36 |       0.36 |     0.41 |          0.02 |
-| properties.lox      |     0.81 |     0.82 |       0.82 |     0.85 |          0.01 |
-| string_equality.lox |     2.08 |     2.11 |       2.10 |     2.16 |          0.02 |
+| binary_trees.lox    |     0.78 |     0.80 |       0.79 |     0.88 |          0.02 |
+| equality.lox        |     4.92 |     4.97 |       4.96 |     5.11 |          0.05 |
+| fib.lox             |     0.17 |     0.18 |       0.18 |     0.20 |          0.01 |
+| invocation.lox      |     0.60 |     0.62 |       0.61 |     0.79 |          0.04 |
+| method_call.lox     |     0.33 |     0.34 |       0.33 |     0.35 |          0.01 |
+| properties.lox      |     0.73 |     0.74 |       0.73 |     0.77 |          0.01 |
+| string_equality.lox |     2.11 |     2.12 |       2.12 |     2.14 |          0.01 |
 
 Compared to Clox, Bob Nystrom's C implementation, this isn't so bad:
 
