@@ -223,7 +223,7 @@ namespace loxx
     void VariantImpl<Pod, Var, Ts...>::destroy(Var& data)
     {
       detail::destroy<sizeof...(Ts), Ts...>(
-          data.data_.type_index_, &data.data_.storage_);
+          data.data_.type_index, &data.data_.storage);
     }
 
 
@@ -232,7 +232,7 @@ namespace loxx
     {
       dest.data_.type_index = src.data_.type_index;
       detail::copy_construct<sizeof...(Ts), Ts...>(
-          src.data_.type_index_, &dest.data_.storage_, &src.data_.storage_);
+          src.data_.type_index, &dest.data_.storage, &src.data_.storage);
     }
 
 
@@ -241,7 +241,7 @@ namespace loxx
     {
       dest.data_.type_index = src.data_.type_index;
       detail::move_construct<sizeof...(Ts), Ts...>(
-          src.data_.type_index_, &dest.data_.storage_, &src.data_.storage_);
+          src.data_.type_index, &dest.data_.storage, &src.data_.storage);
       src.data_.type_index = src.npos;
     }
 
@@ -251,7 +251,7 @@ namespace loxx
     {
       dest.data_.type_index = src.data_.type_index;
       detail::copy_assign<sizeof...(Ts), Ts...>(
-          src.data_.type_index_, &dest.data_.storage_, &src.data_.storage_);
+          src.data_.type_index, &dest.data_.storage, &src.data_.storage);
     }
 
 
