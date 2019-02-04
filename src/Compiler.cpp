@@ -28,6 +28,7 @@ namespace loxx
   void Compiler::compile(const std::vector<std::unique_ptr<Stmt>>& statements)
   {
     compile_stmts(statements);
+    func_->add_instruction(Instruction::Nil);
     func_->add_instruction(Instruction::Return);
   }
 
