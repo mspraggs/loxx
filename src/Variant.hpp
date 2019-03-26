@@ -69,7 +69,7 @@ namespace loxx
             not std::is_same<std::decay_t<T>, Variant<Ts...>>::value>>
     constexpr Variant<Ts...>& operator=(T&& value) noexcept;
 
-    constexpr std::size_t index() const { return data_.type_index; }
+    constexpr std::size_t index() const { return type_index_; }
 
   private:
     template <std::size_t I, typename... Us>
@@ -86,13 +86,8 @@ namespace loxx
     static constexpr std::size_t max_size = detail::static_max(sizeof(Ts)...);
     static constexpr std::size_t max_align = detail::static_max(alignof(Ts)...);
 
-    struct Data
-    {
-      std::size_t type_index;
-      std::aligned_storage_t<max_size, max_align> storage;
-    };
-
-    Data data_;
+    std::size_t type_index_;
+    std::aligned_storage_t<max_size, max_align> storage_;
   };
 
 
@@ -113,7 +108,7 @@ namespace loxx
 
   template <typename... Ts>
   constexpr Variant<Ts...>::Variant()
-      : data_{npos, {}}
+      : type_index_(npos)
   {
   }
 
@@ -154,9 +149,9 @@ namespace loxx
     static_assert(index < sizeof...(Ts),
                   "Unable to construct variant using supplied type.");
 
-    data_.type_index = index;
+    type_index_ = index;
     using U = detail::LookupType<index, Ts...>;
-    new (&data_.storage) U(std::forward<T>(value));
+    new (&storage_) U(std::forward<T>(value));
   }
 
 
@@ -169,8 +164,8 @@ namespace loxx
     static_assert(index < sizeof...(Ts),
                   "Unable to construct variant using supplied type.");
 
-    data_.type_index = index;
-    new (&data_.storage) T0(std::forward<Us>(args)...);
+    type_index_ = index;
+    new (&storage_) T0(std::forward<Us>(args)...);
   };
 
 
@@ -213,9 +208,9 @@ namespace loxx
     static_assert(index < sizeof...(Ts),
                   "Unable to construct variant using supplied type.");
 
-    data_.type_index = index;
+    type_index_ = index;
     using U = detail::LookupType<index, Ts...>;
-    new (&data_.storage) U(std::forward<T>(value));
+    new (&storage_) U(std::forward<T>(value));
 
     return *this;
   }
@@ -228,7 +223,7 @@ namespace loxx
       throw BadVariantAccess("Variant does not contain requested object.");
     }
     using T = detail::LookupType<I, Ts...>;
-    return *reinterpret_cast<T*>(&variant.data_.storage);
+    return *reinterpret_cast<T*>(&variant.storage_);
   }
 
 
@@ -263,7 +258,7 @@ namespace loxx
     static_assert(I < Variant<Ts...>::npos,
                   "Variant cannot contain requested type.");
     using T = detail::LookupType<I, Ts...>;
-    return *reinterpret_cast<T*>(&variant.data_.storage);
+    return *reinterpret_cast<T*>(&variant.storage_);
   }
 
 

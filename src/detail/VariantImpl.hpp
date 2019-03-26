@@ -223,45 +223,45 @@ namespace loxx
     void VariantImpl<Pod, Var, Ts...>::destroy(Var& data)
     {
       detail::destroy<sizeof...(Ts), Ts...>(
-          data.data_.type_index, &data.data_.storage);
+          data.type_index_, &data.storage_);
     }
 
 
     template <bool Pod, typename Var, typename... Ts>
     void VariantImpl<Pod, Var, Ts...>::copy_construct(Var& dest, const Var& src)
     {
-      dest.data_.type_index = src.data_.type_index;
+      dest.type_index_ = src.type_index_;
       detail::copy_construct<sizeof...(Ts), Ts...>(
-          src.data_.type_index, &dest.data_.storage, &src.data_.storage);
+          src.type_index_, &dest.storage_, &src.storage_);
     }
 
 
     template <bool Pod, typename Var, typename... Ts>
     void VariantImpl<Pod, Var, Ts...>::move_construct(Var& dest, Var& src)
     {
-      dest.data_.type_index = src.data_.type_index;
+      dest.type_index_ = src.type_index_;
       detail::move_construct<sizeof...(Ts), Ts...>(
-          src.data_.type_index, &dest.data_.storage, &src.data_.storage);
-      src.data_.type_index = src.npos;
+          src.type_index_, &dest.storage_, &src.storage_);
+      src.type_index_ = src.npos;
     }
 
 
     template <bool Pod, typename Var, typename... Ts>
     void VariantImpl<Pod, Var, Ts...>::copy_assign(Var& dest, const Var& src)
     {
-      dest.data_.type_index = src.data_.type_index;
+      dest.type_index_ = src.type_index_;
       detail::copy_assign<sizeof...(Ts), Ts...>(
-          src.data_.type_index, &dest.data_.storage, &src.data_.storage);
+          src.type_index_, &dest.storage_, &src.storage_);
     }
 
 
     template <bool Pod, typename Var, typename... Ts>
     void VariantImpl<Pod, Var, Ts...>::move_assign(Var& dest, Var& src)
     {
-      dest.data_.type_index = src.data_.type_index;
+      dest.type_index_ = src.type_index_;
       detail::move_assign<sizeof...(Ts), Ts...>(
-          src.data_.type_index, &dest.data_.storage, &src.data_.storage);
-      src.data_.type_index = src.npos;
+          src.type_index_, &dest.storage_, &src.storage_);
+      src.type_index_ = src.npos;
     }
 
 
@@ -274,30 +274,34 @@ namespace loxx
     template <typename Var, typename... Ts>
     void VariantImpl<true, Var, Ts...>::copy_construct(Var& dest, const Var& src)
     {
-      dest.data_ = src.data_;
+      dest.type_index_ = src.type_index_;
+      dest.storage_ = src.storage_;
     }
 
 
     template <typename Var, typename... Ts>
     void VariantImpl<true, Var, Ts...>::move_construct(Var& dest, Var& src)
     {
-      dest.data_ = src.data_;
-      src.data_.type_index = src.npos;
+      dest.type_index_ = src.type_index_;
+      dest.storage_ = src.storage_;
+      src.type_index_ = src.npos;
     }
 
 
     template <typename Var, typename... Ts>
     void VariantImpl<true, Var, Ts...>::copy_assign(Var& dest, const Var& src)
     {
-      dest.data_ = src.data_;
+      dest.type_index_ = src.type_index_;
+      dest.storage_ = src.storage_;
     }
 
 
     template <typename Var, typename... Ts>
     void VariantImpl<true, Var, Ts...>::move_assign(Var& dest, Var& src)
     {
-      dest.data_ = src.data_;
-      src.data_.type_index = src.npos;
+      dest.type_index_ = src.type_index_;
+      dest.storage_ = src.storage_;
+      src.type_index_ = src.npos;
     }
 
 
