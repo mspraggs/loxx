@@ -95,14 +95,14 @@ namespace loxx
   class BadVariantAccess : public std::exception
   {
   public:
-    explicit BadVariantAccess(const char* what) : what_(what) {}
-    //explicit BadVariantAccess(std::string what) : what_(std::move(what)) {}
+    explicit BadVariantAccess(std::string what)
+        : std::exception(), what_(std::move(what))
+    {}
 
-    const char* what() const noexcept override { return what_; }
+    const char* what() const noexcept override { return what_.c_str(); }
 
   private:
-    const char* what_;
-    //std::string what_;
+    std::string what_;
   };
 
 
