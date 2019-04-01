@@ -37,3 +37,6 @@
 # JetBrains directories
 /.idea
 /cmake-build-debug
+
+# VSCode directories
+/.vscode
