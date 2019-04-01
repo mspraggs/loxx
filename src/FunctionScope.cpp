@@ -109,7 +109,7 @@ namespace loxx
   InstrArgUByte FunctionScope::add_named_constant(const std::string& lexeme,
                                                  const Value& value)
   {
-    const auto s = make_object<StringObject>(lexeme);
+    const auto s = make_string(lexeme);
     if (code_object_->constant_map.count(s) != 0) {
       return code_object_->constant_map[s];
     }
@@ -129,7 +129,7 @@ namespace loxx
 
   InstrArgUByte FunctionScope::add_string_constant(const std::string& str)
   {
-    const auto ptr = make_object<StringObject>(str);
+    const auto ptr = make_string(str);
     return add_named_constant(str, Value(InPlace<ObjectPtr>(), ptr));
   }
 

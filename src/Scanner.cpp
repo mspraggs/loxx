@@ -177,7 +177,7 @@ namespace loxx
 
     advance();
 
-    const auto string_obj = make_object<StringObject>(
+    const auto string_obj = make_string(
         src_.substr(start_ + 1, current_ - start_ - 2));
     add_token(TokenType::String, Value(InPlace<ObjectPtr>(), string_obj));
   }

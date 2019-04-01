@@ -32,7 +32,7 @@ namespace loxx
 {
   VirtualMachine::VirtualMachine(const bool debug)
       : debug_(debug), ip_(0),
-        init_lexeme_(make_object<StringObject>("init"))
+        init_lexeme_(make_string("init"))
   {
     NativeObject::Fn fn =
         [] (const Value*, const unsigned int)
@@ -44,12 +44,11 @@ namespace loxx
           return Value(static_cast<double>(millis) / 1000.0);
         };
 
-    auto str = make_object<StringObject>("clock");
+    auto str = make_string("clock");
     globals_[str] =
         Value(InPlace<ObjectPtr>(), make_object<NativeObject>(fn, 0));
 
-    ObjectTracker::instance().set_roots(
-        ObjectTracker::Roots{&stack_, &open_upvalues_, &globals_});
+    ObjTracker::instance().set_roots(stack_, open_upvalues_, globals_);
   }
 
 
@@ -87,7 +86,7 @@ namespace loxx
         const auto second_str = get_object<StringObject>(second);
 
         if (first_str and second_str) {
-          const auto combined_str = make_object<StringObject>(
+          const auto combined_str = make_string(
               first_str->as_std_string() + second_str->as_std_string());
           stack_.emplace(InPlace<ObjectPtr>(), combined_str);
         }

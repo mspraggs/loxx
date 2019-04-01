@@ -33,67 +33,49 @@
 
 namespace loxx
 {
+  template <typename... Roots>
   class ObjectTracker
   {
   public:
-    struct Roots
-    {
-      Stack<Value, max_stack_size>* stack;
-      std::list<UpvalueObject*>* upvalues;
-      StringHashTable<Value>* globals;
-    };
-
     static ObjectTracker& instance();
 
-    StringObject* add_string(std::unique_ptr<StringObject> str);
-    ObjectPtr add_object(std::unique_ptr<Object> object);
-    void set_roots(const Roots roots) { roots_ = roots; }
+    void add_object(std::unique_ptr<Object> object);
+    void set_roots(Roots&... roots) { roots_ = std::make_tuple(&roots...); }
 
   private:
     ObjectTracker()
-        : roots_{nullptr, nullptr, nullptr}
+        : roots_()
     {
       objects_.reserve(gc_size_trigger_);
     }
 
     void collect_garbage();
 
-    void grey_roots();
-
     static constexpr std::size_t gc_size_trigger_ = 65536;
     std::vector<std::unique_ptr<Object>> objects_;
-    HashSet<StringObject*, HashStringObject, CompareStringObject> strings_;
-    Roots roots_;
+    std::tuple<Roots*...> roots_;
   };
 
 
-  namespace detail
-  {
-    template <typename T0, typename... Ts>
-    T0* make_object_impl(std::false_type, Ts&&... args)
-    {
-      auto ptr = std::make_unique<T0>(std::forward<Ts>(args)...);
-      return static_cast<T0*>(
-          ObjectTracker::instance().add_object(std::move(ptr)));
-    }
-
-
-    template <typename T0, typename... Ts>
-    T0* make_object_impl(std::true_type, Ts&&... args)
-    {
-      auto ptr = std::make_unique<T0>(std::forward<Ts>(args)...);
-      return ObjectTracker::instance().add_string(std::move(ptr));
-    }
-  }
+  using ObjTracker =
+      ObjectTracker<
+        Stack<Value, max_stack_size>,
+        std::list<UpvalueObject*>,
+        StringHashTable<Value>
+      >;
 
 
   template <typename T0, typename... Ts>
   T0* make_object(Ts&& ... args)
   {
-    return detail::make_object_impl<T0>(
-        std::is_same<std::decay_t<T0>, StringObject>(),
-        std::forward<Ts>(args)...);
+      auto ptr = std::make_unique<T0>(std::forward<Ts>(args)...);
+      auto ret = ptr.get();
+      ObjTracker::instance().add_object(std::move(ptr));
+      return ret;
   };
+
+
+  StringObject* make_string(std::string std_str);
 }
 
 #endif //LOXX_OBJECTTRACKER_HPP

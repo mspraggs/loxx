@@ -24,50 +24,40 @@
 
 namespace loxx
 {
-  ObjectTracker& ObjectTracker::instance()
+  namespace detail
   {
-    static ObjectTracker ret;
+    template <typename... Ts>
+    void grey_roots(std::tuple<Ts...>& roots);
+  }
+
+
+  template <typename... Roots>
+  ObjectTracker<Roots...>& ObjectTracker<Roots...>::instance()
+  {
+    static ObjectTracker<Roots...> ret;
     return ret;
   }
 
 
-  StringObject* ObjectTracker::add_string(std::unique_ptr<StringObject> str)
-  {
-    const auto cached = strings_.find(
-        str.get(),
-        [&] (StringObject* candidate) {
-          return candidate->as_std_string() == str->as_std_string();
-        });
-
-    if (cached) {
-      return *cached;
-    }
-
-    const auto ret = str.get();
-    strings_.insert(static_cast<StringObject*>(ret));
-    add_object(std::move(str));
-    return ret;
-  }
-
-
-  ObjectPtr ObjectTracker::add_object(std::unique_ptr<Object> object)
+  template <typename... Roots>
+  void ObjectTracker<Roots...>::add_object(std::unique_ptr<Object> object)
   {
     if (objects_.size() > gc_size_trigger_) {
       collect_garbage();
     }
 
     objects_.push_back(std::move(object));
-    return objects_.back().get();
   }
 
 
-  void ObjectTracker::collect_garbage()
+  template <typename... Roots>
+  void ObjectTracker<Roots...>::collect_garbage()
   {
     for (auto& object : objects_) {
       object->set_colour(TriColour::White);
     }
 
-    grey_roots();
+    detail::grey_roots(roots_);
 
     const auto is_grey =
         [] (const std::unique_ptr<Object>& obj)
@@ -99,25 +89,55 @@ namespace loxx
   }
 
 
-  void ObjectTracker::grey_roots()
+  StringObject* make_string(std::string std_str)
   {
-    for (std::size_t i = 0; i < roots_.stack->size(); ++i) {
-      auto& value = roots_.stack->get(i);
+    static HashSet<StringObject*, HashStringObject, CompareStringObject> cache;
+
+    auto str_obj = std::make_unique<StringObject>(std::move(std_str));
+
+    const auto cached = cache.find(
+        str_obj.get(),
+        [&] (StringObject* candidate) {
+          return candidate->as_std_string() == str_obj->as_std_string();
+        });
+
+    if (cached) {
+      return *cached;
+    }
+
+    cache.insert(str_obj.get());
+    const auto ret = str_obj.get();
+    ObjTracker::instance().add_object(std::move(str_obj));
+    return ret;
+  }
+
+
+  void grey_roots(Stack<Value, max_stack_size>* stack)
+  {
+    for (std::size_t i = 0; i < stack->size(); ++i) {
+      auto& value = stack->get(i);
 
       if (not holds_alternative<ObjectPtr>(value)) {
         continue;
       }
 
       auto object = get<ObjectPtr>(value);
-
       object->set_colour(TriColour::Grey);
     }
+  }
 
-    for (auto upvalue : *roots_.upvalues) {
+
+  void grey_roots(std::list<UpvalueObject*>* upvalues)
+  {
+    for (auto upvalue : *upvalues) {
       upvalue->set_colour(TriColour::Grey);
     }
+  }
 
-    for (auto& value : *roots_.globals) {
+
+  void grey_roots(StringHashTable<Value>* globals)
+  {
+    for (auto& value : *globals) {
       value.first->set_colour(TriColour::Grey);
 
       if (not holds_alternative<ObjectPtr>(value.second)) {
@@ -125,6 +145,34 @@ namespace loxx
       }
 
       get<ObjectPtr>(value.second)->set_colour(TriColour::Grey);
+    }
+  }
+
+
+  namespace detail
+  {
+    void grey_roots_impl() {}
+
+
+    template <typename T0, typename... Ts>
+    void grey_roots_impl(T0 head, Ts... tail)
+    {
+      grey_roots(head);
+      grey_roots_impl(tail...);
+    }
+
+
+    template <std::size_t... Is, typename... Ts>
+    void grey_roots(std::index_sequence<Is...>, std::tuple<Ts...>& roots)
+    {
+      grey_roots_impl(std::get<Is>(roots)...);
+    }
+
+
+    template <typename... Ts>
+    void grey_roots(std::tuple<Ts...>& roots)
+    {
+      grey_roots(std::index_sequence_for<Ts...>(), roots);
     }
   }
 }
