@@ -167,7 +167,7 @@ namespace loxx
     case Instruction::Call: {
       const auto num_args = read_integer_at_pos<InstrArgUByte>(ret);
       ret += sizeof(InstrArgUByte);
-      std::cout << num_args;
+      std::cout << static_cast<int>(num_args);
       break;
     }
 
