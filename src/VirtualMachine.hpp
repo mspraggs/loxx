@@ -47,7 +47,6 @@ namespace loxx
     void execute(std::unique_ptr<CodeObject> code_object);
 
   private:
-    void print_object(Value object) const;
     void execute_call();
     void call_object(const InstrArgUByte num_args, ObjectPtr const obj);
     void execute_create_closure();

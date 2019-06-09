@@ -337,7 +337,7 @@ namespace loxx
         break;
 
       case Instruction::Print:
-        print_object(stack_.pop());
+        std::cout << stack_.pop() << std::endl;
         break;
 
       case Instruction::Return: {
@@ -415,12 +415,6 @@ namespace loxx
         break;
       }
     }
-  }
-
-
-  void VirtualMachine::print_object(Value variant) const
-  {
-    std::cout << variant << std::endl;
   }
 
 
