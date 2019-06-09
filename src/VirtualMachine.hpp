@@ -56,7 +56,6 @@ namespace loxx
     void close_upvalues(Value& last);
 
     void call(ClosureObject* closure, const std::size_t num_args);
-    void print_stack() const;
 
     template <typename T>
     T read_integer();

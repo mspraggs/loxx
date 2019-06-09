@@ -68,7 +68,7 @@ namespace loxx
 
 #ifndef NDEBUG
       if (debug_) {
-        print_stack();
+        std::cout << "          " << stack_ << std::endl;
         print_instruction(
             *call_stack_.top().closure()->function().code_object(), ip_);
       }
@@ -570,19 +570,6 @@ namespace loxx
     call_stack_.emplace(ip_, code_object_, stack_.top(num_args), closure);
     code_object_ = closure->function().code_object();
     ip_ = code_object_->bytecode.begin();
-  }
-
-
-  void VirtualMachine::print_stack() const
-  {
-    std::cout << "          ";
-
-    for (unsigned int i = 0; i < stack_.size(); ++i) {
-      std::cout << "[ ";
-      std::cout << stack_.get(i);
-      std::cout << " ] ";
-    }
-    std::cout << std::endl;
   }
 
 

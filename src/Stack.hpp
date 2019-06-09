@@ -76,6 +76,19 @@ namespace loxx
   {
     return stack_[--top_];
   }
+
+
+  template <typename OStream, typename T, std::size_t N>
+  OStream& operator<<(OStream& stream, const Stack<T, N>& stack)
+  {
+    for (unsigned int i = 0; i < stack.size(); ++i) {
+      stream << "[ ";
+      stream << stack.get(i);
+      stream << " ] ";
+    }
+
+    return stream;
+  }
 }
 
 #endif //LOXX_STACK_HPP
