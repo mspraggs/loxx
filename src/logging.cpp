@@ -133,7 +133,7 @@ namespace loxx
     case Instruction::Jump: {
       const auto param = read_integer_at_pos<InstrArgUShort>(ret);
       std::cout << pos << " -> " << pos + param + sizeof(InstrArgUShort) + 1;
-      ret += sizeof(InstrArgSByte);
+      ret += sizeof(InstrArgUShort);
       break;
     }
 
@@ -209,7 +209,7 @@ namespace loxx
 
     case Instruction::Loop: {
       const auto param = read_integer_at_pos<InstrArgUShort>(ret);
-      ret += sizeof(InstrArgUByte);
+      ret += sizeof(InstrArgUShort);
       std::cout << pos << " -> " << pos - param + sizeof(InstrArgSByte) + 1;
       break;
     }
