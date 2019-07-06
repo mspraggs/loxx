@@ -46,14 +46,20 @@ namespace loxx
   public:
     struct Upvalue;
 
-    explicit FunctionScope(const FunctionType type,
-                           std::unique_ptr<FunctionScope> enclosing = nullptr)
+    explicit FunctionScope(
+        const FunctionType type,
+        const std::vector<Token>& parameters,
+        std::unique_ptr<FunctionScope> enclosing = nullptr)
         : type_(type), last_line_num_(0), last_instr_num_(0),
           scope_depth_(enclosing == nullptr ? 0 : enclosing->scope_depth_ + 1),
           enclosing_(std::move(enclosing)), code_object_(new CodeObject)
     {
       if (type_ == FunctionType::Function) {
         locals_.push_back(Local{false, false, 0, ""});
+      }
+
+      for (const auto& param : parameters) {
+        code_object_->varnames.push_back(param.lexeme());
       }
     }
 

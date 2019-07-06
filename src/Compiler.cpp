@@ -472,7 +472,8 @@ namespace loxx
 
   void Compiler::compile_function(const Function& stmt, const FunctionType type)
   {
-    func_ = std::make_unique<FunctionScope>(type, std::move(func_));
+    func_ = std::make_unique<FunctionScope>(
+        type, stmt.parameters, std::move(func_));
     func_->begin_scope();
 
     // Declare/define "this"

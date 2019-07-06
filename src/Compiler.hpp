@@ -49,7 +49,7 @@ namespace loxx
   public:
     explicit Compiler(const bool debug)
         : debug_(debug), class_type_(ClassType::None),
-          func_(new FunctionScope(loxx::FunctionType::None))
+          func_(new FunctionScope(loxx::FunctionType::None, {}))
     {
     }
 

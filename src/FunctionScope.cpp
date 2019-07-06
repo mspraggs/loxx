@@ -51,6 +51,7 @@ namespace loxx
   void FunctionScope::add_local(const Token& name)
   {
     code_object_->num_locals++;
+    code_object_->varnames.push_back(name.lexeme());
     locals_.push_back({false, false, 0, name.lexeme()});
   }
 

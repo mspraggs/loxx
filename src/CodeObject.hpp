@@ -39,6 +39,7 @@ namespace loxx
     std::vector<std::uint8_t> bytecode;
     ConstStringHashTable<InstrArgUByte> constant_map;
     std::vector<Value> constants;
+    std::vector<std::string> varnames;
     std::vector<std::tuple<std::int8_t, std::uint8_t>> line_num_table;
   };
 }
