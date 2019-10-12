@@ -37,45 +37,45 @@ namespace loxx
   std::ostream& operator<<(std::ostream& os, const TokenType type)
   {
     static std::unordered_map<TokenType, const char*, TokenTypeHasher> type_map{
-        {TokenType::LeftParen, "LeftParen"},
-        {TokenType::RightParen, "RightParen"},
-        {TokenType::LeftBrace, "LeftBrace"},
-        {TokenType::RightBrace, "RightBrace"},
-        {TokenType::Comma, "Comma"},
-        {TokenType::Dot, "Dot"},
-        {TokenType::Minus, "Minus"},
-        {TokenType::Plus, "Plus"},
-        {TokenType::SemiColon, "SemiColon"},
-        {TokenType::Slash, "Slash"},
-        {TokenType::Star, "Star"},
-        {TokenType::Bang, "Bang"},
-        {TokenType::BangEqual, "BangEqual"},
-        {TokenType::Equal, "Equal"},
-        {TokenType::EqualEqual, "EqualEqual"},
-        {TokenType::Greater, "Greater"},
-        {TokenType::GreaterEqual, "GreaterEqual"},
-        {TokenType::Less, "Less"},
-        {TokenType::LessEqual, "LessEqual"},
-        {TokenType::Identifier, "Identifier"},
-        {TokenType::String, "String"},
-        {TokenType::Number, "Number"},
-        {TokenType::And, "And"},
-        {TokenType::Class, "Class"},
-        {TokenType::Else, "Else"},
-        {TokenType::False, "False"},
-        {TokenType::Fun, "Fun"},
-        {TokenType::For, "For"},
-        {TokenType::If, "If"},
-        {TokenType::Nil, "Nil"},
-        {TokenType::Or, "Or"},
-        {TokenType::Print, "Print"},
-        {TokenType::Return, "Return"},
-        {TokenType::Super, "Super"},
-        {TokenType::This, "This"},
-        {TokenType::True, "True"},
-        {TokenType::Var, "Var"},
-        {TokenType::While, "While"},
-        {TokenType::Eof, "Eof"}
+        {TokenType::LEFT_PAREN, "LEFT_PAREN"},
+        {TokenType::RIGHT_PAREN, "RIGHT_PAREN"},
+        {TokenType::LEFT_BRACE, "LEFT_BRACE"},
+        {TokenType::RIGHT_BRACE, "RIGHT_BRACE"},
+        {TokenType::COMMA, "COMMA"},
+        {TokenType::DOT, "DOT"},
+        {TokenType::MINUS, "MINUS"},
+        {TokenType::PLUS, "PLUS"},
+        {TokenType::SEMI_COLON, "SEMI_COLON"},
+        {TokenType::SLASH, "SLASH"},
+        {TokenType::STAR, "STAR"},
+        {TokenType::BANG, "BANG"},
+        {TokenType::BANG_EQUAL, "BANG_EQUAL"},
+        {TokenType::EQUAL, "Equal"},
+        {TokenType::EQUAL_EQUAL, "EQUAL_EQUAL"},
+        {TokenType::GREATER, "GREATER"},
+        {TokenType::GREATER_EQUAL, "GREATER_EQUAL"},
+        {TokenType::LESS, "LESS"},
+        {TokenType::LESS_EQUAL, "LESS_EQUAL"},
+        {TokenType::IDENTIFIER, "IDENTIFIER"},
+        {TokenType::STRING, "STRING"},
+        {TokenType::NUMBER, "NUMBER"},
+        {TokenType::AND, "AND"},
+        {TokenType::CLASS, "CLASS"},
+        {TokenType::ELSE, "ELSE"},
+        {TokenType::FALSE, "FALSE"},
+        {TokenType::FUN, "FUN"},
+        {TokenType::FOR, "FOR"},
+        {TokenType::IF, "If"},
+        {TokenType::NIL, "NIL"},
+        {TokenType::OR, "OR"},
+        {TokenType::PRINT, "PRINT"},
+        {TokenType::RETURN, "RETURN"},
+        {TokenType::SUPER, "SUPER"},
+        {TokenType::THIS, "THIS"},
+        {TokenType::TRUE, "TRUE"},
+        {TokenType::VAR, "VAR"},
+        {TokenType::WHILE, "WHILE"},
+        {TokenType::END_OF_FILE, "EOF"}
     };
     os << type_map[type];
     return os;
@@ -88,20 +88,20 @@ namespace loxx
 
     const Value& literal = token.literal();
 
-    if (token.type() == TokenType::Number) {
+    if (token.type() == TokenType::NUMBER) {
       literal_string = std::to_string(get<double>(literal));
     }
-    else if (token.type() == TokenType::String) {
+    else if (token.type() == TokenType::STRING) {
       literal_string =
           static_cast<std::string>(*get_object<StringObject>(literal));
     }
-    else if (token.type() == TokenType::True) {
+    else if (token.type() == TokenType::TRUE) {
       literal_string = "true";
     }
-    else if (token.type() == TokenType::False) {
+    else if (token.type() == TokenType::FALSE) {
       literal_string = "false";
     }
-    else if (token.type() == TokenType::Nil) {
+    else if (token.type() == TokenType::NIL) {
       literal_string = "nil";
     }
 

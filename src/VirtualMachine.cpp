@@ -78,7 +78,7 @@ namespace loxx
 
       switch (instruction) {
 
-      case Instruction::Add: {
+      case Instruction::ADD: {
         const auto second = stack_.pop();
         const auto first = stack_.pop();
 
@@ -102,16 +102,16 @@ namespace loxx
         break;
       }
 
-      case Instruction::Call:
+      case Instruction::CALL:
         execute_call();
         break;
 
-      case Instruction::CloseUpvalue:
+      case Instruction::CLOSE_UPVALUE:
         close_upvalues(stack_.top());
         stack_.discard();
         break;
 
-      case Instruction::ConditionalJump: {
+      case Instruction::CONDITIONAL_JUMP: {
         const auto jmp = read_integer<InstrArgUShort>();
         if (not is_truthy(stack_.top())) {
           ip_ += jmp;
@@ -119,18 +119,18 @@ namespace loxx
         break;
       }
 
-      case Instruction::CreateClass: {
+      case Instruction::CREATE_CLASS: {
         auto name = read_string()->as_std_string();
         const auto cls = make_object<ClassObject>(std::move(name));
         stack_.emplace(InPlace<ObjectPtr>(), cls);
         break;
       }
 
-      case Instruction::CreateClosure:
+      case Instruction::CREATE_CLOSURE:
         execute_create_closure();
         break;
 
-      case Instruction::CreateMethod: {
+      case Instruction::CREATE_METHOD: {
         const auto cls = get_object<ClassObject>(stack_.top(1));
         const auto closure = get_object<ClosureObject>(stack_.top());
         const auto name = read_string();
@@ -140,7 +140,7 @@ namespace loxx
         break;
       }
 
-      case Instruction::CreateSubclass: {
+      case Instruction::CREATE_SUBCLASS: {
         const auto super = get_object<ClassObject>(stack_.top());
 
         if (not super) {
@@ -153,13 +153,13 @@ namespace loxx
         break;
       }
 
-      case Instruction::DefineGlobal: {
+      case Instruction::DEFINE_GLOBAL: {
         const auto varname = read_string();
         globals_[varname] = stack_.pop();
         break;
       }
 
-      case Instruction::Divide: {
+      case Instruction::DIVIDE: {
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
@@ -167,7 +167,7 @@ namespace loxx
         break;
       }
 
-      case Instruction::Equal: {
+      case Instruction::EQUAL: {
         const auto second = stack_.pop();
         const auto first = stack_.pop();
 
@@ -175,11 +175,11 @@ namespace loxx
         break;
       }
 
-      case Instruction::False:
+      case Instruction::FALSE:
         stack_.emplace(InPlace<bool>(), false);
         break;
 
-      case Instruction::GetGlobal: {
+      case Instruction::GET_GLOBAL: {
         const auto varname = read_string();
 
         const auto& global = globals_.get(varname);
@@ -193,13 +193,13 @@ namespace loxx
         break;
       }
 
-      case Instruction::GetLocal: {
+      case Instruction::GET_LOCAL: {
         const auto arg = read_integer<InstrArgUByte>();
         stack_.push(call_stack_.top().slot(arg));
         break;
       }
 
-      case Instruction::GetProperty: {
+      case Instruction::GET_PROPERTY: {
         const auto instance = get_object<InstanceObject>(stack_.top());
         if (not instance) {
           throw make_runtime_error("Only instances have properties.");
@@ -225,7 +225,7 @@ namespace loxx
         break;
       }
 
-      case Instruction::GetSuperFunc: {
+      case Instruction::GET_SUPER_FUNC: {
         const auto cls_value = stack_.pop();
         const auto cls = get_object<ClassObject>(cls_value);
         const auto instance = get_object<InstanceObject>(stack_.top());
@@ -244,13 +244,13 @@ namespace loxx
         break;
       }
 
-      case Instruction::GetUpvalue: {
+      case Instruction::GET_UPVALUE: {
         const auto slot = read_integer<InstrArgUByte>();
         stack_.push(call_stack_.top().closure()->upvalue(slot)->value());
         break;
       }
 
-      case Instruction::Greater: {
+      case Instruction::GREATER: {
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
@@ -259,7 +259,7 @@ namespace loxx
         break;
       }
 
-      case Instruction::Invoke: {
+      case Instruction::INVOKE: {
         const auto name = read_string();
         const auto num_args = read_integer<InstrArgUByte>();
 
@@ -286,11 +286,11 @@ namespace loxx
         break;
       }
 
-      case Instruction::Jump:
+      case Instruction::JUMP:
         ip_ += read_integer<InstrArgUShort>();
         break;
 
-      case Instruction::Less: {
+      case Instruction::LESS: {
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
@@ -299,15 +299,15 @@ namespace loxx
         break;
       }
 
-      case Instruction::LoadConstant:
+      case Instruction::LOAD_CONSTANT:
         stack_.push(read_constant());
         break;
 
-      case Instruction::Loop:
+      case Instruction::LOOP:
         ip_ -= read_integer<InstrArgUShort>();
         break;
 
-      case Instruction::Multiply: {
+      case Instruction::MULTIPLY: {
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
@@ -315,7 +315,7 @@ namespace loxx
         break;
       }
 
-      case Instruction::Negate: {
+      case Instruction::NEGATE: {
         if (not holds_alternative<double>(stack_.top())) {
           throw make_runtime_error("Unary operand must be a number.");
         }
@@ -324,23 +324,23 @@ namespace loxx
         break;
       }
 
-      case Instruction::Nil:
+      case Instruction::NIL:
         stack_.emplace();
         break;
 
-      case Instruction::Not:
+      case Instruction::NOT:
         stack_.emplace(InPlace<bool>(), not is_truthy(stack_.pop()));
         break;
 
-      case Instruction::Pop:
+      case Instruction::POP:
         stack_.pop();
         break;
 
-      case Instruction::Print:
+      case Instruction::PRINT:
         std::cout << stack_.pop() << std::endl;
         break;
 
-      case Instruction::Return: {
+      case Instruction::RETURN: {
         const auto result = stack_.pop();
         close_upvalues(call_stack_.top().slot(0));
         const auto frame = call_stack_.pop();
@@ -358,7 +358,7 @@ namespace loxx
         break;
       }
 
-      case Instruction::SetGlobal: {
+      case Instruction::SET_GLOBAL: {
         const auto varname = read_string();
 
         if (globals_.count(varname) == 0) {
@@ -370,13 +370,13 @@ namespace loxx
         break;
       }
 
-      case Instruction::SetLocal: {
+      case Instruction::SET_LOCAL: {
         const auto arg = read_integer<InstrArgUByte>();
         call_stack_.top().slot(arg) = stack_.top();
         break;
       }
 
-      case Instruction::SetProperty: {
+      case Instruction::SET_PROPERTY: {
         const auto obj = get_object<InstanceObject>(stack_.top(1));
         if (not obj) {
           throw make_runtime_error("Only instances have fields.");
@@ -391,13 +391,13 @@ namespace loxx
         break;
       }
 
-      case Instruction::SetUpvalue: {
+      case Instruction::SET_UPVALUE: {
         const auto slot = read_integer<InstrArgUByte>();
         call_stack_.top().closure()->upvalue(slot)->set_value(stack_.top());
         break;
       }
 
-      case Instruction::Subtract: {
+      case Instruction::SUBTRACT: {
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
@@ -405,7 +405,7 @@ namespace loxx
         break;
       }
 
-      case Instruction::True:
+      case Instruction::TRUE:
         stack_.emplace(InPlace<bool>(), true);
         break;
 
@@ -436,7 +436,7 @@ namespace loxx
       const InstrArgUByte num_args, const ObjectPtr obj)
   {
     switch (obj->type()) {
-      case ObjectType::Class: {
+      case ObjectType::CLASS: {
         const auto cls = static_cast<ClassObject*>(obj);
         unsafe_get<ObjectPtr>(stack_.top(num_args)) =
             make_object<InstanceObject>(cls);
@@ -452,19 +452,19 @@ namespace loxx
         break;
       }
 
-      case ObjectType::Closure: {
+      case ObjectType::CLOSURE: {
         call(static_cast<ClosureObject*>(obj), num_args);
         break;
       }
 
-      case ObjectType::Method: {
+      case ObjectType::METHOD: {
         const auto method = static_cast<MethodObject*>(obj);
         unsafe_get<ObjectPtr>(stack_.top(num_args)) = method->instance();
         call(method->closure(), num_args);
         break;
       }
 
-      case ObjectType::Native: {
+      case ObjectType::NATIVE: {
         const auto native = static_cast<NativeObject*>(obj);
 
         if (native->arity() != num_args) {

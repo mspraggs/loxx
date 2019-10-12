@@ -54,7 +54,7 @@ namespace loxx
   void ObjectTracker<Roots...>::collect_garbage()
   {
     for (auto& object : objects_) {
-      object->set_colour(TriColour::White);
+      object->set_colour(TriColour::WHITE);
     }
 
     detail::grey_roots(roots_);
@@ -62,7 +62,7 @@ namespace loxx
     const auto is_grey =
         [] (const std::unique_ptr<Object>& obj)
         {
-          return obj and obj->colour() == TriColour::Grey;
+          return obj and obj->colour() == TriColour::GREY;
         };
 
     auto num_greys = std::count_if(objects_.begin(), objects_.end(), is_grey);
@@ -72,11 +72,11 @@ namespace loxx
 
     while (num_greys > 0) {
       for (auto& object : objects_) {
-        if (not object or object->colour() != TriColour::Grey) {
+        if (not object or object->colour() != TriColour::GREY) {
           continue;
         }
 
-        object->set_colour(TriColour::Black);
+        object->set_colour(TriColour::BLACK);
         object->grey_references();
 
         reachable_objects.push_back(std::move(object));
@@ -122,7 +122,7 @@ namespace loxx
       }
 
       auto object = get<ObjectPtr>(value);
-      object->set_colour(TriColour::Grey);
+      object->set_colour(TriColour::GREY);
     }
   }
 
@@ -130,7 +130,7 @@ namespace loxx
   void grey_roots(std::list<UpvalueObject*>* upvalues)
   {
     for (auto upvalue : *upvalues) {
-      upvalue->set_colour(TriColour::Grey);
+      upvalue->set_colour(TriColour::GREY);
     }
   }
 
@@ -138,13 +138,13 @@ namespace loxx
   void grey_roots(StringHashTable<Value>* globals)
   {
     for (auto& value : *globals) {
-      value.first->set_colour(TriColour::Grey);
+      value.first->set_colour(TriColour::GREY);
 
       if (not holds_alternative<ObjectPtr>(value.second)) {
         continue;
       }
 
-      get<ObjectPtr>(value.second)->set_colour(TriColour::Grey);
+      get<ObjectPtr>(value.second)->set_colour(TriColour::GREY);
     }
   }
 

@@ -32,22 +32,22 @@ namespace loxx
       : start_(0), current_(0), line_(1), src_(std::move(src))
   {
     keywords_ =
-        {{"and",    TokenType::And},
-         {"class",  TokenType::Class},
-         {"else",   TokenType::Else},
-         {"false",  TokenType::False},
-         {"for",    TokenType::For},
-         {"fun",    TokenType::Fun},
-         {"if",     TokenType::If},
-         {"nil",    TokenType::Nil},
-         {"or",     TokenType::Or},
-         {"print",  TokenType::Print},
-         {"return", TokenType::Return},
-         {"super",  TokenType::Super},
-         {"this",   TokenType::This},
-         {"true",   TokenType::True},
-         {"var",    TokenType::Var},
-         {"while",  TokenType::While}
+        {{"and",    TokenType::AND},
+         {"class",  TokenType::CLASS},
+         {"else",   TokenType::ELSE},
+         {"false",  TokenType::FALSE},
+         {"for",    TokenType::FOR},
+         {"fun",    TokenType::FUN},
+         {"if",     TokenType::IF},
+         {"nil",    TokenType::NIL},
+         {"or",     TokenType::OR},
+         {"print",  TokenType::PRINT},
+         {"return", TokenType::RETURN},
+         {"super",  TokenType::SUPER},
+         {"this",   TokenType::THIS},
+         {"true",   TokenType::TRUE},
+         {"var",    TokenType::VAR},
+         {"while",  TokenType::WHILE}
         };
   }
 
@@ -59,7 +59,7 @@ namespace loxx
       scan_token();
     }
 
-    tokens_.emplace_back(TokenType::Eof, "", line_);
+    tokens_.emplace_back(TokenType::END_OF_FILE, "", line_);
     return tokens_;
   }
 
@@ -69,46 +69,46 @@ namespace loxx
     const char c = advance();
 
     if (c == '(') {
-      add_token(TokenType::LeftParen);
+      add_token(TokenType::LEFT_PAREN);
     }
     else if (c == ')') {
-      add_token(TokenType::RightParen);
+      add_token(TokenType::RIGHT_PAREN);
     }
     else if (c == '{') {
-      add_token(TokenType::LeftBrace);
+      add_token(TokenType::LEFT_BRACE);
     }
     else if (c == '}') {
-      add_token(TokenType::RightBrace);
+      add_token(TokenType::RIGHT_BRACE);
     }
     else if (c == ',') {
-      add_token(TokenType::Comma);
+      add_token(TokenType::COMMA);
     }
     else if (c == '.') {
-      add_token(TokenType::Dot);
+      add_token(TokenType::DOT);
     }
     else if (c == '-') {
-      add_token(TokenType::Minus);
+      add_token(TokenType::MINUS);
     }
     else if (c == '+') {
-      add_token(TokenType::Plus);
+      add_token(TokenType::PLUS);
     }
     else if (c == ';') {
-      add_token(TokenType::SemiColon);
+      add_token(TokenType::SEMI_COLON);
     }
     else if (c == '*') {
-      add_token(TokenType::Star);
+      add_token(TokenType::STAR);
     }
     else if (c == '!') {
-      add_token(match('=') ? TokenType::BangEqual : TokenType::Bang);
+      add_token(match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
     }
     else if (c == '=') {
-      add_token(match('=') ? TokenType::EqualEqual : TokenType::Equal);
+      add_token(match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
     }
     else if (c == '<') {
-      add_token(match('=') ? TokenType::LessEqual : TokenType::Less);
+      add_token(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
     }
     else if (c == '>') {
-      add_token(match('=') ? TokenType::GreaterEqual : TokenType::Greater);
+      add_token(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
     }
     else if (c == '/') {
       if (match('/')) {
@@ -117,7 +117,7 @@ namespace loxx
         }
       }
       else {
-        add_token(TokenType::Slash);
+        add_token(TokenType::SLASH);
       }
     }
     else if (c == ' ' or c == '\r' or c == '\t') {
@@ -149,11 +149,11 @@ namespace loxx
 
     const auto text = src_.substr(start_, current_ - start_);
     const TokenType type =
-        keywords_.count(text) == 0 ? TokenType::Identifier : keywords_[text];
-    if (type == TokenType::True) {
+        keywords_.count(text) == 0 ? TokenType::IDENTIFIER : keywords_[text];
+    if (type == TokenType::TRUE) {
       add_token(type, true);
     }
-    else if (type == TokenType::False) {
+    else if (type == TokenType::FALSE) {
       add_token(type, false);
     }
     else {
@@ -179,7 +179,7 @@ namespace loxx
 
     const auto string_obj = make_string(
         src_.substr(start_ + 1, current_ - start_ - 2));
-    add_token(TokenType::String, Value(InPlace<ObjectPtr>(), string_obj));
+    add_token(TokenType::STRING, Value(InPlace<ObjectPtr>(), string_obj));
   }
 
 
@@ -198,7 +198,7 @@ namespace loxx
     }
 
     try {
-      add_token(TokenType::Number,
+      add_token(TokenType::NUMBER,
                 std::stod(src_.substr(start_, current_ - start_)));
     }
     catch (const std::out_of_range& e) {

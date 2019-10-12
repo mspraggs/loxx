@@ -53,7 +53,7 @@ namespace loxx
 
   void error(const Token& token, const std::string& message)
   {
-    if (token.type() == TokenType::Eof) {
+    if (token.type() == TokenType::END_OF_FILE) {
       report(token.line(), "at end", message);
     }
     else {
@@ -110,34 +110,34 @@ namespace loxx
 
     switch (instruction) {
 
-    case Instruction::Add:
-    case Instruction::CloseUpvalue:
-    case Instruction::Divide:
-    case Instruction::Equal:
-    case Instruction::False:
-    case Instruction::Greater:
-    case Instruction::Less:
-    case Instruction::Multiply:
-    case Instruction::Negate:
-    case Instruction::Nil:
-    case Instruction::Not:
-    case Instruction::Pop:
-    case Instruction::Print:
-    case Instruction::Push:
-    case Instruction::Return:
-    case Instruction::Subtract:
-    case Instruction::True:
+    case Instruction::ADD:
+    case Instruction::CLOSE_UPVALUE:
+    case Instruction::DIVIDE:
+    case Instruction::EQUAL:
+    case Instruction::FALSE:
+    case Instruction::GREATER:
+    case Instruction::LESS:
+    case Instruction::MULTIPLY:
+    case Instruction::NEGATE:
+    case Instruction::NIL:
+    case Instruction::NOT:
+    case Instruction::POP:
+    case Instruction::PRINT:
+    case Instruction::PUSH:
+    case Instruction::RETURN:
+    case Instruction::SUBTRACT:
+    case Instruction::TRUE:
       break;
 
-    case Instruction::ConditionalJump:
-    case Instruction::Jump: {
+    case Instruction::CONDITIONAL_JUMP:
+    case Instruction::JUMP: {
       const auto param = read_integer_at_pos<InstrArgUShort>(ret);
       std::cout << pos << " -> " << pos + param + sizeof(InstrArgUShort) + 1;
       ret += sizeof(InstrArgUShort);
       break;
     }
 
-    case Instruction::CreateClosure: {
+    case Instruction::CREATE_CLOSURE: {
       const auto& func_value =
           constants[read_integer_at_pos<InstrArgUByte>(ret)];
       const auto& func_obj = get<ObjectPtr>(func_value);
@@ -164,23 +164,23 @@ namespace loxx
       break;
     }
 
-    case Instruction::Call: {
+    case Instruction::CALL: {
       const auto num_args = read_integer_at_pos<InstrArgUByte>(ret);
       ret += sizeof(InstrArgUByte);
       std::cout << static_cast<int>(num_args);
       break;
     }
 
-    case Instruction::CreateClass:
-    case Instruction::CreateMethod:
-    case Instruction::CreateSubclass:
-    case Instruction::DefineGlobal:
-    case Instruction::GetGlobal:
-    case Instruction::GetProperty:
-    case Instruction::GetSuperFunc:
-    case Instruction::SetGlobal:
-    case Instruction::SetProperty:
-    case Instruction::LoadConstant: {
+    case Instruction::CREATE_CLASS:
+    case Instruction::CREATE_METHOD:
+    case Instruction::CREATE_SUBCLASS:
+    case Instruction::DEFINE_GLOBAL:
+    case Instruction::GET_GLOBAL:
+    case Instruction::GET_PROPERTY:
+    case Instruction::GET_SUPER_FUNC:
+    case Instruction::SET_GLOBAL:
+    case Instruction::SET_PROPERTY:
+    case Instruction::LOAD_CONSTANT: {
       const auto param = read_integer_at_pos<InstrArgUByte>(ret);
       std::cout << static_cast<unsigned int>(param)
                 << " '" << constants[param] << "'";
@@ -188,17 +188,17 @@ namespace loxx
       break;
     }
 
-    case Instruction::GetLocal:
-    case Instruction::GetUpvalue:
-    case Instruction::SetLocal:
-    case Instruction::SetUpvalue: {
+    case Instruction::GET_LOCAL:
+    case Instruction::GET_UPVALUE:
+    case Instruction::SET_LOCAL:
+    case Instruction::SET_UPVALUE: {
       const auto param = read_integer_at_pos<InstrArgUByte>(ret);
       std::cout << static_cast<unsigned int>(param);
       ret += sizeof(InstrArgUByte);
       break;
     }
 
-    case Instruction::Invoke: {
+    case Instruction::INVOKE: {
       const auto param = read_integer_at_pos<InstrArgUByte>(ret);
       ret += sizeof(InstrArgUByte);
       const auto num_args = read_integer_at_pos<InstrArgUByte>(ret);
@@ -207,7 +207,7 @@ namespace loxx
       break;
     }
 
-    case Instruction::Loop: {
+    case Instruction::LOOP: {
       const auto param = read_integer_at_pos<InstrArgUShort>(ret);
       ret += sizeof(InstrArgUShort);
       std::cout << pos << " -> " << pos - param + sizeof(InstrArgUShort) + 1;

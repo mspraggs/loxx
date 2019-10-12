@@ -48,8 +48,8 @@ namespace loxx
   {
   public:
     explicit Compiler(const bool debug)
-        : debug_(debug), class_type_(ClassType::None),
-          func_(new FunctionScope(loxx::FunctionType::None))
+        : debug_(debug), class_type_(ClassType::NONE),
+          func_(new FunctionScope(loxx::FunctionType::NONE))
     {
     }
 
@@ -84,9 +84,9 @@ namespace loxx
 
   private:
     enum class ClassType {
-      Superclass,
-      Subclass,
-      None
+      SUPERCLASS,
+      SUBCLASS,
+      NONE
     };
 
     class CompileError : public std::runtime_error

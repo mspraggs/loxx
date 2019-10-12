@@ -52,7 +52,7 @@ namespace loxx
 
   void AstPrinter::visit_logical_expr(const Logical& expr)
   {
-    const std::string name = expr.op.type() == TokenType::Or ? "or" : "and";
+    const std::string name = expr.op.type() == TokenType::OR ? "or" : "and";
     paranthesise(name, {expr.left.get(), expr.right.get()});
   }
 

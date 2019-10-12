@@ -39,22 +39,22 @@ namespace loxx
 
   enum class TriColour
   {
-    White,
-    Grey,
-    Black
+    WHITE,
+    GREY,
+    BLACK
   };
 
 
   enum class ObjectType
   {
-    Class,
-    Closure,
-    Function,
-    Instance,
-    Method,
-    Native,
-    String,
-    Upvalue,
+    CLASS,
+    CLOSURE,
+    FUNCTION,
+    INSTANCE,
+    METHOD,
+    NATIVE,
+    STRING,
+    UPVALUE,
   };
 
 
@@ -72,7 +72,7 @@ namespace loxx
 
   protected:
     explicit Object(const ObjectType type)
-        : type_(type), colour_(TriColour::White)
+        : type_(type), colour_(TriColour::WHITE)
     {}
 
   private:
@@ -106,7 +106,7 @@ namespace loxx
   {
   public:
     explicit UpvalueObject(Value& slot)
-        : Object(ObjectType::Upvalue), value_(&slot)
+        : Object(ObjectType::UPVALUE), value_(&slot)
     {}
 
     void close()
@@ -130,7 +130,7 @@ namespace loxx
   {
   public:
     explicit ClosureObject(FuncObject* func)
-        : Object(ObjectType::Closure),
+        : Object(ObjectType::CLOSURE),
           function_(func), upvalues_(function_->num_upvalues())
     {
     }
@@ -156,7 +156,7 @@ namespace loxx
   {
   public:
     MethodObject(ClosureObject& closure, InstanceObject& instance)
-        : Object(ObjectType::Method),
+        : Object(ObjectType::METHOD),
           closure_(&closure), instance_(&instance)
     {}
 
@@ -175,7 +175,7 @@ namespace loxx
   {
   public:
     explicit ClassObject(std::string lexeme, ClassObject* superclass = {})
-        : Object(ObjectType::Class),
+        : Object(ObjectType::CLASS),
           lexeme_(std::move(lexeme)),
           superclass_(superclass)
     {}
@@ -202,7 +202,7 @@ namespace loxx
   {
   public:
     explicit InstanceObject(ClassObject* cls)
-        : Object(ObjectType::Instance),
+        : Object(ObjectType::INSTANCE),
           cls_(cls)
     {}
 
@@ -231,7 +231,7 @@ namespace loxx
     using Fn = Value (*) (const Value*, const unsigned int);
 
     explicit NativeObject(Fn func, const unsigned int arity)
-        : Object(ObjectType::Native),
+        : Object(ObjectType::NATIVE),
           arity_(arity), func_(func)
     {}
 
@@ -250,7 +250,7 @@ namespace loxx
   {
   public:
     explicit StringObject(std::string value)
-        : Object(ObjectType::String),
+        : Object(ObjectType::STRING),
           hash_(std::hash<std::string>()(value)), value_(std::move(value))
     {}
 
@@ -275,49 +275,49 @@ namespace loxx
     template<>
     constexpr ObjectType object_type<ClassObject>()
     {
-      return ObjectType::Class;
+      return ObjectType::CLASS;
     }
 
 
     template<>
     constexpr ObjectType object_type<ClosureObject>()
     {
-      return ObjectType::Closure;
+      return ObjectType::CLOSURE;
     }
 
 
     template<>
     constexpr ObjectType object_type<FuncObject>()
     {
-      return ObjectType::Function;
+      return ObjectType::FUNCTION;
     }
 
 
     template<>
     constexpr ObjectType object_type<InstanceObject>()
     {
-      return ObjectType::Instance;
+      return ObjectType::INSTANCE;
     }
 
 
     template<>
     constexpr ObjectType object_type<NativeObject>()
     {
-      return ObjectType::Native;
+      return ObjectType::NATIVE;
     }
 
 
     template<>
     constexpr ObjectType object_type<StringObject>()
     {
-      return ObjectType::String;
+      return ObjectType::STRING;
     }
 
 
     template<>
     constexpr ObjectType object_type<UpvalueObject>()
     {
-      return ObjectType::Upvalue;
+      return ObjectType::UPVALUE;
     }
   }
 
@@ -357,20 +357,20 @@ namespace loxx
       const auto ptr = get<ObjectPtr>(value);
 
       switch (ptr->type()) {
-        case ObjectType::Function:
+        case ObjectType::FUNCTION:
           os << "<fn " << static_cast<FuncObject*>(ptr)->lexeme() << '>';
           break;
-        case ObjectType::Class: {
+        case ObjectType::CLASS: {
           const auto cls = static_cast<ClassObject*>(ptr);
           os << "<class " << cls->lexeme() << '>';
           break;
         }
-        case ObjectType::Closure: {
+        case ObjectType::CLOSURE: {
           const auto closure = static_cast<ClosureObject*>(ptr);
           os << "<fn " << closure->function().lexeme() << '>';
           break;
         }
-        case ObjectType::Instance: {
+        case ObjectType::INSTANCE: {
           const auto instance = static_cast<InstanceObject*>(ptr);
           os << instance->cls().lexeme() << " instance";
         }

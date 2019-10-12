@@ -28,8 +28,8 @@ namespace loxx
   void Compiler::compile(const std::vector<std::unique_ptr<Stmt>>& statements)
   {
     compile_stmts(statements);
-    func_->add_instruction(Instruction::Nil);
-    func_->add_instruction(Instruction::Return);
+    func_->add_instruction(Instruction::NIL);
+    func_->add_instruction(Instruction::RETURN);
   }
 
 
@@ -44,7 +44,7 @@ namespace loxx
   void Compiler::visit_class_stmt(const Class& stmt)
   {
     const auto class_type_old = class_type_;
-    class_type_ = stmt.superclass ? ClassType::Subclass : ClassType::Superclass;
+    class_type_ = stmt.superclass ? ClassType::SUBCLASS : ClassType::SUPERCLASS;
 
     // If this class derives from an existing class, we create an additional
     // scope containing a reference to the superclass, which is then captured
@@ -58,7 +58,7 @@ namespace loxx
 
     // Add an instruction to make the class
     const auto op = stmt.superclass ?
-                    Instruction::CreateSubclass : Instruction::CreateClass;
+                    Instruction::CREATE_SUBCLASS : Instruction::CREATE_CLASS;
     const auto name_constant = make_string_constant(stmt.name.lexeme());
     func_->add_instruction(op);
     func_->add_integer<InstrArgUByte>(name_constant);
@@ -69,11 +69,11 @@ namespace loxx
       const auto method_constant = make_string_constant(method->name.lexeme());
       const auto type =
           method->name.lexeme() == "init" ?
-          FunctionType::Initialiser :
-          FunctionType::Method;
+          FunctionType::INITIALISER :
+          FunctionType::METHOD;
       compile_function(*method, type);
 
-      func_->add_instruction(Instruction::CreateMethod);
+      func_->add_instruction(Instruction::CREATE_METHOD);
       func_->add_integer<InstrArgUByte>(method_constant);
       func_->update_line_num_table(method->name);
     }
@@ -92,14 +92,14 @@ namespace loxx
   void Compiler::visit_expression_stmt(const Expression& stmt)
   {
     compile(*stmt.expression);
-    func_->add_instruction(Instruction::Pop);
+    func_->add_instruction(Instruction::POP);
   }
 
 
   void Compiler::visit_function_stmt(const Function& stmt)
   {
     const auto arg = declare_variable(stmt.name);
-    compile_function(stmt, FunctionType::Function);
+    compile_function(stmt, FunctionType::FUNCTION);
     define_variable(arg, stmt.name);
   }
 
@@ -107,7 +107,7 @@ namespace loxx
   void Compiler::visit_if_stmt(const If& stmt)
   {
     // If statements are implemented like this:
-    // if (not expr) goto else <- Instruction::ConditionalJump
+    // if (not expr) goto else <- Instruction::CONDITIONAL_JUMP
     // ...
     // goto end
     // else:
@@ -116,17 +116,17 @@ namespace loxx
     // ...
     compile(*stmt.condition);
 
-    const auto first_jump_pos = func_->add_jump(Instruction::ConditionalJump);
+    const auto first_jump_pos = func_->add_jump(Instruction::CONDITIONAL_JUMP);
 
-    func_->add_instruction(Instruction::Pop);
+    func_->add_instruction(Instruction::POP);
 
     compile(*stmt.then_branch);
 
-    const auto second_jump_pos = func_->add_jump(Instruction::Jump);
+    const auto second_jump_pos = func_->add_jump(Instruction::JUMP);
 
     func_->patch_jump(first_jump_pos);
 
-    func_->add_instruction(Instruction::Pop);
+    func_->add_instruction(Instruction::POP);
 
     if (stmt.else_branch != nullptr) {
       compile(*stmt.else_branch);
@@ -140,20 +140,20 @@ namespace loxx
   {
     compile(*stmt.expression);
 
-    func_->add_instruction(Instruction::Print);
+    func_->add_instruction(Instruction::PRINT);
   }
 
 
   void Compiler::visit_return_stmt(const Return& stmt)
   {
-    if (func_->type() == FunctionType::None) {
+    if (func_->type() == FunctionType::NONE) {
       error(stmt.keyword, "Cannot return from top-level code.");
     }
-    if (func_->type() == FunctionType::Initialiser and stmt.value != nullptr) {
+    if (func_->type() == FunctionType::INITIALISER and stmt.value != nullptr) {
       error(stmt.keyword, "Cannot return a value from an initialiser.");
     }
 
-    if (func_->type() == FunctionType::Initialiser) {
+    if (func_->type() == FunctionType::INITIALISER) {
       compile_this_return();
       return;
     }
@@ -161,9 +161,9 @@ namespace loxx
       compile(*stmt.value);
     }
     else {
-      func_->add_instruction(Instruction::Nil);
+      func_->add_instruction(Instruction::NIL);
     }
-    func_->add_instruction(Instruction::Return);
+    func_->add_instruction(Instruction::RETURN);
     func_->update_line_num_table(stmt.keyword);
   }
 
@@ -176,7 +176,7 @@ namespace loxx
       compile(*stmt.initialiser);
     }
     else {
-      func_->add_instruction(Instruction::Nil);
+      func_->add_instruction(Instruction::NIL);
     }
 
     define_variable(arg, stmt.name);
@@ -188,10 +188,10 @@ namespace loxx
     // While loops are modelled around this structure:
     //
     // begin: <- first_label_pos
-    // if (not expr) goto end <- Instruction::ConditionalJump - first_jump_pos
+    // if (not expr) goto end <- Instruction::CONDITIONAL_JUMP - first_jump_pos
     // body:
     // ...
-    // goto begin <- Instruction::Jump
+    // goto begin <- Instruction::JUMP
     // end:
     // ...
 
@@ -199,20 +199,20 @@ namespace loxx
 
     compile(*stmt.condition);
 
-    //func_->add_instruction(Instruction::ConditionalJump);
-    const auto first_jump_pos = func_->add_jump(Instruction::ConditionalJump);
+    //func_->add_instruction(Instruction::CONDITIONAL_JUMP);
+    const auto first_jump_pos = func_->add_jump(Instruction::CONDITIONAL_JUMP);
     // We want to jump over the jump that takes us out of the while loop, which
     // also involves jumping over a pop instruction
-    func_->add_instruction(Instruction::Pop);
+    func_->add_instruction(Instruction::POP);
 
     // Compile the body of the while loop.
     compile(*stmt.body);
 
     // Jump back to the start of the loop to check the condition again.
-    func_->add_loop(Instruction::Loop, first_label_pos);
+    func_->add_loop(Instruction::LOOP, first_label_pos);
 
     func_->patch_jump(first_jump_pos);
-    func_->add_instruction(Instruction::Pop);
+    func_->add_instruction(Instruction::POP);
   }
 
 
@@ -229,56 +229,56 @@ namespace loxx
 
     switch (expr.op.type()) {
 
-    case TokenType::Plus: {
-      func_->add_instruction(Instruction::Add);
+    case TokenType::PLUS: {
+      func_->add_instruction(Instruction::ADD);
     }
       break;
 
-    case TokenType::Minus: {
-      func_->add_instruction(Instruction::Subtract);
+    case TokenType::MINUS: {
+      func_->add_instruction(Instruction::SUBTRACT);
     }
       break;
 
-    case TokenType::Star: {
-      func_->add_instruction(Instruction::Multiply);
+    case TokenType::STAR: {
+      func_->add_instruction(Instruction::MULTIPLY);
     }
       break;
 
-    case TokenType::Slash: {
-      func_->add_instruction(Instruction::Divide);
+    case TokenType::SLASH: {
+      func_->add_instruction(Instruction::DIVIDE);
     }
       break;
 
-    case TokenType::Less: {
-      func_->add_instruction(Instruction::Less);
+    case TokenType::LESS: {
+      func_->add_instruction(Instruction::LESS);
     }
       break;
 
-    case TokenType::LessEqual: {
-      func_->add_instruction(Instruction::Greater);
-      func_->add_instruction(Instruction::Not);
+    case TokenType::LESS_EQUAL: {
+      func_->add_instruction(Instruction::GREATER);
+      func_->add_instruction(Instruction::NOT);
     }
       break;
 
-    case TokenType::Greater: {
-      func_->add_instruction(Instruction::Greater);
+    case TokenType::GREATER: {
+      func_->add_instruction(Instruction::GREATER);
     }
       break;
 
-    case TokenType::GreaterEqual: {
-      func_->add_instruction(Instruction::Less);
-      func_->add_instruction(Instruction::Not);
+    case TokenType::GREATER_EQUAL: {
+      func_->add_instruction(Instruction::LESS);
+      func_->add_instruction(Instruction::NOT);
     }
       break;
 
-    case TokenType::EqualEqual: {
-      func_->add_instruction(Instruction::Equal);
+    case TokenType::EQUAL_EQUAL: {
+      func_->add_instruction(Instruction::EQUAL);
     }
       break;
 
-    case TokenType::BangEqual: {
-      func_->add_instruction(Instruction::Equal);
-      func_->add_instruction(Instruction::Not);
+    case TokenType::BANG_EQUAL: {
+      func_->add_instruction(Instruction::EQUAL);
+      func_->add_instruction(Instruction::NOT);
     }
       break;
 
@@ -311,14 +311,14 @@ namespace loxx
 
     if (callee_is_property) {
       const auto get = static_cast<const Get*>(expr.callee.get());
-      func_->add_instruction(Instruction::Invoke);
+      func_->add_instruction(Instruction::INVOKE);
       func_->update_line_num_table(expr.paren);
       func_->add_integer<InstrArgUByte>(
           func_->add_string_constant(get->name.lexeme()));
       func_->add_integer(static_cast<InstrArgUByte>(expr.arguments.size()));
     }
     else {
-      func_->add_instruction(Instruction::Call);
+      func_->add_instruction(Instruction::CALL);
       func_->update_line_num_table(expr.paren);
       func_->add_integer(static_cast<InstrArgUByte>(expr.arguments.size()));
     }
@@ -330,7 +330,7 @@ namespace loxx
     compile(*expr.object);
 
     const auto name_constant = make_string_constant(expr.name.lexeme());
-    func_->add_instruction(Instruction::GetProperty);
+    func_->add_instruction(Instruction::GET_PROPERTY);
     func_->add_integer<InstrArgUByte>(name_constant);
     func_->update_line_num_table(expr.name);
   }
@@ -346,18 +346,18 @@ namespace loxx
   {
     if (holds_alternative<bool>(expr.value)) {
       const Instruction instruction =
-          get<bool>(expr.value) ? Instruction::True : Instruction::False;
+          get<bool>(expr.value) ? Instruction::TRUE : Instruction::FALSE;
       func_->add_instruction(instruction);
       return;
     }
     else if (expr.value.index() == Value::npos) {
-      func_->add_instruction(Instruction::Nil);
+      func_->add_instruction(Instruction::NIL);
       return;
     }
 
     const auto index = func_->add_named_constant(expr.lexeme, expr.value);
 
-    func_->add_instruction(Instruction::LoadConstant);
+    func_->add_instruction(Instruction::LOAD_CONSTANT);
     func_->add_integer<InstrArgUByte>(index);
   }
 
@@ -366,16 +366,16 @@ namespace loxx
   {
     compile(*expr.left);
 
-    if (expr.op.type() == TokenType::Or) {
-      const auto first_jump_pos = func_->add_jump(Instruction::ConditionalJump);
-      const auto second_jump_pos = func_->add_jump(Instruction::Jump);
+    if (expr.op.type() == TokenType::OR) {
+      const auto first_jump_pos = func_->add_jump(Instruction::CONDITIONAL_JUMP);
+      const auto second_jump_pos = func_->add_jump(Instruction::JUMP);
       func_->patch_jump(first_jump_pos);
       compile(*expr.right);
       func_->patch_jump(second_jump_pos);
     }
-    else if (expr.op.type() == TokenType::And) {
-      const auto first_jump_pos = func_->add_jump(Instruction::ConditionalJump);
-      func_->add_instruction(Instruction::Pop);
+    else if (expr.op.type() == TokenType::AND) {
+      const auto first_jump_pos = func_->add_jump(Instruction::CONDITIONAL_JUMP);
+      func_->add_instruction(Instruction::POP);
       compile(*expr.right);
       func_->patch_jump(first_jump_pos);
     }
@@ -388,7 +388,7 @@ namespace loxx
     compile(*expr.value);
 
     const auto name_constant = make_string_constant(expr.name.lexeme());
-    func_->add_instruction(Instruction::SetProperty);
+    func_->add_instruction(Instruction::SET_PROPERTY);
     func_->add_integer<InstrArgUByte>(name_constant);
     func_->update_line_num_table(expr.name);
   }
@@ -396,20 +396,20 @@ namespace loxx
 
   void Compiler::visit_super_expr(const Super& expr)
   {
-    if (class_type_ == ClassType::Superclass) {
+    if (class_type_ == ClassType::SUPERCLASS) {
       error(expr.keyword,
             "Cannot use 'super' in a class without a superclass.");
     }
-    else if (class_type_ == ClassType::None) {
+    else if (class_type_ == ClassType::NONE) {
       error(expr.keyword, "Cannot use 'super' outside of a class.");
     }
 
-    const auto this_token = Token(TokenType::This, "this", expr.keyword.line());
+    const auto this_token = Token(TokenType::THIS, "this", expr.keyword.line());
     handle_variable_reference(this_token, false);
     handle_variable_reference(expr.keyword, false);
 
     const auto func = make_string_constant(expr.method.lexeme());
-    func_->add_instruction(Instruction::GetSuperFunc);
+    func_->add_instruction(Instruction::GET_SUPER_FUNC);
     func_->add_integer<InstrArgUByte>(func);
     func_->update_line_num_table(expr.keyword);
   }
@@ -417,7 +417,7 @@ namespace loxx
 
   void Compiler::visit_this_expr(const This& expr)
   {
-    if (class_type_ == ClassType::None) {
+    if (class_type_ == ClassType::NONE) {
       error(expr.keyword, "Cannot use 'this' outside of a class.");
     }
     handle_variable_reference(expr, false);
@@ -428,11 +428,11 @@ namespace loxx
   {
     compile(*expr.right);
 
-    if (expr.op.type() == TokenType::Bang) {
-      func_->add_instruction(Instruction::Not);
+    if (expr.op.type() == TokenType::BANG) {
+      func_->add_instruction(Instruction::NOT);
     }
-    else if (expr.op.type() == TokenType::Minus) {
-      func_->add_instruction(Instruction::Negate);
+    else if (expr.op.type() == TokenType::MINUS) {
+      func_->add_instruction(Instruction::NEGATE);
     }
     func_->update_line_num_table(expr.op);
   }
@@ -476,8 +476,8 @@ namespace loxx
     func_->begin_scope();
 
     // Declare/define "this"
-    if (type == FunctionType::Method or type == FunctionType::Initialiser) {
-      const auto this_token = Token(TokenType::This, "this", stmt.name.line());
+    if (type == FunctionType::METHOD or type == FunctionType::INITIALISER) {
+      const auto this_token = Token(TokenType::THIS, "this", stmt.name.line());
       const auto param_index = declare_variable(this_token);
       define_variable(param_index, this_token);
     }
@@ -491,14 +491,14 @@ namespace loxx
     compile_stmts(stmt.body);
 
     // Return "this" if in constructor
-    if (func_->type() == FunctionType::Initialiser) {
+    if (func_->type() == FunctionType::INITIALISER) {
       compile_this_return();
     }
 
     func_->end_scope();
     // Return "nil" if we haven't returned already.
-    func_->add_instruction(Instruction::Nil);
-    func_->add_instruction(Instruction::Return);
+    func_->add_instruction(Instruction::NIL);
+    func_->add_instruction(Instruction::RETURN);
 
     const auto upvalues = func_->release_upvalues();
     auto code_object = func_->release_code_object();
@@ -515,7 +515,7 @@ namespace loxx
         upvalues.size());
     const auto index = func_->add_constant(Value(InPlace<ObjectPtr>(), func));
 
-    func_->add_instruction(Instruction::CreateClosure);
+    func_->add_instruction(Instruction::CREATE_CLOSURE);
     func_->add_integer<InstrArgUByte>(index);
     func_->update_line_num_table(stmt.name);
 
@@ -528,9 +528,9 @@ namespace loxx
 
   void Compiler::compile_this_return()
   {
-    const auto this_token = func_->make_token(TokenType::This, "this");
+    const auto this_token = func_->make_token(TokenType::THIS, "this");
     handle_variable_reference(this_token, false);
-    func_->add_instruction(Instruction::Return);
+    func_->add_instruction(Instruction::RETURN);
     func_->update_line_num_table(this_token);
   }
 
@@ -554,7 +554,7 @@ namespace loxx
                                  const Token& name)
   {
     if (arg) {
-      func_->add_instruction(Instruction::DefineGlobal);
+      func_->add_instruction(Instruction::DEFINE_GLOBAL);
       func_->add_integer<InstrArgUByte>(*arg);
       func_->update_line_num_table(name);
     }
@@ -570,16 +570,16 @@ namespace loxx
 
     Instruction op;
     if (arg) {
-      op = write ? Instruction::SetLocal : Instruction::GetLocal;
+      op = write ? Instruction::SET_LOCAL : Instruction::GET_LOCAL;
     }
     else {
       arg = func_->resolve_upvalue(token);
 
       if (arg) {
-        op = write ? Instruction::SetUpvalue : Instruction::GetUpvalue;
+        op = write ? Instruction::SET_UPVALUE : Instruction::GET_UPVALUE;
       }
       else {
-        op = write ? Instruction::SetGlobal : Instruction::GetGlobal;
+        op = write ? Instruction::SET_GLOBAL : Instruction::GET_GLOBAL;
       }
     }
 

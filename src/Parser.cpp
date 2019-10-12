@@ -26,13 +26,13 @@ namespace loxx
   std::unique_ptr<Stmt> Parser::declaration()
   {
     try {
-      if (match({TokenType::Class})) {
+      if (match({TokenType::CLASS})) {
         return class_declaration();
       }
-      if (match({TokenType::Fun})) {
+      if (match({TokenType::FUN})) {
         return function("function");
       }
-      if (match({TokenType::Var})) {
+      if (match({TokenType::VAR})) {
         return var_declaration();
       }
 
@@ -48,23 +48,23 @@ namespace loxx
 
   std::unique_ptr<Stmt> Parser::class_declaration()
   {
-    auto name = consume(TokenType::Identifier, "Expected class name.");
+    auto name = consume(TokenType::IDENTIFIER, "Expected class name.");
 
     auto superclass = std::unique_ptr<Expr>();
-    if (match({TokenType::Less})) {
-      consume(TokenType::Identifier, "Expected superclass name.");
+    if (match({TokenType::LESS})) {
+      consume(TokenType::IDENTIFIER, "Expected superclass name.");
       superclass = std::make_unique<Variable>(previous());
     }
 
-    consume(TokenType::LeftBrace, "Expected '{' before class body.");
+    consume(TokenType::LEFT_BRACE, "Expected '{' before class body.");
 
     std::vector<std::unique_ptr<Function>> methods;
-    while (not check(TokenType::RightBrace) and not is_at_end()) {
+    while (not check(TokenType::RIGHT_BRACE) and not is_at_end()) {
       std::unique_ptr<Stmt> ptr = function("method");
       methods.emplace_back(static_cast<Function*>(ptr.release()));
     }
 
-    consume(TokenType::RightBrace, "Expected '}' after class body.");
+    consume(TokenType::RIGHT_BRACE, "Expected '}' after class body.");
 
     return std::make_unique<Class>(std::move(name), std::move(superclass),
                                    std::move(methods));
@@ -73,22 +73,22 @@ namespace loxx
 
   std::unique_ptr<Stmt> Parser::statement()
   {
-    if (match({TokenType::If})) {
+    if (match({TokenType::IF})) {
       return if_statement();
     }
-    if (match({TokenType::Print})) {
+    if (match({TokenType::PRINT})) {
       return print_statement();
     }
-    if (match({TokenType::Return})) {
+    if (match({TokenType::RETURN})) {
       return return_statement();
     }
-    if (match({TokenType::LeftBrace})) {
+    if (match({TokenType::LEFT_BRACE})) {
       return std::make_unique<Block>(block());
     }
-    if (match({TokenType::While})) {
+    if (match({TokenType::WHILE})) {
       return while_statement();
     }
-    if (match({TokenType::For})) {
+    if (match({TokenType::FOR})) {
       return for_statement();
     }
     return expression_statement();
@@ -97,13 +97,13 @@ namespace loxx
 
   std::unique_ptr<Stmt> Parser::if_statement()
   {
-    consume(TokenType::LeftParen, "Expected '(' after 'if'.");
+    consume(TokenType::LEFT_PAREN, "Expected '(' after 'if'.");
     auto condition = expression();
-    consume(TokenType::RightParen, "Expected ')' after condition.");
+    consume(TokenType::RIGHT_PAREN, "Expected ')' after condition.");
 
     auto then_branch = statement();
     auto else_branch =
-        match({TokenType::Else}) ? statement() : std::unique_ptr<Stmt>();
+        match({TokenType::ELSE}) ? statement() : std::unique_ptr<Stmt>();
 
     return std::make_unique<If>(std::move(condition), std::move(then_branch),
                                 std::move(else_branch));
@@ -113,7 +113,7 @@ namespace loxx
   std::unique_ptr<Stmt> Parser::print_statement()
   {
     auto expr = expression();
-    consume(TokenType::SemiColon, "Expect ';' after value.");
+    consume(TokenType::SEMI_COLON, "Expect ';' after value.");
     return std::make_unique<Print>(std::move(expr));
   }
 
@@ -121,31 +121,31 @@ namespace loxx
   std::unique_ptr<Stmt> Parser::return_statement()
   {
     auto keyword = previous();
-    auto value = not check(TokenType::SemiColon) ?
+    auto value = not check(TokenType::SEMI_COLON) ?
                  expression() : std::unique_ptr<Expr>();
 
-    consume(TokenType::SemiColon, "Expected ';' after return value.");
+    consume(TokenType::SEMI_COLON, "Expected ';' after return value.");
     return std::make_unique<Return>(std::move(keyword), std::move(value));
   }
 
 
   std::unique_ptr<Stmt> Parser::var_declaration()
   {
-    auto name = consume(TokenType::Identifier, "Expected variable name.");
+    auto name = consume(TokenType::IDENTIFIER, "Expected variable name.");
 
     auto initialiser =
-        match({TokenType::Equal}) ? expression() : std::unique_ptr<Expr>();
+        match({TokenType::EQUAL}) ? expression() : std::unique_ptr<Expr>();
 
-    consume(TokenType::SemiColon, "Expected ';' after variable declaration.");
+    consume(TokenType::SEMI_COLON, "Expected ';' after variable declaration.");
     return std::make_unique<Var>(std::move(name), std::move(initialiser));
   }
 
 
   std::unique_ptr<Stmt> Parser::while_statement()
   {
-    consume(TokenType::LeftParen, "Expected '(' after 'while'.");
+    consume(TokenType::LEFT_PAREN, "Expected '(' after 'while'.");
     auto condition = expression();
-    consume(TokenType::RightParen, "Expected ')' after condition.");
+    consume(TokenType::RIGHT_PAREN, "Expected ')' after condition.");
     auto body = statement();
 
     return std::make_unique<While>(std::move(condition), std::move(body));
@@ -154,12 +154,12 @@ namespace loxx
 
   std::unique_ptr<Stmt> Parser::for_statement()
   {
-    consume(TokenType::LeftParen, "Expected '(' after 'for'.");
+    consume(TokenType::LEFT_PAREN, "Expected '(' after 'for'.");
 
     std::unique_ptr<Stmt> initialiser;
-    if (match({TokenType::SemiColon})) {
+    if (match({TokenType::SEMI_COLON})) {
     }
-    else if (match({TokenType::Var})) {
+    else if (match({TokenType::VAR})) {
       initialiser = var_declaration();
     }
     else {
@@ -167,16 +167,16 @@ namespace loxx
     }
 
     std::unique_ptr<Expr> condition;
-    if (not check(TokenType::SemiColon)) {
+    if (not check(TokenType::SEMI_COLON)) {
       condition = expression();
     }
-    consume(TokenType::SemiColon, "Expected ';' after for-loop condition.");
+    consume(TokenType::SEMI_COLON, "Expected ';' after for-loop condition.");
 
     std::unique_ptr<Expr> increment;
-    if (not check(TokenType::RightParen)) {
+    if (not check(TokenType::RIGHT_PAREN)) {
       increment = expression();
     }
-    consume(TokenType::RightParen, "Expected ')' after for-loop clauses.");
+    consume(TokenType::RIGHT_PAREN, "Expected ')' after for-loop clauses.");
 
     auto body = statement();
 
@@ -209,7 +209,7 @@ namespace loxx
   std::unique_ptr<Stmt> Parser::expression_statement()
   {
     auto expr = expression();
-    consume(TokenType::SemiColon, "Expected ';' after expression.");
+    consume(TokenType::SEMI_COLON, "Expected ';' after expression.");
     return std::make_unique<Expression>(std::move(expr));
   }
 
@@ -218,34 +218,34 @@ namespace loxx
   {
     std::vector<std::unique_ptr<Stmt>> statements;
 
-    while (not check(TokenType::RightBrace) and not is_at_end()) {
+    while (not check(TokenType::RIGHT_BRACE) and not is_at_end()) {
       statements.push_back(declaration());
     }
 
-    consume(TokenType::RightBrace, "Expected '}' after block.");
+    consume(TokenType::RIGHT_BRACE, "Expected '}' after block.");
     return statements;
   }
 
 
   std::unique_ptr<Stmt> Parser::function(const std::string& kind)
   {
-    auto name = consume(TokenType::Identifier, "Expected " + kind + " name.");
-    consume(TokenType::LeftParen, "Expected '(' after " + kind + " name.");
+    auto name = consume(TokenType::IDENTIFIER, "Expected " + kind + " name.");
+    consume(TokenType::LEFT_PAREN, "Expected '(' after " + kind + " name.");
 
     std::vector<Token> parameters;
 
-    if (not check(TokenType::RightParen)) {
+    if (not check(TokenType::RIGHT_PAREN)) {
       do {
         if (parameters.size() >= 8) {
           error(peek(), "Cannot have more than eight function parameters.");
         }
-        parameters.push_back(consume(TokenType::Identifier,
+        parameters.push_back(consume(TokenType::IDENTIFIER,
                                      "Expected parameter name."));
-      } while (match({TokenType::Comma}));
+      } while (match({TokenType::COMMA}));
     }
-    consume(TokenType::RightParen, "Expected ')' after parameters.");
+    consume(TokenType::RIGHT_PAREN, "Expected ')' after parameters.");
 
-    consume(TokenType::LeftBrace, "Expected '{' before " + kind + " body.");
+    consume(TokenType::LEFT_BRACE, "Expected '{' before " + kind + " body.");
     auto body = block();
     return std::make_unique<Function>(std::move(name), std::move(parameters),
                                       std::move(body));
@@ -256,7 +256,7 @@ namespace loxx
   {
     auto expr = logical_or();
 
-    if (match({TokenType::Equal})) {
+    if (match({TokenType::EQUAL})) {
       auto equals = previous();
       auto value = assignment();
 
@@ -281,7 +281,7 @@ namespace loxx
   {
     auto expr = logical_and();
 
-    while (match({TokenType::Or})) {
+    while (match({TokenType::OR})) {
       auto op = previous();
       auto right = logical_and();
       expr = std::make_unique<Logical>(std::move(expr), std::move(op),
@@ -296,7 +296,7 @@ namespace loxx
   {
     auto expr = equality();
 
-    while (match({TokenType::And})) {
+    while (match({TokenType::AND})) {
       auto op = previous();
       auto right = equality();
       expr = std::make_unique<Logical>(std::move(expr), std::move(op),
@@ -310,35 +310,35 @@ namespace loxx
   std::unique_ptr<Expr> Parser::equality()
   {
     return binary([this] () { return comparison(); },
-                  {TokenType::BangEqual, TokenType::EqualEqual});
+                  {TokenType::BANG_EQUAL, TokenType::EQUAL_EQUAL});
   }
 
 
   std::unique_ptr<Expr> Parser::comparison()
   {
     return binary([this] () { return addition(); },
-                  {TokenType::Greater, TokenType::GreaterEqual,
-                   TokenType::Less, TokenType::LessEqual});
+                  {TokenType::GREATER, TokenType::GREATER_EQUAL,
+                   TokenType::LESS, TokenType::LESS_EQUAL});
   }
 
 
   std::unique_ptr<Expr> Parser::addition()
   {
     return binary([this] () { return multiplication(); },
-                  {TokenType::Minus, TokenType::Plus});
+                  {TokenType::MINUS, TokenType::PLUS});
   }
 
 
   std::unique_ptr<Expr> Parser::multiplication()
   {
     return binary([this] () { return unary(); },
-                  {TokenType::Slash, TokenType::Star});
+                  {TokenType::SLASH, TokenType::STAR});
   }
 
 
   std::unique_ptr<Expr> Parser::unary()
   {
-    if (match({TokenType::Bang, TokenType::Minus})) {
+    if (match({TokenType::BANG, TokenType::MINUS})) {
       Token op = previous();
       auto right = unary();
       return std::make_unique<Unary>(op, std::move(right));
@@ -352,16 +352,16 @@ namespace loxx
   {
     std::vector<std::unique_ptr<Expr>> arguments;
 
-    if (not check(TokenType::RightParen)) {
+    if (not check(TokenType::RIGHT_PAREN)) {
       do {
         if (arguments.size() >= 8) {
           error(peek(), "Cannot have more than eight function arguments.");
         }
         arguments.push_back(expression());
-      } while (match({TokenType::Comma}));
+      } while (match({TokenType::COMMA}));
     }
 
-    auto paren = consume(TokenType::RightParen, "Expected ')' after arguments.");
+    auto paren = consume(TokenType::RIGHT_PAREN, "Expected ')' after arguments.");
 
     return std::make_unique<Call>(std::move(callee), std::move(paren),
                                   std::move(arguments));
@@ -373,11 +373,11 @@ namespace loxx
     auto expr = primary();
 
     while (true) {
-      if (match({TokenType::LeftParen})) {
+      if (match({TokenType::LEFT_PAREN})) {
         expr = finish_call(std::move(expr));
       }
-      else if (match({TokenType::Dot})) {
-        auto name = consume(TokenType::Identifier,
+      else if (match({TokenType::DOT})) {
+        auto name = consume(TokenType::IDENTIFIER,
                             "Expected property name after '.'.");
         expr = std::make_unique<Get>(std::move(expr), std::move(name));
       }
@@ -392,42 +392,42 @@ namespace loxx
 
   std::unique_ptr<Expr> Parser::primary()
   {
-    if (match({TokenType::False})) {
+    if (match({TokenType::FALSE})) {
       return std::make_unique<Literal>(Value(InPlace<bool>(), false),
                                        previous().lexeme());
     }
-    if (match({TokenType::True})) {
+    if (match({TokenType::TRUE})) {
       return std::make_unique<Literal>(Value(InPlace<bool>(), true),
                                        previous().lexeme());
     }
-    if (match({TokenType::Nil})) {
+    if (match({TokenType::NIL})) {
       return std::make_unique<Literal>(Value(), previous().lexeme());
     }
 
-    if (match({TokenType::Number, TokenType::String})) {
+    if (match({TokenType::NUMBER, TokenType::STRING})) {
       return std::make_unique<Literal>(previous().literal(),
                                        previous().lexeme());
     }
 
-    if (match({TokenType::LeftParen})) {
+    if (match({TokenType::LEFT_PAREN})) {
       auto expr = expression();
-      consume(TokenType::RightParen, "Expect ')' after expression.");
+      consume(TokenType::RIGHT_PAREN, "Expect ')' after expression.");
       return std::make_unique<Grouping>(std::move(expr));
     }
 
-    if (match({TokenType::Super})) {
+    if (match({TokenType::SUPER})) {
       auto keyword = previous();
-      consume(TokenType::Dot, "Expected '.' after 'super'.");
-      auto method = consume(TokenType::Identifier,
+      consume(TokenType::DOT, "Expected '.' after 'super'.");
+      auto method = consume(TokenType::IDENTIFIER,
                             "Expected superclass method name.");
       return std::make_unique<Super>(std::move(keyword), std::move(method));
     }
 
-    if (match({TokenType::This})) {
+    if (match({TokenType::THIS})) {
       return std::make_unique<This>(previous());
     }
 
-    if (match({TokenType::Identifier})) {
+    if (match({TokenType::IDENTIFIER})) {
       return std::make_unique<Variable>(previous());
     }
 
@@ -477,7 +477,7 @@ namespace loxx
 
   bool Parser::is_at_end() const
   {
-    return peek().type() == TokenType::Eof;
+    return peek().type() == TokenType::END_OF_FILE;
   }
 
 
@@ -506,19 +506,19 @@ namespace loxx
     advance();
 
     while (not is_at_end()) {
-      if (previous().type() == TokenType::SemiColon) {
+      if (previous().type() == TokenType::SEMI_COLON) {
         return;
       }
 
       switch (peek().type()) {
-        case TokenType::Class:
-        case TokenType::Fun:
-        case TokenType::Var:
-        case TokenType::For:
-        case TokenType::If:
-        case TokenType::While:
-        case TokenType::Print:
-        case TokenType::Return:
+        case TokenType::CLASS:
+        case TokenType::FUN:
+        case TokenType::VAR:
+        case TokenType::FOR:
+        case TokenType::IF:
+        case TokenType::WHILE:
+        case TokenType::PRINT:
+        case TokenType::RETURN:
           return;
         default:
           advance();

@@ -27,7 +27,7 @@ namespace loxx
   FuncObject::FuncObject(
       std::string lexeme, std::unique_ptr<CodeObject> code_object,
       const unsigned int arity, const InstrArgUByte num_upvalues)
-      : Object(ObjectType::Function),
+      : Object(ObjectType::FUNCTION),
         arity_(arity), num_upvalues_(num_upvalues),
         code_object_(std::move(code_object)), lexeme_(std::move(lexeme))
   {
@@ -38,18 +38,18 @@ namespace loxx
   {
     if (holds_alternative<ObjectPtr>(*value_)) {
       auto obj = get<ObjectPtr>(*value_);
-      obj->set_colour(TriColour::Grey);
+      obj->set_colour(TriColour::GREY);
     }
   }
 
 
   void ClosureObject::grey_references()
   {
-    function_->set_colour(TriColour::Grey);
+    function_->set_colour(TriColour::GREY);
 
     for (auto upvalue : upvalues_) {
       if (upvalue) {
-        upvalue->set_colour(TriColour::Grey);
+        upvalue->set_colour(TriColour::GREY);
       }
     }
   }
@@ -87,37 +87,37 @@ namespace loxx
 
   void MethodObject::grey_references()
   {
-    closure_->set_colour(TriColour::Grey);
-    instance_->set_colour(TriColour::Grey);
+    closure_->set_colour(TriColour::GREY);
+    instance_->set_colour(TriColour::GREY);
   }
 
 
   void ClassObject::grey_references()
   {
     for (auto& method : methods_) {
-      method.first->set_colour(TriColour::Grey);
-      method.second->set_colour(TriColour::Grey);
+      method.first->set_colour(TriColour::GREY);
+      method.second->set_colour(TriColour::GREY);
     }
 
     if (superclass_) {
-      superclass_->set_colour(TriColour::Grey);
+      superclass_->set_colour(TriColour::GREY);
     }
   }
 
 
   void InstanceObject::grey_references()
   {
-    cls_->set_colour(TriColour::Grey);
+    cls_->set_colour(TriColour::GREY);
 
     for (auto& field : fields_) {
-      field.first->set_colour(TriColour::Grey);
+      field.first->set_colour(TriColour::GREY);
 
       if (not holds_alternative<ObjectPtr>(field.second)) {
         continue;
       }
 
       auto obj = get<ObjectPtr>(field.second);
-      obj->set_colour(TriColour::Grey);
+      obj->set_colour(TriColour::GREY);
     }
   }
 }

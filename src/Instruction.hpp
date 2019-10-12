@@ -27,43 +27,43 @@ namespace loxx
 {
   enum class Instruction : std::uint8_t
   {
-    Add,
-    Call,
-    CloseUpvalue,
-    ConditionalJump,
-    CreateClass,
-    CreateClosure,
-    CreateMethod,
-    CreateSubclass,
-    DefineGlobal,
-    Divide,
-    Equal,
-    False,
-    GetGlobal,
-    GetLocal,
-    GetProperty,
-    GetSuperFunc,
-    GetUpvalue,
-    Greater,
-    Invoke,
-    Jump,
-    Less,
-    LoadConstant,
-    Loop,
-    Multiply,
-    Negate,
-    Nil,
-    Not,
-    Pop,
-    Print,
-    Push,
-    Return,
-    SetGlobal,
-    SetLocal,
-    SetProperty,
-    SetUpvalue,
-    Subtract,
-    True
+    ADD,
+    CALL,
+    CLOSE_UPVALUE,
+    CONDITIONAL_JUMP,
+    CREATE_CLASS,
+    CREATE_CLOSURE,
+    CREATE_METHOD,
+    CREATE_SUBCLASS,
+    DEFINE_GLOBAL,
+    DIVIDE,
+    EQUAL,
+    FALSE,
+    GET_GLOBAL,
+    GET_LOCAL,
+    GET_PROPERTY,
+    GET_SUPER_FUNC,
+    GET_UPVALUE,
+    GREATER,
+    INVOKE,
+    JUMP,
+    LESS,
+    LOAD_CONSTANT,
+    LOOP,
+    MULTIPLY,
+    NEGATE,
+    NIL,
+    NOT,
+    POP,
+    PRINT,
+    PUSH,
+    RETURN,
+    SET_GLOBAL,
+    SET_LOCAL,
+    SET_PROPERTY,
+    SET_UPVALUE,
+    SUBTRACT,
+    TRUE
   };
 
 
@@ -71,115 +71,115 @@ namespace loxx
   Stream& operator<<(Stream& stream, const Instruction instruction)
   {
     switch (instruction) {
-    case Instruction::Add:
+    case Instruction::ADD:
       stream << "ADD";
       break;
-    case Instruction::Call:
+    case Instruction::CALL:
       stream << "CALL";
       break;
-    case Instruction::CloseUpvalue:
+    case Instruction::CLOSE_UPVALUE:
       stream << "CLOSE_UPVALUE";
       break;
-    case Instruction::ConditionalJump:
+    case Instruction::CONDITIONAL_JUMP:
       stream << "CONDITIONAL_JUMP";
       break;
-    case Instruction::CreateClass:
+    case Instruction::CREATE_CLASS:
       stream << "CREATE_CLASS";
       break;
-    case Instruction::CreateClosure:
+    case Instruction::CREATE_CLOSURE:
       stream << "CREATE_CLOSURE";
       break;
-    case Instruction::CreateMethod:
+    case Instruction::CREATE_METHOD:
       stream << "CREATE_METHOD";
       break;
-    case Instruction::CreateSubclass:
+    case Instruction::CREATE_SUBCLASS:
       stream << "CREATE_SUBCLASS";
       break;
-    case Instruction::DefineGlobal:
+    case Instruction::DEFINE_GLOBAL:
       stream << "DEFINE_GLOBAL";
       break;
-    case Instruction::Divide:
+    case Instruction::DIVIDE:
       stream << "DIVIDE";
       break;
-    case Instruction::Equal:
+    case Instruction::EQUAL:
       stream << "EQUAL";
       break;
-    case Instruction::False:
+    case Instruction::FALSE:
       stream << "FALSE";
       break;
-    case Instruction::GetGlobal:
+    case Instruction::GET_GLOBAL:
       stream << "GET_GLOBAL";
       break;
-    case Instruction::GetLocal:
+    case Instruction::GET_LOCAL:
       stream << "GET_LOCAL";
       break;
-    case Instruction::GetProperty:
+    case Instruction::GET_PROPERTY:
       stream << "GET_PROPERTY";
       break;
-    case Instruction::GetSuperFunc:
+    case Instruction::GET_SUPER_FUNC:
       stream << "GET_SUPER_FUNC";
       break;
-    case Instruction::GetUpvalue:
+    case Instruction::GET_UPVALUE:
       stream << "GET_UPVALUE";
       break;
-    case Instruction::Greater:
+    case Instruction::GREATER:
       stream << "GREATER";
       break;
-    case Instruction::Invoke:
+    case Instruction::INVOKE:
       stream << "INVOKE";
       break;
-    case Instruction::Jump:
+    case Instruction::JUMP:
       stream << "JUMP";
       break;
-    case Instruction::Less:
+    case Instruction::LESS:
       stream << "LESS";
       break;
-    case Instruction::LoadConstant:
+    case Instruction::LOAD_CONSTANT:
       stream << "LOAD_CONST";
       break;
-    case Instruction::Loop:
+    case Instruction::LOOP:
       stream << "LOOP";
       break;
-    case Instruction::Multiply:
+    case Instruction::MULTIPLY:
       stream << "MULTIPLY";
       break;
-    case Instruction::Negate:
+    case Instruction::NEGATE:
       stream << "NEGATE";
       break;
-    case Instruction::Nil:
+    case Instruction::NIL:
       stream << "NIL";
       break;
-    case Instruction::Not:
+    case Instruction::NOT:
       stream << "NOT";
       break;
-    case Instruction::Pop:
+    case Instruction::POP:
       stream << "POP";
       break;
-    case Instruction::Print:
+    case Instruction::PRINT:
       stream << "PRINT";
       break;
-    case Instruction::Push:
+    case Instruction::PUSH:
       stream << "PUSH";
       break;
-    case Instruction::Return:
+    case Instruction::RETURN:
       stream << "RETURN";
       break;
-    case Instruction::SetGlobal:
+    case Instruction::SET_GLOBAL:
       stream << "SET_GLOBAL";
       break;
-    case Instruction::SetLocal:
+    case Instruction::SET_LOCAL:
       stream << "SET_LOCAL";
       break;
-    case Instruction::SetProperty:
+    case Instruction::SET_PROPERTY:
       stream << "SET_PROPERTY";
       break;
-    case Instruction::SetUpvalue:
+    case Instruction::SET_UPVALUE:
       stream << "SET_UPVALUE";
       break;
-    case Instruction::Subtract:
+    case Instruction::SUBTRACT:
       stream << "SUBTRACT";
       break;
-    case Instruction::True:
+    case Instruction::TRUE:
       stream << "TRUE";
       break;
     }

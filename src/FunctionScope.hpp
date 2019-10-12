@@ -35,10 +35,10 @@
 namespace loxx
 {
   enum class FunctionType {
-    Function,
-    Initialiser,
-    Method,
-    None
+    FUNCTION,
+    INITIALISER,
+    METHOD,
+    NONE
   };
 
 
@@ -55,7 +55,7 @@ namespace loxx
           scope_depth_(enclosing == nullptr ? 0 : enclosing->scope_depth_ + 1),
           enclosing_(std::move(enclosing)), code_object_(new CodeObject)
     {
-      if (type_ == FunctionType::Function) {
+      if (type_ == FunctionType::FUNCTION) {
         add_local("");
         code_object_->varnames[0] = func.name.lexeme();
       }
@@ -69,7 +69,7 @@ namespace loxx
 
     explicit FunctionScope(const FunctionType type)
         : FunctionScope(
-              type, Function(Token(TokenType::Identifier, "", 0), {}, {}))
+              type, Function(Token(TokenType::IDENTIFIER, "", 0), {}, {}))
     {
     }
 
