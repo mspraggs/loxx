@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "CodeObject.hpp"
+#include "Stmt.hpp"
 #include "globals.hpp"
 #include "Instruction.hpp"
 #include "Optional.hpp"
@@ -46,9 +47,9 @@ namespace loxx
   public:
     struct Upvalue;
 
-    explicit FunctionScope(
+    FunctionScope(
         const FunctionType type,
-        const std::vector<Token>& parameters,
+        const Function& func,
         std::unique_ptr<FunctionScope> enclosing = nullptr)
         : type_(type), last_line_num_(0), last_instr_num_(0),
           scope_depth_(enclosing == nullptr ? 0 : enclosing->scope_depth_ + 1),
@@ -58,9 +59,15 @@ namespace loxx
         locals_.push_back(Local{false, false, 0, ""});
       }
 
-      for (const auto& param : parameters) {
+      for (const auto& param : func.parameters) {
         code_object_->varnames.push_back(param.lexeme());
       }
+    }
+
+    explicit FunctionScope(const FunctionType type)
+        : FunctionScope(
+              type, Function(Token(TokenType::Identifier, "", 0), {}, {}))
+    {
     }
 
     void declare_local(const Token& name);
