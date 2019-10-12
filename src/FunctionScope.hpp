@@ -56,12 +56,15 @@ namespace loxx
           enclosing_(std::move(enclosing)), code_object_(new CodeObject)
     {
       if (type_ == FunctionType::Function) {
-        locals_.push_back(Local{false, false, 0, ""});
+        add_local("");
+        code_object_->varnames[0] = func.name.lexeme();
       }
 
       for (const auto& param : func.parameters) {
         code_object_->varnames.push_back(param.lexeme());
       }
+      code_object_->num_args = static_cast<unsigned int>(
+          func.parameters.size());
     }
 
     explicit FunctionScope(const FunctionType type)
@@ -72,7 +75,7 @@ namespace loxx
 
     void declare_local(const Token& name);
     void define_local();
-    void add_local(const Token& name);
+    void add_local(const std::string& name);
 
     Optional<InstrArgUByte> resolve_local(
         const Token& name, const bool in_function) const;

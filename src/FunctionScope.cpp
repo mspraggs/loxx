@@ -17,6 +17,8 @@
  * Created by Matt Spraggs on 07/05/18.
  */
 
+#include <algorithm>
+
 #include "FunctionScope.hpp"
 #include "logging.hpp"
 #include "Value.hpp"
@@ -37,7 +39,7 @@ namespace loxx
         error(name, "Variable with this name already declared in this scope.");
       }
     }
-    add_local(name);
+    add_local(name.lexeme());
   }
 
 
@@ -48,11 +50,17 @@ namespace loxx
   }
 
 
-  void FunctionScope::add_local(const Token& name)
+  void FunctionScope::add_local(const std::string& name)
   {
     code_object_->num_locals++;
-    code_object_->varnames.push_back(name.lexeme());
-    locals_.push_back({false, false, 0, name.lexeme()});
+
+    auto& varnames = code_object_->varnames;
+    auto result = std::find(varnames.begin(), varnames.end(), name);
+    if (result == varnames.end()) {
+      code_object_->varnames.push_back(name);
+    }
+
+    locals_.push_back({false, false, 0, name});
   }
 
 

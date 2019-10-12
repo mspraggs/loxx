@@ -52,7 +52,7 @@ namespace loxx
     if (stmt.superclass) {
       func_->begin_scope();
 
-      func_->add_local(func_->make_token(TokenType::Super, "super"));
+      func_->add_local("super");
       compile(*stmt.superclass);
     }
 
