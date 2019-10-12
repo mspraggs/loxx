@@ -35,6 +35,7 @@ namespace loxx
   {
     using InsPtr = std::vector<std::uint8_t>::const_iterator;
 
+    unsigned int num_args = 0;
     unsigned int num_locals = 0;
     std::vector<std::uint8_t> bytecode;
     ConstStringHashTable<InstrArgUByte> constant_map;
