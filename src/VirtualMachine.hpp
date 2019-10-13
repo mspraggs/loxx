@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "CodeObject.hpp"
+#include "CodeProfiler.hpp"
 #include "globals.hpp"
 #include "HashTable.hpp"
 #include "Instruction.hpp"
@@ -42,7 +43,7 @@ namespace loxx
   class VirtualMachine
   {
   public:
-    explicit VirtualMachine(const bool debug);
+    VirtualMachine(CodeProfiler* profiler, const bool debug);
 
     void execute(std::unique_ptr<CodeObject> code_object);
 
@@ -55,8 +56,6 @@ namespace loxx
     void close_upvalues(Value& last);
 
     void call(ClosureObject* closure, const std::size_t num_args);
-
-    void profile_variable_type();
 
     template <typename T>
     T read_integer();
@@ -78,7 +77,7 @@ namespace loxx
     Stack<StackFrame, max_call_frames> call_stack_;
     std::list<UpvalueObject*> open_upvalues_;
     StringObject* init_lexeme_;
-    HashTable<std::size_t, std::size_t> variable_type_counts_;
+    CodeProfiler* profiler_;
   };
 
 

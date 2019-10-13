@@ -96,7 +96,9 @@ namespace loxx
     }
 #endif
 
-    static VirtualMachine vm(debug_config.trace_exec);
+    static CodeProfiler profiler;
+
+    static VirtualMachine vm(&profiler, debug_config.trace_exec);
 
     try {
       vm.execute(compiler.release_output());

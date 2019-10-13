@@ -3,6 +3,7 @@ project(loxx)
 
 set(SRC
   AstPrinter.hpp
+  CodeProfiler.hpp
   CodeObject.hpp
   Compiler.hpp
   Expr.hpp
@@ -33,6 +34,7 @@ set(SRC
   detail/VariantImpl.hpp
 
   AstPrinter.cpp
+  CodeProfiler.cpp
   Compiler.cpp
   FunctionScope.cpp
   logging.cpp
