@@ -71,9 +71,9 @@ namespace loxx
   }
 
 
-  void print_bytecode(const std::string& name, const CodeObject& output)
+  void print_bytecode(const CodeObject& output)
   {
-    std::cout << "=== " << name << " ===\n";
+    std::cout << "=== " << output.name << " ===\n";
     auto ip = output.bytecode.begin();
     while (ip != output.bytecode.end()) {
       ip = print_instruction(output, ip);

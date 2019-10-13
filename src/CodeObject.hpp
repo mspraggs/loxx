@@ -37,6 +37,7 @@ namespace loxx
 
     unsigned int num_args = 0;
     unsigned int num_locals = 0;
+    std::string name;
     std::vector<std::uint8_t> bytecode;
     ConstStringHashTable<InstrArgUByte> constant_map;
     std::vector<Value> constants;

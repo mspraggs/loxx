@@ -52,7 +52,7 @@ namespace loxx
   void runtime_error(const RuntimeError& error);
 
 
-  void print_bytecode(const std::string& name, const CodeObject& output);
+  void print_bytecode(const CodeObject& output);
 
 
   CodeObject::InsPtr print_instruction(const CodeObject& output,

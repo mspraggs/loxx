@@ -92,7 +92,7 @@ namespace loxx
 
 #ifndef NDEBUG
     if (debug_config.print_bytecode) {
-      print_bytecode("top level", compiler.output());
+      print_bytecode(compiler.output());
     }
 #endif
 
