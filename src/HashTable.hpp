@@ -57,6 +57,7 @@ namespace loxx
     Value& operator[](const Key& key);
     const Value& at(const Key& key) const;
     const Elem& get(const Key& key) const;
+    Elem& insert(const Key& key, const Value& value);
     void erase(const Key& key);
     std::size_t count(const Key& key) const;
     bool has_item(const Key& key) const;
@@ -118,6 +119,25 @@ namespace loxx
   {
     const auto found_pos = this->find_new_pos(*this, key, hash_func_(key));
     return data_[found_pos];
+  }
+
+
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  auto HashTable<Key, Value, Hash, Compare>::insert(
+      const Key& key, const Value& value) -> Elem&
+  {
+    if (num_used_slots_ >= max_used_slots_) {
+      this->rehash(*this);
+    }
+
+    const auto pos = this->find_new_pos(*this, key, hash_func_(key));
+
+    if (not data_[pos]) {
+      data_[pos] = std::make_pair(key, value);
+      ++num_used_slots_;
+    }
+
+    return data_[pos];
   }
 
 
