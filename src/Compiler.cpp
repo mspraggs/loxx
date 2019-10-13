@@ -587,9 +587,21 @@ namespace loxx
       arg = make_string_constant(token.lexeme());
     }
 
+    if (op == Instruction::SET_UPVALUE or op == Instruction::SET_GLOBAL) {
+      func_->add_instruction(Instruction::PROFILE_TYPE);
+      func_->add_integer<InstrArgUByte>(*arg);
+      func_->update_line_num_table(token);
+    }
+
     func_->add_instruction(op);
     func_->add_integer<InstrArgUByte>(*arg);
     func_->update_line_num_table(token);
+
+    if (op == Instruction::GET_UPVALUE or op == Instruction::GET_GLOBAL) {
+      func_->add_instruction(Instruction::PROFILE_TYPE);
+      func_->add_integer<InstrArgUByte>(*arg);
+      func_->update_line_num_table(token);
+    }
   }
 
 
