@@ -123,7 +123,6 @@ namespace loxx
     case Instruction::NOT:
     case Instruction::POP:
     case Instruction::PRINT:
-    case Instruction::PUSH:
     case Instruction::RETURN:
     case Instruction::SUBTRACT:
     case Instruction::TRUE:
@@ -178,6 +177,7 @@ namespace loxx
     case Instruction::GET_GLOBAL:
     case Instruction::GET_PROPERTY:
     case Instruction::GET_SUPER_FUNC:
+    case Instruction::PROFILE_TYPE:
     case Instruction::SET_GLOBAL:
     case Instruction::SET_PROPERTY:
     case Instruction::LOAD_CONSTANT: {

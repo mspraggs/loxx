@@ -56,7 +56,7 @@ namespace loxx
     NOT,
     POP,
     PRINT,
-    PUSH,
+    PROFILE_TYPE,
     RETURN,
     SET_GLOBAL,
     SET_LOCAL,
@@ -158,8 +158,8 @@ namespace loxx
     case Instruction::PRINT:
       stream << "PRINT";
       break;
-    case Instruction::PUSH:
-      stream << "PUSH";
+    case Instruction::PROFILE_TYPE:
+      stream << "PROFILE_TYPE";
       break;
     case Instruction::RETURN:
       stream << "RETURN";

@@ -56,6 +56,8 @@ namespace loxx
 
     void call(ClosureObject* closure, const std::size_t num_args);
 
+    void profile_variable_type();
+
     template <typename T>
     T read_integer();
     Value read_constant();
@@ -76,6 +78,7 @@ namespace loxx
     Stack<StackFrame, max_call_frames> call_stack_;
     std::list<UpvalueObject*> open_upvalues_;
     StringObject* init_lexeme_;
+    HashTable<std::size_t, std::size_t> variable_type_counts_;
   };
 
 

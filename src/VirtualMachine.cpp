@@ -340,6 +340,10 @@ namespace loxx
         std::cout << stack_.pop() << std::endl;
         break;
 
+      case Instruction::PROFILE_TYPE:
+        profile_variable_type();
+        break;
+
       case Instruction::RETURN: {
         const auto result = stack_.pop();
         close_upvalues(call_stack_.top().slot(0));
@@ -564,6 +568,28 @@ namespace loxx
     call_stack_.emplace(ip_, code_object_, stack_.top(num_args), closure);
     code_object_ = closure->function().code_object();
     ip_ = code_object_->bytecode.begin();
+  }
+
+
+  void VirtualMachine::profile_variable_type()
+  {
+    const auto type = stack_.top().index();
+    const auto varname = read_string();
+    const auto& func = call_stack_.top().closure()->function();
+
+    const auto varname_hash = varname->hash();
+    const auto func_hash = std::hash<std::string>()(func.lexeme());
+
+    const auto combine_hashes =
+        [] (const std::size_t h0, const std::size_t h1) {
+          return h0 ^ (0x9e3779b9 + (h1 << 6) + (h1 >> 2));
+        };
+
+    const auto hash =
+        combine_hashes(combine_hashes(varname_hash, func_hash), type);
+
+    auto& count_elem = variable_type_counts_.insert(hash, 0);
+    count_elem->second += 1;
   }
 
 
