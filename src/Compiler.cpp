@@ -588,8 +588,9 @@ namespace loxx
     }
 
     if (op == Instruction::SET_UPVALUE or op == Instruction::SET_GLOBAL) {
+      const auto lexeme_idx = make_string_constant(token.lexeme());
       func_->add_instruction(Instruction::PROFILE_TYPE);
-      func_->add_integer<InstrArgUByte>(*arg);
+      func_->add_integer<InstrArgUByte>(lexeme_idx);
       func_->update_line_num_table(token);
     }
 
@@ -598,8 +599,9 @@ namespace loxx
     func_->update_line_num_table(token);
 
     if (op == Instruction::GET_UPVALUE or op == Instruction::GET_GLOBAL) {
+      const auto lexeme_idx = make_string_constant(token.lexeme());
       func_->add_instruction(Instruction::PROFILE_TYPE);
-      func_->add_integer<InstrArgUByte>(*arg);
+      func_->add_integer<InstrArgUByte>(lexeme_idx);
       func_->update_line_num_table(token);
     }
   }
