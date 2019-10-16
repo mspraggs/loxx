@@ -35,6 +35,10 @@ namespace loxx
         const CodeObject* code, const StringObject* varname,
         const std::size_t type);
 
+    void count_function_call(
+        const CodeObject* code, const ClosureObject* function,
+        const std::size_t num_args, const Value* args);
+
   private:
     struct VariableTypeInfo
     {
@@ -44,7 +48,16 @@ namespace loxx
       std::size_t count;
     };
 
+    struct FunctionCallInfo
+    {
+      const CodeObject* code = nullptr;
+      const ClosureObject* function = nullptr;
+      std::vector<std::size_t> types = {};
+      std::size_t count = 0;
+    };
+
     HashTable<std::size_t, VariableTypeInfo> variable_type_counts_;
+    HashTable<std::size_t, FunctionCallInfo> function_call_counts_;
   };
 }
 

@@ -27,17 +27,17 @@ namespace loxx
 {
   namespace detail
   {
+    std::size_t combine_hashes(const std::size_t h0, const std::size_t h1)
+    {
+      return h0 ^ (0x9e3779b9 + (h1 << 6) + (h1 >> 2));
+    }
+
     std::size_t compute_variable_type_hash(
         const CodeObject* code, const StringObject* varname,
         const std::size_t type)
     {
       const auto varname_hash = varname->hash();
       const auto code_hash = std::hash<const CodeObject*>()(code);
-
-      const auto combine_hashes =
-          [] (const std::size_t h0, const std::size_t h1) {
-            return h0 ^ (0x9e3779b9 + (h1 << 6) + (h1 >> 2));
-          };
 
       return combine_hashes(combine_hashes(varname_hash, code_hash), type);
     }
@@ -50,6 +50,26 @@ namespace loxx
     const auto hash = detail::compute_variable_type_hash(code, varname, type);
     const auto type_info = VariableTypeInfo{code, varname, type, 0};
     auto& count_elem = variable_type_counts_.insert(hash, type_info);
+    count_elem->second.count += 1;
+  }
+
+
+  void CodeProfiler::count_function_call(
+      const CodeObject* code, const ClosureObject* function,
+      const std::size_t num_args, const Value* args)
+  {
+    auto hash = std::hash<const CodeObject*>()(code);
+    const auto function_hash = std::hash<const ClosureObject*>()(function);
+    hash = detail::combine_hashes(hash, function_hash);
+
+    std::vector<std::size_t> types(num_args);
+    for (std::size_t i = 0; i < num_args; ++i) {
+      types[i] = args[i].index();
+      hash = detail::combine_hashes(hash, types[i]);
+    }
+
+    const auto call_info = FunctionCallInfo{code, function, types, 0};
+    auto& count_elem = function_call_counts_.insert(hash, call_info);
     count_elem->second.count += 1;
   }
 }
