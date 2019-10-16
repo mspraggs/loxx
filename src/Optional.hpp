@@ -101,7 +101,7 @@ namespace loxx
 
   template <typename T>
   constexpr Optional<T>::Optional()
-      : has_value_(false), no_value_{}
+      : has_value_(false), value_{}
   {
   }
 
