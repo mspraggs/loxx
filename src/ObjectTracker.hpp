@@ -20,6 +20,7 @@
 #ifndef LOXX_OBJECTTRACKER_HPP
 #define LOXX_OBJECTTRACKER_HPP
 
+#include <algorithm>
 #include <list>
 #include <memory>
 #include <vector>
@@ -57,6 +58,82 @@ namespace loxx
   };
 
 
+  namespace detail
+  {
+    inline void grey_roots_impl() {}
+
+
+    template <typename T0, typename... Ts>
+    void grey_roots_impl(T0 head, Ts... tail);
+
+
+    template <std::size_t... Is, typename... Ts>
+    void grey_roots(std::index_sequence<Is...>, std::tuple<Ts...>& roots);
+
+
+    template <typename... Ts>
+    void grey_roots(std::tuple<Ts...>& roots);
+  }
+
+
+  template <typename... Roots>
+  ObjectTracker<Roots...>& ObjectTracker<Roots...>::instance()
+  {
+    static ObjectTracker<Roots...> ret;
+    return ret;
+  }
+
+
+  template <typename... Roots>
+  void ObjectTracker<Roots...>::add_object(std::unique_ptr<Object> object)
+  {
+    if (objects_.size() > gc_size_trigger_) {
+      collect_garbage();
+    }
+
+    objects_.push_back(std::move(object));
+  }
+
+
+  template <typename... Roots>
+  void ObjectTracker<Roots...>::collect_garbage()
+  {
+    for (auto& object : objects_) {
+      object->set_colour(TriColour::WHITE);
+    }
+
+    detail::grey_roots(roots_);
+
+    const auto is_grey =
+        [] (const std::unique_ptr<Object>& obj)
+        {
+          return obj and obj->colour() == TriColour::GREY;
+        };
+
+    auto num_greys = std::count_if(objects_.begin(), objects_.end(), is_grey);
+
+    std::vector<std::unique_ptr<Object>> reachable_objects;
+    reachable_objects.reserve(objects_.size());
+
+    while (num_greys > 0) {
+      for (auto& object : objects_) {
+        if (not object or object->colour() != TriColour::GREY) {
+          continue;
+        }
+
+        object->set_colour(TriColour::BLACK);
+        object->grey_references();
+
+        reachable_objects.push_back(std::move(object));
+      }
+
+      num_greys = std::count_if(objects_.begin(), objects_.end(), is_grey);
+    }
+
+    objects_ = std::move(reachable_objects);
+  }
+
+
   using ObjTracker =
       ObjectTracker<
         Stack<Value, max_stack_size>,
@@ -76,6 +153,37 @@ namespace loxx
 
 
   StringObject* make_string(std::string std_str);
+
+
+  void grey_roots(Stack<Value, max_stack_size>* stack);
+
+
+  void grey_roots(std::list<UpvalueObject*>* upvalues);
+
+
+  void grey_roots(StringHashTable<Value>* globals);
+
+
+  template <typename T0, typename... Ts>
+  void detail::grey_roots_impl(T0 head, Ts... tail)
+  {
+    grey_roots(head);
+    grey_roots_impl(tail...);
+  }
+
+
+  template <std::size_t... Is, typename... Ts>
+  void detail::grey_roots(std::index_sequence<Is...>, std::tuple<Ts...>& roots)
+  {
+    grey_roots_impl(std::get<Is>(roots)...);
+  }
+
+
+  template <typename... Ts>
+  void detail::grey_roots(std::tuple<Ts...>& roots)
+  {
+    grey_roots(std::index_sequence_for<Ts...>(), roots);
+  }
 }
 
 #endif //LOXX_OBJECTTRACKER_HPP
