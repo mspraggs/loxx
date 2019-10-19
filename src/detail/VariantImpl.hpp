@@ -157,23 +157,19 @@ namespace loxx
     }
 
     template <std::size_t N>
-    void destroy(const std::size_t type_index, void* data) {}
+    void destroy(const std::size_t, void*) {}
 
     template <std::size_t N>
-    void copy_construct(const std::size_t type_index,
-                        void* new_data, const void* old_data) {}
+    void copy_construct(const std::size_t, void*, const void*) {}
 
     template <std::size_t N>
-    void move_construct(const std::size_t type_index,
-                        void* new_data, void* old_data) {}
+    void move_construct(const std::size_t, void*, void*) {}
 
     template <std::size_t N>
-    void copy_assign(const std::size_t type_index,
-                     void* new_data, const void* old_data) {}
+    void copy_assign(const std::size_t, void*, const void*) {}
 
     template <std::size_t N>
-    void move_assign(const std::size_t type_index,
-                     void* new_data, void* old_data) {}
+    void move_assign(const std::size_t, void*, void*) {}
 
     template <std::size_t N, typename T0, typename... Ts>
     void destroy(const std::size_t type_index, void* data);

@@ -52,8 +52,7 @@ namespace loxx
   }
 
 
-  void run(const std::string& src, const DebugConfig& debug_config,
-           const bool in_repl)
+  void run(const std::string& src, const DebugConfig& debug_config)
   {
     Scanner scanner(src);
     auto tokens = scanner.scan_tokens();
@@ -70,7 +69,7 @@ namespace loxx
     }
 #endif
 
-    Parser parser(std::move(tokens), in_repl);
+    Parser parser(std::move(tokens));
     const auto statements = parser.parse();
 
     if (had_error) {
@@ -120,7 +119,7 @@ namespace loxx
         return;
       }
 
-      run(src, debug_config, true);
+      run(src, debug_config);
       had_error = false;
     }
   }
@@ -142,7 +141,7 @@ namespace loxx
       throw std::ios_base::failure("Unable to read source file!");
     }
 
-    run(src, debug_config, false);
+    run(src, debug_config);
 
     if (had_error) {
       std::exit(65);
