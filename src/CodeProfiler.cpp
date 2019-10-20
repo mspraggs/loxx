@@ -17,8 +17,10 @@
  * Created by Matt Spraggs on 13/10/2019.
  */
 
+#include <algorithm>
 #include <functional>
 #include <iostream>
+#include <numeric>
 
 #include "CodeProfiler.hpp"
 
@@ -31,26 +33,14 @@ namespace loxx
     {
       return h0 ^ (0x9e3779b9 + (h1 << 6) + (h1 >> 2));
     }
-
-    std::size_t compute_variable_type_hash(
-        const CodeObject* code, const StringObject* varname,
-        const std::size_t type)
-    {
-      const auto varname_hash = varname->hash();
-      const auto code_hash = std::hash<const CodeObject*>()(code);
-
-      return combine_hashes(combine_hashes(varname_hash, code_hash), type);
-    }
   }
 
   void CodeProfiler::count_variable_type(
-      const CodeObject* code, const StringObject* varname,
-      const std::size_t type)
+      const CodeObject* code, const StringObject* varname, const ValueType type)
   {
-    const auto hash = detail::compute_variable_type_hash(code, varname, type);
-    const auto type_info = VariableTypeInfo{code, varname, type, 0};
-    auto& count_elem = variable_type_counts_.insert(hash, type_info);
-    count_elem->second.count += 1;
+    const auto type_info = TypeInfo{code, varname, type};
+    auto& count_elem = variable_type_counts_.insert(type_info, 0);
+    count_elem->second += 1;
   }
 
 
@@ -58,18 +48,75 @@ namespace loxx
       const CodeObject* code, const ClosureObject* function,
       const std::size_t num_args, const Value* args)
   {
-    auto hash = std::hash<const CodeObject*>()(code);
-    const auto function_hash = std::hash<const ClosureObject*>()(function);
-    hash = detail::combine_hashes(hash, function_hash);
+    const auto extract_type = [] (const Value& value) {
+      return static_cast<ValueType>(value.index());
+    };
 
-    std::vector<std::size_t> types(num_args);
-    for (std::size_t i = 0; i < num_args; ++i) {
-      types[i] = args[i].index();
-      hash = detail::combine_hashes(hash, types[i]);
-    }
+    std::vector<ValueType> signature(num_args);
+    std::transform(args, args + num_args, signature.begin(), extract_type);
 
-    const auto call_info = FunctionCallInfo{code, function, types, 0};
-    auto& count_elem = function_call_counts_.insert(hash, call_info);
-    count_elem->second.count += 1;
+    const auto call_info = CallInfo{code, function, signature};
+    auto& count_elem = function_call_counts_.insert(call_info, 0);
+    count_elem->second += 1;
+  }
+
+
+  std::size_t CodeProfiler::TypeInfoHasher::operator() (
+      const TypeInfo& info) const
+  {
+    using namespace detail;
+
+    const auto varname_hash = info.varname->hash();
+    const auto code_hash = std::hash<const CodeObject*>()(info.code);
+    const auto type_hash = std::hash<ValueType>()(info.type);
+
+    return combine_hashes(combine_hashes(varname_hash, code_hash), type_hash);
+  }
+
+
+  std::size_t CodeProfiler::CallInfoHasher::operator() (
+      const CallInfo& info) const
+  {
+    using namespace detail;
+    const std::size_t types_hash = hash_signature(info.signature);
+
+    const auto code_hash = std::hash<const CodeObject*>()(info.code);
+    const auto func_hash = std::hash<const ClosureObject*>()(info.function);
+
+    return combine_hashes(combine_hashes(func_hash, code_hash), types_hash);
+  }
+
+
+  std::size_t CodeProfiler::CallInfoHasher::hash_signature(
+      const CallSignature& signature) const
+  {
+    const auto type_hasher = std::hash<ValueType>();
+    const auto hash_reduce_types =
+        [&] (const std::size_t hash, const ValueType& type) {
+          return (hash << 2) + type_hasher(type);
+        };
+
+    return std::accumulate(
+        signature.begin(), signature.end(), 0UL, hash_reduce_types);
+  }
+
+
+  bool CodeProfiler::TypeInfoCompare::operator() (
+      const TypeInfo& info1, const TypeInfo& info2) const
+  {
+    return
+        info1.code == info2.code and
+        info1.varname == info2.varname and
+        info1.type == info2.type;
+  }
+
+
+  bool CodeProfiler::CallInfoCompare::operator() (
+      const CallInfo& info1, const CallInfo& info2) const
+  {
+    return
+        info1.code == info2.code and
+        info1.function == info2.function and
+        info1.signature == info2.signature;
   }
 }

@@ -33,31 +33,54 @@ namespace loxx
   public:
     void count_variable_type(
         const CodeObject* code, const StringObject* varname,
-        const std::size_t type);
+        const ValueType type);
 
     void count_function_call(
         const CodeObject* code, const ClosureObject* function,
         const std::size_t num_args, const Value* args);
 
   private:
-    struct VariableTypeInfo
+    struct TypeInfo
     {
       const CodeObject* code;
       const StringObject* varname;
-      std::size_t type;
-      std::size_t count;
+      ValueType type;
     };
 
-    struct FunctionCallInfo
+    using CallSignature = std::vector<ValueType>;
+
+    struct CallInfo
     {
-      const CodeObject* code = nullptr;
-      const ClosureObject* function = nullptr;
-      std::vector<std::size_t> types = {};
-      std::size_t count = 0;
+      const CodeObject* code;
+      const ClosureObject* function;
+      CallSignature signature;
     };
 
-    HashTable<std::size_t, VariableTypeInfo> variable_type_counts_;
-    HashTable<std::size_t, FunctionCallInfo> function_call_counts_;
+    struct TypeInfoHasher
+    {
+      std::size_t operator() (const TypeInfo& value) const;
+    };
+
+    struct TypeInfoCompare
+    {
+      bool operator() (const TypeInfo& info1, const TypeInfo& info2) const;
+    };
+
+    struct CallInfoHasher
+    {
+      std::size_t operator() (const CallInfo& value) const;
+      std::size_t hash_signature(const CallSignature& signature) const;
+    };
+
+    struct CallInfoCompare
+    {
+      bool operator() (const CallInfo& info1, const CallInfo& info2) const;
+    };
+
+    HashTable<TypeInfo, std::size_t, TypeInfoHasher, TypeInfoCompare>
+        variable_type_counts_;
+    HashTable<CallInfo, std::size_t, CallInfoHasher, CallInfoCompare>
+        function_call_counts_;
   };
 }
 

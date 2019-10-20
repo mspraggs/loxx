@@ -30,6 +30,13 @@
 
 namespace loxx
 {
+  enum class ValueType {
+    FLOAT = 0,
+    BOOLEAN = 1,
+    OBJECT = 2,
+    UNKNOWN = 3,
+  };
+
   class Object;
 
   using Value = Variant<double, bool, Object*>;

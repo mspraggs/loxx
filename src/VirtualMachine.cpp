@@ -343,7 +343,8 @@ namespace loxx
 
       case Instruction::PROFILE_TYPE:
         profiler_->count_variable_type(
-            code_object_, read_string(), stack_.top().index());
+            code_object_, read_string(),
+            static_cast<ValueType>(stack_.top().index()));
         break;
 
       case Instruction::RETURN: {
