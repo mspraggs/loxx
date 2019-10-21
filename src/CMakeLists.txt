@@ -3,6 +3,7 @@ project(loxx)
 
 set(SRC
   AstPrinter.hpp
+  AsyncWorker.hpp
   CodeProfiler.hpp
   CodeObject.hpp
   Compiler.hpp
@@ -49,4 +50,4 @@ set(SRC
   VirtualMachine.cpp)
 
 add_executable(loxx ${SRC})
-target_link_libraries(loxx)
+target_link_libraries(loxx pthread)
