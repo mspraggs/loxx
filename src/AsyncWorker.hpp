@@ -20,6 +20,8 @@
 #ifndef LOXX_ASYNCWORKER_HPP
 #define LOXX_ASYNCWORKER_HPP
 
+#include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <mutex>
 #include <thread>
@@ -34,6 +36,8 @@ namespace loxx
     AsyncWorker();
     virtual ~AsyncWorker();
 
+    std::size_t queue_size() const { return queue_size_; }
+
   protected:
     void push(Fn task);
 
@@ -44,8 +48,9 @@ namespace loxx
     void main();
     Fn pop();
 
-    bool quit_;
-    std::size_t head_pos_, tail_pos_, queue_size_;
+    std::atomic_bool quit_;
+    std::size_t head_pos_, tail_pos_;
+    std::atomic_size_t queue_size_;
     std::thread worker_;
     std::mutex mutex_;
     std::condition_variable cv_;
@@ -64,7 +69,11 @@ namespace loxx
   template <typename Fn, std::size_t QSize>
   AsyncWorker<Fn, QSize>::~AsyncWorker()
   {
+    std::unique_lock<std::mutex> lock(mutex_);
+
     quit_ = true;
+
+    lock.unlock();
     cv_.notify_all();
 
     if (worker_.joinable()) {
@@ -77,7 +86,7 @@ namespace loxx
   void AsyncWorker<Fn, QSize>::push(Fn task)
   {
     if (queue_size_ == QSize) {
-      std::overflow_error("Task queue overflow.");
+      throw std::overflow_error("Task queue overflow.");
     }
 
     std::unique_lock<std::mutex> lock(mutex_);
@@ -87,7 +96,7 @@ namespace loxx
     ++queue_size_;
 
     lock.unlock();
-    cv_.notify_all();
+    cv_.notify_one();
   }
 
 
@@ -106,7 +115,7 @@ namespace loxx
     ++queue_size_;
 
     lock.unlock();
-    cv_.notify_all();
+    cv_.notify_one();
   }
 
 
@@ -116,9 +125,9 @@ namespace loxx
     std::unique_lock<std::mutex> lock(mutex_);
 
     while (not quit_) {
-      cv_.wait(lock, [this] { return queue_size_ > 0 or quit_; });
+      cv_.wait(lock, [this] { return quit_ or queue_size_ > 0; });
 
-      if (queue_size_ > 0) {
+      if (not quit_ and queue_size_ > 0) {
         const auto task = pop();
 
         lock.unlock();
