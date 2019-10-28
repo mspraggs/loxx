@@ -20,6 +20,7 @@
 #ifndef LOXX_STRINGHASHTABLE_HPP
 #define LOXX_STRINGHASHTABLE_HPP
 
+#include "HashSet.hpp"
 #include "HashTable.hpp"
 
 
@@ -35,8 +36,8 @@ namespace loxx
 
   struct CompareStringObject
   {
-    bool operator()(const StringObject* p1, const StringObject* p2) const
-    { return p1 == p2; }
+    bool operator() (
+        const StringObject* first, const StringObject* second) const;
   };
 
   template <typename T>
@@ -47,6 +48,10 @@ namespace loxx
   template <typename T>
   using StringHashTable =
       HashTable<StringObject*, T, HashStringObject, CompareStringObject>;
+
+
+  using StringHashSet =
+      HashSet<StringObject*, HashStringObject, CompareStringObject>;
 }
 
 #endif //LOXX_STRINGHASHTABLE_HPP

@@ -27,4 +27,12 @@ namespace loxx
   {
     return obj->hash();
   }
+
+
+  bool CompareStringObject::operator() (
+      const StringObject* first, const StringObject* second) const
+  {
+    return first == second or
+        first->as_std_string() == second->as_std_string();
+  }
 }

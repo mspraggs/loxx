@@ -54,8 +54,7 @@ namespace loxx
     {}
     void insert(const Key& key);
     const Elem& get(const Key& key) const;
-    template <typename Fn>
-    const Elem& find(const Key& key, Fn evaluate) const;
+    const Elem& find(const Key& key) const;
     void erase(const Key& key);
     std::size_t count(const Key& key) const;
     bool has_item(const Key& key) const;
@@ -105,14 +104,12 @@ namespace loxx
 
 
   template<typename Key, typename Hash, typename Compare>
-  template<typename Fn>
-  auto HashSet<Key, Hash, Compare>::find(
-      const Key& key, Fn evaluate) const -> const Elem&
+  auto HashSet<Key, Hash, Compare>::find(const Key& key) const -> const Elem&
   {
     auto pos = hash_func_(key) & mask_;
 
     while (data_[pos]) {
-      if (evaluate(*data_[pos])) {
+      if (compare_(*data_[pos], key)) {
         return data_[pos];
       }
       pos = (pos + 1) & mask_;

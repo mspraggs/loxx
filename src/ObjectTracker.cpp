@@ -28,11 +28,7 @@ namespace loxx
 
     auto str_obj = std::make_unique<StringObject>(std::move(std_str));
 
-    const auto cached = cache.find(
-        str_obj.get(),
-        [&] (StringObject* candidate) {
-          return candidate->as_std_string() == str_obj->as_std_string();
-        });
+    const auto cached = cache.find(str_obj.get());
 
     if (cached) {
       return *cached;
