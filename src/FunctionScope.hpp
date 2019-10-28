@@ -89,6 +89,7 @@ namespace loxx
                                     const Value& value);
     InstrArgUByte add_string_constant(const std::string& str);
     InstrArgUByte add_constant(const Value& value);
+    void add_type_profile_instr(const Token& token, const bool write);
 
     void begin_scope();
     void end_scope();
@@ -140,6 +141,7 @@ namespace loxx
     std::vector<Upvalue> upvalues_;
     std::unique_ptr<FunctionScope> enclosing_;
     std::unique_ptr<CodeObject> code_object_;
+    StringHashSet type_profile_cache_;  // TODO: Better name...
   };
 
 

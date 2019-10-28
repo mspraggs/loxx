@@ -117,7 +117,7 @@ namespace loxx
 
 
   InstrArgUByte FunctionScope::add_named_constant(const std::string& lexeme,
-                                                 const Value& value)
+                                                  const Value& value)
   {
     const auto s = make_string(lexeme);
     if (code_object_->constant_map.count(s) != 0) {
@@ -151,6 +151,27 @@ namespace loxx
 
     code_object_->constants.push_back(value);
     return code_object_->constants.size() - 1;
+  }
+
+
+  void FunctionScope::add_type_profile_instr(
+      const Token& token, const bool write)
+  {
+    // TODO: Cache lexeme on read, remove on write as hint for when profile
+    // needs to be profiled - seems smarter than a brute force approach
+    auto str_obj = make_string(token.lexeme());
+
+    if (not write and type_profile_cache_.find(str_obj)) {
+      return;
+    }
+
+    const auto lexeme_idx = add_named_constant(
+        token.lexeme(), Value(InPlace<ObjectPtr>(), str_obj));
+
+    type_profile_cache_.insert(str_obj);
+    add_instruction(Instruction::PROFILE_TYPE);
+    add_integer<InstrArgUByte>(lexeme_idx);
+    update_line_num_table(token);
   }
 
 
