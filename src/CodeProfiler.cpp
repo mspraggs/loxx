@@ -61,6 +61,15 @@ namespace loxx
   }
 
 
+  void CodeProfiler::count_basic_block(
+      const CodeObject* code, const std::size_t ip_offset)
+  {
+    const auto block_info = BlockInfo{code, ip_offset};
+    auto& count_elem = block_counts_.insert(block_info, 0);
+    count_elem->second += 1;
+  }
+
+
   std::size_t CodeProfiler::TypeInfoHasher::operator() (
       const TypeInfo& info) const
   {
@@ -101,6 +110,15 @@ namespace loxx
   }
 
 
+  std::size_t CodeProfiler::BlockInfoHasher::operator() (
+      const BlockInfo& info) const
+  {
+    using namespace detail;
+    constexpr std::hash<const CodeObject*> code_hasher;
+    return combine_hashes(code_hasher(info.code), info.ip_offset);
+  }
+
+
   bool CodeProfiler::TypeInfoCompare::operator() (
       const TypeInfo& info1, const TypeInfo& info2) const
   {
@@ -118,5 +136,12 @@ namespace loxx
         info1.code == info2.code and
         info1.function == info2.function and
         info1.signature == info2.signature;
+  }
+
+
+  bool CodeProfiler::BlockInfoCompare::operator() (
+      const BlockInfo& info1, const BlockInfo& info2) const
+  {
+    return info1.code == info2.code and info1.ip_offset == info2.ip_offset;
   }
 }

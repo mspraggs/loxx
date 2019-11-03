@@ -20,6 +20,7 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <sstream>
 
 #include "logging.hpp"
@@ -75,6 +76,12 @@ namespace loxx
       }
 #endif
 
+      const auto ip_offset = std::distance(
+          code_object_->bytecode.begin(), ip_);
+
+      if (code_object_->basic_blocks.count(ip_offset) > 0) {
+        profiler_->count_basic_block(code_object.get(), ip_offset);
+      }
       const auto instruction = static_cast<Instruction>(*ip_++);
 
       switch (instruction) {
