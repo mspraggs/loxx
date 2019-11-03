@@ -92,8 +92,11 @@ namespace loxx
     static unsigned int last_line_num = 0;
     const unsigned int current_line_num = get_current_line(output, pos);
 
+    const auto& edges = output.basic_blocks;
+    const auto is_block_edge = edges.has_item(pos);
+
     std::stringstream line_num_ss;
-    line_num_ss << std::right << std::setw(5) << std::setfill(' ');
+    line_num_ss << std::right << std::setw(3) << std::setfill(' ');
     if (last_line_num < current_line_num) {
       line_num_ss << current_line_num;
     }
@@ -103,6 +106,7 @@ namespace loxx
     last_line_num = current_line_num;
 
     std::cout << std::setw(4) << std::setfill('0') << std::right << pos;
+    std::cout << "  " << (is_block_edge ? ">>" : "  ");
     std::cout << line_num_ss.str() << ' ';
     std::cout << std::setw(20) << std::setfill(' ') << std::left << instruction;
 

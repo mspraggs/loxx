@@ -29,6 +29,7 @@ namespace loxx
   {
     compile_stmts(statements);
     func_->add_instruction(Instruction::NIL);
+    func_->insert_block_edge(func_->current_bytecode_size());
     func_->add_instruction(Instruction::RETURN);
   }
 
@@ -163,6 +164,7 @@ namespace loxx
     else {
       func_->add_instruction(Instruction::NIL);
     }
+    func_->insert_block_edge(func_->current_bytecode_size());
     func_->add_instruction(Instruction::RETURN);
     func_->update_line_num_table(stmt.keyword);
   }
@@ -498,6 +500,7 @@ namespace loxx
     func_->end_scope();
     // Return "nil" if we haven't returned already.
     func_->add_instruction(Instruction::NIL);
+    func_->insert_block_edge(func_->current_bytecode_size());
     func_->add_instruction(Instruction::RETURN);
 
     const auto upvalues = func_->release_upvalues();

@@ -239,6 +239,7 @@ namespace loxx
     add_instruction(instruction);
     const auto ret = current_bytecode_size();
     add_integer<InstrArgUShort>(0);
+    insert_block_edge(current_bytecode_size());
     return ret;
   }
 
@@ -252,6 +253,7 @@ namespace loxx
       error(last_line_num(), "Too much code to jump over.");
     }
 
+    insert_block_edge(pos + jump_size + sizeof(InstrArgUShort));
     rewrite_integer(pos, static_cast<InstrArgUShort>(jump_size));
   }
 
@@ -267,6 +269,8 @@ namespace loxx
       error(last_line_num(), "Loop body is too large.");
     }
 
+    insert_block_edge(
+        current_bytecode_size() - jump_size + sizeof(InstrArgUShort));
     add_integer(static_cast<InstrArgUShort>(jump_size));
   }
 
@@ -310,5 +314,12 @@ namespace loxx
         line_num_diff, instr_num_diff);
     last_instr_num_ = code_object_->bytecode.size();
     last_line_num_ = token.line();
+  }
+
+
+  void FunctionScope::insert_block_edge(const std::size_t offset)
+  {
+    auto& edges = code_object_->basic_blocks;
+    edges[offset];
   }
 }

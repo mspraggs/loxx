@@ -56,6 +56,7 @@ namespace loxx
           enclosing_(std::move(enclosing)), code_object_(new CodeObject)
     {
       code_object_->name = func.name.lexeme();
+      insert_block_edge(0);
 
       if (type_ == FunctionType::FUNCTION) {
         add_local("");
@@ -109,6 +110,7 @@ namespace loxx
     template <typename T>
     void rewrite_integer(const std::size_t pos, const T integer);
     void update_line_num_table(const Token& token);
+    void insert_block_edge(const std::size_t offset);
 
     FunctionType type() const { return type_; }
     unsigned int scope_depth() const { return scope_depth_; }
