@@ -575,9 +575,6 @@ namespace loxx
       throw make_runtime_error("Stack overflow.");
     }
 
-    profiler_->count_function_call(
-        code_object_, closure, num_args, &stack_.top(num_args) + 1);
-
     call_stack_.emplace(ip_, code_object_, stack_.top(num_args), closure);
     code_object_ = closure->function().code_object();
     ip_ = code_object_->bytecode.begin();
