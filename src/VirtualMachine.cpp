@@ -32,7 +32,7 @@
 namespace loxx
 {
   VirtualMachine::VirtualMachine(CodeProfiler* profiler, const bool debug)
-      : debug_(debug), ip_(0),
+      : debug_(debug), is_block_start_(true), ip_(0),
         init_lexeme_(make_string("init")),
         profiler_(profiler)
   {
@@ -76,11 +76,11 @@ namespace loxx
       }
 #endif
 
-      const auto ip_offset = std::distance(
-          code_object_->bytecode.begin(), ip_);
-
-      if (code_object_->basic_blocks.count(ip_offset) > 0) {
+      if (is_block_start_) {
+        const auto ip_offset = std::distance(
+            code_object_->bytecode.begin(), ip_);
         profiler_->count_basic_block(code_object.get(), ip_offset);
+        is_block_start_ = false;
       }
       const auto instruction = static_cast<Instruction>(*ip_++);
 
@@ -112,6 +112,7 @@ namespace loxx
 
       case Instruction::CALL:
         execute_call();
+        is_block_start_ = true;
         break;
 
       case Instruction::CLOSE_UPVALUE:
@@ -124,6 +125,7 @@ namespace loxx
         if (not is_truthy(stack_.top())) {
           ip_ += jmp;
         }
+        is_block_start_ = true;
         break;
       }
 
@@ -296,6 +298,7 @@ namespace loxx
 
       case Instruction::JUMP:
         ip_ += read_integer<InstrArgUShort>();
+        is_block_start_ = true;
         break;
 
       case Instruction::LESS: {
@@ -313,6 +316,7 @@ namespace loxx
 
       case Instruction::LOOP:
         ip_ -= read_integer<InstrArgUShort>();
+        is_block_start_ = true;
         break;
 
       case Instruction::MULTIPLY: {
