@@ -77,9 +77,7 @@ namespace loxx
 #endif
 
       if (is_block_start_) {
-        const auto ip_offset = std::distance(
-            code_object_->bytecode.begin(), ip_);
-        profiler_->count_basic_block(code_object.get(), ip_offset);
+        profiler_->count_basic_block(code_object.get(), ip_);
         is_block_start_ = false;
       }
       const auto instruction = static_cast<Instruction>(*ip_++);

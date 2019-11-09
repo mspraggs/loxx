@@ -40,7 +40,7 @@ namespace loxx
         const std::size_t num_args, const Value* args);
 
     void count_basic_block(
-        const CodeObject* code, const std::size_t ip_offset);
+        const CodeObject* code, const CodeObject::InsPtr ip);
 
   private:
     struct TypeInfo
@@ -62,7 +62,7 @@ namespace loxx
     struct BlockInfo
     {
       const CodeObject* code;
-      std::size_t ip_offset;
+      CodeObject::InsPtr ip;
     };
 
     struct TypeInfoHasher
@@ -81,14 +81,23 @@ namespace loxx
       std::size_t hash_signature(const CallSignature& signature) const;
     };
 
-    struct BlockInfoHasher
-    {
-      std::size_t operator() (const BlockInfo& value) const;
-    };
-
     struct CallInfoCompare
     {
       bool operator() (const CallInfo& info1, const CallInfo& info2) const;
+    };
+
+    struct InsPtrHasher
+    {
+      std::size_t operator() (const CodeObject::InsPtr ptr) const;
+
+      std::hash<const std::uint8_t*> ptr_hasher;
+    };
+
+    struct BlockInfoHasher
+    {
+      std::size_t operator() (const BlockInfo& value) const;
+
+      InsPtrHasher ip_hasher;
     };
 
     struct BlockInfoCompare
