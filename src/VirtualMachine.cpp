@@ -111,6 +111,7 @@ namespace loxx
       }
 
       case Instruction::CALL:
+        profiler_->flag_block_boundary(init_ip);
         execute_call();
         break;
 
