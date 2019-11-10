@@ -105,6 +105,8 @@ namespace loxx
     }
     last_line_num = current_line_num;
 
+    std::cout << std::setfill(' ')<< std::right
+              << static_cast<const void*>(&(*ip)) << ' ';
     std::cout << std::setw(4) << std::setfill('0') << std::right << pos;
     std::cout << "  " << (is_block_edge ? ">>" : "  ");
     std::cout << line_num_ss.str() << ' ';
