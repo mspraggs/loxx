@@ -20,13 +20,14 @@ namespace loxx
     bool print_ast;
     bool print_bytecode;
     bool trace_exec;
+    bool trace_jit;
   };
 
 
   Optional<DebugConfig> parse_debug_config(
       args::ValueFlagList<std::string>& opts)
   {
-    DebugConfig ret{false, false, false, false};
+    DebugConfig ret{false, false, false, false, false};
 
     if (opts) {
       for (const auto& opt : args::get(opts)) {
@@ -41,6 +42,9 @@ namespace loxx
         }
         else if (opt == "trace") {
           ret.trace_exec = true;
+        }
+        else if (opt == "jit") {
+          ret.trace_jit = true;
         }
         else {
           return {};
@@ -96,7 +100,7 @@ namespace loxx
     }
 #endif
 
-    static CodeProfiler profiler(debug_config.trace_exec, 25);
+    static CodeProfiler profiler(debug_config.trace_jit, 25);
 
     static VirtualMachine vm(&profiler, debug_config.trace_exec);
 
