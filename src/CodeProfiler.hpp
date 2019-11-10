@@ -30,9 +30,44 @@
 
 namespace loxx
 {
+  struct BlockInfo
+  {
+    const CodeObject* code;
+    CodeObject::InsPtr begin;
+    CodeObject::InsPtr end;
+  };
+
+
+  class InstructionData
+  {
+  public:
+    InstructionData() = default;
+    template <typename... Ts>
+    InstructionData(const Value& value0, const Ts&... values);
+    InstructionData(const Value* start, const std::size_t num_values);
+
+    ValueType operator[] (const std::size_t i) const;
+
+  private:
+    static constexpr std::size_t max_stack_values = 3;
+    bool data_on_stack_;
+    std::array<ValueType, max_stack_values> types_stack_;
+    std::vector<ValueType> types_heap_;
+  };
+
+
   class CodeProfiler
   {
   public:
+    struct InsPtrHasher
+    {
+      std::size_t operator() (const CodeObject::InsPtr ptr) const;
+      std::hash<const std::uint8_t*> ptr_hasher;
+    };
+
+    using InstructionDataRepo =
+        HashTable<CodeObject::InsPtr, InstructionData, InsPtrHasher>;
+
     CodeProfiler(const bool debug, const std::size_t block_count_threshold)
         : debug_(debug), block_boundary_flagged_(true),
           block_count_threshold_(block_count_threshold), hot_block_(nullptr)
@@ -56,34 +91,6 @@ namespace loxx
     bool block_boundary_flagged() const { return block_boundary_flagged_; }
 
   private:
-    struct BlockInfo
-    {
-      const CodeObject* code;
-      CodeObject::InsPtr begin;
-      CodeObject::InsPtr end;
-    };
-
-    class InstructionData
-    {
-    public:
-      InstructionData() = default;
-      template <typename... Ts>
-      InstructionData(const Value& value0, const Ts&... values);
-      InstructionData(const Value* start, const std::size_t num_values);
-
-    private:
-      static constexpr std::size_t max_stack_values = 3;
-      bool data_on_stack_;
-      std::array<ValueType, max_stack_values> types_stack_;
-      std::vector<ValueType> types_heap_;
-    };
-
-    struct InsPtrHasher
-    {
-      std::size_t operator() (const CodeObject::InsPtr ptr) const;
-
-      std::hash<const std::uint8_t*> ptr_hasher;
-    };
 
     struct BlockInfoHasher
     {
@@ -103,8 +110,7 @@ namespace loxx
 
     HashTable<BlockInfo, std::size_t, BlockInfoHasher, BlockInfoCompare>
         block_counts_;
-    HashTable<CodeObject::InsPtr, InstructionData, InsPtrHasher>
-        instruction_data_;
+    InstructionDataRepo instruction_data_;
   };
 
 
@@ -121,7 +127,7 @@ namespace loxx
 
 
   template <typename... Ts>
-  CodeProfiler::InstructionData::InstructionData(
+  InstructionData::InstructionData(
       const Value& value0, const Ts&... values)
       : data_on_stack_(sizeof...(Ts) <= max_stack_values)
   {

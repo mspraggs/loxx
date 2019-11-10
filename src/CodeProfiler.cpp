@@ -28,6 +28,37 @@
 
 namespace loxx
 {
+  InstructionData::InstructionData(
+      const Value* start, const std::size_t num_values)
+      : data_on_stack_(num_values <= max_stack_values)
+  {
+    if (data_on_stack_) {
+      std::transform(
+          start, start + num_values, types_stack_.begin(),
+          [] (const Value& value) {
+            return static_cast<ValueType>(value.index());
+          });
+    }
+    else {
+      types_heap_.resize(num_values);
+      std::transform(
+          start, start + num_values, types_heap_.begin(),
+          [] (const Value& value) {
+            return static_cast<ValueType>(value.index());
+          });
+    }
+  }
+
+
+  ValueType InstructionData::operator[] (const std::size_t i) const
+  {
+    if (data_on_stack_) {
+      return types_stack_[i];
+    }
+    return types_heap_[i];
+  }
+
+
   void CodeProfiler::count_basic_block(
       const CodeObject* code, const CodeObject::InsPtr ip)
   {
@@ -80,28 +111,6 @@ namespace loxx
       print_bytecode(*block_info.code, block_info.begin, block_info.end);
     }
 #endif
-  }
-
-
-  CodeProfiler::InstructionData::InstructionData(
-      const Value* start, const std::size_t num_values)
-      : data_on_stack_(num_values <= max_stack_values)
-  {
-    if (data_on_stack_) {
-      std::transform(
-          start, start + num_values, types_stack_.begin(),
-          [] (const Value& value) {
-            return static_cast<ValueType>(value.index());
-          });
-    }
-    else {
-      types_heap_.resize(num_values);
-      std::transform(
-          start, start + num_values, types_heap_.begin(),
-          [] (const Value& value) {
-            return static_cast<ValueType>(value.index());
-          });
-    }
   }
 
 
