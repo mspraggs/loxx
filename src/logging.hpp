@@ -55,6 +55,11 @@ namespace loxx
   void print_bytecode(const CodeObject& output);
 
 
+  void print_bytecode(
+      const CodeObject& output,
+      const CodeObject::InsPtr begin, const CodeObject::InsPtr end);
+
+
   CodeObject::InsPtr print_instruction(const CodeObject& output,
                                        const CodeObject::InsPtr ip);
 
