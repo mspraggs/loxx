@@ -56,22 +56,6 @@ namespace loxx
     bool block_boundary_flagged() const { return block_boundary_flagged_; }
 
   private:
-    struct TypeInfo
-    {
-      const CodeObject* code;
-      const StringObject* varname;
-      ValueType type;
-    };
-
-    using CallSignature = std::vector<ValueType>;
-
-    struct CallInfo
-    {
-      const CodeObject* code;
-      const ClosureObject* function;
-      CallSignature signature;
-    };
-
     struct BlockInfo
     {
       const CodeObject* code;
