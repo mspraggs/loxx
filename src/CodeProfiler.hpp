@@ -35,7 +35,7 @@ namespace loxx
   public:
     CodeProfiler(const bool debug, const std::size_t block_count_threshold)
         : debug_(debug), block_boundary_flagged_(true),
-          block_count_threshold_(block_count_threshold)
+          block_count_threshold_(block_count_threshold), hot_block_(nullptr)
     {
     }
 
@@ -52,8 +52,7 @@ namespace loxx
 
     void flag_block_boundary(const CodeObject::InsPtr ip);
 
-    bool is_profiling_instructions() const
-    { return hot_block_start_.has_value(); }
+    bool is_profiling_instructions() const { return hot_block_; }
     bool block_boundary_flagged() const { return block_boundary_flagged_; }
 
   private:
@@ -76,7 +75,8 @@ namespace loxx
     struct BlockInfo
     {
       const CodeObject* code;
-      CodeObject::InsPtr ip;
+      CodeObject::InsPtr begin;
+      CodeObject::InsPtr end;
     };
 
     class InstructionData
@@ -115,7 +115,7 @@ namespace loxx
 
     bool debug_, block_boundary_flagged_;
     std::size_t block_count_threshold_;
-    Optional<CodeObject::InsPtr> hot_block_start_;
+    BlockInfo* hot_block_;
 
     HashTable<BlockInfo, std::size_t, BlockInfoHasher, BlockInfoCompare>
         block_counts_;
@@ -128,7 +128,7 @@ namespace loxx
   void CodeProfiler::profile_instruction(
       const CodeObject::InsPtr ip, const Value& op0, const Ts&... ops)
   {
-    if (not hot_block_start_) {
+    if (not hot_block_) {
       return;
     }
 

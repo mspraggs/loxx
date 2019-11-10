@@ -36,7 +36,7 @@ namespace loxx
     count_elem->second += 1;
 
     if (count_elem->second >= block_count_threshold_) {
-      hot_block_start_ = ip;
+      hot_block_ = &count_elem->first;
     }
   }
 
@@ -45,7 +45,7 @@ namespace loxx
       const CodeObject::InsPtr ip,
       const Value* start, const std::size_t size)
   {
-    if (not hot_block_start_) {
+    if (not hot_block_) {
       return;
     }
 
@@ -57,13 +57,15 @@ namespace loxx
   {
     block_boundary_flagged_ = true;
 
-    if (hot_block_start_) {
-      const auto block_start = *hot_block_start_;
-      hot_block_start_.reset();
+    if (hot_block_) {
+      auto& block_info = *hot_block_;
+      hot_block_ = nullptr;
+
+      block_info.end = ip;
 
       if (debug_) {
         std::cout << "Compiling block @ "
-                  << static_cast<const void*>(&(*block_start)) << '\n';
+                  << static_cast<const void*>(&(*block_info.begin)) << '\n';
       }
     }
   }
@@ -101,13 +103,13 @@ namespace loxx
   std::size_t CodeProfiler::BlockInfoHasher::operator() (
       const BlockInfo& info) const
   {
-    return ip_hasher(info.ip);
+    return ip_hasher(info.begin);
   }
 
 
   bool CodeProfiler::BlockInfoCompare::operator() (
       const BlockInfo& info1, const BlockInfo& info2) const
   {
-    return info1.ip == info2.ip;
+    return info1.begin == info2.begin;
   }
 }
