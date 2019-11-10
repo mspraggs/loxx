@@ -35,25 +35,21 @@ namespace loxx
     if (data_on_stack_) {
       std::transform(
           start, start + num_values, types_stack_.begin(),
-          [] (const Value& value) {
-            return static_cast<ValueType>(value.index());
-          });
+          [] (const Value& value) { return &value; });
     }
     else {
       types_heap_.resize(num_values);
       std::transform(
           start, start + num_values, types_heap_.begin(),
-          [] (const Value& value) {
-            return static_cast<ValueType>(value.index());
-          });
+          [] (const Value& value) { return &value; });
     }
   }
 
 
-  ValueType InstructionData::operator[] (const std::size_t i) const
+  const Value& InstructionData::operator[] (const std::size_t i) const
   {
     if (data_on_stack_) {
-      return types_stack_[i];
+      return *types_stack_[i];
     }
     return types_heap_[i];
   }

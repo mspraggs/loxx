@@ -46,13 +46,13 @@ namespace loxx
     InstructionData(const Value& value0, const Ts&... values);
     InstructionData(const Value* start, const std::size_t num_values);
 
-    ValueType operator[] (const std::size_t i) const;
+    const Value& operator[] (const std::size_t i) const;
 
   private:
     static constexpr std::size_t max_stack_values = 3;
     bool data_on_stack_;
-    std::array<ValueType, max_stack_values> types_stack_;
-    std::vector<ValueType> types_heap_;
+    std::array<const Value*, max_stack_values> types_stack_;
+    std::vector<const Value*> types_heap_;
   };
 
 
@@ -132,16 +132,10 @@ namespace loxx
       : data_on_stack_(sizeof...(Ts) <= max_stack_values)
   {
     if (data_on_stack_) {
-      types_stack_ = {
-        static_cast<ValueType>(value0.index()),
-        static_cast<ValueType>(values.index())...
-      };
+      types_stack_ = { &value0, (&values)... };
     }
     else {
-      types_heap_ = {
-        static_cast<ValueType>(value0.index()),
-        static_cast<ValueType>(values.index())...
-      };
+      types_heap_ = { &value0, (&values)... };
     }
   }
 }
