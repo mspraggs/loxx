@@ -23,6 +23,7 @@
 #include <numeric>
 
 #include "CodeProfiler.hpp"
+#include "logging.hpp"
 
 
 namespace loxx
@@ -64,20 +65,21 @@ namespace loxx
   {
     block_boundary_flagged_ = true;
 
-    if (hot_block_) {
-      auto& block_info = *hot_block_;
-      hot_block_ = nullptr;
+    if (not hot_block_) {
+      return;
+    }
 
-      block_info.end = ip;
+    auto& block_info = *hot_block_;
+    hot_block_ = nullptr;
+
+    block_info.end = ip;
 
 #ifndef NDEBUG
-      if (debug_) {
-        std::cout << "Compiling bytecode: "
-                  << static_cast<const void*>(&(*block_info.begin)) << " -> "
-                  << static_cast<const void*>(&(*block_info.end)) << '\n';
-      }
-#endif
+    if (debug_) {
+      std::cout << "=== Compiling Bytecode ===\n";
+      print_bytecode(*block_info.code, block_info.begin, block_info.end);
     }
+#endif
   }
 
 
