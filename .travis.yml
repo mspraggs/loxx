@@ -6,13 +6,6 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-5']
-      env: COMPILER=g++-5
-
-    - os: linux
-      addons:
-        apt:
-          sources: ['ubuntu-toolchain-r-test']
           packages: ['g++-6']
       env: COMPILER=g++-6
 
