@@ -35,6 +35,13 @@ namespace loxx
     auto& count_elem = block_counts_.insert(block_info, 0);
     count_elem->second += 1;
 
+#ifndef NDEBUG
+    if (debug_) {
+      std::cout << "Block hit count @ " << static_cast<const void*>(&(*ip))
+                << " = " << count_elem->second << '\n';
+    }
+#endif
+
     if (count_elem->second >= block_count_threshold_) {
       hot_block_ = &count_elem->first;
     }
@@ -63,10 +70,13 @@ namespace loxx
 
       block_info.end = ip;
 
+#ifndef NDEBUG
       if (debug_) {
-        std::cout << "Compiling block @ "
-                  << static_cast<const void*>(&(*block_info.begin)) << '\n';
+        std::cout << "Compiling bytecode: "
+                  << static_cast<const void*>(&(*block_info.begin)) << " -> "
+                  << static_cast<const void*>(&(*block_info.end)) << '\n';
       }
+#endif
     }
   }
 
