@@ -77,7 +77,7 @@ namespace loxx
 #endif
 
       const auto init_ip = ip_;
-      if (profiler_->block_start_flagged()) {
+      if (profiler_->block_boundary_flagged()) {
         profiler_->count_basic_block(code_object.get(), init_ip);
       }
       const auto instruction = static_cast<Instruction>(*ip_++);
@@ -124,7 +124,7 @@ namespace loxx
         if (not is_truthy(stack_.top())) {
           ip_ += jmp;
         }
-        profiler_->flag_block_start();
+        profiler_->flag_block_boundary(init_ip);
         break;
       }
 
@@ -297,7 +297,7 @@ namespace loxx
 
       case Instruction::JUMP:
         ip_ += read_integer<InstrArgUShort>();
-        profiler_->flag_block_start();
+        profiler_->flag_block_boundary(init_ip);
         break;
 
       case Instruction::LESS: {
@@ -315,7 +315,7 @@ namespace loxx
 
       case Instruction::LOOP:
         ip_ -= read_integer<InstrArgUShort>();
-        profiler_->flag_block_start();
+        profiler_->flag_block_boundary(init_ip);
         break;
 
       case Instruction::MULTIPLY: {

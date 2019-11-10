@@ -34,7 +34,7 @@ namespace loxx
   {
   public:
     CodeProfiler(const bool debug, const std::size_t block_count_threshold)
-        : debug_(debug), block_start_flagged_(true),
+        : debug_(debug), block_boundary_flagged_(true),
           block_count_threshold_(block_count_threshold)
     {
     }
@@ -58,11 +58,11 @@ namespace loxx
         const CodeObject::InsPtr ip,
         const Value* start, const std::size_t size);
 
-    void flag_block_start();
+    void flag_block_boundary(const CodeObject::InsPtr ip);
 
     bool is_profiling_instructions() const
     { return hot_block_start_.has_value(); }
-    bool block_start_flagged() const { return block_start_flagged_; }
+    bool block_boundary_flagged() const { return block_boundary_flagged_; }
 
   private:
     struct TypeInfo
@@ -142,7 +142,7 @@ namespace loxx
       bool operator() (const BlockInfo& info1, const BlockInfo& info2) const;
     };
 
-    bool debug_, block_start_flagged_;
+    bool debug_, block_boundary_flagged_;
     std::size_t block_count_threshold_;
     Optional<CodeObject::InsPtr> hot_block_start_;
 

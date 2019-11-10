@@ -64,7 +64,7 @@ namespace loxx
   void CodeProfiler::count_basic_block(
       const CodeObject* code, const CodeObject::InsPtr ip)
   {
-    block_start_flagged_ = false;
+    block_boundary_flagged_ = false;
     const auto block_info = BlockInfo{code, ip};
     auto& count_elem = block_counts_.insert(block_info, 0);
     count_elem->second += 1;
@@ -87,9 +87,9 @@ namespace loxx
   }
 
 
-  void CodeProfiler::flag_block_start()
+  void CodeProfiler::flag_block_boundary(const CodeObject::InsPtr ip)
   {
-    block_start_flagged_ = true;
+    block_boundary_flagged_ = true;
 
     if (hot_block_start_) {
       const auto block_start = *hot_block_start_;
