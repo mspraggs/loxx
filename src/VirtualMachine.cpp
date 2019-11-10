@@ -32,7 +32,7 @@
 namespace loxx
 {
   VirtualMachine::VirtualMachine(CodeProfiler* profiler, const bool debug)
-      : debug_(debug), is_block_start_(true), ip_(0),
+      : debug_(debug), ip_(0),
         init_lexeme_(make_string("init")),
         profiler_(profiler)
   {
@@ -76,9 +76,9 @@ namespace loxx
       }
 #endif
 
-      if (is_block_start_) {
-        profiler_->count_basic_block(code_object.get(), ip_);
-        is_block_start_ = false;
+      const auto init_ip = ip_;
+      if (profiler_->block_start_flagged()) {
+        profiler_->count_basic_block(code_object.get(), init_ip);
       }
       const auto instruction = static_cast<Instruction>(*ip_++);
 
@@ -105,12 +105,13 @@ namespace loxx
           throw make_runtime_error(
               "Binary operands must be two numbers or two strings.");
         }
+
+        profiler_->profile_instruction(init_ip, stack_.top(), first, second);
         break;
       }
 
       case Instruction::CALL:
         execute_call();
-        is_block_start_ = true;
         break;
 
       case Instruction::CLOSE_UPVALUE:
@@ -123,7 +124,7 @@ namespace loxx
         if (not is_truthy(stack_.top())) {
           ip_ += jmp;
         }
-        is_block_start_ = true;
+        profiler_->flag_block_start();
         break;
       }
 
@@ -296,7 +297,7 @@ namespace loxx
 
       case Instruction::JUMP:
         ip_ += read_integer<InstrArgUShort>();
-        is_block_start_ = true;
+        profiler_->flag_block_start();
         break;
 
       case Instruction::LESS: {
@@ -314,7 +315,7 @@ namespace loxx
 
       case Instruction::LOOP:
         ip_ -= read_integer<InstrArgUShort>();
-        is_block_start_ = true;
+        profiler_->flag_block_start();
         break;
 
       case Instruction::MULTIPLY: {

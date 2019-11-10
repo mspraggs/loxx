@@ -69,7 +69,7 @@ namespace loxx
                            const InstrArgUByte num_args) const;
     RuntimeError make_runtime_error(const std::string& msg) const;
 
-    bool debug_, is_block_start_;
+    bool debug_;
     CodeObject::InsPtr ip_;
     const CodeObject* code_object_;
     StringHashTable<Value> globals_;
