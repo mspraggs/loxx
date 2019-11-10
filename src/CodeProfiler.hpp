@@ -39,14 +39,6 @@ namespace loxx
     {
     }
 
-    void count_variable_type(
-        const CodeObject* code, const StringObject* varname,
-        const ValueType type);
-
-    void count_function_call(
-        const CodeObject* code, const ClosureObject* function,
-        const std::size_t num_args, const Value* args);
-
     void count_basic_block(
         const CodeObject* code, const CodeObject::InsPtr ip);
 
@@ -102,27 +94,6 @@ namespace loxx
       std::vector<ValueType> types_heap_;
     };
 
-    struct TypeInfoHasher
-    {
-      std::size_t operator() (const TypeInfo& value) const;
-    };
-
-    struct TypeInfoCompare
-    {
-      bool operator() (const TypeInfo& info1, const TypeInfo& info2) const;
-    };
-
-    struct CallInfoHasher
-    {
-      std::size_t operator() (const CallInfo& value) const;
-      std::size_t hash_signature(const CallSignature& signature) const;
-    };
-
-    struct CallInfoCompare
-    {
-      bool operator() (const CallInfo& info1, const CallInfo& info2) const;
-    };
-
     struct InsPtrHasher
     {
       std::size_t operator() (const CodeObject::InsPtr ptr) const;
@@ -146,10 +117,6 @@ namespace loxx
     std::size_t block_count_threshold_;
     Optional<CodeObject::InsPtr> hot_block_start_;
 
-    HashTable<TypeInfo, std::size_t, TypeInfoHasher, TypeInfoCompare>
-        variable_type_counts_;
-    HashTable<CallInfo, std::size_t, CallInfoHasher, CallInfoCompare>
-        function_call_counts_;
     HashTable<BlockInfo, std::size_t, BlockInfoHasher, BlockInfoCompare>
         block_counts_;
     HashTable<CodeObject::InsPtr, InstructionData, InsPtrHasher>
