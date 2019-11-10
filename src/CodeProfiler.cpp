@@ -64,9 +64,64 @@ namespace loxx
   void CodeProfiler::count_basic_block(
       const CodeObject* code, const CodeObject::InsPtr ip)
   {
+    block_start_flagged_ = false;
     const auto block_info = BlockInfo{code, ip};
     auto& count_elem = block_counts_.insert(block_info, 0);
     count_elem->second += 1;
+
+    if (count_elem->second >= block_count_threshold_) {
+      hot_block_start_ = ip;
+    }
+  }
+
+
+  void CodeProfiler::profile_instruction(
+      const CodeObject::InsPtr ip,
+      const Value* start, const std::size_t size)
+  {
+    if (not hot_block_start_) {
+      return;
+    }
+
+    instruction_data_[ip] = InstructionData(start, size);
+  }
+
+
+  void CodeProfiler::flag_block_start()
+  {
+    block_start_flagged_ = true;
+
+    if (hot_block_start_) {
+      const auto block_start = *hot_block_start_;
+      hot_block_start_.reset();
+
+      if (debug_) {
+        std::cout << "Compiling block @ "
+                  << static_cast<const void*>(&(*block_start)) << '\n';
+      }
+    }
+  }
+
+
+  CodeProfiler::InstructionData::InstructionData(
+      const Value* start, const std::size_t num_values)
+      : data_on_stack_(num_values <= max_stack_values)
+  {
+    if (data_on_stack_) {
+      std::transform(
+          start, start + num_values, types_stack_.begin(),
+          [] (const Value& value) {
+            return static_cast<ValueType>(value.index());
+          });
+    }
+    else {
+      types_heap_.resize(num_values);
+      std::transform(
+          start, start + num_values, types_heap_.begin(),
+          [] (const Value& value) {
+            return static_cast<ValueType>(value.index());
+          });
+    }
   }
 
 

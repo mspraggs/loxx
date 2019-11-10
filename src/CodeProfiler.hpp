@@ -21,9 +21,11 @@
 #define LOXX_CODEPROFILER_HPP
 
 #include <tuple>
+#include <vector>
 
 #include "CodeObject.hpp"
 #include "Object.hpp"
+#include "Value.hpp"
 
 
 namespace loxx
@@ -31,6 +33,12 @@ namespace loxx
   class CodeProfiler
   {
   public:
+    CodeProfiler(const bool debug, const std::size_t block_count_threshold)
+        : debug_(debug), block_start_flagged_(true),
+          block_count_threshold_(block_count_threshold)
+    {
+    }
+
     void count_variable_type(
         const CodeObject* code, const StringObject* varname,
         const ValueType type);
@@ -41,6 +49,20 @@ namespace loxx
 
     void count_basic_block(
         const CodeObject* code, const CodeObject::InsPtr ip);
+
+    template <typename... Ts>
+    void profile_instruction(
+        const CodeObject::InsPtr ip, const Value& op0, const Ts&... ops);
+
+    void profile_instruction(
+        const CodeObject::InsPtr ip,
+        const Value* start, const std::size_t size);
+
+    void flag_block_start();
+
+    bool is_profiling_instructions() const
+    { return hot_block_start_.has_value(); }
+    bool block_start_flagged() const { return block_start_flagged_; }
 
   private:
     struct TypeInfo
@@ -63,6 +85,21 @@ namespace loxx
     {
       const CodeObject* code;
       CodeObject::InsPtr ip;
+    };
+
+    class InstructionData
+    {
+    public:
+      InstructionData() = default;
+      template <typename... Ts>
+      InstructionData(const Value& value0, const Ts&... values);
+      InstructionData(const Value* start, const std::size_t num_values);
+
+    private:
+      static constexpr std::size_t max_stack_values = 3;
+      bool data_on_stack_;
+      std::array<ValueType, max_stack_values> types_stack_;
+      std::vector<ValueType> types_heap_;
     };
 
     struct TypeInfoHasher
@@ -105,13 +142,51 @@ namespace loxx
       bool operator() (const BlockInfo& info1, const BlockInfo& info2) const;
     };
 
+    bool debug_, block_start_flagged_;
+    std::size_t block_count_threshold_;
+    Optional<CodeObject::InsPtr> hot_block_start_;
+
     HashTable<TypeInfo, std::size_t, TypeInfoHasher, TypeInfoCompare>
         variable_type_counts_;
     HashTable<CallInfo, std::size_t, CallInfoHasher, CallInfoCompare>
         function_call_counts_;
     HashTable<BlockInfo, std::size_t, BlockInfoHasher, BlockInfoCompare>
         block_counts_;
+    HashTable<CodeObject::InsPtr, InstructionData, InsPtrHasher>
+        instruction_data_;
   };
+
+
+  template <typename... Ts>
+  void CodeProfiler::profile_instruction(
+      const CodeObject::InsPtr ip, const Value& op0, const Ts&... ops)
+  {
+    if (not hot_block_start_) {
+      return;
+    }
+
+    instruction_data_[ip] = InstructionData(op0, ops...);
+  }
+
+
+  template <typename... Ts>
+  CodeProfiler::InstructionData::InstructionData(
+      const Value& value0, const Ts&... values)
+      : data_on_stack_(sizeof...(Ts) <= max_stack_values)
+  {
+    if (data_on_stack_) {
+      types_stack_ = {
+        static_cast<ValueType>(value0.index()),
+        static_cast<ValueType>(values.index())...
+      };
+    }
+    else {
+      types_heap_ = {
+        static_cast<ValueType>(value0.index()),
+        static_cast<ValueType>(values.index())...
+      };
+    }
+  }
 }
 
 #endif // LOXX_CODEPROFILER_HPP
