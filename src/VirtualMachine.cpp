@@ -78,7 +78,7 @@ namespace loxx
 
       const auto init_ip = ip_;
       if (profiler_->block_boundary_flagged()) {
-        profiler_->count_basic_block(code_object.get(), init_ip);
+        profiler_->count_basic_block(code_object_, init_ip);
       }
       const auto instruction = static_cast<Instruction>(*ip_++);
 
@@ -111,7 +111,6 @@ namespace loxx
       }
 
       case Instruction::CALL:
-        profiler_->flag_block_boundary(init_ip);
         execute_call();
         break;
 
@@ -122,10 +121,10 @@ namespace loxx
 
       case Instruction::CONDITIONAL_JUMP: {
         const auto jmp = read_integer<InstrArgUShort>();
+        profiler_->flag_block_boundary(ip_);
         if (not is_truthy(stack_.top())) {
           ip_ += jmp;
         }
-        profiler_->flag_block_boundary(init_ip);
         break;
       }
 
@@ -296,10 +295,12 @@ namespace loxx
         break;
       }
 
-      case Instruction::JUMP:
-        ip_ += read_integer<InstrArgUShort>();
-        profiler_->flag_block_boundary(init_ip);
+      case Instruction::JUMP: {
+        const auto jmp = read_integer<InstrArgUShort>();
+        profiler_->flag_block_boundary(ip_);
+        ip_ += jmp;
         break;
+      }
 
       case Instruction::LESS: {
         const auto second = stack_.pop();
@@ -314,10 +315,12 @@ namespace loxx
         stack_.push(read_constant());
         break;
 
-      case Instruction::LOOP:
-        ip_ -= read_integer<InstrArgUShort>();
-        profiler_->flag_block_boundary(init_ip);
+      case Instruction::LOOP: {
+        const auto jmp = read_integer<InstrArgUShort>();
+        profiler_->flag_block_boundary(ip_);
+        ip_ -= jmp;
         break;
+      }
 
       case Instruction::MULTIPLY: {
         const auto second = stack_.pop();
@@ -437,6 +440,7 @@ namespace loxx
   void VirtualMachine::execute_call()
   {
     const auto num_args = read_integer<InstrArgUByte>();
+    profiler_->flag_block_boundary(ip_);
 
     if (not holds_alternative<ObjectPtr>(stack_.top(num_args))) {
       throw make_runtime_error("Can only call functions and classes.");
