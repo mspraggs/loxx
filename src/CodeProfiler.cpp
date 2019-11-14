@@ -51,12 +51,13 @@ namespace loxx
     if (data_on_stack_) {
       return *types_stack_[i];
     }
-    return types_heap_[i];
+    return *types_heap_[i];
   }
 
 
   void CodeProfiler::count_basic_block(
-      const CodeObject* code, const CodeObject::InsPtr ip)
+      const CodeObject* code, const CodeObject::InsPtr ip,
+      const Stack<Value, max_stack_size>& stack)
   {
     block_boundary_flagged_ = false;
     const auto block_info = BlockInfo{code, ip};

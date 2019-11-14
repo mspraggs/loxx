@@ -25,6 +25,7 @@
 
 #include "CodeObject.hpp"
 #include "Object.hpp"
+#include "Stack.hpp"
 #include "Value.hpp"
 
 
@@ -75,11 +76,12 @@ namespace loxx
     }
 
     void count_basic_block(
-        const CodeObject* code, const CodeObject::InsPtr ip);
+        const CodeObject* code, const CodeObject::InsPtr ip,
+        const Stack<Value, max_stack_size>& stack);
 
     template <typename... Ts>
     void profile_instruction(
-        const CodeObject::InsPtr ip, const Value& op0, const Ts&... ops);
+        const CodeObject::InsPtr ip, const Ts&... ops);
 
     void profile_instruction(
         const CodeObject::InsPtr ip,
@@ -116,19 +118,18 @@ namespace loxx
 
   template <typename... Ts>
   void CodeProfiler::profile_instruction(
-      const CodeObject::InsPtr ip, const Value& op0, const Ts&... ops)
+      const CodeObject::InsPtr ip, const Ts&... ops)
   {
     if (not hot_block_) {
       return;
     }
 
-    instruction_data_[ip] = InstructionData(op0, ops...);
+    instruction_data_[ip] = InstructionData(ops...);
   }
 
 
   template <typename... Ts>
-  InstructionData::InstructionData(
-      const Value& value0, const Ts&... values)
+  InstructionData::InstructionData(const Value& value0, const Ts&... values)
       : data_on_stack_(sizeof...(Ts) <= max_stack_values)
   {
     if (data_on_stack_) {
