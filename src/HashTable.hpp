@@ -58,7 +58,7 @@ namespace loxx
     Value& operator[](const Key& key);
     const Value& at(const Key& key) const;
     const Elem& get(const Key& key) const;
-    Elem& insert(const Key& key, const Value& value);
+    Elem& insert(const Key& key, const Value& value = Value());
     void erase(const Key& key);
     std::size_t count(const Key& key) const;
     bool has_item(const Key& key) const;
