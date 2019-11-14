@@ -26,7 +26,7 @@
 #include <vector>
 
 #include "CodeObject.hpp"
-#include "CodeProfiler.hpp"
+#include "jit/CodeProfiler.hpp"
 #include "globals.hpp"
 #include "HashTable.hpp"
 #include "Instruction.hpp"
@@ -43,7 +43,7 @@ namespace loxx
   class VirtualMachine
   {
   public:
-    VirtualMachine(CodeProfiler* profiler, const bool debug);
+    VirtualMachine(jit::CodeProfiler& profiler, const bool debug);
 
     void execute(std::unique_ptr<CodeObject> code_object);
 
@@ -77,7 +77,7 @@ namespace loxx
     Stack<StackFrame, max_call_frames> call_stack_;
     std::list<UpvalueObject*> open_upvalues_;
     StringObject* init_lexeme_;
-    CodeProfiler* profiler_;
+    jit::CodeProfiler* profiler_;
   };
 
 

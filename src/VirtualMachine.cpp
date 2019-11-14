@@ -31,10 +31,10 @@
 
 namespace loxx
 {
-  VirtualMachine::VirtualMachine(CodeProfiler* profiler, const bool debug)
+  VirtualMachine::VirtualMachine(jit::CodeProfiler& profiler, const bool debug)
       : debug_(debug), ip_(0),
         init_lexeme_(make_string("init")),
-        profiler_(profiler)
+        profiler_(&profiler)
   {
     NativeObject::Fn fn =
         [] (const Value*, const unsigned int)

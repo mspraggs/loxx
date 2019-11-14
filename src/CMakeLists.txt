@@ -4,7 +4,6 @@ project(loxx)
 set(SRC
   AstPrinter.hpp
   AsyncWorker.hpp
-  CodeProfiler.hpp
   CodeObject.hpp
   Compiler.hpp
   Expr.hpp
@@ -33,9 +32,9 @@ set(SRC
   detail/HashImpl.hpp
   detail/HashStructIterator.hpp
   detail/VariantImpl.hpp
+  jit/CodeProfiler.hpp
 
   AstPrinter.cpp
-  CodeProfiler.cpp
   Compiler.cpp
   FunctionScope.cpp
   logging.cpp
@@ -47,7 +46,8 @@ set(SRC
   StackFrame.cpp
   StringHashTable.cpp
   Token.cpp
-  VirtualMachine.cpp)
+  VirtualMachine.cpp
+  jit/CodeProfiler.cpp)
 
 add_executable(loxx ${SRC})
 target_link_libraries(loxx pthread)

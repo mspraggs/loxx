@@ -100,9 +100,9 @@ namespace loxx
     }
 #endif
 
-    static CodeProfiler profiler(debug_config.trace_jit, 25);
+    static jit::CodeProfiler profiler(debug_config.trace_jit, 25);
 
-    static VirtualMachine vm(&profiler, debug_config.trace_exec);
+    static VirtualMachine vm(profiler, debug_config.trace_exec);
 
     try {
       vm.execute(compiler.release_output());
