@@ -47,6 +47,7 @@ namespace loxx
     void push(const T& value);
     T pop();
     void discard(const std::size_t num = 1) { top_ -= num; }
+    void clear() { top_ = 0; }
 
     std::size_t size() const { return top_; }
 
