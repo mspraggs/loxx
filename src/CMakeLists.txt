@@ -33,6 +33,7 @@ set(SRC
   detail/HashStructIterator.hpp
   detail/VariantImpl.hpp
   jit/CodeProfiler.hpp
+  jit/SSAInstruction.hpp
 
   AstPrinter.cpp
   Compiler.cpp
@@ -47,7 +48,9 @@ set(SRC
   StringHashTable.cpp
   Token.cpp
   VirtualMachine.cpp
-  jit/CodeProfiler.cpp)
+  jit/CodeProfiler.cpp
+  jit/SSAInstruction.cpp
+)
 
 add_executable(loxx ${SRC})
 target_link_libraries(loxx pthread)
