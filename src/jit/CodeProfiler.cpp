@@ -115,13 +115,6 @@ namespace loxx
     }
 
 
-    std::size_t CodeProfiler::InsPtrHasher::operator() (
-        const CodeObject::InsPtr ptr) const
-    {
-      return ptr_hasher(&(*ptr));
-    }
-
-
     std::size_t CodeProfiler::BlockInfoHasher::operator() (
         const BlockInfo& info) const
     {

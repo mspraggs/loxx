@@ -59,18 +59,13 @@ namespace loxx
     };
 
 
+    using InstructionDataRepo =
+        HashTable<CodeObject::InsPtr, InstructionData, InsPtrHasher>;
+
+
     class CodeProfiler
     {
     public:
-      struct InsPtrHasher
-      {
-        std::size_t operator() (const CodeObject::InsPtr ptr) const;
-        std::hash<const std::uint8_t*> ptr_hasher;
-      };
-
-      using InstructionDataRepo =
-          HashTable<CodeObject::InsPtr, InstructionData, InsPtrHasher>;
-
       CodeProfiler(const bool debug, const std::size_t block_count_threshold)
           : debug_(debug), block_boundary_flagged_(true),
             block_count_threshold_(block_count_threshold), hot_block_(nullptr)

@@ -45,6 +45,16 @@ namespace loxx
     std::vector<std::tuple<std::int8_t, std::uint8_t>> line_num_table;
     HashTable<std::size_t, char> basic_blocks;
   };
+
+
+  struct InsPtrHasher
+  {
+    std::size_t operator() (const CodeObject::InsPtr ptr) const
+    {
+      return ptr_hasher(&(*ptr));
+    }
+    std::hash<const std::uint8_t*> ptr_hasher;
+  };
 }
 
 #endif //LOXX_CODEOBJECT_HPP
