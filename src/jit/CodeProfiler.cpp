@@ -77,6 +77,7 @@ namespace loxx
 
       if (count_elem->second >= block_count_threshold_) {
         hot_block_ = &count_elem->first;
+        ssa_generator_.build_stack(stack);
       }
     }
 

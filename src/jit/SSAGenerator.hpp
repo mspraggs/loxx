@@ -40,6 +40,8 @@ namespace loxx
     class SSAGenerator
     {
     public:
+      explicit SSAGenerator(const bool debug) : debug_(debug) {}
+
       void build_stack(const Stack<Value, max_stack_size>& stack);
 
       std::vector<SSAInstruction> generate(
@@ -48,6 +50,7 @@ namespace loxx
           const InstructionDataRepo& instruction_data);
 
     private:
+      bool debug_;
       Stack<Operand, max_stack_size> op_stack_;
     };
   }

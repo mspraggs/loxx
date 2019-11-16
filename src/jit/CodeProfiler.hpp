@@ -28,6 +28,9 @@
 #include "../Stack.hpp"
 #include "../Value.hpp"
 
+#include "SSAGenerator.hpp"
+#include "SSAInstruction.hpp"
+
 
 namespace loxx
 {
@@ -68,7 +71,8 @@ namespace loxx
     public:
       CodeProfiler(const bool debug, const std::size_t block_count_threshold)
           : debug_(debug), block_boundary_flagged_(true),
-            block_count_threshold_(block_count_threshold), hot_block_(nullptr)
+            block_count_threshold_(block_count_threshold), hot_block_(nullptr),
+            ssa_generator_(debug)
       {
       }
 
@@ -110,6 +114,7 @@ namespace loxx
       HashTable<BlockInfo, std::size_t, BlockInfoHasher, BlockInfoCompare>
           block_counts_;
       InstructionDataRepo instruction_data_;
+      SSAGenerator ssa_generator_;
     };
 
 
