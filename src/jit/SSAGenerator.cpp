@@ -57,14 +57,9 @@ namespace loxx
       auto ip = begin;
       std::vector<SSAInstruction> ssa_instructions;
 
-      HashTable<const Value*, Operand> variable_map;
-
-      std::size_t i = 0;
-
       while (ip != end) {
         const auto& instruction_datum = instruction_data.get(ip);
         const auto& instruction_values = instruction_datum->second;
-
 
         const auto instruction = static_cast<loxx::Instruction>(*ip++);
 
@@ -93,8 +88,6 @@ namespace loxx
         case loxx::Instruction::GET_LOCAL: {
           // ip += sizeof(InstrArgUByte);
           const auto idx = detail::read_integer<InstrArgUByte>(ip);
-          auto& cached_value = variable_map.insert(&instruction_values[0]);
-
           const auto source = op_stack_.get(idx);
           op_stack_.push(Operand(source.value_type()));
           ssa_instructions.emplace_back(
