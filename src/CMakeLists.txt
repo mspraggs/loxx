@@ -33,6 +33,7 @@ set(SRC
   detail/HashStructIterator.hpp
   detail/VariantImpl.hpp
   jit/CodeProfiler.hpp
+  jit/logging.hpp
   jit/SSAGenerator.hpp
   jit/SSAInstruction.hpp
 
@@ -50,6 +51,7 @@ set(SRC
   Token.cpp
   VirtualMachine.cpp
   jit/CodeProfiler.cpp
+  jit/logging.cpp
   jit/SSAGenerator.cpp
   jit/SSAInstruction.cpp
 )

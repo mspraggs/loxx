@@ -23,7 +23,9 @@
 #include <numeric>
 
 #include "../logging.hpp"
+
 #include "CodeProfiler.hpp"
+#include "logging.hpp"
 
 
 namespace loxx

@@ -142,9 +142,6 @@ namespace loxx
 
       return os;
     }
-
-
-    void print_ssa_instruction(const SSAInstruction& instruction);
   }
 }
 

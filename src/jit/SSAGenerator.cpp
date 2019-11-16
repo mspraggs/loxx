@@ -24,6 +24,7 @@
 #include "../utils.hpp"
 
 #include "CodeProfiler.hpp"
+#include "logging.hpp"
 #include "SSAGenerator.hpp"
 
 
