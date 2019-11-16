@@ -113,6 +113,19 @@ namespace loxx
         print_bytecode(*block_info.code, block_info.begin, block_info.end);
       }
   #endif
+
+      const auto ssa_ir = ssa_generator_.generate(
+          block_info.begin, block_info.end,
+          *block_info.code, instruction_data_);
+
+  #ifndef NDEBUG
+      if (debug_) {
+        std::cout << "=== Generated SSA ===\n";
+        for (const auto& instruction : ssa_ir) {
+          print_ssa_instruction(instruction);
+        }
+      }
+  #endif
     }
 
 
