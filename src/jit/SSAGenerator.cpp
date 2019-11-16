@@ -65,7 +65,6 @@ namespace loxx
         const auto& instruction_datum = instruction_data.get(ip);
         const auto& instruction_values = instruction_datum->second;
 
-        print_instruction(code, ip);
 
         const auto instruction = static_cast<loxx::Instruction>(*ip++);
 
@@ -153,12 +152,6 @@ namespace loxx
         default:
           throw std::runtime_error("unsupported instruction");
         }
-
-        for (i; i < ssa_instructions.size(); ++i) {
-          std::cout << " -- ";
-          print_ssa_instruction(ssa_instructions[i]);
-        }
-        std::cout << " -- stack: " << op_stack_ << '\n';
       }
 
       return ssa_instructions;
