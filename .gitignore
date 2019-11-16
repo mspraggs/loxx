@@ -40,3 +40,6 @@
 
 # VSCode directories
 /.vscode
+
+# Scratch files
+/scratch
