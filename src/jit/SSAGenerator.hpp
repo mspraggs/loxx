@@ -21,13 +21,16 @@
 #define LOXX_JIT_SSAGENERATOR_HPP
 
 #include "../CodeObject.hpp"
-#include "../Stack.hpp"
+#include "../Object.hpp"
 
 #include "SSAInstruction.hpp"
 
 
 namespace loxx
 {
+  struct RuntimeContext;
+
+
   namespace jit
   {
     class InstructionData;
@@ -42,7 +45,7 @@ namespace loxx
     public:
       explicit SSAGenerator(const bool debug) : debug_(debug) {}
 
-      void build_stack(const Stack<Value, max_stack_size>& stack);
+      void build_context(const RuntimeContext& context);
 
       std::vector<SSAInstruction> generate(
           const CodeObject::InsPtr begin, const CodeObject::InsPtr end,

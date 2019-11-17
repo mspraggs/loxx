@@ -23,6 +23,7 @@
 #include <numeric>
 
 #include "../logging.hpp"
+#include "../VirtualMachine.hpp"
 
 #include "CodeProfiler.hpp"
 #include "logging.hpp"
@@ -60,11 +61,11 @@ namespace loxx
 
 
     void CodeProfiler::count_basic_block(
-        const CodeObject* code, const CodeObject::InsPtr ip,
-        const Stack<Value, max_stack_size>& stack)
+        const CodeObject::InsPtr ip,
+        const RuntimeContext& context)
     {
       block_boundary_flagged_ = false;
-      const auto block_info = BlockInfo{code, ip};
+      const auto block_info = BlockInfo{&context.code, ip};
       auto& count_elem = block_counts_.insert(block_info, 0);
       count_elem->second += 1;
 
@@ -77,7 +78,7 @@ namespace loxx
 
       if (count_elem->second >= block_count_threshold_) {
         hot_block_ = &count_elem->first;
-        ssa_generator_.build_stack(stack);
+        ssa_generator_.build_context(context);
       }
     }
 

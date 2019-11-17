@@ -22,6 +22,7 @@
 #include "../Instruction.hpp"
 #include "../logging.hpp"
 #include "../utils.hpp"
+#include "../VirtualMachine.hpp"
 
 #include "CodeProfiler.hpp"
 #include "logging.hpp"
@@ -39,12 +40,12 @@ namespace loxx
     }
 
 
-    void SSAGenerator::build_stack(const Stack<Value, max_stack_size>& stack)
+    void SSAGenerator::build_context(const RuntimeContext& context)
     {
       op_stack_.clear();
 
-      for (std::size_t i = 0; i < stack.size(); ++i) {
-        op_stack_.emplace(stack.get(i));
+      for (std::size_t i = 0; i < context.stack.size(); ++i) {
+        op_stack_.emplace(context.stack.get(i));
       }
     }
 

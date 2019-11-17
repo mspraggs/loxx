@@ -34,6 +34,9 @@
 
 namespace loxx
 {
+  struct RuntimeContext;
+
+
   namespace jit
   {
     struct BlockInfo
@@ -77,8 +80,8 @@ namespace loxx
       }
 
       void count_basic_block(
-          const CodeObject* code, const CodeObject::InsPtr ip,
-          const Stack<Value, max_stack_size>& stack);
+          const CodeObject::InsPtr ip,
+          const RuntimeContext& context);
 
       template <typename... Ts>
       void profile_instruction(

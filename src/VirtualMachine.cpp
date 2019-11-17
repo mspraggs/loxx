@@ -78,7 +78,11 @@ namespace loxx
 
       const auto init_ip = ip_;
       if (profiler_->block_boundary_flagged()) {
-        profiler_->count_basic_block(code_object_, init_ip, stack_);
+        profiler_->count_basic_block(
+            init_ip,
+            RuntimeContext{
+              stack_, *code_object_, *call_stack_.top().closure(), globals_
+            });
       }
       const auto instruction = static_cast<Instruction>(*ip_++);
 
