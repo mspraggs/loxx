@@ -118,9 +118,9 @@ namespace loxx
         }
 
         case loxx::Instruction::LOAD_CONSTANT: {
-          ip += sizeof(InstrArgUByte);
-          const auto& constant = instruction_values[0];
-          const auto type = static_cast<ValueType>(constant.index());
+          const auto idx = detail::read_integer<InstrArgUByte>(ip);
+          const auto& constant = constants_[idx];
+          const auto type = static_cast<ValueType>(constant.value_type());
           op_stack_.push(Operand(type));
           ssa_instructions.emplace_back(
               Operator::MOVE, op_stack_.top(), Operand(constant));
@@ -151,8 +151,8 @@ namespace loxx
           break;
 
         case loxx::Instruction::SET_LOCAL: {
-          ip += sizeof(InstrArgUByte);
-          const auto& value = instruction_values[0];
+          const auto idx = detail::read_integer<InstrArgUByte>(ip);
+          const auto& value = op_stack_.get(idx);
           ssa_instructions.emplace_back(
               Operator::MOVE, value, op_stack_.top());
           break;
