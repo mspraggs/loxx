@@ -55,6 +55,9 @@ namespace loxx
     private:
       bool debug_;
       Stack<Operand, max_stack_size> op_stack_;
+      std::vector<Operand> constants_;
+      std::vector<Operand> upvalues_;
+      StringHashTable<Operand> globals_;
     };
   }
 }

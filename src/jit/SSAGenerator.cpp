@@ -43,9 +43,24 @@ namespace loxx
     void SSAGenerator::build_context(const RuntimeContext& context)
     {
       op_stack_.clear();
-
       for (std::size_t i = 0; i < context.stack.size(); ++i) {
         op_stack_.emplace(context.stack.get(i));
+      }
+
+      globals_ = StringHashTable<Operand>();
+      for (const auto& global_elem : context.globals) {
+        globals_[global_elem.first] = Operand(global_elem.second);
+      }
+
+      const auto& constants = context.code.constants;
+      constants_ = std::vector<Operand>(constants.size());
+      for (std::size_t i = 0; i < constants_.size(); ++i) {
+        constants_[i] = Operand(constants[i]);
+      }
+
+      upvalues_ = std::vector<Operand>(context.func.num_upvalues());
+      for (std::size_t i = 0; i < upvalues_.size(); ++i) {
+        upvalues_[i] = Operand(context.func.upvalue(i)->value());
       }
     }
 

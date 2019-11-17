@@ -45,7 +45,7 @@ namespace loxx
     const Stack<Value, max_stack_size>& stack;
     const CodeObject& code;
     const ClosureObject& func;
-    const StringHashTable<Value>& globals;
+    StringHashTable<Value>& globals;
   };
 
 
