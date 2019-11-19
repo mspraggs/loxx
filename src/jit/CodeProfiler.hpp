@@ -61,14 +61,6 @@ namespace loxx
           const CodeObject::InsPtr ip,
           const RuntimeContext& context);
 
-      template <typename... Ts>
-      void profile_instruction(
-          const CodeObject::InsPtr ip, const Ts&... ops);
-
-      void profile_instruction(
-          const CodeObject::InsPtr ip,
-          const Value* start, const std::size_t size);
-
       void flag_block_boundary(const CodeObject::InsPtr ip);
 
       bool is_profiling_instructions() const { return hot_block_; }
@@ -96,16 +88,6 @@ namespace loxx
           block_counts_;
       SSAGenerator ssa_generator_;
     };
-
-
-    template <typename... Ts>
-    void CodeProfiler::profile_instruction(
-        const CodeObject::InsPtr ip, const Ts&... ops)
-    {
-      if (not hot_block_) {
-        return;
-      }
-    }
   }
 }
 

@@ -56,16 +56,6 @@ namespace loxx
     }
 
 
-    void CodeProfiler::profile_instruction(
-        const CodeObject::InsPtr ip,
-        const Value* start, const std::size_t size)
-    {
-      if (not hot_block_) {
-        return;
-      }
-    }
-
-
     void CodeProfiler::flag_block_boundary(const CodeObject::InsPtr ip)
     {
       block_boundary_flagged_ = true;
@@ -87,7 +77,7 @@ namespace loxx
   #endif
 
       const auto ssa_ir = ssa_generator_.generate(
-          block_info.begin, block_info.end, *block_info.code);
+          block_info.begin, block_info.end);
 
   #ifndef NDEBUG
       if (debug_) {
