@@ -33,33 +33,6 @@ namespace loxx
 {
   namespace jit
   {
-    InstructionData::InstructionData(
-        const Value* start, const std::size_t num_values)
-        : data_on_stack_(num_values <= max_stack_values)
-    {
-      if (data_on_stack_) {
-        std::transform(
-            start, start + num_values, types_stack_.begin(),
-            [] (const Value& value) { return &value; });
-      }
-      else {
-        types_heap_.resize(num_values);
-        std::transform(
-            start, start + num_values, types_heap_.begin(),
-            [] (const Value& value) { return &value; });
-      }
-    }
-
-
-    const Value& InstructionData::operator[] (const std::size_t i) const
-    {
-      if (data_on_stack_) {
-        return *types_stack_[i];
-      }
-      return *types_heap_[i];
-    }
-
-
     void CodeProfiler::count_basic_block(
         const CodeObject::InsPtr ip,
         const RuntimeContext& context)
@@ -90,8 +63,6 @@ namespace loxx
       if (not hot_block_) {
         return;
       }
-
-      instruction_data_[ip] = InstructionData(start, size);
     }
 
 

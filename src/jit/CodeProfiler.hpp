@@ -47,28 +47,6 @@ namespace loxx
     };
 
 
-    class InstructionData
-    {
-    public:
-      InstructionData() = default;
-      template <typename... Ts>
-      InstructionData(const Value& value0, const Ts&... values);
-      InstructionData(const Value* start, const std::size_t num_values);
-
-      const Value& operator[] (const std::size_t i) const;
-
-    private:
-      static constexpr std::size_t max_stack_values = 3;
-      bool data_on_stack_;
-      std::array<const Value*, max_stack_values> types_stack_;
-      std::vector<const Value*> types_heap_;
-    };
-
-
-    using InstructionDataRepo =
-        HashTable<CodeObject::InsPtr, InstructionData, InsPtrHasher>;
-
-
     class CodeProfiler
     {
     public:
@@ -116,7 +94,6 @@ namespace loxx
 
       HashTable<BlockInfo, std::size_t, BlockInfoHasher, BlockInfoCompare>
           block_counts_;
-      InstructionDataRepo instruction_data_;
       SSAGenerator ssa_generator_;
     };
 
@@ -127,21 +104,6 @@ namespace loxx
     {
       if (not hot_block_) {
         return;
-      }
-
-      instruction_data_[ip] = InstructionData(ops...);
-    }
-
-
-    template <typename... Ts>
-    InstructionData::InstructionData(const Value& value0, const Ts&... values)
-        : data_on_stack_(sizeof...(Ts) <= max_stack_values)
-    {
-      if (data_on_stack_) {
-        types_stack_ = { &value0, (&values)... };
-      }
-      else {
-        types_heap_ = { &value0, (&values)... };
       }
     }
   }
