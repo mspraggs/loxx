@@ -116,8 +116,7 @@ namespace loxx
   #endif
 
       const auto ssa_ir = ssa_generator_.generate(
-          block_info.begin, block_info.end,
-          *block_info.code, instruction_data_);
+          block_info.begin, block_info.end, *block_info.code);
 
   #ifndef NDEBUG
       if (debug_) {

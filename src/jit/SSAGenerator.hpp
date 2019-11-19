@@ -49,8 +49,7 @@ namespace loxx
 
       std::vector<SSAInstruction> generate(
           const CodeObject::InsPtr begin, const CodeObject::InsPtr end,
-          const CodeObject& code,
-          const InstructionDataRepo& instruction_data);
+          const CodeObject& code);
 
     private:
       bool debug_;

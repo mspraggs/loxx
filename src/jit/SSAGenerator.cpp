@@ -67,21 +67,13 @@ namespace loxx
 
     std::vector<SSAInstruction> SSAGenerator::generate(
         const CodeObject::InsPtr begin, const CodeObject::InsPtr end,
-        const CodeObject& code,
-        const InstructionDataRepo& instruction_data)
+        const CodeObject& code)
     {
       auto ip = begin;
       std::vector<SSAInstruction> ssa_instructions;
 
       while (ip != end) {
-        const auto& instruction_datum = instruction_data.get(ip);
-        const auto& instruction_values = instruction_datum->second;
-
         const auto instruction = static_cast<loxx::Instruction>(*ip++);
-
-        if (not instruction_datum) {
-          throw std::runtime_error("missing instruction data");
-        }
 
         switch (instruction) {
 
