@@ -76,10 +76,9 @@ namespace loxx
       }
 #endif
 
-      const auto init_ip = ip_;
       if (profiler_->block_boundary_flagged()) {
         profiler_->count_basic_block(
-            init_ip,
+            ip_,
             RuntimeContext{
               stack_, *code_object_, *call_stack_.top().closure(), globals_
             });
@@ -109,8 +108,6 @@ namespace loxx
           throw make_runtime_error(
               "Binary operands must be two numbers or two strings.");
         }
-
-        profiler_->profile_instruction(init_ip, stack_.top(), first, second);
         break;
       }
 
@@ -209,7 +206,6 @@ namespace loxx
       case Instruction::GET_LOCAL: {
         const auto arg = read_integer<InstrArgUByte>();
         const auto& value = call_stack_.top().slot(arg);
-        profiler_->profile_instruction(init_ip, value);
         stack_.push(value);
         break;
       }
@@ -317,17 +313,12 @@ namespace loxx
         break;
       }
 
-      case Instruction::LOAD_CONSTANT: {
-        const auto& constant =
-            code_object_->constants[read_integer<InstrArgUByte>()];
-        stack_.push(constant);
-        profiler_->profile_instruction(init_ip, constant);
+      case Instruction::LOAD_CONSTANT:
+        stack_.push(read_constant());
         break;
-      }
 
       case Instruction::LOOP: {
         const auto jmp = read_integer<InstrArgUShort>();
-        profiler_->profile_instruction(init_ip);
         profiler_->flag_block_boundary(ip_);
         ip_ -= jmp;
         break;
@@ -338,7 +329,6 @@ namespace loxx
         const auto first = stack_.pop();
         check_number_operands(first, second);
         stack_.emplace(unsafe_get<double>(first) * unsafe_get<double>(second));
-        profiler_->profile_instruction(init_ip, stack_.top(), first, second);
         break;
       }
 
@@ -361,7 +351,6 @@ namespace loxx
 
       case Instruction::POP:
         stack_.pop();
-        profiler_->profile_instruction(init_ip);
         break;
 
       case Instruction::PRINT:
@@ -405,7 +394,6 @@ namespace loxx
       case Instruction::SET_LOCAL: {
         const auto arg = read_integer<InstrArgUByte>();
         call_stack_.top().slot(arg) = stack_.top();
-        profiler_->profile_instruction(init_ip, call_stack_.top().slot(arg));
         break;
       }
 
