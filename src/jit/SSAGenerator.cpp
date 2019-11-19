@@ -66,8 +66,7 @@ namespace loxx
 
 
     std::vector<SSAInstruction> SSAGenerator::generate(
-        const CodeObject::InsPtr begin, const CodeObject::InsPtr end,
-        const CodeObject& code)
+        const CodeObject::InsPtr begin, const CodeObject::InsPtr end)
     {
       auto ip = begin;
       std::vector<SSAInstruction> ssa_instructions;

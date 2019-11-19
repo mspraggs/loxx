@@ -48,8 +48,7 @@ namespace loxx
       void build_context(const RuntimeContext& context);
 
       std::vector<SSAInstruction> generate(
-          const CodeObject::InsPtr begin, const CodeObject::InsPtr end,
-          const CodeObject& code);
+          const CodeObject::InsPtr begin, const CodeObject::InsPtr end);
 
     private:
       bool debug_;
