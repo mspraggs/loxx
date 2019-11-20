@@ -120,24 +120,26 @@ namespace loxx
     template <typename Os>
     Os& operator<<(Os& os, const Operand& operand)
     {
-      if (operand.is_register()) {
+      const auto value_type_char = [&] {
         switch (operand.value_type()) {
         case ValueType::FLOAT:
-          os << 'f';
-          break;
+          return 'f';
         case ValueType::BOOLEAN:
-          os << 'b';
-          break;
+          return 'b';
         case ValueType::OBJECT:
-          os << 'p';
-          break;
+          return 'p';
         default:
-          os << '?';
+          return '?';
         }
         os << operand.reg_index();
+      } ();
+
+      if (operand.is_register()) {
+        os << value_type_char << operand.reg_index();
       }
       else if (operand.is_memory()) {
-        os << '[' << operand.memory_address() << ']';
+        os << "[ " << value_type_char << '@' << operand.memory_address()
+           << " ]";
       }
 
       return os;
