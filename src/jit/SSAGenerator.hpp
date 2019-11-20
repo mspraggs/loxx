@@ -51,6 +51,8 @@ namespace loxx
           const CodeObject::InsPtr begin, const CodeObject::InsPtr end);
 
     private:
+      Operand make_target_operand(const std::size_t stack_idx) const;
+
       bool debug_;
       Stack<Operand, max_stack_size> op_stack_;
       std::vector<Operand> constants_;

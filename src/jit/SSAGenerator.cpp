@@ -143,14 +143,7 @@ namespace loxx
 
         case loxx::Instruction::SET_LOCAL: {
           const auto idx = detail::read_integer<InstrArgUByte>(ip);
-
-          const auto value = [&] {
-            const auto& stack_top = op_stack_.get(idx);
-            if (stack_top.is_memory()) {
-              return stack_top;
-            }
-            return Operand(stack_top.value_type());
-          } ();
+          const auto value = make_target_operand(idx);
 
           ssa_instructions.emplace_back(
               Operator::MOVE, value, op_stack_.top());
@@ -163,6 +156,16 @@ namespace loxx
       }
 
       return ssa_instructions;
+    }
+
+
+    Operand SSAGenerator::make_target_operand(const std::size_t stack_idx) const
+    {
+      const auto& stack_top = op_stack_.get(stack_idx);
+      if (stack_top.is_memory()) {
+        return stack_top;
+      }
+      return Operand(stack_top.value_type());
     }
 
 
