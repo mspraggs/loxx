@@ -144,6 +144,7 @@ namespace loxx
         case loxx::Instruction::SET_LOCAL: {
           const auto idx = detail::read_integer<InstrArgUByte>(ip);
           const auto value = make_target_operand(idx);
+          op_stack_.get(idx) = value;
 
           ssa_instructions.emplace_back(
               Operator::MOVE, value, op_stack_.top());
