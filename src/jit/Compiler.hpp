@@ -42,7 +42,9 @@ namespace loxx
         : public AsyncWorker<std::function<void()>, 4096>
     {
     public:
-      explicit Compiler(const bool debug) : ssa_generator_(debug) {}
+      explicit Compiler(const bool debug)
+          : debug_(debug), ssa_generator_(debug)
+      {}
 
       void compile(
           const CodeObject::InsPtr begin, const CodeObject::InsPtr end);
@@ -52,6 +54,8 @@ namespace loxx
       const std::vector<SSAInstruction>& ssa_ir() const { return ssa_ir_; }
 
     private:
+      bool debug_;
+
       std::vector<SSAInstruction> ssa_ir_;
 
       SSAGenerator ssa_generator_;

@@ -78,15 +78,6 @@ namespace loxx
 
       compiler_->compile(
           block_info.begin, block_info.end);
-
-  #ifndef NDEBUG
-      if (debug_) {
-        std::cout << "=== Generated SSA ===\n";
-        for (const auto& instruction : compiler_->ssa_ir()) {
-          print_ssa_instruction(instruction);
-        }
-      }
-  #endif
     }
 
 

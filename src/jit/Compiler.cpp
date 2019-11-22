@@ -50,6 +50,15 @@ namespace loxx
         const CodeObject::InsPtr begin, const CodeObject::InsPtr end)
     {
       ssa_ir_ = ssa_generator_.generate(begin, end);
+
+  #ifndef NDEBUG
+      if (debug_) {
+        std::cout << "=== Generated SSA ===\n";
+        for (const auto& instruction : ssa_ir_) {
+          print_ssa_instruction(instruction);
+        }
+      }
+  #endif
     }
   }
 }
