@@ -11,6 +11,8 @@
 #include "Compiler.hpp"
 #include "VirtualMachine.hpp"
 
+#include "jit/Compiler.hpp"
+
 
 namespace loxx
 {
@@ -100,7 +102,9 @@ namespace loxx
     }
 #endif
 
-    static jit::CodeProfiler profiler(debug_config.trace_jit, 25);
+    static jit::Compiler jit_compiler(debug_config.trace_jit);
+
+    static jit::CodeProfiler profiler(jit_compiler, debug_config.trace_jit, 25);
 
     static VirtualMachine vm(profiler, debug_config.trace_exec);
 

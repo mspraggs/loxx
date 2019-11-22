@@ -28,8 +28,7 @@
 #include "../Stack.hpp"
 #include "../Value.hpp"
 
-#include "SSAGenerator.hpp"
-#include "SSAInstruction.hpp"
+#include "Compiler.hpp"
 
 
 namespace loxx
@@ -50,10 +49,12 @@ namespace loxx
     class CodeProfiler
     {
     public:
-      CodeProfiler(const bool debug, const std::size_t block_count_threshold)
+      CodeProfiler(
+          Compiler& compiler, const bool debug,
+          const std::size_t block_count_threshold)
           : debug_(debug), block_boundary_flagged_(true),
             block_count_threshold_(block_count_threshold), hot_block_(nullptr),
-            ssa_generator_(debug)
+            compiler_(&compiler)
       {
       }
 
@@ -86,7 +87,7 @@ namespace loxx
 
       HashTable<BlockInfo, std::size_t, BlockInfoHasher, BlockInfoCompare>
           block_counts_;
-      SSAGenerator ssa_generator_;
+      Compiler* compiler_;
     };
   }
 }

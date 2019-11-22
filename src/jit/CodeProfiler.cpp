@@ -51,7 +51,7 @@ namespace loxx
 
       if (count_elem->second >= block_count_threshold_) {
         hot_block_ = &count_elem->first;
-        ssa_generator_.build_context(context);
+        compiler_->build_context(context);
       }
     }
 
@@ -76,13 +76,13 @@ namespace loxx
       }
   #endif
 
-      const auto ssa_ir = ssa_generator_.generate(
+      compiler_->compile(
           block_info.begin, block_info.end);
 
   #ifndef NDEBUG
       if (debug_) {
         std::cout << "=== Generated SSA ===\n";
-        for (const auto& instruction : ssa_ir) {
+        for (const auto& instruction : compiler_->ssa_ir()) {
           print_ssa_instruction(instruction);
         }
       }
