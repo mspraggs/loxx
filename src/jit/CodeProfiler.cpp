@@ -76,8 +76,7 @@ namespace loxx
       }
   #endif
 
-      compiler_->compile(
-          block_info.begin, block_info.end);
+      compiler_->compile(block_info.begin, block_info.end);
     }
 
 

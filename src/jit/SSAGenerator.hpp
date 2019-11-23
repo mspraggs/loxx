@@ -22,6 +22,7 @@
 
 #include "../CodeObject.hpp"
 #include "../Object.hpp"
+#include "../Stack.hpp"
 
 #include "SSAInstruction.hpp"
 
@@ -33,13 +34,6 @@ namespace loxx
 
   namespace jit
   {
-    class InstructionData;
-
-
-    using InstructionDataRepo =
-        HashTable<CodeObject::InsPtr, InstructionData, InsPtrHasher>;
-
-
     class SSAGenerator
     {
     public:
