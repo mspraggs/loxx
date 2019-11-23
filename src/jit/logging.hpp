@@ -27,7 +27,7 @@ namespace loxx
 {
   namespace jit
   {
-    void print_ssa_instruction(const SSAInstruction& instruction);
+    void print_ssa_instruction(const SSAInstruction<2>& instruction);
   }
 }
 

@@ -40,12 +40,5 @@ namespace loxx
         : type_(static_cast<ValueType>(value.index())), target_(&value)
     {
     }
-
-
-    SSAInstruction::SSAInstruction(
-        const Operator op, const Operand operand0, const Operand operand1)
-        : op_(op), operand0_(operand0), operand1_(operand1)
-    {
-    }
   }
 }

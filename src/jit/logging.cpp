@@ -27,19 +27,20 @@ namespace loxx
 {
   namespace jit
   {
-    void print_ssa_instruction(const SSAInstruction& instruction)
+    void print_ssa_instruction(const SSAInstruction<2>& instruction)
     {
       std::cout << std::setw(20) << std::setfill(' ') << instruction.op();
 
-      const auto& operand0 = instruction.operand0();
-      const auto& operand1 = instruction.operand1();
+      const auto& operands = instruction.operands();
 
-      if (operand0.is_used()) {
-        std::cout << operand0;
-      }
-
-      if (operand1.is_used()) {
-        std::cout << ", " << operand1;
+      for (std::size_t i = 0; i < operands.size(); ++i) {
+        if (i != 0) {
+          std::cout << ", ";
+        }
+        if (not operands[i].is_used()) {
+          break;
+        }
+        std::cout << operands[i];
       }
 
       std::cout << '\n';

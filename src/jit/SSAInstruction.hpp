@@ -20,6 +20,8 @@
 #ifndef LOXX_JIT_SSAINSTRUCTION_HPP
 #define LOXX_JIT_SSAINSTRUCTION_HPP
 
+#include <array>
+
 #include "../Value.hpp"
 #include "../Variant.hpp"
 
@@ -70,23 +72,29 @@ namespace loxx
     };
 
 
+    template <std::size_t N>
     class SSAInstruction
     {
     public:
-      explicit SSAInstruction(
-          const Operator op,
-          const Operand operand0 = Operand(),
-          const Operand operand1 = Operand());
+      template <typename... Args>
+      explicit SSAInstruction(const Operator op, const Args&... operands);
 
       Operator op() const { return op_; }
-      const Operand& operand0() const { return operand0_; }
-      const Operand& operand1() const { return operand1_; }
+      const std::array<Operand, N>& operands() const { return operands_; }
 
     private:
       Operator op_;
-      Operand operand0_;
-      Operand operand1_;
+      std::array<Operand, N> operands_;
     };
+
+
+    template <std::size_t N>
+    template <typename... Args>
+    SSAInstruction<N>::SSAInstruction(
+        const Operator op, const Args&... operands)
+        : op_(op), operands_{operands...}
+    {
+    }
 
 
     template <typename Os>

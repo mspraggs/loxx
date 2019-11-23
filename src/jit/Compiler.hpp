@@ -51,12 +51,12 @@ namespace loxx
 
       void build_context(const RuntimeContext& context);
 
-      const std::vector<SSAInstruction>& ssa_ir() const { return ssa_ir_; }
+      const std::vector<SSAInstruction<2>>& ssa_ir() const { return ssa_ir_; }
 
     private:
       bool debug_;
 
-      std::vector<SSAInstruction> ssa_ir_;
+      std::vector<SSAInstruction<2>> ssa_ir_;
 
       SSAGenerator ssa_generator_;
     };
