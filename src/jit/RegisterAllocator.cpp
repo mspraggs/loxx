@@ -85,7 +85,7 @@ namespace loxx
 
           if (operand.is_register()) {
             auto& range = live_ranges.insert(operand, Range{i, i});
-            range->second.second = i;
+            range.second.second = i;
           }
         }
       }

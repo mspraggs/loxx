@@ -40,17 +40,17 @@ namespace loxx
       block_boundary_flagged_ = false;
       const auto block_info = BlockInfo{&context.code, ip};
       auto& count_elem = block_counts_.insert(block_info, 0);
-      count_elem->second += 1;
+      count_elem.second += 1;
 
   #ifndef NDEBUG
       if (debug_) {
         std::cout << "Block hit count @ " << static_cast<const void*>(&(*ip))
-                  << " = " << count_elem->second << '\n';
+                  << " = " << count_elem.second << '\n';
       }
   #endif
 
-      if (count_elem->second >= block_count_threshold_) {
-        hot_block_ = &count_elem->first;
+      if (count_elem.second >= block_count_threshold_) {
+        hot_block_ = &count_elem.first;
         compiler_->build_context(context);
       }
     }
