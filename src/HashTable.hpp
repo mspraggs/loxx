@@ -48,6 +48,7 @@ namespace loxx
     using Item = std::pair<Key, Value>;
     using Elem = Optional<Item>;
     using Iter = detail::HashStructIterator<Item, Hash, Compare>;
+    using ConstIter = detail::HashStructIterator<const Item, Hash, Compare>;
 
     explicit HashTable()
         : num_used_slots_(0), max_used_slots_(detail::default_max_used_slots),
@@ -67,6 +68,8 @@ namespace loxx
 
     auto begin() -> Iter;
     auto end() -> Iter;
+    auto begin() const -> ConstIter;
+    auto end() const -> ConstIter;
 
   private:
     struct KeyExtractor
@@ -180,6 +183,22 @@ namespace loxx
   auto HashTable<Key, Value, Hash, Compare>::end() -> HashTable::Iter
   {
     return Iter(data_.end(), data_.end());
+  }
+
+
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  auto HashTable<Key, Value, Hash, Compare>::begin() const
+      -> HashTable::ConstIter
+  {
+    return ConstIter(data_.cbegin(), data_.cend());
+  }
+
+
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  auto HashTable<Key, Value, Hash, Compare>::end() const
+      -> HashTable::ConstIter
+  {
+    return ConstIter(data_.cend(), data_.cend());
   }
 }
 
