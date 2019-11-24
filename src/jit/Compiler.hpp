@@ -27,6 +27,7 @@
 #include "../AsyncWorker.hpp"
 #include "../CodeObject.hpp"
 
+#include "RegisterAllocator.hpp"
 #include "SSAGenerator.hpp"
 #include "SSAInstruction.hpp"
 
@@ -43,7 +44,7 @@ namespace loxx
     {
     public:
       explicit Compiler(const bool debug)
-          : debug_(debug), ssa_generator_(debug)
+          : debug_(debug), ssa_generator_(debug), reg_alloc_(debug)
       {}
 
       void compile(
@@ -59,6 +60,7 @@ namespace loxx
       std::vector<SSAInstruction<2>> ssa_ir_;
 
       SSAGenerator ssa_generator_;
+      RegisterAllocator reg_alloc_;
     };
   }
 }

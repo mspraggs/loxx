@@ -27,6 +27,7 @@
 #include "CodeProfiler.hpp"
 #include "Compiler.hpp"
 #include "logging.hpp"
+#include "RegisterAllocator.hpp"
 
 
 namespace loxx
@@ -57,6 +58,8 @@ namespace loxx
         print_ssa_instructions(ssa_ir_);
       }
   #endif
+
+      reg_alloc_.allocate(ssa_ir_);
     }
   }
 }
