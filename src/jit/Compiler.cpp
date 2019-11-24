@@ -25,8 +25,8 @@
 #include "../VirtualMachine.hpp"
 
 #include "CodeProfiler.hpp"
-#include "logging.hpp"
 #include "Compiler.hpp"
+#include "logging.hpp"
 
 
 namespace loxx
@@ -54,9 +54,7 @@ namespace loxx
   #ifndef NDEBUG
       if (debug_) {
         std::cout << "=== Generated SSA ===\n";
-        for (const auto& instruction : ssa_ir_) {
-          print_ssa_instruction(instruction);
-        }
+        print_ssa_instructions(ssa_ir_);
       }
   #endif
     }

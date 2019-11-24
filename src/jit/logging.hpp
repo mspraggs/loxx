@@ -28,6 +28,9 @@ namespace loxx
   namespace jit
   {
     void print_ssa_instruction(const SSAInstruction<2>& instruction);
+
+    void print_ssa_instructions(
+        const std::vector<SSAInstruction<2>>& instructions);
   }
 }
 

@@ -45,5 +45,16 @@ namespace loxx
 
       std::cout << '\n';
     }
+
+
+    void print_ssa_instructions(
+        const std::vector<SSAInstruction<2>>& instructions)
+    {
+        for (std::size_t i = 0; i < instructions.size(); ++i) {
+          std::cout << std::setw(4) << std::setfill('0') << std::right
+                    << i << ' ' << std::left;
+          print_ssa_instruction(instructions[i]);
+        }
+    }
   }
 }
