@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <iostream>
 
+#include "logging.hpp"
 #include "SSAInstruction.hpp"
 
 namespace loxx
@@ -55,6 +56,29 @@ namespace loxx
                     << i << ' ' << std::left;
           print_ssa_instruction(instructions[i]);
         }
+    }
+
+
+    void print_live_ranges(const OperandRangeMap& live_ranges)
+    {
+      for (const auto& live_range : live_ranges) {
+        const auto begin = live_range.second.first;
+        const auto end = live_range.second.second;
+
+        std::cout << live_range.first << "  ";
+        for (std::size_t i = 0; i < end + 1; ++i) {
+          if (i < live_range.second.first) {
+            std::cout << ' ';
+          }
+          else if (i == end) {
+            std::cout << (begin < end ? '>' : 'v');
+          }
+          else {
+            std::cout << '-';
+          }
+        }
+        std::cout << '\n';
+      }
     }
   }
 }

@@ -20,6 +20,7 @@
 #ifndef LOXX_JIT_LOGGING_HPP
 #define LOXX_JIT_LOGGING_HPP
 
+#include "RegisterAllocator.hpp"
 #include "SSAInstruction.hpp"
 
 
@@ -31,6 +32,8 @@ namespace loxx
 
     void print_ssa_instructions(
         const std::vector<SSAInstruction<2>>& instructions);
+
+    void print_live_ranges(const OperandRangeMap& live_ranges);
   }
 }
 
