@@ -20,6 +20,7 @@
 #ifndef LOXX_HASHSTRUCTITERATOR_HPP
 #define LOXX_HASHSTRUCTITERATOR_HPP
 
+#include <type_traits>
 #include <vector>
 
 #include "../Optional.hpp"
@@ -32,8 +33,21 @@ namespace loxx
     template<typename Item, typename Hash, typename Compare>
     class HashStructIterator
     {
-      using Elem = Optional<Item>;
-      using Iter = typename std::vector<Elem>::iterator;
+      constexpr static bool is_const = std::is_const<Item>::value;
+      using BareItem = typename std::remove_const<Item>::type;
+      using BareElem = Optional<BareItem>;
+      using Elem =
+          typename std::conditional<
+            is_const,
+            const BareElem,
+            BareElem
+          >::type;
+      using Iter =
+          typename std::conditional<
+            is_const,
+            typename std::vector<BareElem>::const_iterator,
+            typename std::vector<BareElem>::iterator
+          >::type;
 
     public:
       using difference_type   = std::ptrdiff_t;
@@ -63,8 +77,10 @@ namespace loxx
           const HashStructIterator<Item, Hash, Compare>& other) const;
 
       auto operator*() -> reference;
+      auto operator*() const -> const reference;
 
       auto operator->() -> pointer;
+      auto operator->() const -> const pointer;
 
     private:
       Item back_;
@@ -127,7 +143,31 @@ namespace loxx
 
 
     template <typename Item, typename Hash, typename Compare>
+    auto HashStructIterator<Item, Hash, Compare>::operator*() const
+        -> const reference
+    {
+      if (it_ == finish_) {
+        return back_;
+      }
+
+      return *(*it_);
+    }
+
+
+    template <typename Item, typename Hash, typename Compare>
     auto HashStructIterator<Item, Hash, Compare>::operator->() -> pointer
+    {
+      if (it_ == finish_) {
+        return &back_;
+      }
+
+      return &(*(*it_));
+    }
+
+
+    template <typename Item, typename Hash, typename Compare>
+    auto HashStructIterator<Item, Hash, Compare>::operator->() const
+        -> const pointer
     {
       if (it_ == finish_) {
         return &back_;
