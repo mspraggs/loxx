@@ -69,11 +69,15 @@ namespace loxx
     }
 
 
-    OperandRangeMap compute_live_ranges(
+    std::vector<std::pair<Operand, Range>> compute_live_ranges(
         const std::vector<SSAInstruction<2>>& ssa_ir)
     {
-      using Range = std::pair<std::size_t, std::size_t>;
-      OperandRangeMap live_ranges;
+      using OperandSizeMap =
+          HashTable<Operand, std::size_t, OperandHasher, OperandCompare>;
+
+      OperandSizeMap operand_start_map;
+      std::vector<std::pair<Operand, Range>> live_ranges;
+      live_ranges.reserve(ssa_ir.size() * 2);
 
       for (std::size_t i = 0; i < ssa_ir.size(); ++i) {
         const auto& instruction = ssa_ir[i];
@@ -83,10 +87,19 @@ namespace loxx
             break;
           }
 
-          if (operand.is_register()) {
-            auto range = live_ranges.insert(operand, Range{i, i});
-            range.first->second.second = i;
+          if (not operand.is_register()) {
+            continue;
           }
+
+          auto operand_start =
+              operand_start_map.insert(operand, live_ranges.size());
+
+          if (operand_start.second) {
+            live_ranges.push_back({operand, Range{i, i}});
+          }
+
+          auto& live_range = live_ranges[operand_start.first->second];
+          live_range.second.second = i;
         }
       }
 

@@ -59,7 +59,8 @@ namespace loxx
     }
 
 
-    void print_live_ranges(const OperandRangeMap& live_ranges)
+    void print_live_ranges(
+        const std::vector<std::pair<Operand, Range>>& live_ranges)
     {
       for (const auto& live_range : live_ranges) {
         const auto begin = live_range.second.first;

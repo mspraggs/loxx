@@ -50,7 +50,7 @@ namespace loxx
         HashTable<Operand, Range, OperandHasher, OperandCompare>;
 
 
-    OperandRangeMap compute_live_ranges(
+    std::vector<std::pair<Operand, Range>> compute_live_ranges(
         const std::vector<SSAInstruction<2>>& ssa_ir);
 
 
