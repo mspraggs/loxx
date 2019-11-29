@@ -17,9 +17,11 @@
  * Created by Matt Spraggs on 15/11/2019.
  */
 
+#include <algorithm>
 #include <cassert>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "logging.hpp"
 #include "SSAInstruction.hpp"
@@ -62,11 +64,36 @@ namespace loxx
     void print_live_ranges(
         const std::vector<std::pair<Operand, Range>>& live_ranges)
     {
+      using OperandRangePair = std::pair<Operand, Range>;
+
+      const auto range_max_elem = std::max_element(
+          live_ranges.begin(), live_ranges.end(),
+          [] (const OperandRangePair& first, const OperandRangePair& second) {
+            return first.second.second < second.second.second;
+          }
+      );
+      const auto range_max = range_max_elem->second.second;
+
+      std::cout << "      ";
+      for (std::size_t i = 0; i < range_max + 1; ++i) {
+        std::cout << i / 10;
+      }
+      std::cout << '\n';
+
+      std::cout << "      ";
+      for (std::size_t i = 0; i < range_max + 1; ++i) {
+        std::cout << i % 10;
+      }
+      std::cout << '\n';
+
       for (const auto& live_range : live_ranges) {
         const auto begin = live_range.second.first;
         const auto end = live_range.second.second;
 
-        std::cout << live_range.first << "  ";
+        std::stringstream ss;
+        ss << live_range.first;
+
+        std::cout << std::left << std::setw(6) << ss.str();
         for (std::size_t i = 0; i < end + 1; ++i) {
           if (i < live_range.second.first) {
             std::cout << ' ';
