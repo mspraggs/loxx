@@ -36,38 +36,20 @@ namespace loxx
           const std::size_t first, const std::size_t second);
     }
 
-    std::size_t OperandHasher::operator() (const Operand& value) const
+
+    struct OperandHasher
     {
-      const auto op_type = static_cast<std::size_t>(value.op_type());
-      const auto value_type = static_cast<std::size_t>(value.value_type());
-      const auto content_hash = [&] {
-        if (value.is_memory()) {
-          return pointer_hasher(value.memory_address());
-        }
-        return value.reg_index();
-      } ();
+      std::size_t operator() (const Operand& operand) const;
 
-      return detail::combine_hashes(
-          detail::combine_hashes(op_type, value_type), content_hash);
-    }
+      std::hash<const Value*> pointer_hasher;
+    };
 
 
-    bool OperandCompare::operator() (
-        const Operand& first, const Operand& second) const
+    struct OperandCompare
     {
-      if (first.op_type() != second.op_type() or
-          first.value_type() != second.value_type()) {
-        return false;
-      }
-      if (first.is_memory()) {
-        return first.memory_address() == second.memory_address();
-      }
-      if (first.is_register()) {
-        return first.reg_index() == second.reg_index();
-      }
-      return true;
-    }
-
+      bool operator() (
+          const Operand& first, const Operand& second) const;
+    };
 
     std::vector<std::pair<Operand, Range>> compute_live_ranges(
         const std::vector<SSAInstruction<2>>& ssa_ir)
@@ -118,6 +100,38 @@ namespace loxx
         print_live_ranges(live_ranges);
       }
 #endif
+
+
+    std::size_t OperandHasher::operator() (const Operand& value) const
+    {
+      const auto op_type = static_cast<std::size_t>(value.op_type());
+      const auto value_type = static_cast<std::size_t>(value.value_type());
+      const auto content_hash = [&] {
+        if (value.is_memory()) {
+          return pointer_hasher(value.memory_address());
+        }
+        return value.reg_index();
+      } ();
+
+      return detail::combine_hashes(
+          detail::combine_hashes(op_type, value_type), content_hash);
+    }
+
+
+    bool OperandCompare::operator() (
+        const Operand& first, const Operand& second) const
+    {
+      if (first.op_type() != second.op_type() or
+          first.value_type() != second.value_type()) {
+        return false;
+      }
+      if (first.is_memory()) {
+        return first.memory_address() == second.memory_address();
+      }
+      if (first.is_register()) {
+        return first.reg_index() == second.reg_index();
+      }
+      return true;
     }
 
 

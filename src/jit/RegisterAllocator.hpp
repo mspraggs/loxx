@@ -30,24 +30,7 @@ namespace loxx
 {
   namespace jit
   {
-    struct OperandHasher
-    {
-      std::size_t operator() (const Operand& operand) const;
-
-      std::hash<const Value*> pointer_hasher;
-    };
-
-
-    struct OperandCompare
-    {
-      bool operator() (
-          const Operand& first, const Operand& second) const;
-    };
-
-
     using Range = std::pair<std::size_t, std::size_t>;
-    using OperandRangeMap =
-        HashTable<Operand, Range, OperandHasher, OperandCompare>;
 
 
     std::vector<std::pair<Operand, Range>> compute_live_ranges(
