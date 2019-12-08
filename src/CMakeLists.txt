@@ -58,6 +58,7 @@ set(SRC
   jit/Compiler.cpp
   jit/logging.cpp
   jit/RegisterAllocator.cpp
+  jit/RegisterX86.cpp
   jit/SSAGenerator.cpp
   jit/SSAInstruction.cpp
 )
