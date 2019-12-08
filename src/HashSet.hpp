@@ -56,6 +56,7 @@ namespace loxx
     const Elem& get(const Key& key) const;
     const Elem& find(const Key& key) const;
     void erase(const Key& key);
+    Iter erase(const Iter pos);
     std::size_t count(const Key& key) const;
     bool has_item(const Key& key) const;
 
@@ -128,6 +129,27 @@ namespace loxx
           obj.insert(*new_elem);
         };
     this->remove(*this, key, add_func);
+  }
+
+
+  template <typename Key, typename Hash, typename Compare>
+  auto HashSet<Key, Hash, Compare>::erase(const Iter pos) -> Iter
+  {
+    auto index = std::distance(data_.begin(), pos.underlying());
+    data_[index].reset();
+    const auto init_index = index;
+    --num_used_slots_;
+
+    for (;;) {
+      index = (index + 1) % mask_;
+
+      if (not data_[index]) {
+        return Iter(data_.begin() + init_index, data_.end());
+      }
+
+      const auto datum = std::move(data_[index]);
+      insert(*datum);
+    }
   }
 
 

@@ -82,6 +82,8 @@ namespace loxx
       auto operator->() -> pointer;
       auto operator->() const -> const pointer;
 
+      Iter underlying() const { return it_; }
+
     private:
       Iter it_, finish_;
     };
