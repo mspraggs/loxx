@@ -25,6 +25,7 @@
 #include "../VirtualMachine.hpp"
 
 #include "CodeProfiler.hpp"
+#include "JITError.hpp"
 #include "logging.hpp"
 #include "SSAGenerator.hpp"
 
@@ -82,7 +83,7 @@ namespace loxx
 
           if (first.value_type() != ValueType::FLOAT
               or second.value_type() != ValueType::FLOAT) {
-            throw std::runtime_error("unsupported operand types");
+            throw JITError("unsupported operand types");
           }
 
           op_stack_.emplace(ValueType::FLOAT);
@@ -124,7 +125,7 @@ namespace loxx
 
           if (first.value_type() != ValueType::FLOAT
               or second.value_type() != ValueType::FLOAT) {
-            throw std::runtime_error("unsupported operand types");
+            throw JITError("unsupported operand types");
           }
 
           op_stack_.emplace(ValueType::FLOAT);
@@ -152,7 +153,7 @@ namespace loxx
         }
 
         default:
-          throw std::runtime_error("unsupported instruction");
+          throw JITError("unsupported instruction");
         }
       }
 

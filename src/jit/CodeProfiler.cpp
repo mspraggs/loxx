@@ -26,6 +26,7 @@
 #include "../VirtualMachine.hpp"
 
 #include "CodeProfiler.hpp"
+#include "JITError.hpp"
 #include "logging.hpp"
 
 
@@ -76,7 +77,10 @@ namespace loxx
       }
   #endif
 
-      compiler_->compile(block_info.begin, block_info.end);
+      try {
+        compiler_->compile(block_info.begin, block_info.end);
+      }
+      catch (const JITError& err) {}
     }
 
 

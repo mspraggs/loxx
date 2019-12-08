@@ -34,6 +34,7 @@ set(SRC
   detail/VariantImpl.hpp
   jit/CodeProfiler.hpp
   jit/Compiler.hpp
+  jit/JITError.hpp
   jit/logging.hpp
   jit/Register.hpp
   jit/RegisterAllocator.hpp
