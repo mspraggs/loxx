@@ -83,7 +83,6 @@ namespace loxx
       auto operator->() const -> const pointer;
 
     private:
-      Item back_;
       Iter it_, finish_;
     };
 
@@ -134,10 +133,6 @@ namespace loxx
     template <typename Item, typename Hash, typename Compare>
     auto HashStructIterator<Item, Hash, Compare>::operator*() -> reference
     {
-      if (it_ == finish_) {
-        return back_;
-      }
-
       return *(*it_);
     }
 
@@ -146,10 +141,6 @@ namespace loxx
     auto HashStructIterator<Item, Hash, Compare>::operator*() const
         -> const reference
     {
-      if (it_ == finish_) {
-        return back_;
-      }
-
       return *(*it_);
     }
 
@@ -157,10 +148,6 @@ namespace loxx
     template <typename Item, typename Hash, typename Compare>
     auto HashStructIterator<Item, Hash, Compare>::operator->() -> pointer
     {
-      if (it_ == finish_) {
-        return &back_;
-      }
-
       return &(*(*it_));
     }
 
@@ -169,10 +156,6 @@ namespace loxx
     auto HashStructIterator<Item, Hash, Compare>::operator->() const
         -> const pointer
     {
-      if (it_ == finish_) {
-        return &back_;
-      }
-
       return &(*(*it_));
     }
   }
