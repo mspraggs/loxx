@@ -17,22 +17,18 @@
  * Created by Matt Spraggs on 30/11/2019.
  */
 
-#ifndef LOXX_JIT_REGISTER_HPP
-#define LOXX_JIT_REGISTER_HPP
+#ifndef LOXX_JIT_REGISTERX86_HPP
+#define LOXX_JIT_REGISTERX86_HPP
 
 
 namespace loxx
 {
   namespace jit
   {
-    class Register
+    enum class RegisterX86
     {
-    public:
-
-    private:
-
     };
   }
 }
 
-#endif // LOXX_JIT_REGISTER_HPP
+#endif // LOXX_JIT_REGISTERX86_HPP

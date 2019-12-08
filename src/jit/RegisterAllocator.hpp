@@ -22,6 +22,7 @@
 
 #include <utility>
 
+#include "RegisterX86.hpp"
 #include "SSAGenerator.hpp"
 #include "SSAInstruction.hpp"
 
@@ -30,6 +31,9 @@ namespace loxx
 {
   namespace jit
   {
+    using Register = RegisterX86;
+
+
     using Range = std::pair<std::size_t, std::size_t>;
 
 
