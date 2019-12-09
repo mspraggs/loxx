@@ -59,6 +59,8 @@ namespace loxx
       }
   #endif
 
+      reg_alloc_.initialise_register_pool(
+          get_platform_registers<Register>());
       reg_alloc_.allocate(ssa_ir_);
     }
   }

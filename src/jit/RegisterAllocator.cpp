@@ -89,6 +89,16 @@ namespace loxx
     }
 
 
+    void RegisterAllocator::initialise_register_pool(
+        const std::vector<Register>& registers)
+    {
+      register_pool_.clear();
+      for (const auto reg : registers) {
+        register_pool_.insert(reg);
+      }
+    }
+
+
     void RegisterAllocator::allocate(
         const std::vector<SSAInstruction<2>>& ssa_ir)
     {
