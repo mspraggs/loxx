@@ -17,6 +17,7 @@
  * Created by Matt Spraggs on 08/12/2019.
  */
 
+#include "Register.hpp"
 #include "RegisterX86.hpp"
 
 
@@ -62,6 +63,44 @@ namespace loxx
       }
 
       return false;
+    }
+
+
+    template <>
+    std::vector<RegisterX86> get_platform_registers<RegisterX86>()
+    {
+      return {
+        RegisterX86::RAX,
+        RegisterX86::RBX,
+        RegisterX86::RCX,
+        RegisterX86::RDX,
+        RegisterX86::RSI,
+        RegisterX86::RDI,
+        RegisterX86::R8,
+        RegisterX86::R9,
+        RegisterX86::R10,
+        RegisterX86::R11,
+        RegisterX86::R12,
+        RegisterX86::R13,
+        RegisterX86::R14,
+        RegisterX86::R15,
+        RegisterX86::XMM0,
+        RegisterX86::XMM1,
+        RegisterX86::XMM2,
+        RegisterX86::XMM3,
+        RegisterX86::XMM4,
+        RegisterX86::XMM5,
+        RegisterX86::XMM6,
+        RegisterX86::XMM7,
+        RegisterX86::XMM8,
+        RegisterX86::XMM9,
+        RegisterX86::XMM10,
+        RegisterX86::XMM11,
+        RegisterX86::XMM12,
+        RegisterX86::XMM13,
+        RegisterX86::XMM14,
+        RegisterX86::XMM15,
+      };
     }
   }
 }
