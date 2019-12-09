@@ -63,6 +63,106 @@ namespace loxx
 
 
     bool reg_supports_value_type(const RegisterX86 reg, const ValueType type);
+
+
+    template <typename Os>
+    Os& operator<<(Os& stream, RegisterX86 reg)
+    {
+      switch (reg) {
+      case RegisterX86::RAX:
+        stream << "rax";
+        break;
+      case RegisterX86::RBX:
+        stream << "rbx";
+        break;
+      case RegisterX86::RCX:
+        stream << "rcx";
+        break;
+      case RegisterX86::RDX:
+        stream << "rdx";
+        break;
+      case RegisterX86::RSI:
+        stream << "rsi";
+        break;
+      case RegisterX86::RDI:
+        stream << "rdi";
+        break;
+      case RegisterX86::R8:
+        stream << "r8";
+        break;
+      case RegisterX86::R9:
+        stream << "r9";
+        break;
+      case RegisterX86::R10:
+        stream << "r10";
+        break;
+      case RegisterX86::R11:
+        stream << "r11";
+        break;
+      case RegisterX86::R12:
+        stream << "r12";
+        break;
+      case RegisterX86::R13:
+        stream << "r13";
+        break;
+      case RegisterX86::R14:
+        stream << "r14";
+        break;
+      case RegisterX86::R15:
+        stream << "r15";
+        break;
+      case RegisterX86::XMM0:
+        stream << "xmm0";
+        break;
+      case RegisterX86::XMM1:
+        stream << "xmm1";
+        break;
+      case RegisterX86::XMM2:
+        stream << "xmm2";
+        break;
+      case RegisterX86::XMM3:
+        stream << "xmm3";
+        break;
+      case RegisterX86::XMM4:
+        stream << "xmm4";
+        break;
+      case RegisterX86::XMM5:
+        stream << "xmm5";
+        break;
+      case RegisterX86::XMM6:
+        stream << "xmm6";
+        break;
+      case RegisterX86::XMM7:
+        stream << "xmm7";
+        break;
+      case RegisterX86::XMM8:
+        stream << "xmm8";
+        break;
+      case RegisterX86::XMM9:
+        stream << "xmm9";
+        break;
+      case RegisterX86::XMM10:
+        stream << "xmm10";
+        break;
+      case RegisterX86::XMM11:
+        stream << "xmm11";
+        break;
+      case RegisterX86::XMM12:
+        stream << "xmm12";
+        break;
+      case RegisterX86::XMM13:
+        stream << "xmm13";
+        break;
+      case RegisterX86::XMM14:
+        stream << "xmm14";
+        break;
+      case RegisterX86::XMM15:
+        stream << "xmm15";
+        break;
+      }
+
+      return stream;
+    }
   }
 }
 
