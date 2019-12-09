@@ -14,41 +14,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Created by Matt Spraggs on 23/11/2019.
+ * Created by Matt Spraggs on 09/12/2019.
  */
 
-#ifndef LOXX_JIT_REGISTERALLOCATOR_HPP
-#define LOXX_JIT_REGISTERALLOCATOR_HPP
+#ifndef LOXX_JIT_REGISTER_HPP
+#define LOXX_JIT_REGISTER_HPP
 
-#include <utility>
+#include <vector>
 
-#include "Register.hpp"
-#include "SSAGenerator.hpp"
-#include "SSAInstruction.hpp"
+#include "RegisterX86.hpp"
 
 
 namespace loxx
 {
   namespace jit
   {
-    using Range = std::pair<std::size_t, std::size_t>;
+    template <typename Reg>
+    std::vector<Reg> get_platform_registers();
 
 
-    std::vector<std::pair<Operand, Range>> compute_live_ranges(
-        const std::vector<SSAInstruction<2>>& ssa_ir);
-
-
-    class RegisterAllocator
-    {
-    public:
-      explicit RegisterAllocator(const bool debug) : debug_(debug) {}
-
-      void allocate(const std::vector<SSAInstruction<2>>& ssa_ir);
-
-    private:
-      bool debug_;
-    };
+    using Register = RegisterX86;
   }
 }
 
-#endif // LOXX_JIT_REGISTERALLOCATOR_HPP
+#endif // LOXX_JIT_REGISTER_HPP

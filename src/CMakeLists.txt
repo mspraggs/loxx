@@ -37,6 +37,7 @@ set(SRC
   jit/JITError.hpp
   jit/logging.hpp
   jit/RegisterAllocator.hpp
+  jit/Register.hpp
   jit/RegisterX86.hpp
   jit/SSAGenerator.hpp
   jit/SSAInstruction.hpp
