@@ -92,10 +92,10 @@ namespace loxx
     }
 
 
-    void RegisterAllocator::initialise_register_pool(
-        const std::vector<Register>& registers)
+    RegisterAllocator::RegisterAllocator(
+        const bool debug, const std::vector<Register>& registers)
+        : debug_(debug), stack_index_(0)
     {
-      register_pool_.clear();
       for (const auto reg : registers) {
         register_pool_.insert(reg);
       }

@@ -41,11 +41,8 @@ namespace loxx
     class RegisterAllocator
     {
     public:
-      explicit RegisterAllocator(const bool debug)
-          : debug_(debug), stack_index_(0)
-      {}
-
-      void initialise_register_pool(const std::vector<Register>& registers);
+      RegisterAllocator(
+          const bool debug, const std::vector<Register>& registers);
 
       void allocate(const std::vector<SSAInstruction<2>>& ssa_ir);
 
