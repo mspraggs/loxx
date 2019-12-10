@@ -41,14 +41,27 @@ namespace loxx
     class RegisterAllocator
     {
     public:
-      explicit RegisterAllocator(const bool debug) : debug_(debug) {}
+      explicit RegisterAllocator(const bool debug)
+          : debug_(debug), stack_index_(0)
+      {}
 
       void initialise_register_pool(const std::vector<Register>& registers);
 
       void allocate(const std::vector<SSAInstruction<2>>& ssa_ir);
 
     private:
+      void expire_old_intervals(const Range& interval);
+      void spill_at_interval(const Range& interval);
+      void insert_active_interval(const Range& interval);
+      void remove_active_interval(const Range& interval);
+      Optional<Register> get_register(const Operand& virtual_register);
+
       bool debug_;
+      std::size_t stack_index_;
+      HashTable<std::size_t, Register> registers_;
+      HashTable<std::size_t, std::size_t> stack_slots_;
+      HashSet<Register> register_pool_;
+      std::vector<Range> active_intervals_;
     };
   }
 }

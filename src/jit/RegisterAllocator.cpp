@@ -17,6 +17,8 @@
  * Created by Matt Spraggs on 23/11/2019.
  */
 
+#include <algorithm>
+#include <iomanip>
 #include <iostream>
 #include <utility>
 
@@ -50,6 +52,7 @@ namespace loxx
       bool operator() (
           const Operand& first, const Operand& second) const;
     };
+
 
     std::vector<std::pair<Operand, Range>> compute_live_ranges(
         const std::vector<SSAInstruction<2>>& ssa_ir)
@@ -110,6 +113,128 @@ namespace loxx
         print_live_ranges(live_ranges);
       }
 #endif
+
+      for (const auto& live_range : live_ranges) {
+        const auto& virtual_regsiter = live_range.first;
+        const auto& interval = live_range.second;
+
+        if (interval.first == interval.second) {
+          continue;
+        }
+
+        expire_old_intervals(interval);
+
+        const auto candidate_register = get_register(virtual_regsiter);
+
+        if (not candidate_register) {
+          spill_at_interval(interval);
+        }
+        else {
+          registers_[interval.first] = *candidate_register;
+          insert_active_interval(interval);
+        }
+
+#ifndef NDEBUG
+        if (debug_) {
+          std::cout << virtual_regsiter << " -> ";
+          if (candidate_register) {
+            std::cout << registers_[interval.first] << "\n";
+          }
+          else {
+            std::cout << "[ +" << std::setw(3) << std::setfill('0')
+                      << stack_slots_[interval.first] << " ]\n";
+          }
+        }
+#endif
+      }
+    }
+
+
+    void RegisterAllocator::expire_old_intervals(const Range& interval)
+    {
+      std::vector<decltype(active_intervals_.begin())> to_remove;
+      to_remove.reserve(active_intervals_.size());
+
+      for (
+          auto it = active_intervals_.begin();
+          it != active_intervals_.end(); ++it) {
+
+        const auto active_interval = *it;
+
+        if (active_interval.second >= interval.first) {
+          break;
+        }
+
+        to_remove.push_back(it);
+        const auto& reg = registers_[active_interval.first];
+        register_pool_.insert(reg);
+      }
+
+      for (auto it = to_remove.rbegin(); it != to_remove.rend(); ++it) {
+        active_intervals_.erase(*it);
+      }
+    }
+
+
+    void RegisterAllocator::spill_at_interval(const Range& interval)
+    {
+      const auto& spill_interval = active_intervals_.back();
+
+      if (spill_interval.second > interval.second) {
+        const auto& reg = registers_[spill_interval.first];
+        registers_[interval.first] = reg;
+        stack_slots_[spill_interval.first] = stack_index_++;
+
+        // TODO: Stack allocation.
+        remove_active_interval(spill_interval);
+        insert_active_interval(interval);
+      }
+      else {
+        stack_slots_[interval.first] = stack_index_++;
+      }
+    }
+
+
+    void RegisterAllocator::insert_active_interval(const Range& interval)
+    {
+      const auto new_pos = std::upper_bound(
+          active_intervals_.begin(), active_intervals_.end(), interval,
+          [] (const Range& first, const Range second) {
+            return first.second < second.second;
+          });
+
+      active_intervals_.insert(new_pos, interval);
+    }
+
+
+    void RegisterAllocator::remove_active_interval(const Range& interval)
+    {
+      const auto pos = std::lower_bound(
+          active_intervals_.begin(), active_intervals_.end(), interval,
+          [] (const Range& first, const Range second) {
+            return first.second < second.second;
+          });
+
+      active_intervals_.erase(pos);
+    }
+
+
+    Optional<Register> RegisterAllocator::get_register(
+        const Operand& virtual_register)
+    {
+      const auto elem = std::find_if(
+        register_pool_.begin(), register_pool_.end(),
+        [&] (const Register& reg) {
+          return reg_supports_value_type(reg, virtual_register.value_type());
+        }
+      );
+      if (elem == register_pool_.end()) {
+        return {};
+      }
+      const auto ret = *elem;
+      register_pool_.erase(elem);
+      return ret;
+    }
 
 
     std::size_t OperandHasher::operator() (const Operand& value) const
