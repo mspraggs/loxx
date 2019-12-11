@@ -108,5 +108,21 @@ namespace loxx
         std::cout << '\n';
       }
     }
+
+
+    void print_allocation_map(const AllocationMap& allocation_map)
+    {
+      for (const auto& allocation : allocation_map) {
+        const auto is_register = holds_alternative<Register>(allocation.second);
+        std::cout << allocation.first << " -> ";
+        if (is_register) {
+          std::cout << unsafe_get<Register>(allocation.second) << "\n";
+        }
+        else {
+          std::cout << "[ +" << std::setw(3) << std::setfill('0')
+                    << unsafe_get<std::size_t>(allocation.second) << " ]\n";
+        }
+      }
+    }
   }
 }

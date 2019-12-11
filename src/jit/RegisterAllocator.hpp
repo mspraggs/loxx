@@ -38,13 +38,35 @@ namespace loxx
         const std::vector<SSAInstruction<2>>& ssa_ir);
 
 
+    struct OperandHasher
+    {
+      std::size_t operator() (const Operand& operand) const;
+
+      std::hash<const Value*> pointer_hasher;
+    };
+
+
+    struct OperandCompare
+    {
+      bool operator() (
+          const Operand& first, const Operand& second) const;
+    };
+
+
+    using Allocation = Variant<Register, std::size_t>;
+
+
+    using AllocationMap =
+        HashTable<Operand, Allocation, OperandHasher, OperandCompare>;
+
+
     class RegisterAllocator
     {
     public:
       RegisterAllocator(
           const bool debug, const std::vector<Register>& registers);
 
-      void allocate(const std::vector<SSAInstruction<2>>& ssa_ir);
+      AllocationMap allocate(const std::vector<SSAInstruction<2>>& ssa_ir);
 
     private:
       void expire_old_intervals(const Range& interval);

@@ -18,7 +18,6 @@
  */
 
 #include <algorithm>
-#include <iomanip>
 #include <iostream>
 #include <utility>
 
@@ -37,21 +36,6 @@ namespace loxx
       std::size_t combine_hashes(
           const std::size_t first, const std::size_t second);
     }
-
-
-    struct OperandHasher
-    {
-      std::size_t operator() (const Operand& operand) const;
-
-      std::hash<const Value*> pointer_hasher;
-    };
-
-
-    struct OperandCompare
-    {
-      bool operator() (
-          const Operand& first, const Operand& second) const;
-    };
 
 
     std::vector<std::pair<Operand, Range>> compute_live_ranges(
@@ -102,7 +86,7 @@ namespace loxx
     }
 
 
-    void RegisterAllocator::allocate(
+    AllocationMap RegisterAllocator::allocate(
         const std::vector<SSAInstruction<2>>& ssa_ir)
     {
       auto live_ranges = compute_live_ranges(ssa_ir);
@@ -133,20 +117,30 @@ namespace loxx
           registers_[interval.first] = *candidate_register;
           insert_active_interval(interval);
         }
-
-#ifndef NDEBUG
-        if (debug_) {
-          std::cout << virtual_regsiter << " -> ";
-          if (candidate_register) {
-            std::cout << registers_[interval.first] << "\n";
-          }
-          else {
-            std::cout << "[ +" << std::setw(3) << std::setfill('0')
-                      << stack_slots_[interval.first] << " ]\n";
-          }
-        }
-#endif
       }
+
+      AllocationMap allocation_map;
+
+      for (const auto& live_range : live_ranges) {
+        const auto& virtual_register = live_range.first;
+        const auto& interval = live_range.second;
+
+        if (interval.first == interval.second) {
+          continue;
+        }
+
+        const auto& reg = registers_.get(interval.first);
+        if (reg) {
+          allocation_map[virtual_register] = Allocation(
+              InPlace<Register>(), reg->second);
+        }
+        else {
+          allocation_map[virtual_register] = Allocation(
+              InPlace<std::size_t>(), stack_slots_[interval.first]);
+        }
+      }
+
+      return allocation_map;
     }
 
 
