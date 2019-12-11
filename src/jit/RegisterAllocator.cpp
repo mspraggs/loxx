@@ -175,11 +175,11 @@ namespace loxx
       const auto& spill_interval = active_intervals_.back();
 
       if (spill_interval.second > interval.second) {
-        const auto& reg = registers_[spill_interval.first];
-        registers_[interval.first] = reg;
+        const auto elem = registers_.find(spill_interval.first);
+        registers_[interval.first] = elem->second;
+        registers_.erase(elem);
         stack_slots_[spill_interval.first] = stack_index_++;
 
-        // TODO: Stack allocation.
         remove_active_interval(spill_interval);
         insert_active_interval(interval);
       }
