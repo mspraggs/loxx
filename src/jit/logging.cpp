@@ -119,7 +119,7 @@ namespace loxx
           std::cout << unsafe_get<Register>(allocation.second) << "\n";
         }
         else {
-          std::cout << "[ +" << std::setw(3) << std::setfill('0')
+          std::cout << "[ +" << std::right << std::setw(3) << std::setfill('0')
                     << unsafe_get<std::size_t>(allocation.second) << " ]\n";
         }
       }
