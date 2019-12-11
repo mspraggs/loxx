@@ -59,7 +59,10 @@ namespace loxx
     const Value& at(const Key& key) const;
     const Elem& get(const Key& key) const;
     std::pair<Iter, bool> insert(const Key& key, const Value& value = Value());
+    Iter find(const Key& key);
+    ConstIter find(const Key& key) const;
     void erase(const Key& key);
+    Iter erase(const Iter pos);
     std::size_t count(const Key& key) const;
     bool has_item(const Key& key) const;
 
@@ -146,6 +149,33 @@ namespace loxx
   }
 
 
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  auto HashTable<Key, Value, Hash, Compare>::find(const Key& key) -> Iter
+  {
+    const auto found_pos = this->find_pos(*this, key, hash_func_(key));
+
+    if (found_pos == data_.size()) {
+      return end();
+    }
+
+    return Iter(data_.begin() + found_pos, data_.end());
+  }
+
+
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  auto HashTable<Key, Value, Hash, Compare>::find(const Key& key) const
+      -> ConstIter
+  {
+    const auto found_pos = this->find_pos(*this, key, hash_func_(key));
+
+    if (found_pos == data_.size()) {
+      return end();
+    }
+
+    return ConstIter(data_.begin() + found_pos, data_.end());
+  }
+
+
   template<typename Key, typename Value, typename Hash, typename Compare>
   void HashTable<Key, Value, Hash, Compare>::erase(const Key& key)
   {
@@ -155,6 +185,27 @@ namespace loxx
           obj[new_elem->first] = new_elem->second;
         };
     this->remove(*this, key, add_func);
+  }
+
+
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  auto HashTable<Key, Value, Hash, Compare>::erase(const Iter pos) -> Iter
+  {
+    auto index = std::distance(data_.begin(), pos.underlying());
+    data_[index].reset();
+    const auto init_index = index;
+    --num_used_slots_;
+
+    for (;;) {
+      index = (index + 1) % mask_;
+
+      if (not data_[index]) {
+        return Iter(data_.begin() + init_index, data_.end());
+      }
+
+      const auto datum = std::move(data_[index]);
+      insert(datum->first, datum->second);
+    }
   }
 
 
