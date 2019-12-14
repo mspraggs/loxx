@@ -20,6 +20,7 @@
 #ifndef LOXX_JIT_REGISTER_HPP
 #define LOXX_JIT_REGISTER_HPP
 
+#include <algorithm>
 #include <vector>
 
 #include "RegisterX86.hpp"
@@ -35,6 +36,23 @@ namespace loxx
 
     template <typename Reg>
     std::vector<Reg> get_scratch_registers();
+
+
+    template <typename Reg>
+    std::vector<Reg> get_allocatable_registers()
+    {
+      const auto scratch_registers = get_scratch_registers<Reg>();
+      auto available_registers = get_platform_registers<Reg>();
+
+      for (const auto scratch_register : scratch_registers) {
+        const auto pos =  std::find(
+            available_registers.begin(), available_registers.end(),
+            scratch_register);
+        available_registers.erase(pos);
+      }
+
+      return available_registers;
+    }
 
 
     using Register = RegisterX86;

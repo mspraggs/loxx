@@ -17,7 +17,6 @@
  * Created by Matt Spraggs on 23/11/2019.
  */
 
-#include <algorithm>
 #include <iostream>
 #include <utility>
 
