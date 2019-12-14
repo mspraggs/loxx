@@ -33,6 +33,10 @@ namespace loxx
     std::vector<Reg> get_platform_registers();
 
 
+    template <typename Reg>
+    std::vector<Reg> get_scratch_registers();
+
+
     using Register = RegisterX86;
   }
 }
