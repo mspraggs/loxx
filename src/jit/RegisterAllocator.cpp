@@ -108,7 +108,8 @@ namespace loxx
 
         expire_old_intervals(interval);
 
-        const auto candidate_register = get_register(virtual_regsiter);
+        const auto candidate_register = get_register(
+            virtual_regsiter.value_type());
 
         if (not candidate_register) {
           spill_at_interval(interval);
@@ -213,13 +214,12 @@ namespace loxx
     }
 
 
-    Optional<Register> RegisterAllocator::get_register(
-        const Operand& virtual_register)
+    Optional<Register> RegisterAllocator::get_register(const ValueType type)
     {
       const auto elem = std::find_if(
         register_pool_.begin(), register_pool_.end(),
-        [&] (const Register& reg) {
-          return reg_supports_value_type(reg, virtual_register.value_type());
+        [=] (const Register& reg) {
+          return reg_supports_value_type(reg, type);
         }
       );
       if (elem == register_pool_.end()) {

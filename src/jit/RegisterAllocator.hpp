@@ -73,7 +73,7 @@ namespace loxx
       void spill_at_interval(const Range& interval);
       void insert_active_interval(const Range& interval);
       void remove_active_interval(const Range& interval);
-      Optional<Register> get_register(const Operand& virtual_register);
+      Optional<Register> get_register(const ValueType type);
 
       bool debug_;
       std::size_t stack_index_;
