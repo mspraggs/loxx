@@ -32,6 +32,7 @@ set(SRC
   detail/HashImpl.hpp
   detail/HashStructIterator.hpp
   detail/VariantImpl.hpp
+  jit/AssemblyFunction.hpp
   jit/CodeProfiler.hpp
   jit/Compiler.hpp
   jit/JITError.hpp
@@ -55,6 +56,7 @@ set(SRC
   StringHashTable.cpp
   Token.cpp
   VirtualMachine.cpp
+  jit/AssemblyFunction.cpp
   jit/CodeProfiler.cpp
   jit/Compiler.cpp
   jit/logging.cpp
