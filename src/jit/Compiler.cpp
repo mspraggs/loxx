@@ -24,6 +24,7 @@
 #include "../utils.hpp"
 #include "../VirtualMachine.hpp"
 
+#include "AssemblerX86.hpp"
 #include "CodeProfiler.hpp"
 #include "Compiler.hpp"
 #include "logging.hpp"
@@ -68,6 +69,11 @@ namespace loxx
         print_allocation_map(allocation_map);
       }
 #endif
+
+      Assembler<Register> assembler;
+      auto func = assembler.assemble(ssa_ir_, allocation_map);
+      func.lock();
+      func();
     }
   }
 }
