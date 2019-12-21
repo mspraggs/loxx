@@ -32,6 +32,7 @@ set(SRC
   detail/HashImpl.hpp
   detail/HashStructIterator.hpp
   detail/VariantImpl.hpp
+  jit/Assembler.hpp
   jit/AssemblyFunction.hpp
   jit/CodeProfiler.hpp
   jit/Compiler.hpp
