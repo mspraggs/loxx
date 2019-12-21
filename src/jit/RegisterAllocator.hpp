@@ -53,11 +53,13 @@ namespace loxx
     };
 
 
-    using Allocation = Variant<Register, std::size_t>;
+    template <typename Reg>
+    using Allocation = Variant<Reg, std::size_t>;
 
 
+    template <typename Reg>
     using AllocationMap =
-        HashTable<Operand, Allocation, OperandHasher, OperandCompare>;
+        HashTable<Operand, Allocation<Reg>, OperandHasher, OperandCompare>;
 
 
     class RegisterAllocator
@@ -66,7 +68,8 @@ namespace loxx
       RegisterAllocator(
           const bool debug, const std::vector<Register>& registers);
 
-      AllocationMap allocate(const std::vector<SSAInstruction<2>>& ssa_ir);
+      AllocationMap<Register> allocate(
+          const std::vector<SSAInstruction<2>>& ssa_ir);
 
     private:
       void expire_old_intervals(const Range& interval);

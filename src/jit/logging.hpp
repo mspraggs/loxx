@@ -36,7 +36,7 @@ namespace loxx
     void print_live_ranges(
         const std::vector<std::pair<Operand, Range>>& live_ranges);
 
-    void print_allocation_map(const AllocationMap& allocation_map);
+    void print_allocation_map(const AllocationMap<Register>& allocation_map);
   }
 }
 

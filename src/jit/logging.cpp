@@ -110,7 +110,7 @@ namespace loxx
     }
 
 
-    void print_allocation_map(const AllocationMap& allocation_map)
+    void print_allocation_map(const AllocationMap<Register>& allocation_map)
     {
       for (const auto& allocation : allocation_map) {
         const auto is_register = holds_alternative<Register>(allocation.second);

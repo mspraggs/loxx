@@ -85,7 +85,7 @@ namespace loxx
     }
 
 
-    AllocationMap RegisterAllocator::allocate(
+    AllocationMap<Register> RegisterAllocator::allocate(
         const std::vector<SSAInstruction<2>>& ssa_ir)
     {
       auto live_ranges = compute_live_ranges(ssa_ir);
@@ -119,7 +119,7 @@ namespace loxx
         }
       }
 
-      AllocationMap allocation_map;
+      AllocationMap<Register> allocation_map;
 
       for (const auto& live_range : live_ranges) {
         const auto& virtual_register = live_range.first;
@@ -131,11 +131,11 @@ namespace loxx
 
         const auto& reg = registers_.get(interval.first);
         if (reg) {
-          allocation_map[virtual_register] = Allocation(
+          allocation_map[virtual_register] = Allocation<Register>(
               InPlace<Register>(), reg->second);
         }
         else {
-          allocation_map[virtual_register] = Allocation(
+          allocation_map[virtual_register] = Allocation<Register>(
               InPlace<std::size_t>(), stack_slots_[interval.first]);
         }
       }
