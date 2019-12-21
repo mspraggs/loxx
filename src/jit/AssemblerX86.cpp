@@ -24,7 +24,6 @@ namespace loxx
 {
   namespace jit
   {
-    // template <>
     AssemblyFunction Assembler<RegisterX86>::assemble(
         const std::vector<SSAInstruction<2>>& ssa_ir,
         const AllocationMap<RegisterX86>& allocation_map)
