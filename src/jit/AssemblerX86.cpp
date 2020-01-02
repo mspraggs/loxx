@@ -64,5 +64,11 @@ namespace loxx
       func_.add_byte(0xc3);
       return func_;
     }
+
+
+    void Assembler<RegisterX86>::add_return()
+    {
+      func_.add_byte(0xc3);
+    }
   }
 }

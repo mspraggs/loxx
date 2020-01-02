@@ -36,6 +36,8 @@ namespace loxx
           const AllocationMap<RegisterX86>& allocation_map);
 
     private:
+      void add_return();
+
       AssemblyFunction func_; 
     };
   }
