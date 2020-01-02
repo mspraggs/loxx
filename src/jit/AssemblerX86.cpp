@@ -61,7 +61,9 @@ namespace loxx
         const std::vector<SSAInstruction<2>>& ssa_ir,
         const AllocationMap<RegisterX86>& allocation_map)
     {
-      func_.add_byte(0xc3);
+      add_push(RegisterX86::RBP);
+      add_pop(RegisterX86::RBP);
+      add_return();
       return func_;
     }
 
