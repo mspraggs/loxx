@@ -33,6 +33,8 @@ namespace loxx
       RBX,
       RCX,
       RDX,
+      RSP,
+      RBP,
       RSI,
       RDI,
       R8,
