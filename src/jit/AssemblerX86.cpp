@@ -70,5 +70,17 @@ namespace loxx
     {
       func_.add_byte(0xc3);
     }
+
+
+    void Assembler<RegisterX86>::add_push(const RegisterX86 src)
+    {
+      func_.add_byte(0x50 | get_reg_rm_bits(src));
+    }
+
+
+    void Assembler<RegisterX86>::add_pop(const RegisterX86 dst)
+    {
+      func_.add_byte(0x58 | get_reg_rm_bits(dst));
+    }
   }
 }

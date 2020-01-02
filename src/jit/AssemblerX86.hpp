@@ -37,6 +37,8 @@ namespace loxx
 
     private:
       void add_return();
+      void add_push(const RegisterX86 src);
+      void add_pop(const RegisterX86 dst);
 
       AssemblyFunction func_; 
     };
