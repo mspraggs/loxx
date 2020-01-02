@@ -64,6 +64,18 @@ namespace loxx
     };
 
 
+    bool reg_is_64_bit(const RegisterX86 reg);
+
+
+    bool reg_supports_float(const RegisterX86 reg);
+
+
+    bool reg_supports_int(const RegisterX86 reg);
+
+
+    bool reg_supports_ptr(const RegisterX86 reg);
+
+
     bool reg_supports_value_type(const RegisterX86 reg, const ValueType type);
 
 

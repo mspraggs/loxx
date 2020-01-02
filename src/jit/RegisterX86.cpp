@@ -25,24 +25,35 @@ namespace loxx
 {
   namespace jit
   {
-    bool reg_supports_value_type(const RegisterX86 reg, const ValueType type)
+    bool reg_is_64_bit(const RegisterX86 reg)
     {
       switch (reg) {
-      case RegisterX86::RAX:
-      case RegisterX86::RBX:
-      case RegisterX86::RCX:
-      case RegisterX86::RDX:
-      case RegisterX86::RSI:
-      case RegisterX86::RDI:
-      case RegisterX86::R8:
-      case RegisterX86::R9:
-      case RegisterX86::R10:
-      case RegisterX86::R11:
-      case RegisterX86::R12:
-      case RegisterX86::R13:
-      case RegisterX86::R14:
-      case RegisterX86::R15:
-        return type != ValueType::FLOAT;
+        case RegisterX86::R8:
+        case RegisterX86::R9:
+        case RegisterX86::R10:
+        case RegisterX86::R11:
+        case RegisterX86::R12:
+        case RegisterX86::R13:
+        case RegisterX86::R14:
+        case RegisterX86::R15:
+        case RegisterX86::XMM8:
+        case RegisterX86::XMM9:
+        case RegisterX86::XMM10:
+        case RegisterX86::XMM11:
+        case RegisterX86::XMM12:
+        case RegisterX86::XMM13:
+        case RegisterX86::XMM14:
+        case RegisterX86::XMM15:
+          return true;
+        default:
+          return false;
+        }
+    }
+
+
+    bool reg_supports_float(const RegisterX86 reg)
+    {
+      switch (reg) {
       case RegisterX86::XMM0:
       case RegisterX86::XMM1:
       case RegisterX86::XMM2:
@@ -59,10 +70,49 @@ namespace loxx
       case RegisterX86::XMM13:
       case RegisterX86::XMM14:
       case RegisterX86::XMM15:
-        return type == ValueType::FLOAT;
+        return true;
+      default:
+        return false;
       }
+    }
 
-      return false;
+
+    bool reg_supports_int(const RegisterX86 reg)
+    {
+      switch (reg) {
+      case RegisterX86::RAX:
+      case RegisterX86::RBX:
+      case RegisterX86::RCX:
+      case RegisterX86::RDX:
+      case RegisterX86::RSI:
+      case RegisterX86::RDI:
+      case RegisterX86::R8:
+      case RegisterX86::R9:
+      case RegisterX86::R10:
+      case RegisterX86::R11:
+      case RegisterX86::R12:
+      case RegisterX86::R13:
+      case RegisterX86::R14:
+      case RegisterX86::R15:
+        return true;
+      default:
+        return false;
+      }
+    }
+
+
+    bool reg_supports_ptr(const RegisterX86 reg)
+    {
+      return reg_supports_int(reg);
+    }
+
+
+    bool reg_supports_value_type(const RegisterX86 reg, const ValueType type)
+    {
+      if (type == ValueType::FLOAT) {
+        return reg_supports_float(reg);
+      }
+      return reg_supports_ptr(reg);
     }
 
 
