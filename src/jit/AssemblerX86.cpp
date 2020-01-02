@@ -24,6 +24,39 @@ namespace loxx
 {
   namespace jit
   {
+    std::uint8_t get_reg_rm_bits(const RegisterX86 reg)
+    {
+      switch (reg) {
+      case RegisterX86::RAX:
+      case RegisterX86::XMM0:
+        return 0b000;
+      case RegisterX86::RCX:
+      case RegisterX86::XMM1:
+        return 0b001;
+      case RegisterX86::RDX:
+      case RegisterX86::XMM2:
+        return 0b010;
+      case RegisterX86::RBX:
+      case RegisterX86::XMM3:
+        return 0b011;
+      case RegisterX86::RSP:
+      case RegisterX86::XMM4:
+        return 0b100;
+      case RegisterX86::RBP:
+      case RegisterX86::XMM5:
+        return 0b101;
+      case RegisterX86::RSI:
+      case RegisterX86::XMM6:
+        return 0b110;
+      case RegisterX86::RDI:
+      case RegisterX86::XMM7:
+        return 0b111;
+      default:
+        return 0b000;
+      }
+    }
+
+
     AssemblyFunction Assembler<RegisterX86>::assemble(
         const std::vector<SSAInstruction<2>>& ssa_ir,
         const AllocationMap<RegisterX86>& allocation_map)
