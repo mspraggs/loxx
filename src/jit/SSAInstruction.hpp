@@ -53,7 +53,7 @@ namespace loxx
 
       Operand() = default;
       explicit Operand(const ValueType type);
-      Operand(const Value& value);
+      explicit Operand(const Value& value);
 
       bool is_memory() const { return target_.index() == 0; }
       bool is_register() const { return target_.index() == 1; }
