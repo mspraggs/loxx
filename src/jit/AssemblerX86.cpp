@@ -28,28 +28,44 @@ namespace loxx
     {
       switch (reg) {
       case RegisterX86::RAX:
+      case RegisterX86::R8:
       case RegisterX86::XMM0:
+      case RegisterX86::XMM8:
         return 0b000;
       case RegisterX86::RCX:
+      case RegisterX86::R9:
       case RegisterX86::XMM1:
+      case RegisterX86::XMM9:
         return 0b001;
       case RegisterX86::RDX:
+      case RegisterX86::R10:
       case RegisterX86::XMM2:
+      case RegisterX86::XMM10:
         return 0b010;
       case RegisterX86::RBX:
+      case RegisterX86::R11:
       case RegisterX86::XMM3:
+      case RegisterX86::XMM11:
         return 0b011;
       case RegisterX86::RSP:
+      case RegisterX86::R12:
       case RegisterX86::XMM4:
+      case RegisterX86::XMM12:
         return 0b100;
       case RegisterX86::RBP:
+      case RegisterX86::R13:
       case RegisterX86::XMM5:
+      case RegisterX86::XMM13:
         return 0b101;
       case RegisterX86::RSI:
+      case RegisterX86::R14:
       case RegisterX86::XMM6:
+      case RegisterX86::XMM14:
         return 0b110;
       case RegisterX86::RDI:
+      case RegisterX86::R15:
       case RegisterX86::XMM7:
+      case RegisterX86::XMM15:
         return 0b111;
       default:
         return 0b000;
