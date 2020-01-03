@@ -103,6 +103,9 @@ namespace loxx
 
     bool reg_supports_ptr(const RegisterX86 reg)
     {
+      if (reg == RegisterX86::RBP or reg == RegisterX86::RSP) {
+        return true;
+      }
       return reg_supports_int(reg);
     }
 
