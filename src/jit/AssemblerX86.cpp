@@ -97,6 +97,7 @@ namespace loxx
         const AllocationMap<RegisterX86>& allocation_map)
     {
       add_push(RegisterX86::RBP);
+      add_move_reg_reg(RegisterX86::RBP, RegisterX86::RSP);
       add_pop(RegisterX86::RBP);
       add_return();
       return func_;
@@ -121,7 +122,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_move(
+    void Assembler<RegisterX86>::add_move_reg_reg(
         const RegisterX86 dst, const RegisterX86 src)
     {
       if (reg_supports_ptr(src) and reg_supports_ptr(dst)) {
