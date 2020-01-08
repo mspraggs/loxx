@@ -187,5 +187,24 @@ namespace loxx
         throw JITError("invalid move registers");
       }
     }
+
+
+
+    void Assembler<RegisterX86>::add_move_reg_imm(
+        const RegisterX86 dst, const std::uint64_t value)
+    {
+      const std::uint8_t rex_prefix =
+          reg_is_64_bit(dst) ? 0b01001001 : 0b01001000;
+      func_.add_byte(rex_prefix);
+      func_.add_byte(0xb8 | get_reg_rm_bits(dst));
+
+      const auto next_byte = [&] {
+        static int i = 0;
+        return static_cast<std::uint8_t>(0xff & (value >> (8 * (i++))));
+      };
+      std::array<std::uint8_t, 8> bytes;
+      std::generate(bytes.begin(), bytes.end(), next_byte);
+      func_.add_bytes(bytes.begin(), bytes.end());
+    }
   }
 }
