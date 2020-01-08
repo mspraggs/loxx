@@ -40,6 +40,9 @@ namespace loxx
       void add_push(const RegisterX86 src);
       void add_pop(const RegisterX86 dst);
       void add_move_reg_reg(const RegisterX86 dst, const RegisterX86 src);
+      void add_move_reg_mem(
+          const RegisterX86 dst, const RegisterX86 src,
+          const unsigned int offset = 0);
 
       AssemblyFunction func_; 
     };

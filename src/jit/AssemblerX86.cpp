@@ -17,6 +17,8 @@
  * Created by Matt Spraggs on 22/11/2019.
  */
 
+#include <numeric>
+
 #include "AssemblerX86.hpp"
 #include "JITError.hpp"
 
@@ -135,6 +137,50 @@ namespace loxx
         func_.add_byte(mod_rm_byte);
       }
       else if (reg_supports_float(src) and reg_supports_float(dst)) {
+
+      }
+      else {
+        throw JITError("invalid move registers");
+      }
+    }
+
+
+    void Assembler<RegisterX86>::add_move_reg_mem(
+        const RegisterX86 dst, const RegisterX86 src, const unsigned int offset)
+    {
+      if (reg_supports_ptr(dst)) {
+        const std::uint8_t offset_bits = [&] {
+          if (offset == 0) {
+            return 0b00000000;
+          }
+          if (offset < 256) {
+            return 0b01000000;
+          }
+          return 0b10000000;
+        } ();
+
+        const std::uint8_t rex_prefix =
+            0b01001000 | get_rex_prefix_for_regs(src, dst);
+        const std::uint8_t mod_rm_byte =
+            offset_bits | (get_reg_rm_bits(dst  ) << 3) | get_reg_rm_bits(src);
+        func_.add_byte(rex_prefix);
+        func_.add_byte(0x8b);
+        func_.add_byte(mod_rm_byte);
+
+        if (offset >= 256) {
+          const auto next_byte = [&] {
+            static int i = 0;
+            return static_cast<std::uint8_t>(0xff & (offset >> (8 * (i++))));
+          };
+          std::array<std::uint8_t, 4> bytes;
+          std::generate(bytes.begin(), bytes.end(), next_byte);
+          func_.add_bytes(bytes.begin(), bytes.end());
+        }
+        else if (offset > 0) {
+          func_.add_byte(static_cast<std::uint8_t>(0xff & offset));
+        }
+      }
+      else if (reg_supports_float(dst)) {
 
       }
       else {
