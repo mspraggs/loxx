@@ -160,6 +160,21 @@ namespace loxx
     }
 
 
+    void Assembler<RegisterX86>::add_move_mem_reg(
+        const RegisterX86 dst, const RegisterX86 src, const unsigned int offset)
+    {
+      if (reg_supports_ptr(src)) {
+        add_move_reg_to_from_mem(dst, src, offset, false);
+      }
+      else if (reg_supports_float(dst)) {
+
+      }
+      else {
+        throw JITError("invalid move registers");
+      }
+    }
+
+
 
     void Assembler<RegisterX86>::add_move_reg_imm(
         const RegisterX86 dst, const std::uint64_t value)
