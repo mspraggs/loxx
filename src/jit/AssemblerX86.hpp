@@ -44,7 +44,11 @@ namespace loxx
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int offset = 0);
       void add_move_reg_imm(
-        const RegisterX86 dst, const std::uint64_t value);
+          const RegisterX86 dst, const std::uint64_t value);
+
+      void add_move_reg_to_from_mem(
+          const RegisterX86 dst, const RegisterX86 src,
+          const unsigned int offset, const bool read);
 
       AssemblyFunction func_; 
     };
