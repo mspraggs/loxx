@@ -71,7 +71,8 @@ namespace loxx
 #endif
 
       Assembler<Register> assembler;
-      auto func = assembler.assemble(ssa_ir_, allocation_map);
+      auto func = assembler.assemble(
+          ssa_ir_, allocation_map, ssa_generator_.external_operands());
       func.lock();
       func();
     }

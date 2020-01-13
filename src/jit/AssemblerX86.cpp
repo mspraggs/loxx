@@ -96,7 +96,8 @@ namespace loxx
 
     AssemblyFunction Assembler<RegisterX86>::assemble(
         const std::vector<SSAInstruction<2>>& ssa_ir,
-        const AllocationMap<RegisterX86>& allocation_map)
+        const AllocationMap<RegisterX86>& allocation_map,
+        const OperandSet& external_operands)
     {
       add_push(RegisterX86::RBP);
       add_move_reg_reg(RegisterX86::RBP, RegisterX86::RSP);

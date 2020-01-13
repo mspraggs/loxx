@@ -35,7 +35,8 @@ namespace loxx
     public:
       AssemblyFunction assemble(
           const std::vector<SSAInstruction<2>>& ssa_ir,
-          const AllocationMap<Reg>& allocation_map);
+          const AllocationMap<Reg>& allocation_map,
+          const OperandSet& external_operands);
     };
   }
 }
