@@ -72,6 +72,21 @@ namespace loxx
     };
 
 
+    struct OperandHasher
+    {
+      std::size_t operator() (const Operand& operand) const;
+
+      std::hash<const Value*> pointer_hasher;
+    };
+
+
+    struct OperandCompare
+    {
+      bool operator() (
+          const Operand& first, const Operand& second) const;
+    };
+
+
     template <std::size_t N>
     class SSAInstruction
     {

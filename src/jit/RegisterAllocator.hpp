@@ -38,21 +38,6 @@ namespace loxx
         const std::vector<SSAInstruction<2>>& ssa_ir);
 
 
-    struct OperandHasher
-    {
-      std::size_t operator() (const Operand& operand) const;
-
-      std::hash<const Value*> pointer_hasher;
-    };
-
-
-    struct OperandCompare
-    {
-      bool operator() (
-          const Operand& first, const Operand& second) const;
-    };
-
-
     template <typename Reg>
     using Allocation = Variant<Reg, std::size_t>;
 
