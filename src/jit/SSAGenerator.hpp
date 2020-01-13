@@ -34,6 +34,9 @@ namespace loxx
 
   namespace jit
   {
+    using OperandSet = HashSet<Operand, OperandHasher, OperandCompare>;
+
+
     class SSAGenerator
     {
     public:
@@ -44,6 +47,8 @@ namespace loxx
       std::vector<SSAInstruction<2>> generate(
           const CodeObject::InsPtr begin, const CodeObject::InsPtr end);
 
+      const OperandSet& external_operands() const { return external_operands_;}
+
     private:
       Operand make_target_operand(const std::size_t stack_idx) const;
 
@@ -52,6 +57,7 @@ namespace loxx
       std::vector<Operand> constants_;
       std::vector<Operand> upvalues_;
       StringHashTable<Operand> globals_;
+      OperandSet external_operands_;
     };
   }
 }

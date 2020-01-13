@@ -43,6 +43,8 @@ namespace loxx
 
     void SSAGenerator::build_context(const RuntimeContext& context)
     {
+      external_operands_.clear();
+
       op_stack_.clear();
       for (std::size_t i = 0; i < context.stack.size(); ++i) {
         op_stack_.emplace(context.stack.get(i));
@@ -97,6 +99,9 @@ namespace loxx
           // ip += sizeof(InstrArgUByte);
           const auto idx = detail::read_integer<InstrArgUByte>(ip);
           const auto source = op_stack_.get(idx);
+          if (source.is_memory()) {
+            external_operands_.insert(source);
+          }
           op_stack_.push(Operand(source.value_type()));
           ssa_instructions.emplace_back(
               Operator::MOVE, op_stack_.top(), source);
@@ -112,6 +117,7 @@ namespace loxx
         case loxx::Instruction::LOAD_CONSTANT: {
           const auto idx = detail::read_integer<InstrArgUByte>(ip);
           const auto& constant = constants_[idx];
+          external_operands_.insert(constant);
           const auto type = static_cast<ValueType>(constant.value_type());
           op_stack_.push(Operand(type));
           ssa_instructions.emplace_back(
