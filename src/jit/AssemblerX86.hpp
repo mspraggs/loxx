@@ -40,6 +40,7 @@ namespace loxx
       void add_return();
       void add_push(const RegisterX86 src);
       void add_pop(const RegisterX86 dst);
+
       void add_move_reg_reg(const RegisterX86 dst, const RegisterX86 src);
       void add_move_reg_mem(
           const RegisterX86 dst, const RegisterX86 src,
@@ -53,6 +54,9 @@ namespace loxx
       void add_move_reg_to_from_mem(
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int offset, const bool read);
+
+      void add_immediate(
+          const std::uint64_t value, const bool all_64_bits = false);
 
       AssemblyFunction func_; 
     };
