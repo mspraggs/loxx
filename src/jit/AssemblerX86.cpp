@@ -184,7 +184,7 @@ namespace loxx
           reg_is_64_bit(dst) ? 0b01001001 : 0b01001000;
       func_.add_byte(rex_prefix);
       func_.add_byte(0xb8 | get_reg_rm_bits(dst));
-      add_immediate(value, true);
+      add_immediate<8>(value);
     }
 
 
@@ -212,7 +212,14 @@ namespace loxx
       func_.add_byte(rex_prefix);
       func_.add_byte(opcode);
       func_.add_byte(mod_rm_byte);
-      add_immediate(value);
+
+      if (value > std::numeric_limits<std::uint8_t>::max()) {
+        add_immediate<4>(value);
+      }
+      else if (value >= 0) {
+        add_immediate<1>(value);
+      }
+    }
     }
 
 
@@ -237,31 +244,12 @@ namespace loxx
       func_.add_byte(rex_prefix);
       func_.add_byte(read ? 0x8b : 0x89);
       func_.add_byte(mod_rm_byte);
-      add_immediate(offset);
-    }
 
-
-    void Assembler<RegisterX86>::add_immediate(
-        const std::uint64_t value, const bool all_64_bits)
-    {
-      const auto next_byte = [&] {
-        static int i = 0;
-        return static_cast<std::uint8_t>(0xff & (value >> (8 * (i++))));
-      };
-      if (all_64_bits) {
-        std::array<std::uint8_t, 8> bytes;
-        std::generate(bytes.begin(), bytes.end(), next_byte);
-        func_.add_bytes(bytes.begin(), bytes.end());
-        return;
+      if (offset > 0) {
+        add_immediate<1>(offset);
       }
-
-      if (value >= 256) {
-        std::array<std::uint8_t, 4> bytes;
-        std::generate(bytes.begin(), bytes.end(), next_byte);
-        func_.add_bytes(bytes.begin(), bytes.end());
-      }
-      else if (value > 0) {
-        func_.add_byte(static_cast<std::uint8_t>(0xff & value));
+      else if (offset >= 256) {
+        add_immediate<4>(offset);
       }
     }
   }

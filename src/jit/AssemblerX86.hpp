@@ -58,11 +58,30 @@ namespace loxx
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int offset, const bool read);
 
-      void add_immediate(
-          const std::uint64_t value, const bool all_64_bits = false);
+      template <std::size_t N>
+      void add_immediate(const std::uint64_t value);
 
       AssemblyFunction func_; 
     };
+
+
+    template <std::size_t N>
+    void Assembler<RegisterX86>::add_immediate(const std::uint64_t value)
+    {
+      if (N == 1) {
+        func_.add_byte(static_cast<std::uint8_t>(0xff & value));
+        return;
+      }
+
+      int i = 0;
+      const auto next_byte = [&] {
+        return static_cast<std::uint8_t>(0xff & (value >> (8 * (i++))));
+      };
+
+      std::array<std::uint8_t, N> bytes;
+      std::generate(bytes.begin(), bytes.end(), next_byte);
+      func_.add_bytes(bytes.begin(), bytes.end());
+    }
   }
 }
 
