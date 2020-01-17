@@ -27,6 +27,20 @@ namespace loxx
 {
   namespace jit
   {
+    enum class Condition {
+      ABOVE,
+      ABOVE_OR_EQUAL,
+      BELOW,
+      BELOW_OR_EQUAL,
+      EQUAL,
+      NOT_EQUAL,
+      GREATER,
+      GREATER_OR_EQUAL,
+      LESS,
+      LESS_OR_EQUAL,
+    };
+
+
     template <>
     class Assembler<RegisterX86>
     {
@@ -53,6 +67,8 @@ namespace loxx
 
       void add_compare_reg_imm(
           const RegisterX86 reg, const std::uint64_t value);
+
+      void add_conditional_jump(const Condition condition, std::int32_t offset);
 
       void add_move_reg_to_from_mem(
           const RegisterX86 dst, const RegisterX86 src,
