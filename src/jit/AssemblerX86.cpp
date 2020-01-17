@@ -188,6 +188,34 @@ namespace loxx
     }
 
 
+    void Assembler<RegisterX86>::add_compare_reg_imm(
+        const RegisterX86 reg, const std::uint64_t value)
+    {
+      const std::uint8_t rex_prefix =
+          reg_is_64_bit(reg) ? 0b01001001 : 0b01001000;
+
+      const std::uint8_t opcode = [&] {
+        if (value < std::numeric_limits<std::uint8_t>::max()) {
+          return 0x83;
+        }
+        else if (value < std::numeric_limits<std::uint32_t>::max()) {
+          return 0x81;
+        }
+        else {
+          throw JITError("unsigned integer overflow");
+        }
+      } ();
+
+      const std::uint8_t mod_rm_byte =
+          0b11111000 | get_reg_rm_bits(reg);
+
+      func_.add_byte(rex_prefix);
+      func_.add_byte(opcode);
+      func_.add_byte(mod_rm_byte);
+      add_immediate(value);
+    }
+
+
     void Assembler<RegisterX86>::add_move_reg_to_from_mem(
         const RegisterX86 dst, const RegisterX86 src,
         const unsigned int offset, const bool read)
