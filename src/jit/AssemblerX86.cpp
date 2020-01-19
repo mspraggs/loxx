@@ -266,6 +266,39 @@ namespace loxx
     }
 
 
+    void Assembler<RegisterX86>::add_jump(const std::int32_t offset)
+    {
+      const auto is_short = offset <= 127 and offset >= -128;
+
+      const std::uint8_t opcode = [&] {
+        if (is_short) {
+          return 0xeb;
+        }
+        return 0xe9;
+      } ();
+
+      func_.add_byte(opcode);
+
+      if (is_short) {
+        add_immediate<1>(static_cast<std::uint64_t>(offset));
+      }
+      else {
+        add_immediate<4>(static_cast<std::uint64_t>(offset));
+      }
+    }
+
+
+    void Assembler<RegisterX86>::add_jump(const RegisterX86 offset)
+    {
+      if (reg_is_64_bit(offset)) {
+        func_.add_byte(0x41);
+      }
+      func_.add_byte(0xff);
+      func_.add_byte(0xe0 | get_reg_rm_bits(offset));
+    }
+
+
+
     void Assembler<RegisterX86>::add_move_reg_to_from_mem(
         const RegisterX86 dst, const RegisterX86 src,
         const unsigned int offset, const bool read)
