@@ -45,8 +45,9 @@ namespace loxx
       HashSet<Key, Hash, Compare>>;
 
   public:
-    using Iter = detail::HashStructIterator<Key, Hash, Compare>;
     using Elem = Optional<Key>;
+    using Iter = detail::HashStructIterator<Key, Hash, Compare>;
+    using ConstIter = detail::HashStructIterator<const Key, Hash, Compare>;
 
     explicit HashSet()
         : num_used_slots_(0), max_used_slots_(detail::default_max_used_slots),
@@ -66,6 +67,8 @@ namespace loxx
 
     auto begin() -> Iter;
     auto end() -> Iter;
+    auto begin() const -> ConstIter;
+    auto end() const -> ConstIter;
 
   private:
     struct KeyExtractor
@@ -191,6 +194,20 @@ namespace loxx
   auto HashSet<Key, Hash, Compare>::end() -> HashSet::Iter
   {
     return Iter(data_.end(), data_.end());
+  }
+
+
+  template <typename Key, typename Hash, typename Compare>
+  auto HashSet<Key, Hash, Compare>::begin() const -> HashSet::ConstIter
+  {
+    return ConstIter(data_.cbegin(), data_.cend());
+  }
+
+
+  template <typename Key, typename Hash, typename Compare>
+  auto HashSet<Key, Hash, Compare>::end() const -> HashSet::ConstIter
+  {
+    return ConstIter(data_.cend(), data_.cend());
   }
 }
 
