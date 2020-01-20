@@ -51,6 +51,8 @@ namespace loxx
 
       bool operator() () const;
 
+      std::size_t size() const { return assembly_.size(); }
+
     private:
       template <typename T>
       struct MmapAllocator
