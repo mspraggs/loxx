@@ -27,7 +27,7 @@ namespace loxx
   {
     void AssemblyFunction::add_byte(const std::uint8_t byte)
     {
-      check_lock();
+      check_unlocked();
       assembly_.push_back(byte);
     }
 
@@ -35,7 +35,7 @@ namespace loxx
     void AssemblyFunction::write_byte(
         const std::size_t pos, const std::uint8_t byte)
     {
-      check_lock();
+      check_unlocked();
       assembly_[pos] = byte;
     }
 
@@ -54,15 +54,23 @@ namespace loxx
 
     bool AssemblyFunction::operator() () const
     {
-      check_lock();
+      check_locked();
       const auto func = reinterpret_cast<bool (*) ()>(assembly_.data());
       return func();
     }
 
 
-    void AssemblyFunction::check_lock() const
+    void AssemblyFunction::check_locked() const
     {
       if (not locked_) {
+        throw JITError("invalid memory access");
+      }
+    }
+
+
+    void AssemblyFunction::check_unlocked() const
+    {
+      if (locked_) {
         throw JITError("invalid memory access");
       }
     }

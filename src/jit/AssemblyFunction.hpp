@@ -69,7 +69,8 @@ namespace loxx
         void deallocate(T* ptr, const std::size_t n);
       };
 
-      void check_lock() const;
+      void check_locked() const;
+      void check_unlocked() const;
 
       bool locked_;
       std::vector<std::uint8_t, MmapAllocator<std::uint8_t>> assembly_;
@@ -79,7 +80,7 @@ namespace loxx
     template <typename Iter>
     void AssemblyFunction::add_bytes(const Iter begin, const Iter end)
     {
-      check_lock();
+      check_unlocked();
       assembly_.insert(assembly_.end(), begin, end);
     }
 
@@ -88,7 +89,7 @@ namespace loxx
     void AssemblyFunction::write_bytes(
         const std::size_t pos, const Iter begin, const Iter end)
     {
-      check_lock();
+      check_unlocked();
       std::copy(begin, end, assembly_.begin() + pos);
     }
 
