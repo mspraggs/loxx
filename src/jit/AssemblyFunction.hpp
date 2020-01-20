@@ -63,6 +63,8 @@ namespace loxx
         void deallocate(T* ptr, const std::size_t n);
       };
 
+      void check_lock() const;
+
       bool locked_;
       std::vector<std::uint8_t, MmapAllocator<std::uint8_t>> assembly_;
     };

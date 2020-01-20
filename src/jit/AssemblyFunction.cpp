@@ -55,5 +55,13 @@ namespace loxx
       const auto func = reinterpret_cast<bool (*) ()>(assembly_.data());
       return func();
     }
+
+
+    void AssemblyFunction::check_lock() const
+    {
+      if (not locked_) {
+        throw JITError("invalid memory access");
+      }
+    }
   }
 }
