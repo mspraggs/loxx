@@ -222,7 +222,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_conditional_jump(
+    std::size_t Assembler<RegisterX86>::add_conditional_jump(
         const Condition condition, std::int32_t offset)
     {
       const auto is_short = offset <= 127 and offset >= -128;
@@ -257,16 +257,21 @@ namespace loxx
         func_.add_byte(0x0f);
       }
       func_.add_byte(opcode);
+
+      const auto ret = func_.size();
+
       if (is_short) {
         add_immediate<1>(static_cast<std::uint64_t>(offset));
       }
       else {
         add_immediate<4>(static_cast<std::uint64_t>(offset));
       }
+
+      return ret;
     }
 
 
-    void Assembler<RegisterX86>::add_jump(const std::int32_t offset)
+    std::size_t Assembler<RegisterX86>::add_jump(const std::int32_t offset)
     {
       const auto is_short = offset <= 127 and offset >= -128;
 
@@ -279,12 +284,16 @@ namespace loxx
 
       func_.add_byte(opcode);
 
+      const auto ret = func_.size();
+
       if (is_short) {
         add_immediate<1>(static_cast<std::uint64_t>(offset));
       }
       else {
         add_immediate<4>(static_cast<std::uint64_t>(offset));
       }
+
+      return ret;
     }
 
 

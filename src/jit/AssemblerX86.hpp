@@ -68,8 +68,9 @@ namespace loxx
       void add_compare_reg_imm(
           const RegisterX86 reg, const std::uint64_t value);
 
-      void add_conditional_jump(const Condition condition, std::int32_t offset);
-      void add_jump(const std::int32_t offset);
+      std::size_t add_conditional_jump(
+          const Condition condition, std::int32_t offset);
+      std::size_t add_jump(const std::int32_t offset);
       void add_jump(const RegisterX86 offset);
 
       void add_move_reg_to_from_mem(
