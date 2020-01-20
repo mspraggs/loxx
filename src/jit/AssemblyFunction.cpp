@@ -27,9 +27,7 @@ namespace loxx
   {
     void AssemblyFunction::add_byte(const std::uint8_t byte)
     {
-      if (locked_) {
-        throw JITError("invalid memory access");
-      }
+      check_lock();
       assembly_.push_back(byte);
     }
 
@@ -48,10 +46,7 @@ namespace loxx
 
     bool AssemblyFunction::operator() () const
     {
-      if (not locked_) {
-        throw JITError("invalid memory access");
-      }
-
+      check_lock();
       const auto func = reinterpret_cast<bool (*) ()>(assembly_.data());
       return func();
     }

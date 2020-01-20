@@ -73,9 +73,9 @@ namespace loxx
     template <typename Iter>
     void AssemblyFunction::add_bytes(const Iter begin, const Iter end)
     {
-      for (auto it = begin; it != end; ++it) {
-        add_byte(*it);
-      }
+      check_lock();
+      assembly_.insert(assembly_.end(), begin, end);
+    }
     }
 
 
