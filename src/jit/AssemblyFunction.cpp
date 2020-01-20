@@ -32,6 +32,14 @@ namespace loxx
     }
 
 
+    void AssemblyFunction::write_byte(
+        const std::size_t pos, const std::uint8_t byte)
+    {
+      check_lock();
+      assembly_[pos] = byte;
+    }
+
+
     void AssemblyFunction::lock()
     {
       const auto result = mprotect(

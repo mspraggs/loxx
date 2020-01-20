@@ -47,6 +47,12 @@ namespace loxx
       template <typename Iter>
       void add_bytes(const Iter begin, const Iter end);
 
+      void write_byte(const std::size_t pos, const std::uint8_t byte);
+
+      template <typename Iter>
+      void write_bytes(
+          const std::size_t pos, const Iter begin, const Iter end);
+
       void lock();
 
       bool operator() () const;
@@ -76,6 +82,14 @@ namespace loxx
       check_lock();
       assembly_.insert(assembly_.end(), begin, end);
     }
+
+
+    template <typename Iter>
+    void AssemblyFunction::write_bytes(
+        const std::size_t pos, const Iter begin, const Iter end)
+    {
+      check_lock();
+      std::copy(begin, end, assembly_.begin() + pos);
     }
 
 
