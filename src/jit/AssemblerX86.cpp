@@ -131,10 +131,10 @@ namespace loxx
       //
       // Resulting assembly should look a bit like this:
       //
-      //     mov     rax, [$op0_address+8] ; Offset by eight bytes
+      //     mov     rax, [$op0_address] ; Offset by eight bytes
       //     cmp     rax, $op0_type
       //     jne     quit
-      //     mov     rax, [$op1_address+8]
+      //     mov     rax, [$op1_address]
       //     cmp     rax, $op1_type
       //     jne     quit
       //     ...
@@ -156,27 +156,30 @@ namespace loxx
         add_move_reg_imm(
             general_scratch_,
             reinterpret_cast<std::uint64_t>(operand.memory_address()));
-        add_move_reg_mem(general_scratch_, general_scratch_, 8);
+        add_move_reg_mem(general_scratch_, general_scratch_);
         add_compare_reg_imm(
             general_scratch_, static_cast<std::uint64_t>(operand.value_type()));
 
         /// TODO: Should be able to precompute all this given the input.
         jump_offsets.push_back(
-            add_conditional_jump(Condition::NOT_EQUAL, 0));
+            add_conditional_jump(Condition::NOT_EQUAL, 256));
         jump_starts.push_back(func_.size());
-      }
-
-      for (std::size_t i = 0; i < operands.size(); ++i) {
-        const auto pos = jump_offsets[i];
-        const auto jump_size =
-            static_cast<std::uint8_t>(func_.size() - jump_starts[i]);
-        func_.write_byte(pos, jump_size);
       }
 
       const auto start_jump_pos = add_jump(0);
       const auto start_jump_size = func_.size();
+
+      for (std::size_t i = 0; i < operands.size(); ++i) {
+        const auto pos = jump_offsets[i];
+        const auto jump_size =
+            static_cast<std::int32_t>(func_.size() - jump_starts[i]);
+        func_.write_integer(pos, jump_size);
+      }
+
       add_move_reg_imm(RegisterX86::RAX, 1);
+      add_pop(RegisterX86::RBP);
       add_return();
+
       func_.write_byte(
           start_jump_pos,
           static_cast<std::uint8_t>(func_.size() - start_jump_size));
