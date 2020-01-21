@@ -53,6 +53,8 @@ namespace loxx
           const OperandSet& external_operands);
 
     private:
+      void insert_type_guards(const OperandSet& operands);
+
       void add_return();
       void add_push(const RegisterX86 src);
       void add_pop(const RegisterX86 dst);
