@@ -39,7 +39,7 @@ namespace loxx
         const RuntimeContext& context)
     {
       block_boundary_flagged_ = false;
-      const auto block_info = BlockInfo{&context.code, ip};
+      const auto block_info = BlockInfo{&context.code, ip, ip};
       auto count_elem = block_counts_.insert(block_info, 0);
       count_elem.first->second += 1;
 
