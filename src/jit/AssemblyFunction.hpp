@@ -53,6 +53,9 @@ namespace loxx
       void write_bytes(
           const std::size_t pos, const Iter begin, const Iter end);
 
+      template <typename T>
+      void write_integer(const std::size_t pos, const T value);
+
       void lock();
 
       bool operator() () const;
@@ -91,6 +94,14 @@ namespace loxx
     {
       check_unlocked();
       std::copy(begin, end, assembly_.begin() + pos);
+    }
+
+
+    template <typename T>
+    void AssemblyFunction::write_integer(const std::size_t pos, const T value)
+    {
+      const auto ptr = reinterpret_cast<const std::uint8_t*>(&value);
+      write_bytes(pos, ptr, ptr + sizeof(T));
     }
 
 
