@@ -94,6 +94,20 @@ namespace loxx
     }
 
 
+    Assembler<RegisterX86>::Assembler()
+    {
+      const auto scratch_registers = get_scratch_registers<RegisterX86>();
+      for (const auto reg : scratch_registers) {
+        if (reg_supports_float(reg)) {
+          float_scratch_ = reg;
+        }
+        else if (reg_supports_ptr) {
+          general_scratch_ = reg;
+        }
+      }
+    }
+
+
     AssemblyFunction Assembler<RegisterX86>::assemble(
         const std::vector<SSAInstruction<2>>& ssa_ir,
         const AllocationMap<RegisterX86>& allocation_map,

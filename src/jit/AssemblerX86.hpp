@@ -45,6 +45,8 @@ namespace loxx
     class Assembler<RegisterX86>
     {
     public:
+      Assembler();
+
       AssemblyFunction assemble(
           const std::vector<SSAInstruction<2>>& ssa_ir,
           const AllocationMap<RegisterX86>& allocation_map,
@@ -80,6 +82,8 @@ namespace loxx
       template <std::size_t N>
       void add_immediate(const std::uint64_t value);
 
+      RegisterX86 general_scratch_;
+      RegisterX86 float_scratch_;
       AssemblyFunction func_; 
     };
 
