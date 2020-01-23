@@ -100,8 +100,7 @@ namespace loxx
     static unsigned int last_line_num = 0;
     const unsigned int current_line_num = get_current_line(output, pos);
 
-    const auto& edges = output.basic_blocks;
-    const auto is_block_edge = edges.has_item(pos);
+    const auto is_block_edge = output.basic_block_boundary_flags[pos];
 
     std::stringstream line_num_ss;
     line_num_ss << std::right << std::setw(3) << std::setfill(' ');

@@ -43,7 +43,7 @@ namespace loxx
     std::vector<Value> constants;
     std::vector<std::string> varnames;
     std::vector<std::tuple<std::int8_t, std::uint8_t>> line_num_table;
-    HashTable<std::size_t, char> basic_blocks;
+    std::vector<bool> basic_block_boundary_flags;
   };
 
 

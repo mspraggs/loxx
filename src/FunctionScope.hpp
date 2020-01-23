@@ -56,7 +56,6 @@ namespace loxx
           enclosing_(std::move(enclosing)), code_object_(new CodeObject)
     {
       code_object_->name = func.name.lexeme();
-      insert_block_edge(0);
 
       if (type_ == FunctionType::FUNCTION) {
         add_local("");
@@ -101,7 +100,8 @@ namespace loxx
     std::unique_ptr<CodeObject> release_code_object();
     std::vector<Upvalue> release_upvalues();
 
-    void add_instruction(const Instruction instruction);
+    void add_instruction(
+        const Instruction instruction, const bool is_block_boundary = false);
     template <typename T>
     void add_integer(const T integer);
     std::size_t add_jump(const Instruction instruction);
@@ -153,6 +153,9 @@ namespace loxx
     auto& bytecode = code_object_->bytecode;
     const auto integer_ptr = reinterpret_cast<const std::uint8_t*>(&integer);
     bytecode.insert(bytecode.end(), integer_ptr, integer_ptr + sizeof(T));
+
+    auto& flags = code_object_->basic_block_boundary_flags;
+    flags.insert(flags.end(), sizeof(T), false);
   }
 
 

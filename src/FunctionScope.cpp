@@ -214,6 +214,7 @@ namespace loxx
 
   std::unique_ptr<CodeObject> FunctionScope::release_code_object()
   {
+    insert_block_edge(0);
     std::unique_ptr<CodeObject> ret;
     std::swap(ret, code_object_);
     return ret;
@@ -228,9 +229,11 @@ namespace loxx
   }
 
 
-  void FunctionScope::add_instruction(const Instruction instruction)
+  void FunctionScope::add_instruction(
+      const Instruction instruction, const bool is_block_boundary)
   {
     code_object_->bytecode.push_back(static_cast<std::uint8_t>(instruction));
+    code_object_->basic_block_boundary_flags.push_back(is_block_boundary);
   }
 
 
@@ -239,7 +242,6 @@ namespace loxx
     add_instruction(instruction);
     const auto ret = current_bytecode_size();
     add_integer<InstrArgUShort>(0);
-    insert_block_edge(current_bytecode_size());
     return ret;
   }
 
@@ -319,7 +321,6 @@ namespace loxx
 
   void FunctionScope::insert_block_edge(const std::size_t offset)
   {
-    auto& edges = code_object_->basic_blocks;
-    edges[offset];
+    code_object_->basic_block_boundary_flags[offset] = true;
   }
 }

@@ -119,7 +119,7 @@ namespace loxx
 
     const auto first_jump_pos = func_->add_jump(Instruction::CONDITIONAL_JUMP);
 
-    func_->add_instruction(Instruction::POP);
+    func_->add_instruction(Instruction::POP, true);
 
     compile(*stmt.then_branch);
 
@@ -127,7 +127,7 @@ namespace loxx
 
     func_->patch_jump(first_jump_pos);
 
-    func_->add_instruction(Instruction::POP);
+    func_->add_instruction(Instruction::POP, true);
 
     if (stmt.else_branch != nullptr) {
       compile(*stmt.else_branch);
@@ -164,7 +164,6 @@ namespace loxx
     else {
       func_->add_instruction(Instruction::NIL);
     }
-    func_->insert_block_edge(func_->current_bytecode_size());
     func_->add_instruction(Instruction::RETURN);
     func_->update_line_num_table(stmt.keyword);
   }
@@ -205,7 +204,7 @@ namespace loxx
     const auto first_jump_pos = func_->add_jump(Instruction::CONDITIONAL_JUMP);
     // We want to jump over the jump that takes us out of the while loop, which
     // also involves jumping over a pop instruction
-    func_->add_instruction(Instruction::POP);
+    func_->add_instruction(Instruction::POP, true);
 
     // Compile the body of the while loop.
     compile(*stmt.body);
@@ -214,7 +213,7 @@ namespace loxx
     func_->add_loop(Instruction::LOOP, first_label_pos);
 
     func_->patch_jump(first_jump_pos);
-    func_->add_instruction(Instruction::POP);
+    func_->add_instruction(Instruction::POP, true);
   }
 
 
@@ -500,7 +499,6 @@ namespace loxx
     func_->end_scope();
     // Return "nil" if we haven't returned already.
     func_->add_instruction(Instruction::NIL);
-    func_->insert_block_edge(func_->current_bytecode_size());
     func_->add_instruction(Instruction::RETURN);
 
     const auto upvalues = func_->release_upvalues();
