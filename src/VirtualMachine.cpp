@@ -443,7 +443,7 @@ namespace loxx
   void VirtualMachine::execute_call()
   {
     const auto num_args = read_integer<InstrArgUByte>();
-    profiler_->flag_block_boundary(ip_);
+    profiler_->skip_current_block();
 
     if (not holds_alternative<ObjectPtr>(stack_.top(num_args))) {
       throw make_runtime_error("Can only call functions and classes.");

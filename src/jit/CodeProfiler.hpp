@@ -52,9 +52,8 @@ namespace loxx
       CodeProfiler(
           Compiler& compiler, const bool debug,
           const std::size_t block_count_threshold)
-          : debug_(debug), block_boundary_flagged_(true),
-            block_count_threshold_(block_count_threshold), hot_block_(nullptr),
-            compiler_(&compiler)
+          : debug_(debug), skip_current_block_(false),
+            block_count_threshold_(block_count_threshold), compiler_(&compiler)
       {
       }
 
@@ -64,8 +63,7 @@ namespace loxx
 
       void flag_block_boundary(const CodeObject::InsPtr ip);
 
-      bool is_profiling_instructions() const { return hot_block_; }
-      bool block_boundary_flagged() const { return block_boundary_flagged_; }
+      void skip_current_block();
 
     private:
 
@@ -81,12 +79,13 @@ namespace loxx
         bool operator() (const BlockInfo& info1, const BlockInfo& info2) const;
       };
 
-      bool debug_, block_boundary_flagged_;
+      bool debug_, skip_current_block_;
       std::size_t block_count_threshold_;
-      BlockInfo* hot_block_;
+      CodeObject::InsPtr current_block_;
+      std::unique_ptr<BlockInfo> hot_block_;
 
-      HashTable<BlockInfo, std::size_t, BlockInfoHasher, BlockInfoCompare>
-          block_counts_;
+      HashSet<CodeObject::InsPtr, InsPtrHasher> ignored_blocks_;
+      HashTable<CodeObject::InsPtr, std::size_t, InsPtrHasher> block_counts_;
       Compiler* compiler_;
     };
   }

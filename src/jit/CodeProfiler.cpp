@@ -38,9 +38,11 @@ namespace loxx
         const CodeObject::InsPtr ip,
         const RuntimeContext& context)
     {
-      block_boundary_flagged_ = false;
-      const auto block_info = BlockInfo{&context.code, ip, ip};
-      auto count_elem = block_counts_.insert(block_info, 0);
+      current_block_ = ip;
+      if (ignored_blocks_.has_item(ip)) {
+        return;
+      }
+      auto count_elem = block_counts_.insert(ip, 0);
       count_elem.first->second += 1;
 
   #ifndef NDEBUG
@@ -51,7 +53,7 @@ namespace loxx
   #endif
 
       if (count_elem.first->second >= block_count_threshold_) {
-        hot_block_ = &count_elem.first->first;
+        hot_block_ = std::make_unique<BlockInfo>(BlockInfo{&context.code, ip, ip});
         compiler_->build_context(context);
       }
     }
@@ -59,28 +61,31 @@ namespace loxx
 
     void CodeProfiler::flag_block_boundary(const CodeObject::InsPtr ip)
     {
-      block_boundary_flagged_ = true;
-
       if (not hot_block_) {
         return;
       }
 
-      auto& block_info = *hot_block_;
-      hot_block_ = nullptr;
-
-      block_info.end = ip;
+      std::unique_ptr<BlockInfo> block_info;
+      block_info.swap(hot_block_);
+      block_info->end = ip;
 
   #ifndef NDEBUG
       if (debug_) {
         std::cout << "=== Compiling Bytecode ===\n";
-        print_bytecode(*block_info.code, block_info.begin, block_info.end);
+        print_bytecode(*block_info->code, block_info->begin, block_info->end);
       }
   #endif
 
       try {
-        compiler_->compile(block_info.begin, block_info.end);
+        compiler_->compile(block_info->begin, block_info->end);
       }
       catch (const JITError& err) {}
+    }
+
+
+    void CodeProfiler::skip_current_block()
+    {
+      ignored_blocks_.insert(current_block_);
     }
 
 
