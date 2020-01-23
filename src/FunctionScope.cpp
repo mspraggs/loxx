@@ -214,7 +214,6 @@ namespace loxx
 
   std::unique_ptr<CodeObject> FunctionScope::release_code_object()
   {
-    insert_block_edge(0);
     std::unique_ptr<CodeObject> ret;
     std::swap(ret, code_object_);
     return ret;

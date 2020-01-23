@@ -29,8 +29,8 @@ namespace loxx
   {
     compile_stmts(statements);
     func_->add_instruction(Instruction::NIL);
-    func_->insert_block_edge(func_->current_bytecode_size());
     func_->add_instruction(Instruction::RETURN);
+    func_->insert_block_edge(0);
   }
 
 

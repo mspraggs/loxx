@@ -76,7 +76,8 @@ namespace loxx
       }
 #endif
 
-      if (profiler_->block_boundary_flagged()) {
+      const auto pos = std::distance(code_object_->bytecode.begin(), ip_);
+      if (code_object_->basic_block_boundary_flags[pos]) {
         profiler_->count_basic_block(
             ip_,
             RuntimeContext{
