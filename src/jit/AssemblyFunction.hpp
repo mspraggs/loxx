@@ -47,6 +47,9 @@ namespace loxx
       template <typename Iter>
       void add_bytes(const Iter begin, const Iter end);
 
+      template <typename... Args>
+      void add_bytes(Args&&... bytes);
+
       void write_byte(const std::size_t pos, const std::uint8_t byte);
 
       template <typename Iter>
@@ -72,6 +75,11 @@ namespace loxx
         void deallocate(T* ptr, const std::size_t n);
       };
 
+      void add_bytes_impl() {}
+
+      template <typename... Args>
+      void add_bytes_impl(const std::uint8_t byte0, Args&&... bytes);
+
       void check_locked() const;
       void check_unlocked() const;
 
@@ -85,6 +93,13 @@ namespace loxx
     {
       check_unlocked();
       assembly_.insert(assembly_.end(), begin, end);
+    }
+
+
+    template <typename... Args>
+    void AssemblyFunction::add_bytes(Args&&... bytes)
+    {
+      add_bytes_impl(std::forward<Args>(bytes)...);
     }
 
 
@@ -102,6 +117,15 @@ namespace loxx
     {
       const auto ptr = reinterpret_cast<const std::uint8_t*>(&value);
       write_bytes(pos, ptr, ptr + sizeof(T));
+    }
+
+
+    template <typename... Args>
+    void AssemblyFunction::add_bytes_impl(
+        const std::uint8_t byte0, Args&&... bytes)
+    {
+      add_byte(byte0);
+      add_bytes_impl(std::forward<Args>(bytes)...);
     }
 
 
