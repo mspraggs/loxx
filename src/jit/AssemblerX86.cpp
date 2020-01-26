@@ -76,6 +76,18 @@ namespace loxx
     }
 
 
+    std::uint8_t get_offset_bits(const unsigned int offset)
+    {
+      if (offset == 0) {
+        return 0b00000000;
+      }
+      if (offset <= std::numeric_limits<std::uint8_t>::max()) {
+        return 0b01000000;
+      }
+      return 0b10000000;
+    }
+
+
     std::uint8_t get_rex_prefix_for_regs(
         const RegisterX86 reg0, const RegisterX86 reg1)
     {
@@ -391,15 +403,7 @@ namespace loxx
         const RegisterX86 dst, const RegisterX86 src,
         const unsigned int offset, const bool read)
     {
-      const std::uint8_t offset_bits = [&] {
-        if (offset == 0) {
-          return 0b00000000;
-        }
-        if (offset < 256) {
-          return 0b01000000;
-        }
-        return 0b10000000;
-      } ();
+      const std::uint8_t offset_bits = get_offset_bits(offset);
 
       const std::uint8_t rex_prefix =
           0b01001000 | get_rex_prefix_for_regs(src, dst);
