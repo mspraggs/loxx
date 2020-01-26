@@ -241,6 +241,29 @@ namespace loxx
     }
 
 
+    void Assembler<RegisterX86>::add_addition_reg_reg(
+        const RegisterX86 reg0, const RegisterX86 reg1)
+    {
+      if (reg_supports_float(reg0) and reg_supports_float(reg1)) {
+        const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(reg1, reg0);
+        const auto mod_rm_byte =
+            0b11000000 | (get_reg_rm_bits(reg0) << 3) | get_reg_rm_bits(reg1);
+
+        func_.add_byte(0xf2);
+        if (rex_prefix_reg_bits != 0) {
+          func_.add_bytes(0x40 | rex_prefix_reg_bits);
+        }
+        func_.add_bytes(0x0f, 0x58, mod_rm_byte);
+      }
+      else if (reg_supports_int(reg0) and reg_supports_int(reg1)) {
+
+      }
+      else {
+        throw JITError("invalid registers for add");
+      }
+    }
+
+
     void Assembler<RegisterX86>::add_move_reg_reg(
         const RegisterX86 dst, const RegisterX86 src)
     {
