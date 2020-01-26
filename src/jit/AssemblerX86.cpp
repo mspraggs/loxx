@@ -272,6 +272,21 @@ namespace loxx
     }
 
 
+    void Assembler<RegisterX86>::add_multiplication_reg_reg(
+        const RegisterX86 reg0, const RegisterX86 reg1)
+    {
+      if (reg_supports_float(reg0) and reg_supports_float(reg1)) {
+        add_xmm_binary_op(0x59, reg0, reg1);
+      }
+      else if (reg_supports_int(reg0) and reg_supports_int(reg1)) {
+
+      }
+      else {
+        throw JITError("invalid registers for add");
+      }
+    }
+
+
     void Assembler<RegisterX86>::add_move_reg_reg(
         const RegisterX86 dst, const RegisterX86 src)
     {
