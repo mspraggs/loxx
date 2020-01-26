@@ -198,6 +198,31 @@ namespace loxx
     }
 
 
+    void Assembler<RegisterX86>::add_move(
+        const SSAInstruction<2>& instruction,
+        const AllocationMap<RegisterX86>& allocation_map)
+    {
+      const auto& operands = instruction.operands();
+
+      if (operands[0].is_register() and operands[1].is_memory()) {
+        const auto address =
+            reinterpret_cast<std::uint64_t>(operands[1].memory_address());
+        const auto dst_reg =
+            unsafe_get<RegisterX86>(allocation_map.at(operands[0]));
+
+        add_move_reg_imm(general_scratch_, address);
+        add_move_reg_mem(dst_reg, general_scratch_, 8);
+      }
+      else if (operands[0].is_register() and operands[1].is_register()) {
+        const auto src_reg =
+            unsafe_get<RegisterX86>(allocation_map.at(operands[1]));
+        const auto dst_reg =
+            unsafe_get<RegisterX86>(allocation_map.at(operands[0]));
+        add_move_reg_reg(dst_reg, src_reg);
+      }
+    }
+
+
     void Assembler<RegisterX86>::add_return()
     {
       func_.add_byte(0xc3);

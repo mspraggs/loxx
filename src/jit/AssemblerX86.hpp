@@ -55,6 +55,10 @@ namespace loxx
     private:
       void insert_type_guards(const OperandSet& operands);
 
+      void add_move(
+          const SSAInstruction<2>& instruction,
+          const AllocationMap<RegisterX86>& allocation_map);
+
       void add_return();
       void add_push(const RegisterX86 src);
       void add_pop(const RegisterX86 dst);
