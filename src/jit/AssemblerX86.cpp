@@ -413,11 +413,11 @@ namespace loxx
       func_.add_byte(read ? 0x8b : 0x89);
       func_.add_byte(mod_rm_byte);
 
-      if (offset > 0) {
-        add_immediate<1>(offset);
-      }
-      else if (offset >= 256) {
+      if (offset > std::numeric_limits<std::uint8_t>::max()) {
         add_immediate<4>(offset);
+      }
+      else if (offset > 0) {
+        add_immediate<1>(offset);
       }
     }
   }
