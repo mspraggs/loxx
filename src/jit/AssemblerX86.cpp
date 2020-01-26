@@ -239,6 +239,22 @@ namespace loxx
     }
 
 
+    void Assembler<RegisterX86>::add_multiplication(
+        const SSAInstruction<2>& instruction,
+        const AllocationMap<RegisterX86>& allocation_map)
+    {
+      const auto& operands = instruction.operands();
+
+      if (operands[0].is_register() and operands[1].is_register()) {
+        const auto reg0 =
+            unsafe_get<RegisterX86>(allocation_map.at(operands[0]));
+        const auto reg1 =
+            unsafe_get<RegisterX86>(allocation_map.at(operands[1]));
+        add_multiplication_reg_reg(reg0, reg1);
+      }
+    }
+
+
     void Assembler<RegisterX86>::add_return()
     {
       func_.add_byte(0xc3);

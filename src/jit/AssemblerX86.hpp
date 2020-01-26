@@ -61,6 +61,9 @@ namespace loxx
       void add_move(
           const SSAInstruction<2>& instruction,
           const AllocationMap<RegisterX86>& allocation_map);
+      void add_multiplication(
+          const SSAInstruction<2>& instruction,
+          const AllocationMap<RegisterX86>& allocation_map);
 
       void add_return();
       void add_push(const RegisterX86 src);
