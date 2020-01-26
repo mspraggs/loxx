@@ -84,6 +84,10 @@ namespace loxx
       std::size_t add_jump(const std::int32_t offset);
       void add_jump(const RegisterX86 offset);
 
+      void add_xmm_binary_op(
+          const std::uint8_t opcode,
+          const RegisterX86 reg0, const RegisterX86 reg1);
+
       void add_move_reg_to_from_mem(
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int offset, const bool read);
