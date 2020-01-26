@@ -252,7 +252,24 @@ namespace loxx
         add_move_reg_to_from_mem(dst, src, offset, true);
       }
       else if (reg_supports_float(dst)) {
+        const std::uint8_t offset_bits = get_offset_bits(offset);
 
+        const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(dst, src);
+        const auto mod_rm_byte =
+            offset_bits | (get_reg_rm_bits(dst) << 3) | get_reg_rm_bits(src);
+
+        func_.add_byte(0xf2);
+        if (rex_prefix_reg_bits != 0) {
+          func_.add_bytes(0x40 | rex_prefix_reg_bits);
+        }
+        func_.add_bytes(0x0f, 0x10, mod_rm_byte);
+
+        if (offset > std::numeric_limits<std::uint8_t>::max()) {
+          add_immediate<4>(offset);
+        }
+        else if (offset > 0) {
+          add_immediate<1>(offset);
+        }
       }
       else {
         throw JITError("invalid move registers");
