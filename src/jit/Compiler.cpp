@@ -48,7 +48,7 @@ namespace loxx
     }
 
 
-    void Compiler::compile(
+    AssemblyFunction Compiler::compile(
         const CodeObject::InsPtr begin, const CodeObject::InsPtr end)
     {
       ssa_ir_ = ssa_generator_.generate(begin, end);
@@ -74,7 +74,8 @@ namespace loxx
       auto func = assembler.assemble(
           ssa_ir_, allocation_map, ssa_generator_.external_operands());
       func.lock();
-      func();
+
+      return func;
     }
   }
 }

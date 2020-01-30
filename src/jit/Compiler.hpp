@@ -47,7 +47,7 @@ namespace loxx
           : debug_(debug), ssa_generator_(debug)
       {}
 
-      void compile(
+      AssemblyFunction compile(
           const CodeObject::InsPtr begin, const CodeObject::InsPtr end);
 
       void build_context(const RuntimeContext& context);
