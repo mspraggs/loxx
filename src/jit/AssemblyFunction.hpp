@@ -156,6 +156,24 @@ namespace loxx
     {
       munmap(ptr, n);
     }
+
+
+    template <typename T>
+    bool operator==(
+        const AssemblyFunction::MmapAllocator<T>&,
+        const AssemblyFunction::MmapAllocator<T>&)
+    {
+      return true;
+    }
+
+
+    template <typename T>
+    bool operator!=(
+        const AssemblyFunction::MmapAllocator<T>&,
+        const AssemblyFunction::MmapAllocator<T>&)
+    {
+      return false;
+    }
   }
 }
 
