@@ -128,6 +128,32 @@ namespace loxx
       add_push(RegisterX86::RBP);
       add_move_reg_reg(RegisterX86::RBP, RegisterX86::RSP);
       insert_type_guards(external_operands);
+
+      for (const auto& instruction : ssa_ir) {
+        const auto op = instruction.op();
+
+        switch (op) {
+
+        case Operator::ADD:
+          add_addition(instruction, allocation_map);
+          break;
+        case Operator::DIVIDE:
+          break;
+        case Operator::MOVE:
+          add_move(instruction, allocation_map);
+          break;
+        case Operator::MULTIPLY:
+          add_multiplication(instruction, allocation_map);
+          break;
+        case Operator::RETURN:
+          break;
+        case Operator::SUBTRACT:
+          break;
+        default:
+          throw JITError("unsupported SSA opcode");
+        }
+      }
+
       add_pop(RegisterX86::RBP);
       add_return();
       return func_;
