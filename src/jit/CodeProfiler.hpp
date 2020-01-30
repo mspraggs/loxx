@@ -28,6 +28,7 @@
 #include "../Stack.hpp"
 #include "../Value.hpp"
 
+#include "AssemblyFunction.hpp"
 #include "Compiler.hpp"
 
 
@@ -66,6 +67,9 @@ namespace loxx
       void skip_current_block();
 
     private:
+      template <typename T>
+      using InsPtrHashTable = HashTable<CodeObject::InsPtr, T, InsPtrHasher>;
+      using CompilationResult = std::pair<AssemblyFunction, CodeObject::InsPtr>;
 
       struct BlockInfoHasher
       {
@@ -86,6 +90,7 @@ namespace loxx
 
       HashSet<CodeObject::InsPtr, InsPtrHasher> ignored_blocks_;
       HashTable<CodeObject::InsPtr, std::size_t, InsPtrHasher> block_counts_;
+      InsPtrHashTable<std::vector<CompilationResult>> compilation_results_;
       Compiler* compiler_;
     };
   }
