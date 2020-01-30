@@ -236,6 +236,15 @@ namespace loxx
             unsafe_get<RegisterX86>(allocation_map.at(operands[0]));
         add_move_reg_reg(dst_reg, src_reg);
       }
+      else if (operands[0].is_memory() and operands[1].is_register()) {
+        const auto address =
+            reinterpret_cast<std::uint64_t>(operands[0].memory_address());
+        const auto src_reg =
+            unsafe_get<RegisterX86>(allocation_map.at(operands[1]));
+
+        add_move_reg_imm(general_scratch_, address);
+        add_move_mem_reg(general_scratch_, src_reg, 8);
+      }
     }
 
 
