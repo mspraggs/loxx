@@ -56,6 +56,7 @@ namespace loxx
 
     private:
       bool debug_;
+      const std::size_t* stack_size_ptr_;
 
       std::vector<SSAInstruction<2>> ssa_ir_;
 

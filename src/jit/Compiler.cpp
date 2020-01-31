@@ -44,6 +44,7 @@ namespace loxx
 
     void Compiler::build_context(const RuntimeContext& context)
     {
+      stack_size_ptr_ = context.stack.size_ptr();
       ssa_generator_.build_context(context);
     }
 
