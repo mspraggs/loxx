@@ -36,6 +36,7 @@ namespace loxx
       DIVIDE,
       MOVE,
       MULTIPLY,
+      POP,
       RETURN,
       SUBTRACT,
     };
@@ -127,6 +128,9 @@ namespace loxx
         break;
       case Operator::MULTIPLY:
         os << "MULTIPLY";
+        break;
+      case Operator::POP:
+        os << "POP";
         break;
       case Operator::RETURN:
         os << "RETURN";
