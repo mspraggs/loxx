@@ -106,6 +106,7 @@ namespace loxx
       void add_immediate(const std::uint64_t value);
 
       RegisterX86 general_scratch_;
+      RegisterX86 stack_size_;
       RegisterX86 float_scratch_;
       AssemblyFunction func_; 
     };

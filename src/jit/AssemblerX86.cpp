@@ -109,12 +109,18 @@ namespace loxx
     Assembler<RegisterX86>::Assembler()
     {
       const auto scratch_registers = get_scratch_registers<RegisterX86>();
+
+      unsigned int gen_reg_count = 0;
       for (const auto reg : scratch_registers) {
         if (reg_supports_float(reg)) {
           float_scratch_ = reg;
         }
-        else if (reg_supports_ptr) {
+        else if (reg_supports_ptr and gen_reg_count == 0) {
           general_scratch_ = reg;
+          gen_reg_count++;
+        }
+        else {
+          stack_size_ = reg;
         }
       }
     }
