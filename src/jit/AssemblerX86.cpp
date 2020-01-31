@@ -389,7 +389,7 @@ namespace loxx
       else if (reg_supports_float(dst)) {
         const std::uint8_t offset_bits = get_offset_bits(offset);
 
-        const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(dst, src);
+        const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(src, dst);
         const auto mod_rm_byte =
             offset_bits | (get_reg_rm_bits(dst) << 3) | get_reg_rm_bits(src);
 
