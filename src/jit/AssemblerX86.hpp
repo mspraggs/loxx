@@ -50,7 +50,8 @@ namespace loxx
       AssemblyFunction assemble(
           const std::vector<SSAInstruction<2>>& ssa_ir,
           const AllocationMap<RegisterX86>& allocation_map,
-          const OperandSet& external_operands);
+          const OperandSet& external_operands,
+          const std::size_t* stack_size_ptr);
 
     private:
       void insert_type_guards(const OperandSet& operands);

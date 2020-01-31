@@ -73,7 +73,8 @@ namespace loxx
 
       Assembler<Register> assembler;
       auto func = assembler.assemble(
-          ssa_ir_, allocation_map, ssa_generator_.external_operands());
+          ssa_ir_, allocation_map, ssa_generator_.external_operands(),
+          stack_size_ptr_);
       func.lock();
 
       return func;
