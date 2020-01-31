@@ -338,6 +338,19 @@ namespace loxx
     }
 
 
+    void Assembler<RegisterX86>::add_decrement(const RegisterX86 reg)
+    {
+      if (reg_supports_float(reg)) {
+        throw JITError("invalid register for decrement");
+      }
+      const std::uint8_t rex_prefix =
+          0b01001000 | get_rex_prefix_for_regs(reg, RegisterX86::RAX);
+      const std::uint8_t mod_rm_byte = 0b11001000 | get_reg_rm_bits(reg);
+
+      func_.add_bytes(rex_prefix, 0xff, mod_rm_byte);
+    }
+
+
     void Assembler<RegisterX86>::add_move_reg_reg(
         const RegisterX86 dst, const RegisterX86 src)
     {

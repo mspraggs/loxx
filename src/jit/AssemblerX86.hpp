@@ -74,6 +74,8 @@ namespace loxx
       void add_multiplication_reg_reg(
           const RegisterX86 reg0, const RegisterX86 reg1);
 
+      void add_decrement(const RegisterX86 reg);
+
       void add_move_reg_reg(const RegisterX86 dst, const RegisterX86 src);
       void add_move_reg_mem(
           const RegisterX86 dst, const RegisterX86 src,
