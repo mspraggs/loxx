@@ -161,7 +161,8 @@ namespace loxx
     std::vector<RegisterX86> get_scratch_registers<RegisterX86>()
     {
       return {
-        RegisterX86::RDX,
+        RegisterX86::R14,
+        RegisterX86::R15,
         RegisterX86::XMM1,
       };
     }
