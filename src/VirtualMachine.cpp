@@ -78,7 +78,7 @@ namespace loxx
 
       const auto pos = std::distance(code_object_->bytecode.begin(), ip_);
       if (code_object_->basic_block_boundary_flags[pos]) {
-        profiler_->count_basic_block(
+        profiler_->enter_basic_block(
             ip_,
             RuntimeContext{
               stack_, *code_object_, *call_stack_.top().closure(), globals_
@@ -123,7 +123,7 @@ namespace loxx
 
       case Instruction::CONDITIONAL_JUMP: {
         const auto jmp = read_integer<InstrArgUShort>();
-        profiler_->flag_block_boundary(ip_);
+        profiler_->exit_basic_block(ip_);
         if (not is_truthy(stack_.top())) {
           ip_ += jmp;
         }
@@ -300,7 +300,7 @@ namespace loxx
 
       case Instruction::JUMP: {
         const auto jmp = read_integer<InstrArgUShort>();
-        profiler_->flag_block_boundary(ip_);
+        profiler_->exit_basic_block(ip_);
         ip_ += jmp;
         break;
       }
@@ -320,7 +320,7 @@ namespace loxx
 
       case Instruction::LOOP: {
         const auto jmp = read_integer<InstrArgUShort>();
-        profiler_->flag_block_boundary(ip_);
+        profiler_->exit_basic_block(ip_);
         ip_ -= jmp;
         break;
       }

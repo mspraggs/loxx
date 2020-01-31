@@ -58,11 +58,11 @@ namespace loxx
       {
       }
 
-      CodeObject::InsPtr count_basic_block(
+      CodeObject::InsPtr enter_basic_block(
           const CodeObject::InsPtr ip,
           const RuntimeContext& context);
 
-      void flag_block_boundary(const CodeObject::InsPtr ip);
+      void exit_basic_block(const CodeObject::InsPtr ip);
 
       void skip_current_block();
 

@@ -34,7 +34,7 @@ namespace loxx
 {
   namespace jit
   {
-    CodeObject::InsPtr CodeProfiler::count_basic_block(
+    CodeObject::InsPtr CodeProfiler::enter_basic_block(
         const CodeObject::InsPtr ip,
         const RuntimeContext& context)
     {
@@ -69,7 +69,7 @@ namespace loxx
     }
 
 
-    void CodeProfiler::flag_block_boundary(const CodeObject::InsPtr ip)
+    void CodeProfiler::exit_basic_block(const CodeObject::InsPtr ip)
     {
       if (not hot_block_) {
         return;
