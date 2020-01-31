@@ -144,6 +144,10 @@ namespace loxx
 
         case loxx::Instruction::POP:
           if (op_stack_.size() > 0) {
+            if (op_stack_.top().is_memory()) {
+              ssa_instructions.emplace_back(Operator::POP);
+            }
+
             op_stack_.discard();
           }
           break;
