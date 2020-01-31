@@ -136,6 +136,10 @@ namespace loxx
       add_move_reg_reg(RegisterX86::RBP, RegisterX86::RSP);
       insert_type_guards(external_operands);
 
+      add_move_reg_imm(
+          general_scratch_, reinterpret_cast<std::uint64_t>(stack_size_ptr));
+      add_move_reg_mem(stack_size_, general_scratch_);
+
       for (const auto& instruction : ssa_ir) {
         const auto op = instruction.op();
 
@@ -152,6 +156,9 @@ namespace loxx
         case Operator::MULTIPLY:
           add_multiplication(instruction, allocation_map);
           break;
+        case Operator::POP:
+          add_decrement(stack_size_);
+          break;
         case Operator::RETURN:
           break;
         case Operator::SUBTRACT:
@@ -161,6 +168,9 @@ namespace loxx
         }
       }
 
+      add_move_reg_imm(
+          general_scratch_, reinterpret_cast<std::uint64_t>(stack_size_ptr));
+      add_move_mem_reg(stack_size_, general_scratch_);
       add_pop(RegisterX86::RBP);
       add_return();
       return func_;
