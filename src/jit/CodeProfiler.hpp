@@ -58,7 +58,7 @@ namespace loxx
       {
       }
 
-      void count_basic_block(
+      CodeObject::InsPtr count_basic_block(
           const CodeObject::InsPtr ip,
           const RuntimeContext& context);
 
