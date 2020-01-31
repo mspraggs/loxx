@@ -89,7 +89,7 @@ namespace loxx
       std::unique_ptr<BlockInfo> hot_block_;
 
       HashSet<CodeObject::InsPtr, InsPtrHasher> ignored_blocks_;
-      HashTable<CodeObject::InsPtr, std::size_t, InsPtrHasher> block_counts_;
+      InsPtrHashTable<std::size_t> block_counts_;
       InsPtrHashTable<std::vector<CompilationResult>> compilation_results_;
       Compiler* compiler_;
     };
