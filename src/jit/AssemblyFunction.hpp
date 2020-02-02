@@ -71,7 +71,7 @@ namespace loxx
 
     private:
       template <typename T>
-      struct MmapAllocator
+      struct MMapAllocator
       {
         using value_type = T;
 
@@ -81,10 +81,10 @@ namespace loxx
 
       template <typename T>
       friend bool operator==(
-          const MmapAllocator<T>&, const MmapAllocator<T>&);
+          const MMapAllocator<T>&, const MMapAllocator<T>&);
       template <typename T>
       friend bool operator!=(
-          const MmapAllocator<T>&, const MmapAllocator<T>&);
+          const MMapAllocator<T>&, const MMapAllocator<T>&);
 
       void add_bytes_impl() {}
 
@@ -95,7 +95,7 @@ namespace loxx
       void check_unlocked() const;
 
       bool locked_;
-      std::vector<std::uint8_t, MmapAllocator<std::uint8_t>> assembly_;
+      std::vector<std::uint8_t, MMapAllocator<std::uint8_t>> assembly_;
     };
 
 
@@ -141,7 +141,7 @@ namespace loxx
 
 
     template <typename T>
-    T* AssemblyFunction::MmapAllocator<T>::allocate(const std::size_t n)
+    T* AssemblyFunction::MMapAllocator<T>::allocate(const std::size_t n)
     {
       if (n > std::numeric_limits<std::size_t>::max() / sizeof(T)) {
         throw std::bad_alloc();
@@ -162,7 +162,7 @@ namespace loxx
 
 
     template <typename T>
-    void AssemblyFunction::MmapAllocator<T>::deallocate(
+    void AssemblyFunction::MMapAllocator<T>::deallocate(
         T* ptr, const std::size_t n)
     {
       munmap(ptr, n);
@@ -171,8 +171,8 @@ namespace loxx
 
     template <typename T>
     bool operator==(
-        const AssemblyFunction::MmapAllocator<T>&,
-        const AssemblyFunction::MmapAllocator<T>&)
+        const AssemblyFunction::MMapAllocator<T>&,
+        const AssemblyFunction::MMapAllocator<T>&)
     {
       return true;
     }
@@ -180,8 +180,8 @@ namespace loxx
 
     template <typename T>
     bool operator!=(
-        const AssemblyFunction::MmapAllocator<T>&,
-        const AssemblyFunction::MmapAllocator<T>&)
+        const AssemblyFunction::MMapAllocator<T>&,
+        const AssemblyFunction::MMapAllocator<T>&)
     {
       return false;
     }
