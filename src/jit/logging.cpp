@@ -112,6 +112,7 @@ namespace loxx
 
     void print_allocation_map(const AllocationMap<Register>& allocation_map)
     {
+      std::cout << "=== Register Allocation Map ===\n";
       for (const auto& allocation : allocation_map) {
         const auto is_register = holds_alternative<Register>(allocation.second);
         std::cout << allocation.first << " -> ";
