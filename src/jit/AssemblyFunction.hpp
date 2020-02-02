@@ -75,6 +75,13 @@ namespace loxx
         void deallocate(T* ptr, const std::size_t n);
       };
 
+      template <typename T>
+      friend bool operator==(
+          const MmapAllocator<T>&, const MmapAllocator<T>&);
+      template <typename T>
+      friend bool operator!=(
+          const MmapAllocator<T>&, const MmapAllocator<T>&);
+
       void add_bytes_impl() {}
 
       template <typename... Args>
