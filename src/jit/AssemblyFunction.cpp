@@ -55,7 +55,8 @@ namespace loxx
     bool AssemblyFunction::operator() () const
     {
       check_locked();
-      const auto func = reinterpret_cast<bool (*) ()>(assembly_.data());
+      const auto func = reinterpret_cast<bool (*) ()>(
+          const_cast<std::uint8_t*>(assembly_.data()));
       return func();
     }
 
