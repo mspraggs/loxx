@@ -171,6 +171,8 @@ namespace loxx
       add_move_reg_imm(
           general_scratch_, reinterpret_cast<std::uint64_t>(stack_size_ptr));
       add_move_mem_reg(stack_size_, general_scratch_);
+
+      add_move_reg_imm(RegisterX86::RAX, 0);
       add_pop(RegisterX86::RBP);
       add_return();
       return func_;
