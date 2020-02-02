@@ -99,7 +99,7 @@ namespace loxx
 
         const auto hash = obj.hash_func_(obj.key_extractor_(elem));
         const auto new_pos = find_new_pos(obj, obj.key_extractor_(elem), hash);
-        obj.data_[new_pos] = elem;
+        obj.data_[new_pos] = std::move(elem);
       }
     }
 
