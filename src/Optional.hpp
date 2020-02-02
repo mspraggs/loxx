@@ -124,7 +124,7 @@ namespace loxx
       : has_value_(other.has_value_)
   {
     if (has_value_) {
-      value_ = other.value_;
+      value_ = std::move(other.value_);
     }
 
     other.has_value_ = false;
@@ -175,7 +175,7 @@ namespace loxx
     has_value_ = other.has_value_;
 
     if (has_value_) {
-      value_ = other.value_;
+      value_ = std::move(other.value_);
     }
 
     other.has_value_ = false;
