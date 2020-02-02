@@ -87,10 +87,10 @@ namespace loxx
   #endif
 
       try {
-        const auto func = compiler_->compile(
+        auto func = compiler_->compile(
             block_info->begin, block_info->end);
         compilation_results_[block_info->begin].push_back(
-            std::make_pair(func, block_info->end));
+            std::make_pair(std::move(func), block_info->end));
       }
       catch (const JITError& err) {}
     }

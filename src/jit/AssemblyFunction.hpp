@@ -41,7 +41,11 @@ namespace loxx
       {
         assembly_.reserve(reserve_size);
       }
-      
+
+      AssemblyFunction(AssemblyFunction&&) = default;
+
+      AssemblyFunction& operator=(AssemblyFunction&&) = default;
+
       void add_byte(const std::uint8_t byte);
 
       template <typename Iter>

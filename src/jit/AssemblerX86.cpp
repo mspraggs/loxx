@@ -175,7 +175,7 @@ namespace loxx
       add_move_reg_imm(RegisterX86::RAX, 0);
       add_pop(RegisterX86::RBP);
       add_return();
-      return func_;
+      return std::move(func_);
     }
 
 
