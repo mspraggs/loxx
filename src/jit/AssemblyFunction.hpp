@@ -145,7 +145,7 @@ namespace loxx
 
       auto ptr = static_cast<T*>(mmap(
           nullptr, n * sizeof(T),
-          PROT_READ | PROT_WRITE | PROT_EXEC,
+          PROT_READ | PROT_WRITE,
           MAP_PRIVATE | MAP_ANONYMOUS,
           -1, 0));
 
