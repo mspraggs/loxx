@@ -37,11 +37,11 @@ namespace loxx
       const auto& operands = instruction.operands();
 
       for (std::size_t i = 0; i < operands.size(); ++i) {
-        if (i != 0) {
-          std::cout << ", ";
-        }
         if (not operands[i].is_used()) {
           break;
+        }
+        if (i != 0) {
+          std::cout << ", ";
         }
         std::cout << operands[i];
       }
