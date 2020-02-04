@@ -66,6 +66,8 @@ namespace loxx
 
       void skip_current_block();
 
+      bool is_recording() const { return is_recording_; }
+
     private:
       template <typename T>
       using InsPtrHashTable = HashTable<CodeObject::InsPtr, T, InsPtrHasher>;
@@ -83,7 +85,7 @@ namespace loxx
         bool operator() (const BlockInfo& info1, const BlockInfo& info2) const;
       };
 
-      bool debug_, skip_current_block_;
+      bool debug_, skip_current_block_, is_recording_;
       std::size_t block_count_threshold_;
       CodeObject::InsPtr current_block_;
       std::unique_ptr<BlockInfo> hot_block_;
