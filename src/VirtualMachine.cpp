@@ -118,7 +118,6 @@ namespace loxx
         break;
 
       case Instruction::CONDITIONAL_JUMP: {
-        profiler_->exit_basic_block(ip_ - 1);
         const auto jmp = read_integer<InstrArgUShort>();
         if (not is_truthy(stack_.top())) {
           ip_ += jmp;
@@ -295,14 +294,13 @@ namespace loxx
       }
 
       case Instruction::JUMP: {
-        profiler_->exit_basic_block(ip_ - 1);
         const auto jmp = read_integer<InstrArgUShort>();
         ip_ += jmp;
         break;
       }
 
       case Instruction::LESS: {
-        profiler_->skip_current_block();
+        // profiler_->skip_current_block();
         const auto second = stack_.pop();
         const auto first = stack_.pop();
         check_number_operands(first, second);
@@ -316,7 +314,6 @@ namespace loxx
         break;
 
       case Instruction::LOOP: {
-        profiler_->exit_basic_block(ip_ - 1);
         const auto jmp = read_integer<InstrArgUShort>();
         ip_ -= jmp;
         break;

@@ -56,33 +56,6 @@ namespace loxx
     }
 
 
-    void CodeProfiler::exit_basic_block(const CodeObject::InsPtr ip)
-    {
-      if (not hot_block_) {
-        return;
-      }
-
-      std::unique_ptr<BlockInfo> block_info;
-      block_info.swap(hot_block_);
-      block_info->end = ip;
-
-  #ifndef NDEBUG
-      if (debug_) {
-        std::cout << "=== Compiling Bytecode ===\n";
-        print_bytecode(*block_info->code, block_info->begin, block_info->end);
-      }
-  #endif
-
-      try {
-        auto func = compiler_->compile(
-            block_info->begin, block_info->end);
-        compilation_results_[block_info->begin].push_back(
-            std::make_pair(std::move(func), block_info->end));
-      }
-      catch (const JITError& err) {}
-    }
-
-
     void CodeProfiler::skip_current_block()
     {
       ignored_blocks_.insert(current_block_);
