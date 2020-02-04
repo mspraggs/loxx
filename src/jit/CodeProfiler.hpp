@@ -53,14 +53,12 @@ namespace loxx
       CodeProfiler(
           Compiler& compiler, const bool debug,
           const std::size_t block_count_threshold)
-          : debug_(debug), skip_current_block_(false),
+          : debug_(debug), skip_current_block_(false), is_recording_(false),
             block_count_threshold_(block_count_threshold), compiler_(&compiler)
       {
       }
 
-      CodeObject::InsPtr enter_basic_block(
-          const CodeObject::InsPtr ip,
-          const RuntimeContext& context);
+      void count_basic_block(const CodeObject::InsPtr ip);
 
       void exit_basic_block(const CodeObject::InsPtr ip);
 

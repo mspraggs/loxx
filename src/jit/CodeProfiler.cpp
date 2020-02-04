@@ -34,21 +34,11 @@ namespace loxx
 {
   namespace jit
   {
-    CodeObject::InsPtr CodeProfiler::enter_basic_block(
-        const CodeObject::InsPtr ip,
-        const RuntimeContext& context)
+    void CodeProfiler::count_basic_block(const CodeObject::InsPtr ip)
     {
-      const auto& outputs = compilation_results_.get(ip);
-      if (outputs) {
-        for (const auto& output : outputs->second) {
-          if (not output.first()) {
-            return output.second;
-          }
-        }
-      }
       current_block_ = ip;
       if (ignored_blocks_.has_item(ip)) {
-        return ip;
+        return;
       }
       auto count_elem = block_counts_.insert(ip, 0);
       count_elem.first->second += 1;
@@ -61,11 +51,8 @@ namespace loxx
   #endif
 
       if (count_elem.first->second >= block_count_threshold_) {
-        hot_block_ = std::make_unique<BlockInfo>(BlockInfo{&context.code, ip, ip});
-        compiler_->build_context(context);
+        is_recording_ = true;
       }
-
-      return ip;
     }
 
 
