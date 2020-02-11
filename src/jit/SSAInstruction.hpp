@@ -71,27 +71,28 @@ namespace loxx
       ValueType value_type() const { return type_; }
 
       const Value* memory_address() const { return get<0>(target_); }
-      std::size_t reg_index() const { return get<1>(target_); }
+      std::size_t reg_index() const { return get<1>(target_).index; }
+      const VirtualRegister& reg() const { return get<1>(target_); }
 
     private:
       static std::size_t reg_count_;
       ValueType type_;
-      Variant<const Value*, std::size_t> target_;
+      Variant<const Value*, VirtualRegister> target_;
     };
 
 
-    struct OperandHasher
+    struct VirtualRegisterHasher
     {
-      std::size_t operator() (const Operand& operand) const;
+      std::size_t operator() (const VirtualRegister& value) const;
 
       std::hash<const Value*> pointer_hasher;
     };
 
 
-    struct OperandCompare
+    struct VirtualRegisterCompare
     {
       bool operator() (
-          const Operand& first, const Operand& second) const;
+          const VirtualRegister& first, const VirtualRegister& second) const;
     };
 
 

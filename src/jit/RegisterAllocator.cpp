@@ -30,14 +30,15 @@ namespace loxx
 {
   namespace jit
   {
-    std::vector<std::pair<Operand, Range>> compute_live_ranges(
+    std::vector<std::pair<VirtualRegister, Range>> compute_live_ranges(
         const std::vector<SSAInstruction<2>>& ssa_ir)
     {
       using OperandSizeMap =
-          HashTable<Operand, std::size_t, OperandHasher, OperandCompare>;
+          HashTable<VirtualRegister, std::size_t,
+          VirtualRegisterHasher, VirtualRegisterCompare>;
 
       OperandSizeMap operand_start_map;
-      std::vector<std::pair<Operand, Range>> live_ranges;
+      std::vector<std::pair<VirtualRegister, Range>> live_ranges;
       live_ranges.reserve(ssa_ir.size() * 2);
 
       for (std::size_t i = 0; i < ssa_ir.size(); ++i) {
@@ -53,10 +54,10 @@ namespace loxx
           }
 
           auto operand_start =
-              operand_start_map.insert(operand, live_ranges.size());
+              operand_start_map.insert(operand.reg(), live_ranges.size());
 
           if (operand_start.second) {
-            live_ranges.push_back({operand, Range{i, i}});
+            live_ranges.push_back({operand.reg(), Range{i, i}});
           }
 
           auto& live_range = live_ranges[operand_start.first->second];
@@ -100,8 +101,7 @@ namespace loxx
 
         expire_old_intervals(interval);
 
-        const auto candidate_register = get_register(
-            virtual_regsiter.value_type());
+        const auto candidate_register = get_register(virtual_regsiter.type);
 
         if (not candidate_register) {
           spill_at_interval(interval);

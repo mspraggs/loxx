@@ -34,7 +34,7 @@ namespace loxx
     using Range = std::pair<std::size_t, std::size_t>;
 
 
-    std::vector<std::pair<Operand, Range>> compute_live_ranges(
+    std::vector<std::pair<VirtualRegister, Range>> compute_live_ranges(
         const std::vector<SSAInstruction<2>>& ssa_ir);
 
 
@@ -44,7 +44,8 @@ namespace loxx
 
     template <typename Reg>
     using AllocationMap =
-        HashTable<Operand, Allocation<Reg>, OperandHasher, OperandCompare>;
+        HashTable<VirtualRegister, Allocation<Reg>,
+        VirtualRegisterHasher, VirtualRegisterCompare>;
 
 
     class RegisterAllocator

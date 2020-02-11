@@ -251,9 +251,9 @@ namespace loxx
 
       if (operands[0].is_register() and operands[1].is_register()) {
         const auto reg0 =
-            unsafe_get<RegisterX86>(allocation_map.at(operands[0]));
+            unsafe_get<RegisterX86>(allocation_map.at(operands[0].reg()));
         const auto reg1 =
-            unsafe_get<RegisterX86>(allocation_map.at(operands[1]));
+            unsafe_get<RegisterX86>(allocation_map.at(operands[1].reg()));
         add_addition_reg_reg(reg0, reg1);
       }
     }
@@ -269,23 +269,23 @@ namespace loxx
         const auto address =
             reinterpret_cast<std::uint64_t>(operands[1].memory_address());
         const auto dst_reg =
-            unsafe_get<RegisterX86>(allocation_map.at(operands[0]));
+            unsafe_get<RegisterX86>(allocation_map.at(operands[0].reg()));
 
         add_move_reg_imm(general_scratch_, address);
         add_move_reg_mem(dst_reg, general_scratch_, 8);
       }
       else if (operands[0].is_register() and operands[1].is_register()) {
         const auto src_reg =
-            unsafe_get<RegisterX86>(allocation_map.at(operands[1]));
+            unsafe_get<RegisterX86>(allocation_map.at(operands[1].reg()));
         const auto dst_reg =
-            unsafe_get<RegisterX86>(allocation_map.at(operands[0]));
+            unsafe_get<RegisterX86>(allocation_map.at(operands[0].reg()));
         add_move_reg_reg(dst_reg, src_reg);
       }
       else if (operands[0].is_memory() and operands[1].is_register()) {
         const auto address =
             reinterpret_cast<std::uint64_t>(operands[0].memory_address());
         const auto src_reg =
-            unsafe_get<RegisterX86>(allocation_map.at(operands[1]));
+            unsafe_get<RegisterX86>(allocation_map.at(operands[1].reg()));
 
         add_move_reg_imm(general_scratch_, address);
         add_move_mem_reg(general_scratch_, src_reg, 8);
@@ -301,9 +301,9 @@ namespace loxx
 
       if (operands[0].is_register() and operands[1].is_register()) {
         const auto reg0 =
-            unsafe_get<RegisterX86>(allocation_map.at(operands[0]));
+            unsafe_get<RegisterX86>(allocation_map.at(operands[0].reg()));
         const auto reg1 =
-            unsafe_get<RegisterX86>(allocation_map.at(operands[1]));
+            unsafe_get<RegisterX86>(allocation_map.at(operands[1].reg()));
         add_multiplication_reg_reg(reg0, reg1);
       }
     }

@@ -62,13 +62,13 @@ namespace loxx
 
 
     void print_live_ranges(
-        const std::vector<std::pair<Operand, Range>>& live_ranges)
+        const std::vector<std::pair<VirtualRegister, Range>>& live_ranges)
     {
-      using OperandRangePair = std::pair<Operand, Range>;
+      using RegisterRangePair = std::pair<VirtualRegister, Range>;
 
       const auto range_max_elem = std::max_element(
           live_ranges.begin(), live_ranges.end(),
-          [] (const OperandRangePair& first, const OperandRangePair& second) {
+          [] (const RegisterRangePair& first, const RegisterRangePair& second) {
             return first.second.second < second.second.second;
           }
       );

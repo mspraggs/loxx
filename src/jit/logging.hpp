@@ -34,7 +34,7 @@ namespace loxx
         const std::vector<SSAInstruction<2>>& instructions);
 
     void print_live_ranges(
-        const std::vector<std::pair<Operand, Range>>& live_ranges);
+        const std::vector<std::pair<VirtualRegister, Range>>& live_ranges);
 
     void print_allocation_map(const AllocationMap<Register>& allocation_map);
   }
