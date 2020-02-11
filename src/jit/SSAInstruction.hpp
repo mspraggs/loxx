@@ -42,6 +42,13 @@ namespace loxx
     };
 
 
+    struct VirtualRegister
+    {
+      ValueType type;
+      std::size_t index;
+    };
+
+
     class Operand
     {
     public:
@@ -139,6 +146,26 @@ namespace loxx
         os << "SUBTRACT";
         break;
       }
+
+      return os;
+    }
+
+
+    template <typename Os>
+    Os& operator<<(Os& os, const VirtualRegister& reg)
+    {
+      const auto value_type_char = [&] {
+        switch (reg.type) {
+        case ValueType::FLOAT:
+          return 'f';
+        case ValueType::BOOLEAN:
+          return 'b';
+        case ValueType::OBJECT:
+          return 'p';
+        }
+      } ();
+
+      os << value_type_char << reg.index;
 
       return os;
     }
