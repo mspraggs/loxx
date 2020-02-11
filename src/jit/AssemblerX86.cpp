@@ -129,7 +129,7 @@ namespace loxx
     AssemblyFunction Assembler<RegisterX86>::assemble(
         const std::vector<SSAInstruction<2>>& ssa_ir,
         const AllocationMap<RegisterX86>& allocation_map,
-        const OperandSet& external_operands,
+        const ReferenceSet& external_operands,
         const std::size_t* stack_size_ptr)
     {
       add_push(RegisterX86::RBP);
@@ -180,7 +180,7 @@ namespace loxx
 
 
     void Assembler<RegisterX86>::insert_type_guards(
-        const OperandSet& operands)
+        const ReferenceSet& references)
     {
       // The aim here is to generate assembly to check each operand in the
       // supplied set against the expected type. If any of these checks returns
@@ -205,17 +205,17 @@ namespace loxx
       //     ret
 
       std::vector<std::int32_t> jump_offsets;
-      jump_offsets.reserve(operands.size());
+      jump_offsets.reserve(references.size());
       std::vector<std::int32_t> jump_starts;
-      jump_starts.reserve(operands.size());
+      jump_starts.reserve(references.size());
 
-      for (const auto& operand : operands) {
+      for (const auto& reference : references) {
         add_move_reg_imm(
             general_scratch_,
-            reinterpret_cast<std::uint64_t>(operand.memory_address()));
+            reinterpret_cast<std::uint64_t>(reference));
         add_move_reg_mem(general_scratch_, general_scratch_);
         add_compare_reg_imm(
-            general_scratch_, static_cast<std::uint64_t>(operand.value_type()));
+            general_scratch_, static_cast<std::uint64_t>(reference->index()));
 
         /// TODO: Should be able to precompute all this given the input.
         jump_offsets.push_back(
@@ -226,7 +226,7 @@ namespace loxx
       const auto start_jump_pos = add_jump(0);
       const auto start_jump_size = func_.size();
 
-      for (std::size_t i = 0; i < operands.size(); ++i) {
+      for (std::size_t i = 0; i < references.size(); ++i) {
         const auto pos = jump_offsets[i];
         const auto jump_size =
             static_cast<std::int32_t>(func_.size() - jump_starts[i]);

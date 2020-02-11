@@ -100,7 +100,7 @@ namespace loxx
           const auto idx = detail::read_integer<InstrArgUByte>(ip);
           const auto source = op_stack_.get(idx);
           if (source.is_memory()) {
-            external_operands_.insert(source);
+            external_operands_.insert(source.memory_address());
           }
           op_stack_.push(Operand(source.value_type()));
           ssa_instructions.emplace_back(
@@ -117,7 +117,7 @@ namespace loxx
         case loxx::Instruction::LOAD_CONSTANT: {
           const auto idx = detail::read_integer<InstrArgUByte>(ip);
           const auto& constant = constants_[idx];
-          external_operands_.insert(constant);
+          external_operands_.insert(constant.memory_address());
           const auto type = static_cast<ValueType>(constant.value_type());
           op_stack_.push(Operand(type));
           ssa_instructions.emplace_back(

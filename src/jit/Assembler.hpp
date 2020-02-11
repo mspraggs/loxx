@@ -36,7 +36,7 @@ namespace loxx
       AssemblyFunction assemble(
           const std::vector<SSAInstruction<2>>& ssa_ir,
           const AllocationMap<Reg>& allocation_map,
-          const OperandSet& external_operands,
+          const ReferenceSet& external_operands,
           const std::size_t* stack_size_ptr);
     };
   }
