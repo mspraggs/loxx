@@ -99,7 +99,7 @@ namespace loxx
           // ip += sizeof(InstrArgUByte);
           const auto idx = detail::read_integer<InstrArgUByte>(ip);
           const auto source = op_stack_.get(idx);
-          if (source.is_memory()) {
+          if (holds_alternative<const Value*>(source)) {
             external_operands_.insert(source.memory_address());
           }
           op_stack_.push(Operand(source.value_type()));
@@ -144,7 +144,7 @@ namespace loxx
 
         case loxx::Instruction::POP:
           if (op_stack_.size() > 0) {
-            if (op_stack_.top().is_memory()) {
+            if (holds_alternative<const Value*>(op_stack_.top())) {
               ssa_instructions.emplace_back(Operator::POP);
             }
 
@@ -174,7 +174,7 @@ namespace loxx
     Operand SSAGenerator::make_target_operand(const std::size_t stack_idx) const
     {
       const auto& stack_top = op_stack_.get(stack_idx);
-      if (stack_top.is_memory()) {
+      if (holds_alternative<const Value*>(stack_top)) {
         return stack_top;
       }
       return Operand(stack_top.value_type());

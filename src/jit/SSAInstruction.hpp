@@ -49,35 +49,35 @@ namespace loxx
     };
 
 
-    class Operand
+    using OperandBase = Variant<
+        const Value*,
+        VirtualRegister,
+        Value,
+        std::size_t>;
+
+
+    class Operand : public OperandBase
     {
     public:
       enum class Type
       {
         MEMORY = 0,
         REGISTER = 1,
-        UNUSED = 2
+        IMMEDIATE = 2,
+        OFFSET = 3,
+        UNUSED = 4,
       };
 
-      Operand() = default;
-      explicit Operand(const ValueType type);
-      explicit Operand(const Value& value);
+      using OperandBase::Variant;
 
-      bool is_memory() const { return target_.index() == 0; }
-      bool is_register() const { return target_.index() == 1; }
-      bool is_used() const { return target_.index() != 2; }
+      explicit Operand(const ValueType value_type);
 
-      Type op_type() const { return static_cast<Type>(target_.index()); }
-      ValueType value_type() const { return type_; }
-
-      const Value* memory_address() const { return get<0>(target_); }
-      std::size_t reg_index() const { return get<1>(target_).index; }
-      const VirtualRegister& reg() const { return get<1>(target_); }
+      const Value* memory_address() const { return nullptr; }
+      Type op_type() const { return static_cast<Type>(index()); }
+      ValueType value_type() const;
 
     private:
       static std::size_t reg_count_;
-      ValueType type_;
-      Variant<const Value*, VirtualRegister> target_;
     };
 
 
@@ -186,15 +186,14 @@ namespace loxx
         default:
           return '?';
         }
-        os << operand.reg_index();
       } ();
 
-      if (operand.is_register()) {
-        os << value_type_char << operand.reg_index();
+      if (holds_alternative<VirtualRegister>(operand)) {
+        os << value_type_char << unsafe_get<VirtualRegister>(operand).index;
       }
-      else if (operand.is_memory()) {
-        os << "[ " << value_type_char << '@' << operand.memory_address()
-           << " ]";
+      else if (holds_alternative<const Value*>(operand)) {
+        os << "[ " << value_type_char << '@'
+           << unsafe_get<const Value*>(operand) << " ]";
       }
 
       return os;

@@ -37,7 +37,7 @@ namespace loxx
       const auto& operands = instruction.operands();
 
       for (std::size_t i = 0; i < operands.size(); ++i) {
-        if (not operands[i].is_used()) {
+        if (operands[i].index() == Operand::npos) {
           break;
         }
         if (i != 0) {

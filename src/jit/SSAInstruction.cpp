@@ -37,15 +37,24 @@ namespace loxx
     }
 
 
-    Operand::Operand(const ValueType type)
-        : type_(type), target_(VirtualRegister{type, reg_count_++})
+    Operand::Operand(const ValueType value_type)
+        : OperandBase(VirtualRegister{value_type, reg_count_++})
     {
     }
 
 
-    Operand::Operand(const Value& value)
-        : type_(static_cast<ValueType>(value.index())), target_(&value)
+    ValueType Operand::value_type() const
     {
+      switch (op_type()) {
+      case Type::MEMORY:
+        return static_cast<ValueType>(unsafe_get<const Value*>(*this)->index());
+      case Type::REGISTER:
+        return unsafe_get<VirtualRegister>(*this).type;
+      case Type::IMMEDIATE:
+        return static_cast<ValueType>(unsafe_get<Value>(*this).index());
+      default:
+        throw std::logic_error("invalid operand");
+      }
     }
 
 

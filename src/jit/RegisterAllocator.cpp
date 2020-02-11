@@ -45,19 +45,21 @@ namespace loxx
         const auto& instruction = ssa_ir[i];
 
         for (const auto& operand : instruction.operands()) {
-          if (not operand.is_used()) {
+          if (operand.index() == Operand::npos) {
             break;
           }
 
-          if (not operand.is_register()) {
+          if (not holds_alternative<VirtualRegister>(operand)) {
             continue;
           }
 
+          const auto& reg = unsafe_get<VirtualRegister>(operand);
+
           auto operand_start =
-              operand_start_map.insert(operand.reg(), live_ranges.size());
+              operand_start_map.insert(reg, live_ranges.size());
 
           if (operand_start.second) {
-            live_ranges.push_back({operand.reg(), Range{i, i}});
+            live_ranges.push_back({reg, Range{i, i}});
           }
 
           auto& live_range = live_ranges[operand_start.first->second];
