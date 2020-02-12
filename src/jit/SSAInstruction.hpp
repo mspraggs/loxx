@@ -155,19 +155,7 @@ namespace loxx
     template <typename Os>
     Os& operator<<(Os& os, const VirtualRegister& reg)
     {
-      const auto value_type_char = [&] {
-        switch (reg.type) {
-        case ValueType::FLOAT:
-          return 'f';
-        case ValueType::BOOLEAN:
-          return 'b';
-        case ValueType::OBJECT:
-          return 'p';
-        }
-      } ();
-
-      os << value_type_char << reg.index;
-
+      os << reg.type << reg.index;
       return os;
     }
 
@@ -175,24 +163,12 @@ namespace loxx
     template <typename Os>
     Os& operator<<(Os& os, const Operand& operand)
     {
-      const auto value_type_char = [&] {
-        switch (operand.value_type()) {
-        case ValueType::FLOAT:
-          return 'f';
-        case ValueType::BOOLEAN:
-          return 'b';
-        case ValueType::OBJECT:
-          return 'p';
-        default:
-          return '?';
-        }
-      } ();
 
       if (holds_alternative<VirtualRegister>(operand)) {
-        os << value_type_char << unsafe_get<VirtualRegister>(operand).index;
+        os << operand.value_type() << unsafe_get<VirtualRegister>(operand).index;
       }
       else if (holds_alternative<const Value*>(operand)) {
-        os << "[ " << value_type_char << '@'
+        os << "[ " << operand.value_type() << '@'
            << unsafe_get<const Value*>(operand) << " ]";
       }
 

@@ -41,6 +41,33 @@ namespace loxx
 
   using Value = Variant<double, bool, Object*>;
 
+
+  template <typename Os>
+  Os& operator<<(Os& os, const ValueType value_type)
+  {
+    switch (value_type) {
+
+    case ValueType::FLOAT:
+      os << 'f';
+      break;
+
+    case ValueType::BOOLEAN:
+      os << 'b';
+      break;
+
+    case ValueType::OBJECT:
+      os << 'p';
+      break;
+
+    case ValueType::UNKNOWN:
+      os << '?';
+      break;
+    }
+
+    return os;
+  }
+
+
   template <typename OStream, typename T>
   auto operator<<(OStream& os, const T& value)
       -> std::enable_if_t<std::is_same<T, Value>::value, OStream&>;
