@@ -14,29 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Created by Matt Spraggs on 27/08/18.
+ * Created by Matt Spraggs on 13/02/20.
  */
 
-#ifndef LOXX_UTILS_HPP
-#define LOXX_UTILS_HPP
+#include "utils.hpp"
 
-#include <cstdint>
-#include <vector>
-
-#include "CodeObject.hpp"
 
 namespace loxx
 {
-  template <typename T>
-  T read_integer_at_pos(const CodeObject::InsPtr pos)
+  std::size_t combine_hashes(const std::size_t first, const std::size_t second)
   {
-    T integer;
-    std::copy(pos, pos + sizeof(T), reinterpret_cast<std::uint8_t*>(&integer));
-    return integer;
+    return first + 0x9e3779b9 + (second << 6) + (second >> 2);
   }
-
-
-  std::size_t combine_hashes(const std::size_t first, const std::size_t second);
 }
-
-#endif //LOXX_UTILS_HPP

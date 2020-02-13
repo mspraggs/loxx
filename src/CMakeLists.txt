@@ -57,6 +57,7 @@ set(SRC
   StackFrame.cpp
   StringHashTable.cpp
   Token.cpp
+  utils.cpp
   VirtualMachine.cpp
   jit/AssemblerX86.cpp
   jit/AssemblyFunction.cpp

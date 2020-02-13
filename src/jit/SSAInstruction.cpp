@@ -21,6 +21,8 @@
 #include <iomanip>
 #include <iostream>
 
+#include "../utils.hpp"
+
 #include "SSAInstruction.hpp"
 
 namespace loxx
@@ -28,13 +30,6 @@ namespace loxx
   namespace jit
   {
     std::size_t Operand::reg_count_ = 0;
-
-
-    namespace detail
-    {
-      std::size_t combine_hashes(
-          const std::size_t first, const std::size_t second);
-    }
 
 
     Operand::Operand(const ValueType value_type)
@@ -61,8 +56,7 @@ namespace loxx
     std::size_t VirtualRegisterHasher::operator() (
         const VirtualRegister& value) const
     {
-      return detail::combine_hashes(
-          static_cast<std::size_t>(value.type), value.index);
+      return combine_hashes(static_cast<std::size_t>(value.type), value.index);
     }
 
 
@@ -70,13 +64,6 @@ namespace loxx
         const VirtualRegister& first, const VirtualRegister& second) const
     {
       return first.type == second.type and first.index == second.index;
-    }
-
-
-    std::size_t detail::combine_hashes(
-        const std::size_t first, const std::size_t second)
-    {
-      return first + 0x9e3779b9 + (second << 6) + (second >> 2);
     }
   }
 }
