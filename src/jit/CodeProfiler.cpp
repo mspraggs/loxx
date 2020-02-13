@@ -36,6 +36,10 @@ namespace loxx
   {
     void CodeProfiler::count_basic_block(const CodeObject::InsPtr ip)
     {
+      if (is_recording_) {
+        return;
+      }
+
       current_block_head_ = ip;
       if (ignored_blocks_.has_item(ip)) {
         return;
