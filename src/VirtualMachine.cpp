@@ -80,6 +80,12 @@ namespace loxx
       if (code_object_->basic_block_boundary_flags[pos]) {
         profiler_->count_basic_block(ip_);
       }
+
+      if (profiler_->is_recording()) {
+        profiler_->record_instruction(
+            ip_, RuntimeContext{
+                stack_, *code_object_, call_stack_.top(), globals_});
+      }
       const auto instruction = static_cast<Instruction>(*ip_++);
 
       switch (instruction) {
