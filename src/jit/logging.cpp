@@ -30,37 +30,6 @@ namespace loxx
 {
   namespace jit
   {
-    void print_ssa_instruction(const SSAInstruction<2>& instruction)
-    {
-      std::cout << std::setw(20) << std::setfill(' ') << instruction.op();
-
-      const auto& operands = instruction.operands();
-
-      for (std::size_t i = 0; i < operands.size(); ++i) {
-        if (operands[i].index() == Operand::npos) {
-          break;
-        }
-        if (i != 0) {
-          std::cout << ", ";
-        }
-        std::cout << operands[i];
-      }
-
-      std::cout << '\n';
-    }
-
-
-    void print_ssa_instructions(
-        const std::vector<SSAInstruction<2>>& instructions)
-    {
-        for (std::size_t i = 0; i < instructions.size(); ++i) {
-          std::cout << std::setw(4) << std::setfill('0') << std::right
-                    << i << ' ' << std::left;
-          print_ssa_instruction(instructions[i]);
-        }
-    }
-
-
     void print_live_ranges(
         const std::vector<std::pair<VirtualRegister, Range>>& live_ranges)
     {
