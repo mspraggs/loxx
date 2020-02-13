@@ -83,7 +83,7 @@ namespace loxx
 
       bool debug_, skip_current_block_, is_recording_;
       std::size_t block_count_threshold_;
-      CodeObject::InsPtr current_block_;
+      CodeObject::InsPtr current_block_head_;
       std::unique_ptr<BlockInfo> hot_block_;
 
       HashSet<CodeObject::InsPtr, InsPtrHasher> ignored_blocks_;

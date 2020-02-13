@@ -36,7 +36,7 @@ namespace loxx
   {
     void CodeProfiler::count_basic_block(const CodeObject::InsPtr ip)
     {
-      current_block_ = ip;
+      current_block_head_ = ip;
       if (ignored_blocks_.has_item(ip)) {
         return;
       }
@@ -58,7 +58,7 @@ namespace loxx
 
     void CodeProfiler::skip_current_block()
     {
-      ignored_blocks_.insert(current_block_);
+      ignored_blocks_.insert(current_block_head_);
     }
 
 
