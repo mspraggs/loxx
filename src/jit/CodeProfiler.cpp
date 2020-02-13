@@ -62,6 +62,12 @@ namespace loxx
     }
 
 
+    void CodeProfiler::record_instruction(
+        const CodeObject::InsPtr ip, const RuntimeContext context)
+    {
+    }
+
+
     std::size_t CodeProfiler::BlockInfoHasher::operator() (
         const BlockInfo& info) const
     {

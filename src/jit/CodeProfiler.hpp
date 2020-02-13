@@ -62,6 +62,9 @@ namespace loxx
 
       void skip_current_block();
 
+      void record_instruction(
+          const CodeObject::InsPtr ip, const RuntimeContext context);
+
       bool is_recording() const { return is_recording_; }
 
     private:
