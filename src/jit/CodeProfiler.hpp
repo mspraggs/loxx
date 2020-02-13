@@ -63,6 +63,21 @@ namespace loxx
       template <typename T>
       using InsPtrHashTable = HashTable<CodeObject::InsPtr, T, InsPtrHasher>;
 
+      enum class OperandLocation
+      {
+        CONSTANT,
+        LOCAL,
+        UPVALUE,
+        GLOBAL,
+      };
+
+      using OperandIndex = std::pair<OperandLocation, std::size_t>;
+
+      struct OperandIndexHasher
+      {
+        bool operator() (const OperandIndex& value) const;
+      };
+
       void start_recording();
 
       bool debug_, is_recording_;
@@ -71,6 +86,9 @@ namespace loxx
 
       HashSet<CodeObject::InsPtr, InsPtrHasher> ignored_blocks_;
       InsPtrHashTable<std::size_t> block_counts_;
+      std::vector<SSAInstruction<3>> ssa_ir_;
+      Stack<Operand, max_stack_size> op_stack_;
+      HashTable<OperandIndex, Operand, OperandIndexHasher> operand_cache_;
     };
   }
 }

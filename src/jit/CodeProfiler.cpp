@@ -69,18 +69,88 @@ namespace loxx
     void CodeProfiler::record_instruction(
         const CodeObject::InsPtr ip, const RuntimeContext context)
     {
+      const auto instruction = static_cast<Instruction>(*ip);
 
+      switch (instruction) {
 
+      case Instruction::ADD: {
 
+        const auto second = op_stack_.pop();
+        const auto first = op_stack_.pop();
 
+        const auto result_type = [&] {
+          if (second.value_type() == ValueType::FLOAT and
+              first.value_type() == ValueType::FLOAT) {
+            return ValueType::FLOAT;
+          }
+          return ValueType::OBJECT;
+        } ();
+
+        ssa_ir_.emplace_back(
+            Operator::ADD, Operand(result_type),
+            first, second);
+
+        break;
+      }
+
+      case Instruction::GET_LOCAL: {
+        const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
+        const auto& value = context.stack_frame.slot(idx);
+
+        const auto destination =
+            Operand(static_cast<ValueType>(value.index()));
+        const auto& result = operand_cache_.insert(
+            std::make_pair(OperandLocation::LOCAL, idx), destination);
+
+        op_stack_.push(result.first->second);
+
+        if (result.second) {
+          ssa_ir_.emplace_back(
+              Operator::MOVE, op_stack_.top(), Operand(&value));
+        }
+        break;
+      }
+
+      case Instruction::LOAD_CONSTANT: {
+        const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
+        const auto& value = context.code.constants[idx];
+
+        const auto destination =
+            Operand(static_cast<ValueType>(value.index()));
+        const auto& result = operand_cache_.insert(
+            std::make_pair(OperandLocation::CONSTANT, idx), destination);
+
+        op_stack_.push(result.first->second);
+
+        if (result.second) {
+          ssa_ir_.emplace_back(
+              Operator::MOVE, op_stack_.top(), Operand(value));
+        }
+        break;
+      }
+
+      case Instruction::LOOP:
+        is_recording_ = false;
+        break;
+
+      }
     }
 
 
     void CodeProfiler::start_recording()
     {
       block_counts_.erase(current_block_head_);
+      ssa_ir_.clear();
+      operand_cache_.clear();
       Operand::reset_reg_count();
       is_recording_ = true;
+    }
+
+
+    bool CodeProfiler::OperandIndexHasher::operator() (
+        const CodeProfiler::OperandIndex& value) const
+    {
+      return combine_hashes(static_cast<std::size_t>(value.first), value.second);
     }
   }
 }
