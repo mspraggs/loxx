@@ -63,6 +63,7 @@ namespace loxx
     ConstIter find(const Key& key) const;
     void erase(const Key& key);
     Iter erase(const Iter pos);
+    void clear();
     std::size_t count(const Key& key) const;
     bool has_item(const Key& key) const;
 
@@ -206,6 +207,14 @@ namespace loxx
       const auto datum = std::move(data_[index]);
       insert(datum->first, datum->second);
     }
+  }
+
+
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  void HashTable<Key, Value, Hash, Compare>::clear()
+  {
+    data_.clear();
+    data_.resize(detail::default_size);
   }
 
 
