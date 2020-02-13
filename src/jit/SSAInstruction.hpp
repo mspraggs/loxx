@@ -166,11 +166,15 @@ namespace loxx
     {
 
       if (holds_alternative<VirtualRegister>(operand)) {
-        os << operand.value_type() << unsafe_get<VirtualRegister>(operand).index;
+        os << unsafe_get<VirtualRegister>(operand);
       }
       else if (holds_alternative<const Value*>(operand)) {
+        const auto ptr = unsafe_get<const Value*>(operand);
         os << "[ " << operand.value_type() << '@'
            << unsafe_get<const Value*>(operand) << " ]";
+      }
+      else if (holds_alternative<Value>(operand)) {
+        os << '\'' <<  unsafe_get<Value>(operand) << '\'';
       }
 
       return os;
