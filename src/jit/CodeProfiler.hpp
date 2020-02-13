@@ -63,6 +63,7 @@ namespace loxx
       template <typename T>
       using InsPtrHashTable = HashTable<CodeObject::InsPtr, T, InsPtrHasher>;
 
+      void start_recording();
 
       bool debug_, is_recording_;
       std::size_t block_count_threshold_;

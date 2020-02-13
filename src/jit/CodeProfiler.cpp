@@ -51,7 +51,7 @@ namespace loxx
   #endif
 
       if (count_elem.first->second >= block_count_threshold_) {
-        is_recording_ = true;
+        start_recording();
       }
     }
 
@@ -69,6 +69,14 @@ namespace loxx
 
 
 
+    }
+
+
+    void CodeProfiler::start_recording()
+    {
+      block_counts_.erase(current_block_head_);
+      Operand::reset_reg_count();
+      is_recording_ = true;
     }
   }
 }
