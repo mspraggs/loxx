@@ -72,7 +72,6 @@ namespace loxx
 
       explicit Operand(const ValueType value_type);
 
-      const Value* memory_address() const { return nullptr; }
       Type op_type() const { return static_cast<Type>(index()); }
       ValueType value_type() const;
 
