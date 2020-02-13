@@ -61,9 +61,9 @@ namespace loxx
         constants_[i] = Operand(constants[i]);
       }
 
-      upvalues_ = std::vector<Operand>(context.func.num_upvalues());
+      upvalues_ = std::vector<Operand>(context.stack_frame.closure()->num_upvalues());
       for (std::size_t i = 0; i < upvalues_.size(); ++i) {
-        upvalues_[i] = Operand(context.func.upvalue(i)->value());
+        upvalues_[i] = Operand(context.stack_frame.closure()->upvalue(i)->value());
       }
     }
 
