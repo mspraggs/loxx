@@ -65,20 +65,10 @@ namespace loxx
     void CodeProfiler::record_instruction(
         const CodeObject::InsPtr ip, const RuntimeContext context)
     {
-    }
 
 
-    std::size_t CodeProfiler::BlockInfoHasher::operator() (
-        const BlockInfo& info) const
-    {
-      return ip_hasher(info.begin);
-    }
 
 
-    bool CodeProfiler::BlockInfoCompare::operator() (
-        const BlockInfo& info1, const BlockInfo& info2) const
-    {
-      return info1.begin == info2.begin;
     }
   }
 }
