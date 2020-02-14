@@ -168,7 +168,21 @@ namespace loxx
       case Instruction::POP:
         op_stack_.pop();
         break;
+
+      case Instruction::SET_LOCAL: {
+        const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
+        const auto& value = context.stack_frame.slot(idx);
+
+        operand_cache_.erase(std::make_pair(OperandLocation::LOCAL, idx));
+
+        ssa_ir_.emplace_back(
+            Operator::MOVE, Operand(&value), op_stack_.top());
+
+        break;
       }
+
+      }
+
     }
 
 
