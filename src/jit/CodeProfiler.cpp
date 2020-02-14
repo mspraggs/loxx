@@ -111,6 +111,18 @@ namespace loxx
         break;
       }
 
+      case Instruction::LESS: {
+        const auto second = op_stack_.pop();
+        const auto first = op_stack_.pop();
+
+        op_stack_.emplace(ValueType::BOOLEAN);
+
+        ssa_ir_.emplace_back(
+            Operator::LESS, op_stack_.top(), first, second);
+
+        break;
+      }
+
       case Instruction::LOAD_CONSTANT: {
         const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
         const auto& value = context.code.constants[idx];
