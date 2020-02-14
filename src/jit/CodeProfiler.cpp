@@ -145,6 +145,10 @@ namespace loxx
         is_recording_ = false;
         break;
 
+
+      case Instruction::POP:
+        op_stack_.pop();
+        break;
       }
     }
 
