@@ -145,6 +145,25 @@ namespace loxx
         is_recording_ = false;
         break;
 
+      case Instruction::MULTIPLY: {
+        const auto second = op_stack_.pop();
+        const auto first = op_stack_.pop();
+
+        const auto result_type = [&] {
+          if (second.value_type() == ValueType::FLOAT and
+              first.value_type() == ValueType::FLOAT) {
+            return ValueType::FLOAT;
+          }
+          return ValueType::OBJECT;
+        } ();
+
+        op_stack_.emplace(result_type);
+
+        ssa_ir_.emplace_back(
+            Operator::MULTIPLY, op_stack_.top(), first, second);
+
+        break;
+      }
 
       case Instruction::POP:
         op_stack_.pop();
