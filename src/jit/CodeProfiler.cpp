@@ -74,7 +74,6 @@ namespace loxx
       switch (instruction) {
 
       case Instruction::ADD: {
-
         const auto second = op_stack_.pop();
         const auto first = op_stack_.pop();
 
@@ -86,9 +85,10 @@ namespace loxx
           return ValueType::OBJECT;
         } ();
 
+        op_stack_.emplace(result_type);
+
         ssa_ir_.emplace_back(
-            Operator::ADD, Operand(result_type),
-            first, second);
+            Operator::ADD, op_stack_.top(), first, second);
 
         break;
       }
