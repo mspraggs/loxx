@@ -34,6 +34,7 @@ namespace loxx
     {
       ADD,
       DIVIDE,
+      LESS,
       MOVE,
       MULTIPLY,
       POP,
@@ -131,6 +132,9 @@ namespace loxx
         break;
       case Operator::DIVIDE:
         os << "DIVIDE";
+        break;
+      case Operator::LESS:
+        os << "LESS";
         break;
       case Operator::MOVE:
         os << "MOVE";
