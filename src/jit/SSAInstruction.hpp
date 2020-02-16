@@ -180,6 +180,9 @@ namespace loxx
       else if (holds_alternative<Value>(operand)) {
         os << '\'' <<  unsafe_get<Value>(operand) << '\'';
       }
+      else if (holds_alternative<std::size_t>(operand)) {
+        os << unsafe_get<std::size_t>(operand);
+      }
 
       return os;
     }
