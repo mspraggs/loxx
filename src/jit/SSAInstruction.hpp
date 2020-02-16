@@ -109,6 +109,8 @@ namespace loxx
 
       Operator op() const { return op_; }
       const std::array<Operand, N>& operands() const { return operands_; }
+      void set_operand(const std::size_t i, const Operand& value)
+      { operands_[i] = value; }
 
     private:
       Operator op_;
