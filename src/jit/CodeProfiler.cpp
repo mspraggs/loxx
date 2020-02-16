@@ -69,6 +69,7 @@ namespace loxx
     void CodeProfiler::record_instruction(
         const CodeObject::InsPtr ip, const RuntimeContext context)
     {
+      ssa_ir_map_[ip] = ssa_ir_.size();
       const auto instruction = static_cast<Instruction>(*ip);
 
       switch (instruction) {
