@@ -150,9 +150,22 @@ namespace loxx
         break;
       }
 
-      case Instruction::LOOP:
+      case Instruction::LOOP: {
         is_recording_ = false;
+
+        const auto jump_size = read_integer_at_pos<InstrArgUShort>(ip + 1);
+        const auto target = ip + sizeof(InstrArgUShort) - jump_size + 1;
+        jump_targets_.push_back(std::make_pair(target, ssa_ir_.size()));
+        const auto jump_pos = ssa_ir_map_.get(target);
+
+        const auto operand = Operand(
+            InPlace<std::size_t>(),
+            jump_pos->second + entry_code_.size());
+        ssa_ir_.emplace_back(Operator::JUMP);
+
+        finalise_ir();
         break;
+      }
 
       case Instruction::MULTIPLY: {
         const auto second = op_stack_.pop();
