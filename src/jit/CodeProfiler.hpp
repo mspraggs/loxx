@@ -79,6 +79,7 @@ namespace loxx
       };
 
       void start_recording();
+      void finalise_ir();
 
       bool debug_, is_recording_;
       std::size_t block_count_threshold_;

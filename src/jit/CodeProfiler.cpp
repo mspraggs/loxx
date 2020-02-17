@@ -197,6 +197,11 @@ namespace loxx
     }
 
 
+    void CodeProfiler::finalise_ir()
+    {
+    }
+
+
     bool CodeProfiler::OperandIndexHasher::operator() (
         const CodeProfiler::OperandIndex& value) const
     {
