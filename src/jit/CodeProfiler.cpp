@@ -223,6 +223,18 @@ namespace loxx
 
     void CodeProfiler::finalise_ir()
     {
+      for (const auto& jump_target : jump_targets_) {
+        const auto instruction_pos = jump_target.second;
+        const auto target_elem = ssa_ir_map_.get(jump_target.first);
+
+        const auto target_pos =
+            target_elem ? target_elem->second : ssa_ir_.size();
+
+        const auto pos = Operand(
+            InPlace<std::size_t>(), target_pos + entry_code_.size());
+
+        ssa_ir_[instruction_pos].set_operand(0, pos);
+      }
     }
 
 
