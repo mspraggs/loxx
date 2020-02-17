@@ -235,6 +235,8 @@ namespace loxx
 
         ssa_ir_[instruction_pos].set_operand(0, pos);
       }
+
+      ssa_ir_.insert(ssa_ir_.begin(), entry_code_.begin(), entry_code_.end());
     }
 
 
