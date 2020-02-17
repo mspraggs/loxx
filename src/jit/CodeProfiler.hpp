@@ -50,7 +50,7 @@ namespace loxx
       {
       }
 
-      void count_basic_block(const CodeObject::InsPtr ip);
+      void handle_basic_block_head(const CodeObject::InsPtr ip);
 
       void skip_current_block();
 

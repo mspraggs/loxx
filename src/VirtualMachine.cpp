@@ -78,7 +78,7 @@ namespace loxx
 
       const auto pos = std::distance(code_object_->bytecode.begin(), ip_);
       if (code_object_->basic_block_boundary_flags[pos]) {
-        profiler_->count_basic_block(ip_);
+        profiler_->handle_basic_block_head(ip_);
       }
 
       if (profiler_->is_recording()) {

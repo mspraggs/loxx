@@ -34,7 +34,7 @@ namespace loxx
 {
   namespace jit
   {
-    void CodeProfiler::count_basic_block(const CodeObject::InsPtr ip)
+    void CodeProfiler::handle_basic_block_head(const CodeObject::InsPtr ip)
     {
       if (is_recording_) {
         return;
