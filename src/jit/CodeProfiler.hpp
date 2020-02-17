@@ -89,6 +89,7 @@ namespace loxx
       InsPtrHashTable<std::size_t> block_counts_;
       InsPtrHashTable<std::size_t> ssa_ir_map_;
       std::vector<SSAInstruction<3>> ssa_ir_;
+      HashTable<const Value*, Operand> exit_assignments_;
       std::vector<SSAInstruction<3>> entry_code_;
       std::vector<std::pair<CodeObject::InsPtr, std::size_t>> jump_targets_;
       Stack<Operand, max_stack_size> op_stack_;
