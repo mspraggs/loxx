@@ -35,6 +35,18 @@ namespace loxx
   {
     using InsPtr = std::vector<std::uint8_t>::const_iterator;
 
+    struct InsPtrHasher
+    {
+      std::size_t operator() (const CodeObject::InsPtr ptr) const
+      {
+        return ptr_hasher(&(*ptr));
+      }
+      std::hash<const std::uint8_t*> ptr_hasher;
+    };
+
+    template <typename T>
+    using InsPtrHashTable = HashTable<CodeObject::InsPtr, T, InsPtrHasher>;
+
     unsigned int num_args = 0;
     unsigned int num_locals = 0;
     std::string name;
@@ -44,16 +56,6 @@ namespace loxx
     std::vector<std::string> varnames;
     std::vector<std::tuple<std::int8_t, std::uint8_t>> line_num_table;
     std::vector<bool> basic_block_boundary_flags;
-  };
-
-
-  struct InsPtrHasher
-  {
-    std::size_t operator() (const CodeObject::InsPtr ptr) const
-    {
-      return ptr_hasher(&(*ptr));
-    }
-    std::hash<const std::uint8_t*> ptr_hasher;
   };
 }
 

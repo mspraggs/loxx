@@ -68,9 +68,6 @@ namespace loxx
         GLOBAL,
       };
 
-      template <typename T>
-      using InsPtrHashTable = HashTable<CodeObject::InsPtr, T, InsPtrHasher>;
-
       using OperandIndex = std::pair<OperandLocation, std::size_t>;
 
       struct OperandIndexHasher
@@ -85,9 +82,9 @@ namespace loxx
       std::size_t block_count_threshold_;
       CodeObject::InsPtr current_block_head_;
 
-      HashSet<CodeObject::InsPtr, InsPtrHasher> ignored_blocks_;
-      InsPtrHashTable<std::size_t> block_counts_;
-      InsPtrHashTable<std::size_t> ssa_ir_map_;
+      HashSet<CodeObject::InsPtr, CodeObject::InsPtrHasher> ignored_blocks_;
+      CodeObject::InsPtrHashTable<std::size_t> block_counts_;
+      CodeObject::InsPtrHashTable<std::size_t> ssa_ir_map_;
       std::vector<SSAInstruction<3>> ssa_ir_;
       HashTable<const Value*, Operand> exit_assignments_;
       std::vector<SSAInstruction<3>> entry_code_;
