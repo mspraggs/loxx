@@ -60,9 +60,6 @@ namespace loxx
       bool is_recording() const { return is_recording_; }
 
     private:
-      template <typename T>
-      using InsPtrHashTable = HashTable<CodeObject::InsPtr, T, InsPtrHasher>;
-
       enum class OperandLocation
       {
         CONSTANT,
@@ -70,6 +67,9 @@ namespace loxx
         UPVALUE,
         GLOBAL,
       };
+
+      template <typename T>
+      using InsPtrHashTable = HashTable<CodeObject::InsPtr, T, InsPtrHasher>;
 
       using OperandIndex = std::pair<OperandLocation, std::size_t>;
 
