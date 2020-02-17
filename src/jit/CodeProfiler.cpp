@@ -237,6 +237,11 @@ namespace loxx
       }
 
       ssa_ir_.insert(ssa_ir_.begin(), entry_code_.begin(), entry_code_.end());
+
+      for (const auto& assignment : exit_assignments_) {
+        ssa_ir_.emplace_back(
+            Operator::MOVE, assignment.first, assignment.second);
+      }
     }
 
 
