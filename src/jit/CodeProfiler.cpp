@@ -106,7 +106,7 @@ namespace loxx
         op_stack_.push(result.first->second);
 
         if (result.second) {
-          ssa_ir_.emplace_back(
+          entry_code_.emplace_back(
               Operator::MOVE, op_stack_.top(), Operand(&value));
         }
         break;
@@ -136,7 +136,7 @@ namespace loxx
         op_stack_.push(result.first->second);
 
         if (result.second) {
-          ssa_ir_.emplace_back(
+          entry_code_.emplace_back(
               Operator::MOVE, op_stack_.top(), Operand(value));
         }
         break;
