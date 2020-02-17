@@ -195,11 +195,14 @@ namespace loxx
         const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
         const auto& value = context.stack_frame.slot(idx);
 
-        operand_cache_.erase(std::make_pair(OperandLocation::LOCAL, idx));
+        const auto destination =
+            Operand(static_cast<ValueType>(value.index()));
+        const auto& result = operand_cache_.insert(
+            std::make_pair(OperandLocation::LOCAL, idx), destination);
 
         ssa_ir_.emplace_back(
-            Operator::MOVE, Operand(&value), op_stack_.top());
-
+            Operator::MOVE, result.first->second, op_stack_.top());
+        exit_assignments_[&value] = result.first->second;
         break;
       }
 
