@@ -28,6 +28,8 @@
 #include "RuntimeError.hpp"
 #include "VirtualMachine.hpp"
 
+#include "jit/Compiler.hpp"
+
 
 namespace loxx
 {
@@ -82,6 +84,12 @@ namespace loxx
       const auto pos = std::distance(code_object_->bytecode.begin(), ip_);
       if (code_object_->basic_block_boundary_flags[pos]) {
         profiler_->handle_basic_block_head(ip_);
+
+        const auto& ssa_ir = trace_cache_->get_ssa_ir(ip_);
+
+        if (ssa_ir) {
+          jit::compile_trace(ssa_ir->second, debug_jit_);
+        }
       }
 
       if (profiler_->is_recording()) {
