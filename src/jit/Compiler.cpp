@@ -42,45 +42,6 @@ namespace loxx
     }
 
 
-    void Compiler::build_context(const RuntimeContext& context)
-    {
-      stack_size_ptr_ = context.stack.size_ptr();
-      ssa_generator_.build_context(context);
-    }
-
-
-    AssemblyFunction Compiler::compile(
-        const CodeObject::InsPtr begin, const CodeObject::InsPtr end)
-    {
-      ssa_ir_ = ssa_generator_.generate(begin, end);
-
-  #ifndef NDEBUG
-      if (debug_) {
-        std::cout << "=== Generated SSA ===\n";
-        print_ssa_instructions(ssa_ir_);
-      }
-  #endif
-
-      RegisterAllocator reg_alloc(
-          debug_, get_allocatable_registers<Register>());
-      const auto allocation_map = reg_alloc.allocate(ssa_ir_);
-
-#ifndef NDEBUG
-      if (debug_) {
-        print_allocation_map(allocation_map);
-      }
-#endif
-
-      Assembler<Register> assembler;
-      auto func = assembler.assemble(
-          ssa_ir_, allocation_map, ssa_generator_.external_operands(),
-          stack_size_ptr_);
-      func.lock();
-
-      return func;
-    }
-
-
     void compile_trace(const SSABuffer<3>& ssa_ir, const bool debug)
     {
 #ifndef NDEBUG

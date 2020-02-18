@@ -39,31 +39,6 @@ namespace loxx
 
   namespace jit
   {
-    class Compiler
-        : public AsyncWorker<std::function<void()>, 4096>
-    {
-    public:
-      explicit Compiler(const bool debug)
-          : debug_(debug), ssa_generator_(debug)
-      {}
-
-      AssemblyFunction compile(
-          const CodeObject::InsPtr begin, const CodeObject::InsPtr end);
-
-      void build_context(const RuntimeContext& context);
-
-      const std::vector<SSAInstruction<2>>& ssa_ir() const { return ssa_ir_; }
-
-    private:
-      bool debug_;
-      const std::size_t* stack_size_ptr_;
-
-      std::vector<SSAInstruction<2>> ssa_ir_;
-
-      SSAGenerator ssa_generator_;
-    };
-
-
     void compile_trace(const SSABuffer<3>& ssa_ir, const bool debug);
   }
 }
