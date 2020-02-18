@@ -54,8 +54,7 @@ namespace loxx
       RegisterAllocator(
           const bool debug, const std::vector<Register>& registers);
 
-      AllocationMap<Register> allocate(
-          const std::vector<SSAInstruction<2>>& ssa_ir);
+      AllocationMap<Register> allocate(const SSABuffer<3>& ssa_ir);
 
     private:
       void expire_old_intervals(const Range& interval);

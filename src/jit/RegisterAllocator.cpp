@@ -31,7 +31,7 @@ namespace loxx
   namespace jit
   {
     std::vector<std::pair<VirtualRegister, Range>> compute_live_ranges(
-        const std::vector<SSAInstruction<2>>& ssa_ir)
+        const SSABuffer<3>& ssa_ir)
     {
       using OperandSizeMap =
           HashTable<VirtualRegister, std::size_t,
@@ -82,7 +82,7 @@ namespace loxx
 
 
     AllocationMap<Register> RegisterAllocator::allocate(
-        const std::vector<SSAInstruction<2>>& ssa_ir)
+        const SSABuffer<3>& ssa_ir)
     {
       auto live_ranges = compute_live_ranges(ssa_ir);
 
