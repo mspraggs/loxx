@@ -52,7 +52,9 @@ namespace loxx
   class VirtualMachine
   {
   public:
-    VirtualMachine(jit::CodeProfiler& profiler, const bool debug);
+    VirtualMachine(
+        jit::CodeProfiler& profiler, jit::TraceCache& trace_cache,
+        const bool debug_exec, const bool debug_jit);
 
     void execute(std::unique_ptr<CodeObject> code_object);
 
@@ -78,7 +80,7 @@ namespace loxx
                            const InstrArgUByte num_args) const;
     RuntimeError make_runtime_error(const std::string& msg) const;
 
-    bool debug_;
+    bool debug_exec_, debug_jit_;
     CodeObject::InsPtr ip_;
     const CodeObject* code_object_;
     StringHashTable<Value> globals_;
@@ -87,6 +89,7 @@ namespace loxx
     std::list<UpvalueObject*> open_upvalues_;
     StringObject* init_lexeme_;
     jit::CodeProfiler* profiler_;
+    jit::TraceCache* trace_cache_;
   };
 
 

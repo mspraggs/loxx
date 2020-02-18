@@ -31,10 +31,13 @@
 
 namespace loxx
 {
-  VirtualMachine::VirtualMachine(jit::CodeProfiler& profiler, const bool debug)
-      : debug_(debug), ip_(0),
+  VirtualMachine::VirtualMachine(
+      jit::CodeProfiler& profiler, jit::TraceCache& trace_cache,
+      const bool debug_exec, const bool debug_jit)
+      : debug_exec_(debug_exec), debug_jit_(debug_jit), ip_(0),
         init_lexeme_(make_string("init")),
-        profiler_(&profiler)
+        profiler_(&profiler),
+        trace_cache_(&trace_cache)
   {
     NativeObject::Fn fn =
         [] (const Value*, const unsigned int)
@@ -69,7 +72,7 @@ namespace loxx
     while (true) {
 
 #ifndef NDEBUG
-      if (debug_) {
+      if (debug_exec_) {
         std::cout << "          " << stack_ << std::endl;
         print_instruction(
             *call_stack_.top().closure()->function().code_object(), ip_);

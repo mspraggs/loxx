@@ -105,11 +105,11 @@ namespace loxx
 
     static jit::TraceCache trace_cache;
 
-    static jit::Compiler jit_compiler(debug_config.trace_jit);
-
     static jit::CodeProfiler profiler(trace_cache, debug_config.trace_jit, 25);
 
-    static VirtualMachine vm(profiler, debug_config.trace_exec);
+    static VirtualMachine vm(
+        profiler, trace_cache,
+        debug_config.trace_exec, debug_config.trace_jit);
 
     try {
       vm.execute(compiler.release_output());
