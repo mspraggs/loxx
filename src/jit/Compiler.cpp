@@ -79,5 +79,16 @@ namespace loxx
 
       return func;
     }
+
+
+    void compile_trace(const SSABuffer<3>& ssa_ir, const bool debug)
+    {
+#ifndef NDEBUG
+      if (debug) {
+        std::cout << "=== Generated SSA ===\n";
+        print_ssa_instructions(ssa_ir);
+      }
+#endif
+    }
   }
 }

@@ -62,6 +62,9 @@ namespace loxx
 
       SSAGenerator ssa_generator_;
     };
+
+
+    void compile_trace(const SSABuffer<3>& ssa_ir, const bool debug);
   }
 }
 
