@@ -32,6 +32,7 @@ namespace loxx
 
 
     auto TraceCache::get_ssa_ir(const CodeObject::InsPtr ip) const
+        -> const CodeObject::InsPtrHashTable<SSABuffer<3>>::Elem&
     {
       return ir_cache_.get(ip);
     }

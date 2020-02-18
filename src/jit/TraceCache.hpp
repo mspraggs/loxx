@@ -36,7 +36,8 @@ namespace loxx
     {
     public:
       void add_ssa_ir(const CodeObject::InsPtr ip, SSABuffer<3> ssa_ir);
-      auto get_ssa_ir(const CodeObject::InsPtr ip) const;
+      auto get_ssa_ir(const CodeObject::InsPtr ip) const
+          -> const CodeObject::InsPtrHashTable<SSABuffer<3>>::Elem&;
 
     private:
       CodeObject::InsPtrHashTable<SSABuffer<3>> ir_cache_;
