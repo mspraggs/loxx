@@ -29,7 +29,7 @@
 #include "../Value.hpp"
 
 #include "AssemblyFunction.hpp"
-#include "Compiler.hpp"
+#include "TraceCache.hpp"
 
 
 namespace loxx
@@ -43,10 +43,11 @@ namespace loxx
     {
     public:
       CodeProfiler(
-          Compiler& compiler, const bool debug,
+          TraceCache& trace_cache, const bool debug,
           const std::size_t block_count_threshold)
           : debug_(debug), is_recording_(false),
-            block_count_threshold_(block_count_threshold)
+            block_count_threshold_(block_count_threshold),
+            trace_cache_(&trace_cache)
       {
       }
 
@@ -81,6 +82,8 @@ namespace loxx
       bool debug_, is_recording_;
       std::size_t block_count_threshold_;
       CodeObject::InsPtr current_block_head_;
+
+      TraceCache* trace_cache_;
 
       HashSet<CodeObject::InsPtr, CodeObject::InsPtrHasher> ignored_blocks_;
       CodeObject::InsPtrHashTable<std::size_t> block_counts_;

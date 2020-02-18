@@ -12,6 +12,7 @@
 #include "VirtualMachine.hpp"
 
 #include "jit/Compiler.hpp"
+#include "jit/TraceCache.hpp"
 
 
 namespace loxx
@@ -102,9 +103,11 @@ namespace loxx
     }
 #endif
 
+    static jit::TraceCache trace_cache;
+
     static jit::Compiler jit_compiler(debug_config.trace_jit);
 
-    static jit::CodeProfiler profiler(jit_compiler, debug_config.trace_jit, 25);
+    static jit::CodeProfiler profiler(trace_cache, debug_config.trace_jit, 25);
 
     static VirtualMachine vm(profiler, debug_config.trace_exec);
 

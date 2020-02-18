@@ -164,6 +164,7 @@ namespace loxx
         ssa_ir_.emplace_back(Operator::JUMP);
 
         finalise_ir();
+        trace_cache_->add_ssa_ir(current_block_head_, std::move(ssa_ir_));
         break;
       }
 
