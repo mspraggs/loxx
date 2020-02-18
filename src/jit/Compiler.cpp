@@ -50,6 +50,16 @@ namespace loxx
         print_ssa_instructions(ssa_ir);
       }
 #endif
+
+      RegisterAllocator reg_alloc(
+          debug, get_allocatable_registers<Register>());
+      const auto allocation_map = reg_alloc.allocate(ssa_ir);
+
+#ifndef NDEBUG
+      if (debug) {
+        print_allocation_map(allocation_map);
+      }
+#endif
     }
   }
 }
