@@ -85,9 +85,9 @@ namespace loxx
       HashSet<CodeObject::InsPtr, CodeObject::InsPtrHasher> ignored_blocks_;
       CodeObject::InsPtrHashTable<std::size_t> block_counts_;
       CodeObject::InsPtrHashTable<std::size_t> ssa_ir_map_;
-      std::vector<SSAInstruction<3>> ssa_ir_;
+      SSABuffer<3> ssa_ir_;
+      SSABuffer<3> entry_code_;
       HashTable<const Value*, Operand> exit_assignments_;
-      std::vector<SSAInstruction<3>> entry_code_;
       std::vector<std::pair<CodeObject::InsPtr, std::size_t>> jump_targets_;
       Stack<Operand, max_stack_size> op_stack_;
       HashTable<OperandIndex, Operand, OperandIndexHasher> operand_cache_;

@@ -119,6 +119,10 @@ namespace loxx
 
 
     template <std::size_t N>
+    using SSABuffer = std::vector<SSAInstruction<N>>;
+
+
+    template <std::size_t N>
     template <typename... Args>
     SSAInstruction<N>::SSAInstruction(
         const Operator op, const Args&... operands)
