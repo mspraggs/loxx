@@ -44,6 +44,7 @@ set(SRC
   jit/RegisterX86.hpp
   jit/SSAGenerator.hpp
   jit/SSAInstruction.hpp
+  jit/TraceCache.hpp
 
   AstPrinter.cpp
   Compiler.cpp
@@ -68,6 +69,7 @@ set(SRC
   jit/RegisterX86.cpp
   jit/SSAGenerator.cpp
   jit/SSAInstruction.cpp
+  jit/TraceCache.cpp
 )
 
 add_executable(loxx ${SRC})
