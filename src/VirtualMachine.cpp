@@ -88,7 +88,9 @@ namespace loxx
         const auto& ssa_ir = trace_cache_->get_ssa_ir(ip_);
 
         if (ssa_ir) {
-          jit::compile_trace(ssa_ir->second, debug_jit_);
+          jit::compile_trace(
+              ip_, ssa_ir->second.first,
+              *code_object_, ssa_ir->second.second, debug_jit_);
         }
       }
 

@@ -34,13 +34,17 @@ namespace loxx
   {
     class TraceCache
     {
+      using SSAData = std::pair<CodeObject::InsPtr, SSABuffer<3>>;
+
     public:
-      void add_ssa_ir(const CodeObject::InsPtr ip, SSABuffer<3> ssa_ir);
+      void add_ssa_ir(
+          const CodeObject::InsPtr begin, const CodeObject::InsPtr end,
+          SSABuffer<3> ssa_ir);
       auto get_ssa_ir(const CodeObject::InsPtr ip) const
-          -> const CodeObject::InsPtrHashTable<SSABuffer<3>>::Elem&;
+          -> const CodeObject::InsPtrHashTable<SSAData>::Elem&;
 
     private:
-      CodeObject::InsPtrHashTable<SSABuffer<3>> ir_cache_;
+      CodeObject::InsPtrHashTable<SSAData> ir_cache_;
     };
   }
 }
