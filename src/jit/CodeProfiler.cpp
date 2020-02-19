@@ -47,13 +47,6 @@ namespace loxx
       auto count_elem = block_counts_.insert(ip, 0);
       count_elem.first->second += 1;
 
-  #ifndef NDEBUG
-      if (debug_) {
-        std::cout << "Block hit count @ " << static_cast<const void*>(&(*ip))
-                  << " = " << count_elem.first->second << '\n';
-      }
-  #endif
-
       if (count_elem.first->second >= block_count_threshold_) {
         start_recording();
       }
