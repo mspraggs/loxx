@@ -57,6 +57,11 @@ namespace loxx
 
   void print_bytecode(
       const CodeObject& output,
+      const std::vector<CodeObject::InsPtr>& instructions);
+
+
+  void print_bytecode(
+      const CodeObject& output,
       const CodeObject::InsPtr begin, const CodeObject::InsPtr end);
 
 

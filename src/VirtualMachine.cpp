@@ -88,9 +88,15 @@ namespace loxx
         const auto& ssa_ir = trace_cache_->get_ssa_ir(ip_);
 
         if (ssa_ir) {
-          jit::compile_trace(
-              ip_, ssa_ir->second.first,
-              *code_object_, ssa_ir->second.second, debug_jit_);
+#ifndef NDEBUG
+          if (debug_jit_) {
+            const auto& compiled_bytecode =
+                trace_cache_->get_recorded_instructions(ip_);
+            std::cout << "=== Compiling Bytecode ===\n";
+            print_bytecode(*code_object_, compiled_bytecode);
+          }
+#endif
+          jit::compile_trace(ssa_ir->second, debug_jit_);
         }
       }
 

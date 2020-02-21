@@ -63,6 +63,7 @@ namespace loxx
         const CodeObject::InsPtr ip, const RuntimeContext context)
     {
       ssa_ir_map_[ip] = ssa_ir_.size();
+      recorded_instructions_.push_back(ip);
       const auto instruction = static_cast<Instruction>(*ip);
 
       switch (instruction) {
@@ -158,7 +159,7 @@ namespace loxx
 
         finalise_ir();
         trace_cache_->add_ssa_ir(
-            current_block_head_, ip + sizeof(InstrArgUShort) + 1,
+            current_block_head_, std::move(recorded_instructions_),
             std::move(ssa_ir_));
         break;
       }

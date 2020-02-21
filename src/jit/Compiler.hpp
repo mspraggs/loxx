@@ -39,9 +39,7 @@ namespace loxx
 
   namespace jit
   {
-    void compile_trace(
-        const CodeObject::InsPtr begin, const CodeObject::InsPtr end,
-        const CodeObject& code, const SSABuffer<3>& ssa_ir, const bool debug);
+    void compile_trace(const SSABuffer<3>& ssa_ir, const bool debug);
   }
 }
 

@@ -42,14 +42,10 @@ namespace loxx
     }
 
 
-    void compile_trace(
-        const CodeObject::InsPtr begin, const CodeObject::InsPtr end,
-        const CodeObject& code, const SSABuffer<3>& ssa_ir, const bool debug)
+    void compile_trace(const SSABuffer<3>& ssa_ir, const bool debug)
     {
 #ifndef NDEBUG
       if (debug) {
-        std::cout << "=== Compiling Bytecode ===\n";
-        print_bytecode(code, begin, end);
         std::cout << "=== Generated SSA ===\n";
         print_ssa_instructions(ssa_ir);
       }
