@@ -39,6 +39,7 @@ set(SRC
   jit/Compiler.hpp
   jit/JITError.hpp
   jit/logging.hpp
+  jit/Optimiser.hpp
   jit/RegisterAllocator.hpp
   jit/Register.hpp
   jit/RegisterX86.hpp
@@ -65,6 +66,7 @@ set(SRC
   jit/CodeProfiler.cpp
   jit/Compiler.cpp
   jit/logging.cpp
+  jit/Optimiser.cpp
   jit/RegisterAllocator.cpp
   jit/RegisterX86.cpp
   jit/SSAGenerator.cpp
