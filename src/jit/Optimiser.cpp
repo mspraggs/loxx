@@ -24,15 +24,40 @@ namespace loxx
 {
   namespace jit
   {
+    bool instructions_target_same_dest(
+        const SSAInstruction<3>& first, const SSAInstruction<3>& second)
+    {
+      return first.operands()[0] == second.operands()[0];
+    }
+
+    bool instructions_contain_redundant_move(
+        const SSAInstruction<3>& first, const SSAInstruction<3>& second)
+    {
+      return second.op() == Operator::MOVE and
+          first.operands()[0] == second.operands()[1];
+    }
+
     void optimise(SSABuffer<3>& ssa_ir)
     {
-      for (std::size_t i = 0; i < ssa_ir.size() - 1; ++i) {
+      for (std::size_t i = 1; i < ssa_ir.size(); ++i) {
+        const auto& prev_instruction = ssa_ir[i - 1];
         const auto& current_instruction = ssa_ir[i];
-        const auto& next_instruction = ssa_ir[i + 1];
+        const auto& current_operands = current_instruction.operands();
 
-        if (current_instruction.op() == Operator::MOVE and
-            next_instruction.op() == Operator::MOVE and
-            current_instruction.operands()[0] == next_instruction.operands()[0]) {
+        for (std::size_t j = 1; j < 4; ++j) {
+          if (i >= j) {
+            const auto& prior_instruction = ssa_ir[i - j];
+
+            if (instructions_target_same_dest(
+                prior_instruction, current_instruction)) {
+              ssa_ir[i - j] = SSAInstruction<3>(Operator::NOOP);
+            }
+          }
+        }
+
+        if (instructions_contain_redundant_move(
+            prev_instruction, current_instruction)) {
+          ssa_ir[i - 1].set_operand(0, current_operands[0]);
           ssa_ir[i] = SSAInstruction<3>(Operator::NOOP);
         }
       }
