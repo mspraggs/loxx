@@ -26,6 +26,16 @@ namespace loxx
   {
     void optimise(SSABuffer<3>& ssa_ir)
     {
+      for (std::size_t i = 0; i < ssa_ir.size() - 1; ++i) {
+        const auto& current_instruction = ssa_ir[i];
+        const auto& next_instruction = ssa_ir[i + 1];
+
+        if (current_instruction.op() == Operator::MOVE and
+            next_instruction.op() == Operator::MOVE and
+            current_instruction.operands()[0] == next_instruction.operands()[0]) {
+          ssa_ir[i] = SSAInstruction<3>(Operator::NOOP);
+        }
+      }
     }
   }
 }
