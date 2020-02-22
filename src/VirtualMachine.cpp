@@ -85,7 +85,7 @@ namespace loxx
       if (code_object_->basic_block_boundary_flags[pos]) {
         profiler_->handle_basic_block_head(ip_);
 
-        const auto& ssa_ir = trace_cache_->get_ssa_ir(ip_);
+        auto& ssa_ir = trace_cache_->get_ssa_ir(ip_);
 
         if (ssa_ir) {
 #ifndef NDEBUG
