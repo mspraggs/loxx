@@ -42,6 +42,8 @@ namespace loxx
           RecordedInstructions instructions, SSABuffer<3> ssa_ir);
       auto get_ssa_ir(const CodeObject::InsPtr ip) const
           -> const CodeObject::InsPtrHashTable<SSABuffer<3>>::Elem&;
+      auto get_ssa_ir(const CodeObject::InsPtr ip)
+          -> CodeObject::InsPtrHashTable<SSABuffer<3>>::Elem&;
       auto get_recorded_instructions(const CodeObject::InsPtr ip) const
           -> const RecordedInstructions&;
 

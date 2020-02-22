@@ -40,6 +40,13 @@ namespace loxx
     }
 
 
+    auto TraceCache::get_ssa_ir(const CodeObject::InsPtr ip)
+        -> CodeObject::InsPtrHashTable<SSABuffer<3>>::Elem&
+    {
+      return ir_cache_.get(ip);
+    }
+
+
     auto TraceCache::get_recorded_instructions(
         const CodeObject::InsPtr ip) const -> const RecordedInstructions&
     {
