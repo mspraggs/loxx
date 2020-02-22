@@ -65,5 +65,11 @@ namespace loxx
     {
       return first.type == second.type and first.index == second.index;
     }
+
+
+    bool operator==(const VirtualRegister& first, const VirtualRegister& second)
+    {
+      return first.type == second.type and first.index == second.index;
+    }
   }
 }

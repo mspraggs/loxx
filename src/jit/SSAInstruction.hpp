@@ -122,6 +122,9 @@ namespace loxx
     using SSABuffer = std::vector<SSAInstruction<N>>;
 
 
+    bool operator==(const VirtualRegister& first, const VirtualRegister& second);
+
+
     template <std::size_t N>
     template <typename... Args>
     SSAInstruction<N>::SSAInstruction(
