@@ -58,6 +58,7 @@ namespace loxx
     Value& operator[](const Key& key);
     const Value& at(const Key& key) const;
     const Elem& get(const Key& key) const;
+    Elem& get(const Key& key);
     std::pair<Iter, bool> insert(const Key& key, const Value& value = Value());
     Iter find(const Key& key);
     ConstIter find(const Key& key) const;
@@ -123,6 +124,14 @@ namespace loxx
   template <typename Key, typename Value, typename Hash, typename Compare>
   auto HashTable<Key, Value, Hash, Compare>::get(const Key& key) const
       -> const Elem&
+  {
+    const auto found_pos = this->find_new_pos(*this, key, hash_func_(key));
+    return data_[found_pos];
+  }
+
+
+  template <typename Key, typename Value, typename Hash, typename Compare>
+  auto HashTable<Key, Value, Hash, Compare>::get(const Key& key) -> Elem&
   {
     const auto found_pos = this->find_new_pos(*this, key, hash_func_(key));
     return data_[found_pos];
