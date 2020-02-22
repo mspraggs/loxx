@@ -92,7 +92,7 @@ namespace loxx
         const auto offset = read_integer_at_pos<InstrArgUShort>(ip + 1);
         jump_targets_.push_back(std::make_pair(
             ip + sizeof(InstrArgUShort) + 1 + offset, ssa_ir_.size()));
-        ssa_ir_.emplace_back(Operator::CONDITIONAL_JUMP);
+        ssa_ir_.emplace_back(Operator::CONDITIONAL_JUMP, 0ul, op_stack_.top());
         break;
       }
 
