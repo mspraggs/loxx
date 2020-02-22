@@ -28,6 +28,7 @@
 #include "CodeProfiler.hpp"
 #include "Compiler.hpp"
 #include "logging.hpp"
+#include "Optimiser.hpp"
 #include "RegisterAllocator.hpp"
 
 
@@ -44,6 +45,8 @@ namespace loxx
 
     void compile_trace(SSABuffer<3>& ssa_ir, const bool debug)
     {
+      optimise(ssa_ir);
+
 #ifndef NDEBUG
       if (debug) {
         std::cout << "=== Generated SSA ===\n";
