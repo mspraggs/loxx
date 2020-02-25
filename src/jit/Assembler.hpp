@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Created by Matt Spraggs on 15/12/2018.
+ * Created by Matt Spraggs on 15/12/2019.
  */
 
 #ifndef LOXX_JIT_ASSEMBLER_HPP
@@ -33,8 +33,10 @@ namespace loxx
     class Assembler
     {
     public:
+      using SSAInstruction = SSAInstruction<3>;
+
       AssemblyWrapper assemble(
-          const std::vector<SSAInstruction<2>>& ssa_ir,
+          const std::vector<SSAInstruction>& ssa_ir,
           const AllocationMap<Reg>& allocation_map,
           const ReferenceSet& external_operands,
           const std::size_t* stack_size_ptr);

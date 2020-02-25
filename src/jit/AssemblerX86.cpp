@@ -127,7 +127,7 @@ namespace loxx
 
 
     AssemblyWrapper Assembler<RegisterX86>::assemble(
-        const std::vector<SSAInstruction<2>>& ssa_ir,
+        const std::vector<SSAInstruction>& ssa_ir,
         const AllocationMap<RegisterX86>& allocation_map,
         const ReferenceSet& external_operands,
         const std::size_t* stack_size_ptr)
@@ -244,7 +244,7 @@ namespace loxx
 
 
     void Assembler<RegisterX86>::add_addition(
-        const SSAInstruction<2>& instruction,
+        const SSAInstruction& instruction,
         const AllocationMap<RegisterX86>& allocation_map)
     {
       const auto& operands = instruction.operands();
@@ -261,7 +261,7 @@ namespace loxx
 
 
     void Assembler<RegisterX86>::add_move(
-        const SSAInstruction<2>& instruction,
+        const SSAInstruction& instruction,
         const AllocationMap<RegisterX86>& allocation_map)
     {
       const auto& operands = instruction.operands();
@@ -298,7 +298,7 @@ namespace loxx
 
 
     void Assembler<RegisterX86>::add_multiplication(
-        const SSAInstruction<2>& instruction,
+        const SSAInstruction& instruction,
         const AllocationMap<RegisterX86>& allocation_map)
     {
       const auto& operands = instruction.operands();

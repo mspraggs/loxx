@@ -45,10 +45,12 @@ namespace loxx
     class Assembler<RegisterX86>
     {
     public:
+      using SSAInstruction = SSAInstruction<3>;
+
       Assembler();
 
       AssemblyWrapper assemble(
-          const std::vector<SSAInstruction<2>>& ssa_ir,
+          const std::vector<SSAInstruction>& ssa_ir,
           const AllocationMap<RegisterX86>& allocation_map,
           const ReferenceSet& external_operands,
           const std::size_t* stack_size_ptr);
@@ -57,13 +59,13 @@ namespace loxx
       void insert_type_guards(const ReferenceSet& operands);
 
       void add_addition(
-          const SSAInstruction<2>& instruction,
+          const SSAInstruction& instruction,
           const AllocationMap<RegisterX86>& allocation_map);
       void add_move(
-          const SSAInstruction<2>& instruction,
+          const SSAInstruction& instruction,
           const AllocationMap<RegisterX86>& allocation_map);
       void add_multiplication(
-          const SSAInstruction<2>& instruction,
+          const SSAInstruction& instruction,
           const AllocationMap<RegisterX86>& allocation_map);
 
       void add_return();
