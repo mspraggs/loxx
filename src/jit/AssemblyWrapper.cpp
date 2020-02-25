@@ -17,7 +17,7 @@
  * Created by Matt Spraggs on 15/12/2019.
  */
 
-#include "AssemblyFunction.hpp"
+#include "AssemblyWrapper.hpp"
 #include "JITError.hpp"
 
 
@@ -25,14 +25,14 @@ namespace loxx
 {
   namespace jit
   {
-    void AssemblyFunction::add_byte(const std::uint8_t byte)
+    void AssemblyWrapper::add_byte(const std::uint8_t byte)
     {
       check_unlocked();
       assembly_.push_back(byte);
     }
 
 
-    void AssemblyFunction::write_byte(
+    void AssemblyWrapper::write_byte(
         const std::size_t pos, const std::uint8_t byte)
     {
       check_unlocked();
@@ -40,7 +40,7 @@ namespace loxx
     }
 
 
-    void AssemblyFunction::lock()
+    void AssemblyWrapper::lock()
     {
       const auto result = mprotect(
           assembly_.data(), assembly_.capacity(),
@@ -52,7 +52,7 @@ namespace loxx
     }
 
 
-    bool AssemblyFunction::operator() () const
+    bool AssemblyWrapper::operator() () const
     {
       check_locked();
       const auto func = reinterpret_cast<bool (*) ()>(
@@ -61,7 +61,7 @@ namespace loxx
     }
 
 
-    void AssemblyFunction::check_locked() const
+    void AssemblyWrapper::check_locked() const
     {
       if (not locked_) {
         throw JITError("invalid memory access");
@@ -69,7 +69,7 @@ namespace loxx
     }
 
 
-    void AssemblyFunction::check_unlocked() const
+    void AssemblyWrapper::check_unlocked() const
     {
       if (locked_) {
         throw JITError("invalid memory access");

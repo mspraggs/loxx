@@ -34,7 +34,7 @@ set(SRC
   detail/VariantImpl.hpp
   jit/Assembler.hpp
   jit/AssemblerX86.hpp
-  jit/AssemblyFunction.hpp
+  jit/AssemblyWrapper.hpp
   jit/CodeProfiler.hpp
   jit/Compiler.hpp
   jit/JITError.hpp
@@ -62,7 +62,7 @@ set(SRC
   utils.cpp
   VirtualMachine.cpp
   jit/AssemblerX86.cpp
-  jit/AssemblyFunction.cpp
+  jit/AssemblyWrapper.cpp
   jit/CodeProfiler.cpp
   jit/Compiler.cpp
   jit/logging.cpp

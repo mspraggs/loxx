@@ -20,7 +20,7 @@
 #ifndef LOXX_JIT_ASSEMBLER_HPP
 #define LOXX_JIT_ASSEMBLER_HPP
 
-#include "AssemblyFunction.hpp"
+#include "AssemblyWrapper.hpp"
 #include "RegisterAllocator.hpp"
 #include "SSAInstruction.hpp"
 
@@ -33,7 +33,7 @@ namespace loxx
     class Assembler
     {
     public:
-      AssemblyFunction assemble(
+      AssemblyWrapper assemble(
           const std::vector<SSAInstruction<2>>& ssa_ir,
           const AllocationMap<Reg>& allocation_map,
           const ReferenceSet& external_operands,

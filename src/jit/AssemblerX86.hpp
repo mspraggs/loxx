@@ -47,7 +47,7 @@ namespace loxx
     public:
       Assembler();
 
-      AssemblyFunction assemble(
+      AssemblyWrapper assemble(
           const std::vector<SSAInstruction<2>>& ssa_ir,
           const AllocationMap<RegisterX86>& allocation_map,
           const ReferenceSet& external_operands,
@@ -109,7 +109,7 @@ namespace loxx
       RegisterX86 general_scratch_;
       RegisterX86 stack_size_;
       RegisterX86 float_scratch_;
-      AssemblyFunction func_; 
+      AssemblyWrapper func_;
     };
 
 

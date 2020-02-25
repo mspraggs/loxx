@@ -17,8 +17,8 @@
  * Created by Matt Spraggs on 15/12/2018.
  */
 
-#ifndef LOXX_JIT_ASSEMBLYFUNCTION_HPP
-#define LOXX_JIT_ASSEMBLYFUNCTION_HPP
+#ifndef LOXX_JIT_ASSEMBLYWRAPPER_HPP
+#define LOXX_JIT_ASSEMBLYWRAPPER_HPP
 
 #include <cstdint>
 #include <cstdlib>
@@ -33,18 +33,18 @@ namespace loxx
 {
   namespace jit
   {
-    class AssemblyFunction
+    class AssemblyWrapper
     {
     public:
-      AssemblyFunction(const std::size_t reserve_size = 4096)
+      AssemblyWrapper(const std::size_t reserve_size = 4096)
           : locked_(false)
       {
         assembly_.reserve(reserve_size);
       }
 
-      AssemblyFunction(AssemblyFunction&&) = default;
+      AssemblyWrapper(AssemblyWrapper&&) = default;
 
-      AssemblyFunction& operator=(AssemblyFunction&&) = default;
+      AssemblyWrapper& operator=(AssemblyWrapper&&) = default;
 
       void add_byte(const std::uint8_t byte);
 
@@ -100,7 +100,7 @@ namespace loxx
 
 
     template <typename Iter>
-    void AssemblyFunction::add_bytes(const Iter begin, const Iter end)
+    void AssemblyWrapper::add_bytes(const Iter begin, const Iter end)
     {
       check_unlocked();
       assembly_.insert(assembly_.end(), begin, end);
@@ -108,14 +108,14 @@ namespace loxx
 
 
     template <typename... Args>
-    void AssemblyFunction::add_bytes(Args&&... bytes)
+    void AssemblyWrapper::add_bytes(Args&&... bytes)
     {
       add_bytes_impl(std::forward<Args>(bytes)...);
     }
 
 
     template <typename Iter>
-    void AssemblyFunction::write_bytes(
+    void AssemblyWrapper::write_bytes(
         const std::size_t pos, const Iter begin, const Iter end)
     {
       check_unlocked();
@@ -124,7 +124,7 @@ namespace loxx
 
 
     template <typename T>
-    void AssemblyFunction::write_integer(const std::size_t pos, const T value)
+    void AssemblyWrapper::write_integer(const std::size_t pos, const T value)
     {
       const auto ptr = reinterpret_cast<const std::uint8_t*>(&value);
       write_bytes(pos, ptr, ptr + sizeof(T));
@@ -132,7 +132,7 @@ namespace loxx
 
 
     template <typename... Args>
-    void AssemblyFunction::add_bytes_impl(
+    void AssemblyWrapper::add_bytes_impl(
         const std::uint8_t byte0, Args&&... bytes)
     {
       add_byte(byte0);
@@ -141,7 +141,7 @@ namespace loxx
 
 
     template <typename T>
-    T* AssemblyFunction::MMapAllocator<T>::allocate(const std::size_t n)
+    T* AssemblyWrapper::MMapAllocator<T>::allocate(const std::size_t n)
     {
       if (n > std::numeric_limits<std::size_t>::max() / sizeof(T)) {
         throw std::bad_alloc();
@@ -162,7 +162,7 @@ namespace loxx
 
 
     template <typename T>
-    void AssemblyFunction::MMapAllocator<T>::deallocate(
+    void AssemblyWrapper::MMapAllocator<T>::deallocate(
         T* ptr, const std::size_t n)
     {
       munmap(ptr, n);
@@ -171,8 +171,8 @@ namespace loxx
 
     template <typename T>
     bool operator==(
-        const AssemblyFunction::MMapAllocator<T>&,
-        const AssemblyFunction::MMapAllocator<T>&)
+        const AssemblyWrapper::MMapAllocator<T>&,
+        const AssemblyWrapper::MMapAllocator<T>&)
     {
       return true;
     }
@@ -180,12 +180,12 @@ namespace loxx
 
     template <typename T>
     bool operator!=(
-        const AssemblyFunction::MMapAllocator<T>&,
-        const AssemblyFunction::MMapAllocator<T>&)
+        const AssemblyWrapper::MMapAllocator<T>&,
+        const AssemblyWrapper::MMapAllocator<T>&)
     {
       return false;
     }
   }
 }
 
-#endif // LOXX_JIT_ASSEMBLYFUNCTION_HPP
+#endif // LOXX_JIT_ASSEMBLYWRAPPER_HPP

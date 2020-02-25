@@ -28,7 +28,7 @@
 #include "../Stack.hpp"
 #include "../Value.hpp"
 
-#include "AssemblyFunction.hpp"
+#include "AssemblyWrapper.hpp"
 #include "TraceCache.hpp"
 
 
