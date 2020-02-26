@@ -65,8 +65,6 @@ namespace loxx
 
       void lock();
 
-      bool operator() () const;
-
       std::size_t size() const { return assembly_.size(); }
 
     private:

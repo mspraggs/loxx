@@ -52,15 +52,6 @@ namespace loxx
     }
 
 
-    bool AssemblyWrapper::operator() () const
-    {
-      check_locked();
-      const auto func = reinterpret_cast<bool (*) ()>(
-          const_cast<std::uint8_t*>(assembly_.data()));
-      return func();
-    }
-
-
     void AssemblyWrapper::check_locked() const
     {
       if (not locked_) {
