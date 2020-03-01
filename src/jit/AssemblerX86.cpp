@@ -116,7 +116,7 @@ namespace loxx
         if (reg_supports_float(reg)) {
           float_scratch_ = reg;
         }
-        else if (reg_supports_ptr and gen_reg_count == 0) {
+        else if (reg_supports_ptr(reg) and gen_reg_count == 0) {
           general_scratch_ = reg;
           gen_reg_count++;
         }
