@@ -72,7 +72,7 @@ namespace loxx
 
 
     RegisterAllocator::RegisterAllocator(
-        const bool debug, const std::vector<Register>& registers)
+        const bool debug, const std::vector<RegType<platform>>& registers)
         : debug_(debug), stack_index_(0)
     {
       for (const auto reg : registers) {
@@ -81,7 +81,7 @@ namespace loxx
     }
 
 
-    AllocationMap<Register> RegisterAllocator::allocate(
+    AllocationMap<RegType<platform>> RegisterAllocator::allocate(
         const SSABuffer<3>& ssa_ir)
     {
       auto live_ranges = compute_live_ranges(ssa_ir);
@@ -114,7 +114,7 @@ namespace loxx
         }
       }
 
-      AllocationMap<Register> allocation_map;
+      AllocationMap<RegType<platform>> allocation_map;
 
       for (const auto& live_range : live_ranges) {
         const auto& virtual_register = live_range.first;
@@ -126,11 +126,11 @@ namespace loxx
 
         const auto& reg = registers_.get(interval.first);
         if (reg) {
-          allocation_map[virtual_register] = Allocation<Register>(
-              InPlace<Register>(), reg->second);
+          allocation_map[virtual_register] = Allocation<RegType<platform>>(
+              InPlace<RegType<platform>>(), reg->second);
         }
         else {
-          allocation_map[virtual_register] = Allocation<Register>(
+          allocation_map[virtual_register] = Allocation<RegType<platform>>(
               InPlace<std::size_t>(), stack_slots_[interval.first]);
         }
       }
@@ -208,11 +208,12 @@ namespace loxx
     }
 
 
-    Optional<Register> RegisterAllocator::get_register(const ValueType type)
+    Optional<RegType<platform>> RegisterAllocator::get_register(
+        const ValueType type)
     {
       const auto elem = std::find_if(
         register_pool_.begin(), register_pool_.end(),
-        [=] (const Register& reg) {
+        [=] (const RegType<platform>& reg) {
           return reg_supports_value_type(reg, type);
         }
       );

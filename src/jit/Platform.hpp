@@ -17,35 +17,49 @@
  * Created by Matt Spraggs on 09/12/2019.
  */
 
-#ifndef LOXX_JIT_REGISTER_HPP
-#define LOXX_JIT_REGISTER_HPP
+#ifndef LOXX_JIT_PLATFORM_HPP
+#define LOXX_JIT_PLATFORM_HPP
 
 #include <algorithm>
 #include <vector>
 
-#include "RegisterX86.hpp"
+#include "AssemblyWrapper.hpp"
 
 
 namespace loxx
 {
   namespace jit
   {
-    template <typename Reg>
-    std::vector<Reg> get_platform_registers();
-
-
-    template <typename Reg>
-    std::vector<Reg> get_scratch_registers();
-
-
-    template <typename Reg>
-    std::vector<Reg> get_allocatable_registers()
+    enum class Platform
     {
-      const auto scratch_registers = get_scratch_registers<Reg>();
-      auto available_registers = get_platform_registers<Reg>();
+      X86_64,
+    };
+
+
+    template <Platform P>
+    struct Reg;
+
+
+    template <Platform P>
+    using RegType = typename Reg<P>::Type;
+
+
+    template <Platform P>
+    std::vector<RegType<P>> get_platform_registers();
+
+
+    template <Platform P>
+    std::vector<RegType<P>> get_scratch_registers();
+
+
+    template <Platform P>
+    std::vector<RegType<P>> get_allocatable_registers()
+    {
+      const auto scratch_registers = get_scratch_registers<P>();
+      auto available_registers = get_platform_registers<P>();
 
       for (const auto scratch_register : scratch_registers) {
-        const auto pos =  std::find(
+        const auto pos = std::find(
             available_registers.begin(), available_registers.end(),
             scratch_register);
         available_registers.erase(pos);
@@ -55,8 +69,12 @@ namespace loxx
     }
 
 
-    using Register = RegisterX86;
+    template <Platform P>
+    void execute_assembly(const AssemblyWrapper& function);
+
+
+    constexpr Platform platform = Platform::X86_64;
   }
 }
 
-#endif // LOXX_JIT_REGISTER_HPP
+#endif // LOXX_JIT_PLATFORM_HPP

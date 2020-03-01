@@ -55,7 +55,7 @@ namespace loxx
 #endif
 
       RegisterAllocator reg_alloc(
-          debug, get_allocatable_registers<Register>());
+          debug, get_allocatable_registers<platform>());
       const auto allocation_map = reg_alloc.allocate(ssa_ir);
 
 #ifndef NDEBUG

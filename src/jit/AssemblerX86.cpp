@@ -108,7 +108,8 @@ namespace loxx
 
     Assembler<RegisterX86>::Assembler()
     {
-      const auto scratch_registers = get_scratch_registers<RegisterX86>();
+      const auto scratch_registers =
+          get_scratch_registers<Platform::X86_64>();
 
       unsigned int gen_reg_count = 0;
       for (const auto reg : scratch_registers) {

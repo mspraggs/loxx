@@ -17,8 +17,8 @@
  * Created by Matt Spraggs on 08/12/2019.
  */
 
-#include "Register.hpp"
-#include "RegisterX86.hpp"
+#include "Platform.hpp"
+#include "PlatformX86.hpp"
 
 
 namespace loxx
@@ -120,7 +120,7 @@ namespace loxx
 
 
     template <>
-    std::vector<RegisterX86> get_platform_registers<RegisterX86>()
+    std::vector<RegisterX86> get_platform_registers<Platform::X86_64>()
     {
       return {
         RegisterX86::RAX,
@@ -158,7 +158,7 @@ namespace loxx
 
 
     template <>
-    std::vector<RegisterX86> get_scratch_registers<RegisterX86>()
+    std::vector<RegisterX86> get_scratch_registers<Platform::X86_64>()
     {
       return {
         RegisterX86::R14,

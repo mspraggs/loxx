@@ -22,7 +22,7 @@
 
 #include <utility>
 
-#include "Register.hpp"
+#include "PlatformX86.hpp"
 #include "SSAGenerator.hpp"
 #include "SSAInstruction.hpp"
 
@@ -52,22 +52,22 @@ namespace loxx
     {
     public:
       RegisterAllocator(
-          const bool debug, const std::vector<Register>& registers);
+          const bool debug, const std::vector<RegType<platform>>& registers);
 
-      AllocationMap<Register> allocate(const SSABuffer<3>& ssa_ir);
+      AllocationMap<RegType<platform>> allocate(const SSABuffer<3>& ssa_ir);
 
     private:
       void expire_old_intervals(const Range& interval);
       void spill_at_interval(const Range& interval);
       void insert_active_interval(const Range& interval);
       void remove_active_interval(const Range& interval);
-      Optional<Register> get_register(const ValueType type);
+      Optional<RegType<platform>> get_register(const ValueType type);
 
       bool debug_;
       std::size_t stack_index_;
-      HashTable<std::size_t, Register> registers_;
+      HashTable<std::size_t, RegType<platform>> registers_;
       HashTable<std::size_t, std::size_t> stack_slots_;
-      HashSet<Register> register_pool_;
+      HashSet<RegType<platform>> register_pool_;
       std::vector<Range> active_intervals_;
     };
   }

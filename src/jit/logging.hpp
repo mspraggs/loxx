@@ -41,7 +41,8 @@ namespace loxx
     void print_live_ranges(
         const std::vector<std::pair<VirtualRegister, Range>>& live_ranges);
 
-    void print_allocation_map(const AllocationMap<Register>& allocation_map);
+    void print_allocation_map(
+        const AllocationMap<RegType<platform>>& allocation_map);
 
     template <std::size_t N>
     void print_ssa_instruction(const SSAInstruction<N>& instruction)

@@ -22,6 +22,8 @@
 
 #include "../Value.hpp"
 
+#include "Platform.hpp"
+
 
 namespace loxx
 {
@@ -61,6 +63,13 @@ namespace loxx
       XMM13,
       XMM14,
       XMM15,
+    };
+
+
+    template <>
+    struct Reg<Platform::X86_64>
+    {
+      using Type = RegisterX86;
     };
 
 
