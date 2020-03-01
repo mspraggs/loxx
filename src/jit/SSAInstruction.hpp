@@ -194,7 +194,6 @@ namespace loxx
         os << unsafe_get<VirtualRegister>(operand);
       }
       else if (holds_alternative<const Value*>(operand)) {
-        const auto ptr = unsafe_get<const Value*>(operand);
         os << "[ " << operand.value_type() << '@'
            << unsafe_get<const Value*>(operand) << " ]";
       }
