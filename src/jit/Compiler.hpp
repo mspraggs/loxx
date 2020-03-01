@@ -24,11 +24,8 @@
 #include <tuple>
 #include <vector>
 
-#include "../AsyncWorker.hpp"
 #include "../CodeObject.hpp"
 
-#include "RegisterAllocator.hpp"
-#include "SSAGenerator.hpp"
 #include "SSAInstruction.hpp"
 
 
