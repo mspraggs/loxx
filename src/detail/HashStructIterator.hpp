@@ -77,7 +77,7 @@ namespace loxx
           const HashStructIterator<Item, Hash, Compare>& other) const;
 
       auto operator*() -> reference;
-      auto operator*() const -> const reference;
+      auto operator*() const -> reference;
 
       auto operator->() -> pointer;
       auto operator->() const -> const pointer;
@@ -141,7 +141,7 @@ namespace loxx
 
     template <typename Item, typename Hash, typename Compare>
     auto HashStructIterator<Item, Hash, Compare>::operator*() const
-        -> const reference
+        -> reference
     {
       return *(*it_);
     }
