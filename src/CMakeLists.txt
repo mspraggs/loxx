@@ -42,6 +42,7 @@ set(SRC
   jit/Optimiser.hpp
   jit/Platform.hpp
   jit/PlatformX86.hpp
+  jit/Register.hpp
   jit/RegisterAllocator.hpp
   jit/SSAGenerator.hpp
   jit/SSAInstruction.hpp
