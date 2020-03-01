@@ -104,6 +104,12 @@ namespace loxx
       case RegisterX86::RDX:
         stream << "rdx";
         break;
+      case RegisterX86::RSP:
+        stream << "rsp";
+        break;
+      case RegisterX86::RBP:
+        stream << "rbp";
+        break;
       case RegisterX86::RSI:
         stream << "rsi";
         break;
