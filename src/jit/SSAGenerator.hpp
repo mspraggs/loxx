@@ -40,8 +40,6 @@ namespace loxx
     class SSAGenerator
     {
     public:
-      explicit SSAGenerator(const bool debug) : debug_(debug) {}
-
       void build_context(const RuntimeContext& context);
 
       std::vector<SSAInstruction<2>> generate(
@@ -53,7 +51,6 @@ namespace loxx
     private:
       Operand make_target_operand(const std::size_t stack_idx) const;
 
-      bool debug_;
       Stack<Operand, max_stack_size> op_stack_;
       std::vector<Operand> constants_;
       std::vector<Operand> upvalues_;
