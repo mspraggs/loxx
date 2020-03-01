@@ -105,7 +105,7 @@ namespace loxx
 
     static jit::TraceCache trace_cache;
 
-    static jit::CodeProfiler profiler(trace_cache, debug_config.trace_jit, 25);
+    static jit::CodeProfiler profiler(trace_cache, 25);
 
     static VirtualMachine vm(
         profiler, trace_cache,

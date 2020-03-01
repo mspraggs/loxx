@@ -43,10 +43,8 @@ namespace loxx
     {
     public:
       CodeProfiler(
-          TraceCache& trace_cache, const bool debug,
-          const std::size_t block_count_threshold)
-          : debug_(debug), is_recording_(false),
-            block_count_threshold_(block_count_threshold),
+          TraceCache& trace_cache, const std::size_t block_count_threshold)
+          : is_recording_(false), block_count_threshold_(block_count_threshold),
             trace_cache_(&trace_cache)
       {
       }
@@ -79,7 +77,7 @@ namespace loxx
       void start_recording();
       void finalise_ir();
 
-      bool debug_, is_recording_;
+      bool is_recording_;
       std::size_t block_count_threshold_;
       CodeObject::InsPtr current_block_head_;
 
