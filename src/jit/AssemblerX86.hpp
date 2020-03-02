@@ -51,9 +51,7 @@ namespace loxx
 
       AssemblyWrapper assemble(
           const std::vector<SSAInstruction>& ssa_ir,
-          const AllocationMap<RegisterX86>& allocation_map,
-          const ReferenceSet& external_operands,
-          const std::size_t* stack_size_ptr);
+          const AllocationMap<RegisterX86>& allocation_map);
 
     private:
       void insert_type_guards(const ReferenceSet& operands);

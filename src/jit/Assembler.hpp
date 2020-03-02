@@ -37,9 +37,7 @@ namespace loxx
 
       AssemblyWrapper assemble(
           const std::vector<SSAInstruction>& ssa_ir,
-          const AllocationMap<RegType<P>>& allocation_map,
-          const ReferenceSet& external_operands,
-          const std::size_t* stack_size_ptr);
+          const AllocationMap<RegType<P>>& allocation_map);
     };
   }
 }

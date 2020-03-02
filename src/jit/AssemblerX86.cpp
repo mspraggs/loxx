@@ -129,16 +129,11 @@ namespace loxx
 
     AssemblyWrapper Assembler<Platform::X86_64>::assemble(
         const std::vector<SSAInstruction>& ssa_ir,
-        const AllocationMap<RegisterX86>& allocation_map,
-        const ReferenceSet& external_operands,
-        const std::size_t* stack_size_ptr)
+        const AllocationMap<RegisterX86>& allocation_map)
     {
       add_push(RegisterX86::RBP);
       add_move_reg_reg(RegisterX86::RBP, RegisterX86::RSP);
-      insert_type_guards(external_operands);
 
-      add_move_reg_imm(
-          general_scratch_, reinterpret_cast<std::uint64_t>(stack_size_ptr));
       add_move_reg_mem(stack_size_, general_scratch_);
 
       for (const auto& instruction : ssa_ir) {
@@ -169,8 +164,6 @@ namespace loxx
         }
       }
 
-      add_move_reg_imm(
-          general_scratch_, reinterpret_cast<std::uint64_t>(stack_size_ptr));
       add_move_mem_reg(stack_size_, general_scratch_);
 
       add_move_reg_imm(RegisterX86::RAX, 0);
