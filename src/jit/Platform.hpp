@@ -70,6 +70,10 @@ namespace loxx
 
 
     template <Platform P>
+    auto get_exit_function_pointer() -> void (*) ();
+
+
+    template <Platform P>
     void execute_assembly(const AssemblyWrapper& function);
 
 
