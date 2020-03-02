@@ -56,55 +56,55 @@ namespace loxx
     private:
       void insert_type_guards(const ReferenceSet& operands);
 
-      void add_addition(
+      void emit_addition(
           const SSAInstruction& instruction,
           const AllocationMap<RegisterX86>& allocation_map);
-      void add_move(
+      void emit_move(
           const SSAInstruction& instruction,
           const AllocationMap<RegisterX86>& allocation_map);
-      void add_multiplication(
+      void emit_multiplication(
           const SSAInstruction& instruction,
           const AllocationMap<RegisterX86>& allocation_map);
 
-      void add_return();
-      void add_push(const RegisterX86 src);
-      void add_pop(const RegisterX86 dst);
+      void emit_return();
+      void emit_push(const RegisterX86 src);
+      void emit_pop(const RegisterX86 dst);
 
-      void add_addition_reg_reg(
+      void emit_addition_reg_reg(
           const RegisterX86 reg0, const RegisterX86 reg1);
-      void add_multiplication_reg_reg(
+      void emit_multiplication_reg_reg(
           const RegisterX86 reg0, const RegisterX86 reg1);
 
-      void add_decrement(const RegisterX86 reg);
+      void emit_decrement(const RegisterX86 reg);
 
-      void add_move_reg_reg(const RegisterX86 dst, const RegisterX86 src);
-      void add_move_reg_mem(
+      void emit_move_reg_reg(const RegisterX86 dst, const RegisterX86 src);
+      void emit_move_reg_mem(
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int offset = 0);
-      void add_move_mem_reg(
+      void emit_move_mem_reg(
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int offset = 0);
-      void add_move_reg_imm(
+      void emit_move_reg_imm(
           const RegisterX86 dst, const std::uint64_t value);
 
-      void add_compare_reg_imm(
+      void emit_compare_reg_imm(
           const RegisterX86 reg, const std::uint64_t value);
 
-      std::size_t add_conditional_jump(
+      std::size_t emit_conditional_jump(
           const Condition condition, std::int32_t offset);
-      std::size_t add_jump(const std::int32_t offset);
-      void add_jump(const RegisterX86 offset);
+      std::size_t emit_jump(const std::int32_t offset);
+      void emit_jump(const RegisterX86 offset);
 
-      void add_xmm_binary_op(
+      void emit_xmm_binary_op(
           const std::uint8_t opcode,
           const RegisterX86 reg0, const RegisterX86 reg1);
 
-      void add_move_reg_to_from_mem(
+      void emit_move_reg_to_from_mem(
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int offset, const bool read);
 
       template <std::size_t N>
-      void add_immediate(const std::uint64_t value);
+      void emit_immediate(const std::uint64_t value);
 
       RegisterX86 general_scratch_;
       RegisterX86 stack_size_;
@@ -114,7 +114,7 @@ namespace loxx
 
 
     template <std::size_t N>
-    void Assembler<Platform::X86_64>::add_immediate(const std::uint64_t value)
+    void Assembler<Platform::X86_64>::emit_immediate(const std::uint64_t value)
     {
       if (N == 1) {
         func_.add_byte(static_cast<std::uint8_t>(0xff & value));
