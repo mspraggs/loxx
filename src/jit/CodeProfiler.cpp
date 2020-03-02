@@ -203,6 +203,9 @@ namespace loxx
         break;
       }
 
+      default:
+        is_recording_ = false;
+
       }
 
     }
