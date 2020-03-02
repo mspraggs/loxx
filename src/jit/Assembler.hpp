@@ -29,7 +29,7 @@ namespace loxx
 {
   namespace jit
   {
-    template <typename Reg>
+    template <Platform P>
     class Assembler
     {
     public:
@@ -37,7 +37,7 @@ namespace loxx
 
       AssemblyWrapper assemble(
           const std::vector<SSAInstruction>& ssa_ir,
-          const AllocationMap<Reg>& allocation_map,
+          const AllocationMap<RegType<P>>& allocation_map,
           const ReferenceSet& external_operands,
           const std::size_t* stack_size_ptr);
     };

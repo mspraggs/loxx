@@ -42,7 +42,7 @@ namespace loxx
 
 
     template <>
-    class Assembler<RegisterX86>
+    class Assembler<Platform::X86_64>
     {
     public:
       using SSAInstruction = SSAInstruction<3>;
@@ -116,7 +116,7 @@ namespace loxx
 
 
     template <std::size_t N>
-    void Assembler<RegisterX86>::add_immediate(const std::uint64_t value)
+    void Assembler<Platform::X86_64>::add_immediate(const std::uint64_t value)
     {
       if (N == 1) {
         func_.add_byte(static_cast<std::uint8_t>(0xff & value));

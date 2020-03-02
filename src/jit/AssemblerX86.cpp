@@ -106,7 +106,7 @@ namespace loxx
     }
 
 
-    Assembler<RegisterX86>::Assembler()
+    Assembler<Platform::X86_64>::Assembler()
     {
       const auto scratch_registers =
           get_scratch_registers<Platform::X86_64>();
@@ -127,7 +127,7 @@ namespace loxx
     }
 
 
-    AssemblyWrapper Assembler<RegisterX86>::assemble(
+    AssemblyWrapper Assembler<Platform::X86_64>::assemble(
         const std::vector<SSAInstruction>& ssa_ir,
         const AllocationMap<RegisterX86>& allocation_map,
         const ReferenceSet& external_operands,
@@ -180,7 +180,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::insert_type_guards(
+    void Assembler<Platform::X86_64>::insert_type_guards(
         const ReferenceSet& references)
     {
       // The aim here is to generate assembly to check each operand in the
@@ -244,7 +244,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_addition(
+    void Assembler<Platform::X86_64>::add_addition(
         const SSAInstruction& instruction,
         const AllocationMap<RegisterX86>& allocation_map)
     {
@@ -261,7 +261,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_move(
+    void Assembler<Platform::X86_64>::add_move(
         const SSAInstruction& instruction,
         const AllocationMap<RegisterX86>& allocation_map)
     {
@@ -298,7 +298,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_multiplication(
+    void Assembler<Platform::X86_64>::add_multiplication(
         const SSAInstruction& instruction,
         const AllocationMap<RegisterX86>& allocation_map)
     {
@@ -315,25 +315,25 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_return()
+    void Assembler<Platform::X86_64>::add_return()
     {
       func_.add_byte(0xc3);
     }
 
 
-    void Assembler<RegisterX86>::add_push(const RegisterX86 src)
+    void Assembler<Platform::X86_64>::add_push(const RegisterX86 src)
     {
       func_.add_byte(0x50 | get_reg_rm_bits(src));
     }
 
 
-    void Assembler<RegisterX86>::add_pop(const RegisterX86 dst)
+    void Assembler<Platform::X86_64>::add_pop(const RegisterX86 dst)
     {
       func_.add_byte(0x58 | get_reg_rm_bits(dst));
     }
 
 
-    void Assembler<RegisterX86>::add_addition_reg_reg(
+    void Assembler<Platform::X86_64>::add_addition_reg_reg(
         const RegisterX86 reg0, const RegisterX86 reg1)
     {
       if (reg_supports_float(reg0) and reg_supports_float(reg1)) {
@@ -348,7 +348,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_multiplication_reg_reg(
+    void Assembler<Platform::X86_64>::add_multiplication_reg_reg(
         const RegisterX86 reg0, const RegisterX86 reg1)
     {
       if (reg_supports_float(reg0) and reg_supports_float(reg1)) {
@@ -363,7 +363,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_decrement(const RegisterX86 reg)
+    void Assembler<Platform::X86_64>::add_decrement(const RegisterX86 reg)
     {
       if (reg_supports_float(reg)) {
         throw JITError("invalid register for decrement");
@@ -376,7 +376,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_move_reg_reg(
+    void Assembler<Platform::X86_64>::add_move_reg_reg(
         const RegisterX86 dst, const RegisterX86 src)
     {
       if (reg_supports_ptr(src) and reg_supports_ptr(dst)) {
@@ -405,7 +405,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_move_reg_mem(
+    void Assembler<Platform::X86_64>::add_move_reg_mem(
         const RegisterX86 dst, const RegisterX86 src, const unsigned int offset)
     {
       if (reg_supports_ptr(dst)) {
@@ -437,7 +437,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_move_mem_reg(
+    void Assembler<Platform::X86_64>::add_move_mem_reg(
         const RegisterX86 dst, const RegisterX86 src, const unsigned int offset)
     {
       if (reg_supports_ptr(src)) {
@@ -470,7 +470,7 @@ namespace loxx
 
 
 
-    void Assembler<RegisterX86>::add_move_reg_imm(
+    void Assembler<Platform::X86_64>::add_move_reg_imm(
         const RegisterX86 dst, const std::uint64_t value)
     {
       const std::uint8_t rex_prefix =
@@ -481,7 +481,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_compare_reg_imm(
+    void Assembler<Platform::X86_64>::add_compare_reg_imm(
         const RegisterX86 reg, const std::uint64_t value)
     {
       const std::uint8_t rex_prefix =
@@ -515,7 +515,7 @@ namespace loxx
     }
 
 
-    std::size_t Assembler<RegisterX86>::add_conditional_jump(
+    std::size_t Assembler<Platform::X86_64>::add_conditional_jump(
         const Condition condition, std::int32_t offset)
     {
       const auto is_short = offset <= 127 and offset >= -128;
@@ -564,7 +564,7 @@ namespace loxx
     }
 
 
-    std::size_t Assembler<RegisterX86>::add_jump(const std::int32_t offset)
+    std::size_t Assembler<Platform::X86_64>::add_jump(const std::int32_t offset)
     {
       const auto is_short = offset <= 127 and offset >= -128;
 
@@ -590,7 +590,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_jump(const RegisterX86 offset)
+    void Assembler<Platform::X86_64>::add_jump(const RegisterX86 offset)
     {
       if (reg_is_64_bit(offset)) {
         func_.add_byte(0x41);
@@ -600,7 +600,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_xmm_binary_op(
+    void Assembler<Platform::X86_64>::add_xmm_binary_op(
         const std::uint8_t opcode,
         const RegisterX86 reg0, const RegisterX86 reg1)
     {
@@ -616,7 +616,7 @@ namespace loxx
     }
 
 
-    void Assembler<RegisterX86>::add_move_reg_to_from_mem(
+    void Assembler<Platform::X86_64>::add_move_reg_to_from_mem(
         const RegisterX86 dst, const RegisterX86 src,
         const unsigned int offset, const bool read)
     {
