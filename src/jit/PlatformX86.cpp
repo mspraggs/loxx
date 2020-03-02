@@ -21,6 +21,8 @@
 #include "PlatformX86.hpp"
 
 
+extern "C" void asm_exit_x86_64();
+
 namespace loxx
 {
   namespace jit
@@ -165,6 +167,21 @@ namespace loxx
         RegisterX86::R15,
         RegisterX86::XMM1,
       };
+    }
+
+
+    template <>
+    void execute_assembly<Platform::X86_64>(const AssemblyWrapper& function)
+    {
+      auto start = function.start();
+
+      asm volatile(
+        "movq %0, %%r14\n"
+        "jmpq *%%r14\n"
+        ".globl asm_exit_x86_64\n"
+        "asm_exit_x86_64:\n"
+        : "=r"(start)
+      );
     }
   }
 }
