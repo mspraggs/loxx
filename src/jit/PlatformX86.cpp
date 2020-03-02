@@ -171,6 +171,13 @@ namespace loxx
 
 
     template <>
+    auto get_exit_function_pointer<Platform::X86_64>() -> void (*) ()
+    {
+      return &asm_exit_x86_64;
+    }
+
+
+    template <>
     void execute_assembly<Platform::X86_64>(const AssemblyWrapper& function)
     {
       auto start = function.start();
