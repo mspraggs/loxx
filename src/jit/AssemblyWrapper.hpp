@@ -66,6 +66,7 @@ namespace loxx
       void lock();
 
       std::size_t size() const { return assembly_.size(); }
+      const std::uint8_t* start() const { return assembly_.data(); }
 
     private:
       template <typename T>
