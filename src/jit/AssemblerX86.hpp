@@ -56,13 +56,13 @@ namespace loxx
     private:
       void insert_type_guards(const ReferenceSet& operands);
 
-      void emit_addition(
+      void emit_add(
           const SSAInstruction& instruction,
           const AllocationMap<RegisterX86>& allocation_map);
       void emit_move(
           const SSAInstruction& instruction,
           const AllocationMap<RegisterX86>& allocation_map);
-      void emit_multiplication(
+      void emit_multiply(
           const SSAInstruction& instruction,
           const AllocationMap<RegisterX86>& allocation_map);
 
@@ -70,9 +70,9 @@ namespace loxx
       void emit_push(const RegisterX86 src);
       void emit_pop(const RegisterX86 dst);
 
-      void emit_addition_reg_reg(
+      void emit_add_reg_reg(
           const RegisterX86 reg0, const RegisterX86 reg1);
-      void emit_multiplication_reg_reg(
+      void emit_multiply_reg_reg(
           const RegisterX86 reg0, const RegisterX86 reg1);
 
       void emit_decrement(const RegisterX86 reg);
