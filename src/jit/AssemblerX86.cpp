@@ -537,13 +537,7 @@ namespace loxx
       func_.add_byte(opcode);
 
       const auto ret = func_.size();
-
-      if (is_short) {
-        emit_immediate<1>(static_cast<std::uint64_t>(offset));
-      }
-      else {
-        emit_immediate<4>(static_cast<std::uint64_t>(offset));
-      }
+      emit_offset(offset);
 
       return ret;
     }
@@ -563,13 +557,7 @@ namespace loxx
       func_.add_byte(opcode);
 
       const auto ret = func_.size();
-
-      if (is_short) {
-        emit_immediate<1>(static_cast<std::uint64_t>(offset));
-      }
-      else {
-        emit_immediate<4>(static_cast<std::uint64_t>(offset));
-      }
+      emit_offset(offset);
 
       return ret;
     }
@@ -620,6 +608,18 @@ namespace loxx
       }
       else if (offset > 0) {
         emit_immediate<1>(offset);
+      }
+    }
+
+
+    void Assembler<Platform::X86_64>::emit_offset(const std::int32_t offset)
+    {
+      const auto is_short = offset <= 127 and offset >= -128;
+      if (is_short) {
+        emit_immediate<1>(static_cast<std::uint64_t>(offset));
+      }
+      else {
+        emit_immediate<4>(static_cast<std::uint64_t>(offset));
       }
     }
 

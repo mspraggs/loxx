@@ -103,6 +103,8 @@ namespace loxx
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int offset, const bool read);
 
+      void emit_offset(const std::int32_t offset);
+
       void emit_displacement(const unsigned int displacement);
 
       template <std::size_t N>
