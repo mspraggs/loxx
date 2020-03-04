@@ -399,13 +399,14 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_move_reg_mem(
-        const RegisterX86 dst, const RegisterX86 src, const unsigned int offset)
+        const RegisterX86 dst, const RegisterX86 src,
+        const unsigned int displacement)
     {
       if (reg_supports_ptr(dst)) {
-        emit_move_reg_to_from_mem(dst, src, offset, true);
+        emit_move_reg_to_from_mem(dst, src, displacement, true);
       }
       else if (reg_supports_float(dst)) {
-        const std::uint8_t offset_bits = get_offset_bits(offset);
+        const std::uint8_t offset_bits = get_offset_bits(displacement);
 
         const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(src, dst);
         const auto mod_rm_byte =
@@ -417,12 +418,7 @@ namespace loxx
         }
         func_.add_bytes(0x0f, 0x10, mod_rm_byte);
 
-        if (offset > std::numeric_limits<std::uint8_t>::max()) {
-          emit_immediate<4>(offset);
-        }
-        else if (offset > 0) {
-          emit_immediate<1>(offset);
-        }
+        emit_displacement(displacement);
       }
       else {
         throw JITError("invalid move registers");
@@ -431,13 +427,14 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_move_mem_reg(
-        const RegisterX86 dst, const RegisterX86 src, const unsigned int offset)
+        const RegisterX86 dst, const RegisterX86 src,
+        const unsigned int displacement)
     {
       if (reg_supports_ptr(src)) {
-        emit_move_reg_to_from_mem(dst, src, offset, false);
+        emit_move_reg_to_from_mem(dst, src, displacement, false);
       }
       else if (reg_supports_float(src)) {
-        const std::uint8_t offset_bits = get_offset_bits(offset);
+        const std::uint8_t offset_bits = get_offset_bits(displacement);
 
         const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(dst, src);
         const auto mod_rm_byte =
@@ -449,12 +446,7 @@ namespace loxx
         }
         func_.add_bytes(0x0f, 0x11, mod_rm_byte);
 
-        if (offset > std::numeric_limits<std::uint8_t>::max()) {
-          emit_immediate<4>(offset);
-        }
-        else if (offset > 0) {
-          emit_immediate<1>(offset);
-        }
+        emit_displacement(displacement);
       }
       else {
         throw JITError("invalid move registers");
@@ -628,6 +620,18 @@ namespace loxx
       }
       else if (offset > 0) {
         emit_immediate<1>(offset);
+      }
+    }
+
+
+    void Assembler<Platform::X86_64>::emit_displacement(
+        const unsigned int displacement)
+    {
+      if (displacement > std::numeric_limits<std::uint8_t>::max()) {
+        emit_immediate<4>(displacement);
+      }
+      else if (displacement > 0) {
+        emit_immediate<1>(displacement);
       }
     }
   }

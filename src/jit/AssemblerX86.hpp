@@ -80,10 +80,10 @@ namespace loxx
       void emit_move_reg_reg(const RegisterX86 dst, const RegisterX86 src);
       void emit_move_reg_mem(
           const RegisterX86 dst, const RegisterX86 src,
-          const unsigned int offset = 0);
+          const unsigned int displacement = 0);
       void emit_move_mem_reg(
           const RegisterX86 dst, const RegisterX86 src,
-          const unsigned int offset = 0);
+          const unsigned int displacement = 0);
       void emit_move_reg_imm(
           const RegisterX86 dst, const std::uint64_t value);
 
@@ -102,6 +102,8 @@ namespace loxx
       void emit_move_reg_to_from_mem(
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int offset, const bool read);
+
+      void emit_displacement(const unsigned int displacement);
 
       template <std::size_t N>
       void emit_immediate(const std::uint64_t value);
