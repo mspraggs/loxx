@@ -56,6 +56,8 @@ namespace loxx
     private:
       void insert_type_guards(const ReferenceSet& operands);
 
+      void emit_guard(const Value* location, const ValueType type);
+
       void emit_add(
           const SSAInstruction& instruction,
           const AllocationMap<RegisterX86>& allocation_map);

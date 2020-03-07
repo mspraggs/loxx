@@ -237,6 +237,39 @@ namespace loxx
     }
 
 
+    void Assembler<Platform::X86_64>::emit_guard(
+        const Value* location, const ValueType type)
+    {
+      // Here we want to check that the value at the specified location has the
+      // given type. The resulting assembly should look like this:
+      //
+      //     mov     rax, [location]
+      //     cmp     rax, type
+      //     je      ok
+      //     jmp     not_okay
+      // ok:
+      //     ...
+      // not_okay:
+      //     ???
+
+      emit_move_reg_imm(
+          general_scratch_, reinterpret_cast<std::uint64_t>(location));
+      emit_move_reg_mem(general_scratch_, general_scratch_);
+      emit_compare_reg_imm(general_scratch_, static_cast<std::size_t>(type));
+
+      const auto short_jump_pos = emit_conditional_jump(Condition::EQUAL, 0);
+      const auto short_jump_start = func_.size();
+
+      const auto exit_address = get_exit_function_pointer<Platform::X86_64>();
+      emit_move_reg_imm(
+          general_scratch_, reinterpret_cast<std::uint64_t>(exit_address));
+      emit_move_reg_imm(RegisterX86::RAX, 1);
+
+      const auto jump_size = func_.size() - short_jump_start;
+      func_.write_byte(short_jump_pos, static_cast<std::uint8_t>(jump_size));
+    }
+
+
     void Assembler<Platform::X86_64>::emit_add(
         const SSAInstruction& instruction,
         const AllocationMap<RegisterX86>& allocation_map)
