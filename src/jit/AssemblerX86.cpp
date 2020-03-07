@@ -269,12 +269,16 @@ namespace loxx
       const auto& operands = instruction.operands();
 
       if (holds_alternative<VirtualRegister>(operands[0]) and
-          holds_alternative<VirtualRegister>(operands[1])) {
+          holds_alternative<VirtualRegister>(operands[1]) and
+          holds_alternative<VirtualRegister>(operands[2])) {
         const auto reg0 = unsafe_get<RegisterX86>(
             allocation_map.at(unsafe_get<VirtualRegister>(operands[0])));
         const auto reg1 = unsafe_get<RegisterX86>(
             allocation_map.at(unsafe_get<VirtualRegister>(operands[1])));
-        emit_add_reg_reg(reg0, reg1);
+        const auto reg2 = unsafe_get<RegisterX86>(
+            allocation_map.at(unsafe_get<VirtualRegister>(operands[2])));
+        emit_move_reg_reg(reg0, reg1);
+        emit_add_reg_reg(reg0, reg2);
       }
     }
 
@@ -325,12 +329,16 @@ namespace loxx
       const auto& operands = instruction.operands();
 
       if (holds_alternative<VirtualRegister>(operands[0]) and
-          holds_alternative<VirtualRegister>(operands[1])) {
+          holds_alternative<VirtualRegister>(operands[1]) and
+          holds_alternative<VirtualRegister>(operands[2])) {
         const auto reg0 = unsafe_get<RegisterX86>(
             allocation_map.at(unsafe_get<VirtualRegister>(operands[0])));
         const auto reg1 = unsafe_get<RegisterX86>(
             allocation_map.at(unsafe_get<VirtualRegister>(operands[1])));
-        emit_multiply_reg_reg(reg0, reg1);
+        const auto reg2 = unsafe_get<RegisterX86>(
+            allocation_map.at(unsafe_get<VirtualRegister>(operands[2])));
+        emit_move_reg_reg(reg0, reg1);
+        emit_multiply_reg_reg(reg0, reg2);
       }
     }
 
