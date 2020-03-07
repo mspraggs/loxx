@@ -21,6 +21,7 @@
 
 #include "AssemblerX86.hpp"
 #include "JITError.hpp"
+#include "PlatformX86.hpp"
 
 
 namespace loxx
@@ -161,6 +162,11 @@ namespace loxx
         }
       }
 
+      const auto exit_location = get_exit_function_pointer<Platform::X86_64>();
+      emit_move_reg_imm(
+          general_scratch_, reinterpret_cast<std::uint64_t>(exit_location));
+      emit_move_reg_imm(RegisterX86::RAX, 1);
+      emit_jump(general_scratch_);
       return std::move(func_);
     }
 
