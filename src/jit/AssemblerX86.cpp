@@ -131,9 +131,6 @@ namespace loxx
         const std::vector<SSAInstruction>& ssa_ir,
         const AllocationMap<RegisterX86>& allocation_map)
     {
-      emit_push(RegisterX86::RBP);
-      emit_move_reg_reg(RegisterX86::RBP, RegisterX86::RSP);
-
       emit_move_reg_mem(stack_size_, general_scratch_);
 
       for (const auto& instruction : ssa_ir) {
@@ -164,11 +161,6 @@ namespace loxx
         }
       }
 
-      emit_move_mem_reg(stack_size_, general_scratch_);
-
-      emit_move_reg_imm(RegisterX86::RAX, 0);
-      emit_pop(RegisterX86::RBP);
-      emit_return();
       return std::move(func_);
     }
 
