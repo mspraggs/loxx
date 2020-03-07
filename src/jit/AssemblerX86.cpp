@@ -287,12 +287,13 @@ namespace loxx
 
       if (holds_alternative<VirtualRegister>(operands[0]) and
           holds_alternative<const Value*>(operands[1])) {
-        const auto address = reinterpret_cast<std::uint64_t>(
-            unsafe_get<const Value*>(operands[1]));
+        const auto address = unsafe_get<const Value*>(operands[1]);
+        const auto address_raw = reinterpret_cast<std::uint64_t>(address);
         const auto dst_reg = unsafe_get<RegisterX86>(
             allocation_map.at(unsafe_get<VirtualRegister>(operands[0])));
 
-        emit_move_reg_imm(general_scratch_, address);
+        emit_guard(address, static_cast<ValueType>(address->index()));
+        emit_move_reg_imm(general_scratch_, address_raw);
         emit_move_reg_mem(dst_reg, general_scratch_, 8);
       }
       else if (holds_alternative<VirtualRegister>(operands[0]) and
@@ -305,12 +306,13 @@ namespace loxx
       }
       else if (holds_alternative<const Value*>(operands[0]) and
           holds_alternative<VirtualRegister>(operands[1])) {
-        const auto address = reinterpret_cast<std::uint64_t>(
-            unsafe_get<const Value*>(operands[0]));
+        const auto address = unsafe_get<const Value*>(operands[0]);
+        const auto address_raw = reinterpret_cast<std::uint64_t>(address);
         const auto src_reg = unsafe_get<RegisterX86>(
             allocation_map.at(unsafe_get<VirtualRegister>(operands[1])));
 
-        emit_move_reg_imm(general_scratch_, address);
+        emit_guard(address, static_cast<ValueType>(address->index()));
+        emit_move_reg_imm(general_scratch_, address_raw);
         emit_move_mem_reg(general_scratch_, src_reg, 8);
       }
     }
