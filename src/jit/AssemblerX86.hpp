@@ -93,7 +93,7 @@ namespace loxx
           const RegisterX86 reg, const std::uint64_t value);
 
       std::size_t emit_conditional_jump(
-          const Condition condition, std::int32_t offset);
+          const Condition condition, const std::int32_t offset);
       std::size_t emit_jump(const std::int32_t offset);
       void emit_jump(const RegisterX86 offset);
 
