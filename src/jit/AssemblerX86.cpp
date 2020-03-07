@@ -407,6 +407,9 @@ namespace loxx
     void Assembler<Platform::X86_64>::emit_move_reg_reg(
         const RegisterX86 dst, const RegisterX86 src)
     {
+      if (src == dst) {
+        return;
+      }
       if (reg_supports_ptr(src) and reg_supports_ptr(dst)) {
         const std::uint8_t rex_prefix =
             0b01001000 | get_rex_prefix_for_regs(dst, src);
