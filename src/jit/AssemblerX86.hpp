@@ -41,6 +41,9 @@ namespace loxx
     };
 
 
+    std::uint8_t get_reg_rm_bits(const RegisterX86 reg);
+
+
     template <>
     class Assembler<Platform::X86_64>
     {
@@ -86,8 +89,14 @@ namespace loxx
       void emit_move_mem_reg(
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int displacement = 0);
-      void emit_move_reg_imm(
-          const RegisterX86 dst, const std::uint64_t value);
+      template <typename T>
+      auto emit_move_reg_imm(
+          const RegisterX86 dst, const T value)
+          -> typename std::enable_if_t<sizeof(T) == 8, void>;
+      template <typename T>
+      auto emit_move_reg_imm(
+          const RegisterX86 dst, const T value)
+          -> typename std::enable_if_t<sizeof(T) < 8, void>;
 
       void emit_compare_reg_imm(
           const RegisterX86 reg, const std::uint64_t value);
@@ -109,8 +118,8 @@ namespace loxx
 
       void emit_displacement(const unsigned int displacement);
 
-      template <std::size_t N>
-      void emit_immediate(const std::uint64_t value);
+      template <typename T>
+      void emit_immediate(const T value);
 
       RegisterX86 general_scratch_;
       RegisterX86 stack_size_;
@@ -119,22 +128,39 @@ namespace loxx
     };
 
 
-    template <std::size_t N>
-    void Assembler<Platform::X86_64>::emit_immediate(const std::uint64_t value)
+    template <typename T>
+    auto Assembler<Platform::X86_64>::emit_move_reg_imm(
+        const RegisterX86 dst, const T value)
+        -> typename std::enable_if_t<sizeof(T) == 8, void>
     {
-      if (N == 1) {
-        func_.add_byte(static_cast<std::uint8_t>(0xff & value));
-        return;
+      const std::uint8_t rex_prefix =
+          reg_is_64_bit(dst) ? 0b01001001 : 0b01001000;
+      func_.add_byte(rex_prefix);
+      func_.add_byte(0xb8 | get_reg_rm_bits(dst));
+      emit_immediate(value);
+    }
+
+
+    template <typename T>
+    auto Assembler<Platform::X86_64>::emit_move_reg_imm(
+        const RegisterX86 dst, const T value)
+        -> typename std::enable_if_t<sizeof(T) < 8, void>
+    {
+      if (reg_is_64_bit(dst)) {
+        func_.add_byte(0x41);
       }
+      constexpr std::uint8_t base_opcode = (sizeof(T) == 1) ? 0xb0 : 0xb8;
+      func_.add_byte(base_opcode | get_reg_rm_bits(dst));
+      emit_immediate(value);
+    }
 
-      int i = 0;
-      const auto next_byte = [&] {
-        return static_cast<std::uint8_t>(0xff & (value >> (8 * (i++))));
-      };
 
-      std::array<std::uint8_t, N> bytes;
-      std::generate(bytes.begin(), bytes.end(), next_byte);
-      func_.add_bytes(bytes.begin(), bytes.end());
+    template <typename T>
+    void Assembler<Platform::X86_64>::emit_immediate(const T value)
+    {
+      const auto begin = reinterpret_cast<const std::uint8_t*>(&value);
+      const auto end = begin + sizeof(T);
+      func_.add_bytes(begin, end);
     }
   }
 }

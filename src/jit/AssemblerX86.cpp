@@ -163,9 +163,8 @@ namespace loxx
       }
 
       const auto exit_location = get_exit_function_pointer<Platform::X86_64>();
-      emit_move_reg_imm(
-          general_scratch_, reinterpret_cast<std::uint64_t>(exit_location));
-      emit_move_reg_imm(RegisterX86::RAX, 1);
+      emit_move_reg_imm(general_scratch_, exit_location);
+      emit_move_reg_imm(RegisterX86::RAX, false);
       emit_jump(general_scratch_);
       return std::move(func_);
     }
@@ -180,7 +179,7 @@ namespace loxx
       //
       // Resulting assembly should look a bit like this:
       //
-      //     mov     rax, [$op0_address] ; Offset by eight bytes
+      //     mov     rax, [$op0_address]
       //     cmp     rax, $op0_type
       //     jne     quit
       //     mov     rax, [$op1_address]
@@ -202,9 +201,7 @@ namespace loxx
       jump_starts.reserve(references.size());
 
       for (const auto& reference : references) {
-        emit_move_reg_imm(
-            general_scratch_,
-            reinterpret_cast<std::uint64_t>(reference));
+        emit_move_reg_imm(general_scratch_, reference);
         emit_move_reg_mem(general_scratch_, general_scratch_);
         emit_compare_reg_imm(
             general_scratch_, static_cast<std::uint64_t>(reference->index()));
@@ -225,7 +222,7 @@ namespace loxx
         func_.write_integer(pos, jump_size);
       }
 
-      emit_move_reg_imm(RegisterX86::RAX, 1);
+      emit_move_reg_imm(RegisterX86::RAX, true);
       emit_pop(RegisterX86::RBP);
       emit_return();
 
@@ -250,8 +247,7 @@ namespace loxx
       // not_okay:
       //     ???
 
-      emit_move_reg_imm(
-          general_scratch_, reinterpret_cast<std::uint64_t>(location));
+      emit_move_reg_imm(general_scratch_, location);
       emit_move_reg_mem(general_scratch_, general_scratch_);
       emit_compare_reg_imm(general_scratch_, static_cast<std::size_t>(type));
 
@@ -259,10 +255,10 @@ namespace loxx
       const auto short_jump_start = func_.size();
 
       const auto exit_address = get_exit_function_pointer<Platform::X86_64>();
-      emit_move_reg_imm(
-          general_scratch_, reinterpret_cast<std::uint64_t>(exit_address));
-      emit_move_reg_imm(RegisterX86::RAX, 1);
+      emit_move_reg_imm(RegisterX86::RAX, true);
 
+      emit_move_reg_imm(general_scratch_, exit_address);
+      emit_jump(general_scratch_);
       const auto jump_size = func_.size() - short_jump_start;
       func_.write_byte(short_jump_pos, static_cast<std::uint8_t>(jump_size));
     }
@@ -298,12 +294,11 @@ namespace loxx
       if (holds_alternative<VirtualRegister>(operands[0]) and
           holds_alternative<const Value*>(operands[1])) {
         const auto address = unsafe_get<const Value*>(operands[1]);
-        const auto address_raw = reinterpret_cast<std::uint64_t>(address);
         const auto dst_reg = unsafe_get<RegisterX86>(
             allocation_map.at(unsafe_get<VirtualRegister>(operands[0])));
 
         emit_guard(address, static_cast<ValueType>(address->index()));
-        emit_move_reg_imm(general_scratch_, address_raw);
+        emit_move_reg_imm(general_scratch_, address);
         emit_move_reg_mem(dst_reg, general_scratch_, 8);
       }
       else if (holds_alternative<VirtualRegister>(operands[0]) and
@@ -322,7 +317,7 @@ namespace loxx
             allocation_map.at(unsafe_get<VirtualRegister>(operands[1])));
 
         emit_guard(address, static_cast<ValueType>(address->index()));
-        emit_move_reg_imm(general_scratch_, address_raw);
+        emit_move_reg_imm(general_scratch_, address);
         emit_move_mem_reg(general_scratch_, src_reg, 8);
       }
     }
@@ -498,18 +493,6 @@ namespace loxx
     }
 
 
-
-    void Assembler<Platform::X86_64>::emit_move_reg_imm(
-        const RegisterX86 dst, const std::uint64_t value)
-    {
-      const std::uint8_t rex_prefix =
-          reg_is_64_bit(dst) ? 0b01001001 : 0b01001000;
-      func_.add_byte(rex_prefix);
-      func_.add_byte(0xb8 | get_reg_rm_bits(dst));
-      emit_immediate<8>(value);
-    }
-
-
     void Assembler<Platform::X86_64>::emit_compare_reg_imm(
         const RegisterX86 reg, const std::uint64_t value)
     {
@@ -536,10 +519,10 @@ namespace loxx
       func_.add_byte(mod_rm_byte);
 
       if (value > std::numeric_limits<std::uint8_t>::max()) {
-        emit_immediate<4>(value);
+        emit_immediate(static_cast<std::uint32_t>(value));
       }
       else if (value >= 0) {
-        emit_immediate<1>(value);
+        emit_immediate(static_cast<std::uint8_t>(value));
       }
     }
 
@@ -648,10 +631,10 @@ namespace loxx
       func_.add_byte(mod_rm_byte);
 
       if (offset > std::numeric_limits<std::uint8_t>::max()) {
-        emit_immediate<4>(offset);
+        emit_immediate(static_cast<std::uint32_t>(offset));
       }
       else if (offset > 0) {
-        emit_immediate<1>(offset);
+        emit_immediate(static_cast<std::uint8_t>(offset));
       }
     }
 
@@ -660,10 +643,10 @@ namespace loxx
     {
       const auto is_short = offset <= 127 and offset >= -128;
       if (is_short) {
-        emit_immediate<1>(static_cast<std::uint64_t>(offset));
+        emit_immediate(static_cast<std::uint8_t>(offset));
       }
       else {
-        emit_immediate<4>(static_cast<std::uint64_t>(offset));
+        emit_immediate((offset));
       }
     }
 
@@ -672,10 +655,10 @@ namespace loxx
         const unsigned int displacement)
     {
       if (displacement > std::numeric_limits<std::uint8_t>::max()) {
-        emit_immediate<4>(displacement);
+        emit_immediate(static_cast<std::uint32_t>(displacement));
       }
       else if (displacement > 0) {
-        emit_immediate<1>(displacement);
+        emit_immediate(static_cast<std::uint8_t>(displacement));
       }
     }
   }
