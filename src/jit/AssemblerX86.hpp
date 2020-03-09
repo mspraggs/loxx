@@ -50,7 +50,7 @@ namespace loxx
     public:
       using SSAInstruction = SSAInstruction<3>;
 
-      Assembler();
+      explicit Assembler(const AllocationMap<RegisterX86>& allocation_map);
 
       AssemblyWrapper assemble(
           const std::vector<SSAInstruction>& ssa_ir,
@@ -121,6 +121,7 @@ namespace loxx
       template <typename T>
       void emit_immediate(const T value);
 
+      const AllocationMap<RegisterX86>* allocation_map_;
       RegisterX86 general_scratch_;
       RegisterX86 stack_size_;
       RegisterX86 float_scratch_;

@@ -107,7 +107,9 @@ namespace loxx
     }
 
 
-    Assembler<Platform::X86_64>::Assembler()
+    Assembler<Platform::X86_64>::Assembler(
+        const AllocationMap<RegisterX86>& allocation_map)
+        : allocation_map_(&allocation_map)
     {
       const auto scratch_registers =
           get_scratch_registers<Platform::X86_64>();
