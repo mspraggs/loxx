@@ -97,6 +97,8 @@ namespace loxx
       auto emit_move_reg_imm(
           const RegisterX86 dst, const T value)
           -> typename std::enable_if_t<sizeof(T) < 8, void>;
+      void emit_move_reg_imm(
+          const RegisterX86 dst, const Value& value);
 
       void emit_compare_reg_imm(
           const RegisterX86 reg, const std::uint64_t value);

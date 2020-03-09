@@ -309,6 +309,17 @@ namespace loxx
         emit_move_reg_mem(*dst_reg, general_scratch_, 8);
       }
       else if (holds_alternative<VirtualRegister>(operands[0]) and
+          holds_alternative<Value>(operands[1])) {
+        const auto& value = unsafe_get<Value>(operands[1]);
+        const auto dst_reg = get_register(operands[0]);
+
+        if (not dst_reg) {
+          return;
+        }
+
+        emit_move_reg_imm(*dst_reg, value);
+      }
+      else if (holds_alternative<VirtualRegister>(operands[0]) and
           holds_alternative<VirtualRegister>(operands[1])) {
         const auto src_reg = get_register(operands[1]);
         const auto dst_reg = get_register(operands[0]);
@@ -525,8 +536,7 @@ namespace loxx
         }
       } ();
 
-      const std::uint8_t mod_rm_byte =
-          0b11111000 | get_reg_rm_bits(reg);
+      const std::uint8_t mod_rm_byte = 0b11111000 | get_reg_rm_bits(reg);
 
       func_.add_byte(rex_prefix);
       func_.add_byte(opcode);
@@ -537,6 +547,22 @@ namespace loxx
       }
       else if (value >= 0) {
         emit_immediate(static_cast<std::uint8_t>(value));
+      }
+    }
+
+
+    void Assembler<Platform::X86_64>::emit_move_reg_imm(
+        const RegisterX86 dst, const Value& value)
+    {
+      if (holds_alternative<double>(value)) {
+        emit_move_reg_imm(general_scratch_, unsafe_get<double>(value));
+        emit_move_reg_reg(dst, general_scratch_);
+      }
+      else if (holds_alternative<double>(value)) {
+        emit_move_reg_imm(dst, unsafe_get<bool>(value));
+      }
+      else {
+        emit_move_reg_imm(dst, unsafe_get<ObjectPtr>(value));
       }
     }
 
