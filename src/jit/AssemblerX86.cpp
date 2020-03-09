@@ -275,14 +275,16 @@ namespace loxx
       if (holds_alternative<VirtualRegister>(operands[0]) and
           holds_alternative<VirtualRegister>(operands[1]) and
           holds_alternative<VirtualRegister>(operands[2])) {
-        const auto reg0 = unsafe_get<RegisterX86>(
-            allocation_map.at(unsafe_get<VirtualRegister>(operands[0])));
-        const auto reg1 = unsafe_get<RegisterX86>(
-            allocation_map.at(unsafe_get<VirtualRegister>(operands[1])));
-        const auto reg2 = unsafe_get<RegisterX86>(
-            allocation_map.at(unsafe_get<VirtualRegister>(operands[2])));
-        emit_move_reg_reg(reg0, reg1);
-        emit_add_reg_reg(reg0, reg2);
+        const auto reg0 = get_register(operands[0]);
+        const auto reg1 = get_register(operands[1]);
+        const auto reg2 = get_register(operands[2]);
+
+        if (not reg0 or not reg1 or not reg2) {
+          return;
+        }
+
+        emit_move_reg_reg(*reg0, *reg1);
+        emit_add_reg_reg(*reg0, *reg2);
       }
     }
 
@@ -296,31 +298,39 @@ namespace loxx
       if (holds_alternative<VirtualRegister>(operands[0]) and
           holds_alternative<const Value*>(operands[1])) {
         const auto address = unsafe_get<const Value*>(operands[1]);
-        const auto dst_reg = unsafe_get<RegisterX86>(
-            allocation_map.at(unsafe_get<VirtualRegister>(operands[0])));
+        const auto dst_reg = get_register(operands[0]);
+
+        if (not dst_reg) {
+          return;
+        }
 
         emit_guard(address, static_cast<ValueType>(address->index()));
         emit_move_reg_imm(general_scratch_, address);
-        emit_move_reg_mem(dst_reg, general_scratch_, 8);
+        emit_move_reg_mem(*dst_reg, general_scratch_, 8);
       }
       else if (holds_alternative<VirtualRegister>(operands[0]) and
           holds_alternative<VirtualRegister>(operands[1])) {
-        const auto src_reg = unsafe_get<RegisterX86>(
-            allocation_map.at(unsafe_get<VirtualRegister>(operands[1])));
-        const auto dst_reg = unsafe_get<RegisterX86>(
-            allocation_map.at(unsafe_get<VirtualRegister>(operands[0])));
-        emit_move_reg_reg(dst_reg, src_reg);
+        const auto src_reg = get_register(operands[1]);
+        const auto dst_reg = get_register(operands[0]);
+
+        if (not src_reg or not dst_reg) {
+          return;
+        }
+
+        emit_move_reg_reg(*dst_reg, *src_reg);
       }
       else if (holds_alternative<const Value*>(operands[0]) and
           holds_alternative<VirtualRegister>(operands[1])) {
         const auto address = unsafe_get<const Value*>(operands[0]);
-        const auto address_raw = reinterpret_cast<std::uint64_t>(address);
-        const auto src_reg = unsafe_get<RegisterX86>(
-            allocation_map.at(unsafe_get<VirtualRegister>(operands[1])));
+        const auto src_reg = get_register(operands[1]);
+
+        if (not src_reg) {
+          return;
+        }
 
         emit_guard(address, static_cast<ValueType>(address->index()));
         emit_move_reg_imm(general_scratch_, address);
-        emit_move_mem_reg(general_scratch_, src_reg, 8);
+        emit_move_mem_reg(general_scratch_, *src_reg, 8);
       }
     }
 
@@ -334,14 +344,16 @@ namespace loxx
       if (holds_alternative<VirtualRegister>(operands[0]) and
           holds_alternative<VirtualRegister>(operands[1]) and
           holds_alternative<VirtualRegister>(operands[2])) {
-        const auto reg0 = unsafe_get<RegisterX86>(
-            allocation_map.at(unsafe_get<VirtualRegister>(operands[0])));
-        const auto reg1 = unsafe_get<RegisterX86>(
-            allocation_map.at(unsafe_get<VirtualRegister>(operands[1])));
-        const auto reg2 = unsafe_get<RegisterX86>(
-            allocation_map.at(unsafe_get<VirtualRegister>(operands[2])));
-        emit_move_reg_reg(reg0, reg1);
-        emit_multiply_reg_reg(reg0, reg2);
+        const auto reg0 = get_register(operands[0]);
+        const auto reg1 = get_register(operands[1]);
+        const auto reg2 = get_register(operands[2]);
+
+        if (not reg0 or not reg1 or not reg2) {
+          return;
+        }
+
+        emit_move_reg_reg(*reg0, *reg1);
+        emit_multiply_reg_reg(*reg0, *reg2);
       }
     }
 
