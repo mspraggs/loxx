@@ -121,6 +121,8 @@ namespace loxx
       template <typename T>
       void emit_immediate(const T value);
 
+      Optional<RegisterX86> get_register(const Operand& operand) const;
+
       const AllocationMap<RegisterX86>* allocation_map_;
       RegisterX86 general_scratch_;
       RegisterX86 stack_size_;

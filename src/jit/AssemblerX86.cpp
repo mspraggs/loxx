@@ -663,5 +663,27 @@ namespace loxx
         emit_immediate(static_cast<std::uint8_t>(displacement));
       }
     }
+
+
+    Optional<RegisterX86> Assembler<Platform::X86_64>::get_register(
+        const Operand& operand) const
+    {
+      if (not holds_alternative<VirtualRegister>(operand)) {
+        return {};
+      }
+
+      const auto pos = allocation_map_->find(
+          unsafe_get<VirtualRegister>(operand));
+
+      if (pos == allocation_map_->end()) {
+        return {};
+      }
+
+      if (not holds_alternative<RegisterX86>(pos->second)) {
+        return {};
+      }
+
+      return unsafe_get<RegisterX86>(pos->second);
+    }
   }
 }
