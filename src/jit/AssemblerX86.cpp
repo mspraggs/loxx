@@ -188,6 +188,7 @@ namespace loxx
       emit_move_reg_imm(general_scratch_, exit_location);
       emit_move_reg_imm(RegisterX86::RAX, false);
       emit_jump(general_scratch_);
+      patch_jumps();
       return std::move(func_);
     }
 
@@ -251,6 +252,18 @@ namespace loxx
       func_.write_byte(
           start_jump_pos,
           static_cast<std::uint8_t>(func_.size() - start_jump_size));
+    }
+
+
+    void Assembler<Platform::X86_64>::patch_jumps()
+    {
+      for (const auto& jump_offset : jump_offsets_) {
+        const auto offset_pos = jump_offset.first;
+        const auto jump_target_ssa = jump_offset.second;
+        const auto jump_target_mcode = instruction_offsets_[jump_target_ssa];
+        const std::int32_t offset = jump_target_mcode - offset_pos - 4;
+        func_.write_integer(offset_pos, offset);
+      }
     }
 
 
