@@ -62,6 +62,7 @@ namespace loxx
       void emit_add(const SSAInstruction& instruction);
       void emit_compare(const SSAInstruction& instruction);
       void emit_conditional_jump(const SSAInstruction& instruction);
+      void emit_jump(const SSAInstruction& instruction);
       void emit_move(const SSAInstruction& instruction);
       void emit_multiply(const SSAInstruction& instruction);
 

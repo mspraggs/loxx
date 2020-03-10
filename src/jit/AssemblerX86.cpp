@@ -152,6 +152,10 @@ namespace loxx
         case Operator::DIVIDE:
           break;
 
+        case Operator::JUMP:
+          emit_jump(instruction);
+          break;
+
         case Operator::LESS:
           emit_compare(instruction);
           last_condition_ = Condition::BELOW;
@@ -352,6 +356,16 @@ namespace loxx
       const auto& operands = instruction.operands();
       const auto jump_target = get<std::size_t>(operands[0]);
       const auto offset_pos = emit_conditional_jump(*last_condition_, 0x100);
+      jump_offsets_.emplace_back(std::make_pair(offset_pos, jump_target));
+    }
+
+
+    void Assembler<Platform::X86_64>::emit_jump(
+        const SSAInstruction& instruction)
+    {
+      const auto& operands = instruction.operands();
+      const auto jump_target = get<std::size_t>(operands[0]);
+      const auto offset_pos = emit_jump(0x100);
       jump_offsets_.emplace_back(std::make_pair(offset_pos, jump_target));
     }
 
