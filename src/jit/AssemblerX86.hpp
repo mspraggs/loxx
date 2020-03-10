@@ -126,6 +126,7 @@ namespace loxx
       RegisterX86 stack_size_;
       RegisterX86 float_scratch_;
       AssemblyWrapper func_;
+      std::vector<std::size_t> instruction_offsets_;
     };
 
 

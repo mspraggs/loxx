@@ -136,6 +136,7 @@ namespace loxx
       emit_move_reg_mem(stack_size_, general_scratch_);
 
       for (const auto& instruction : ssa_ir) {
+        instruction_offsets_.push_back(func_.size());
         const auto op = instruction.op();
 
         switch (op) {
