@@ -131,8 +131,7 @@ namespace loxx
 
 
     AssemblyWrapper Assembler<Platform::X86_64>::assemble(
-        const std::vector<SSAInstruction>& ssa_ir,
-        const AllocationMap<RegisterX86>& allocation_map)
+        const std::vector<SSAInstruction>& ssa_ir)
     {
       emit_move_reg_mem(stack_size_, general_scratch_);
 
@@ -142,15 +141,15 @@ namespace loxx
         switch (op) {
 
         case Operator::ADD:
-          emit_add(instruction, allocation_map);
+          emit_add(instruction);
           break;
         case Operator::DIVIDE:
           break;
         case Operator::MOVE:
-          emit_move(instruction, allocation_map);
+          emit_move(instruction);
           break;
         case Operator::MULTIPLY:
-          emit_multiply(instruction, allocation_map);
+          emit_multiply(instruction);
           break;
         case Operator::POP:
           emit_decrement(stack_size_);
@@ -267,8 +266,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_add(
-        const SSAInstruction& instruction,
-        const AllocationMap<RegisterX86>& allocation_map)
+        const SSAInstruction& instruction)
     {
       const auto& operands = instruction.operands();
 
@@ -290,8 +288,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_move(
-        const SSAInstruction& instruction,
-        const AllocationMap<RegisterX86>& allocation_map)
+        const SSAInstruction& instruction)
     {
       const auto& operands = instruction.operands();
 
@@ -347,8 +344,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_multiply(
-        const SSAInstruction& instruction,
-        const AllocationMap<RegisterX86>& allocation_map)
+        const SSAInstruction& instruction)
     {
       const auto& operands = instruction.operands();
 

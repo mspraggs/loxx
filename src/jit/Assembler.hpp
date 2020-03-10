@@ -35,9 +35,7 @@ namespace loxx
     public:
       using SSAInstruction = SSAInstruction<3>;
 
-      AssemblyWrapper assemble(
-          const std::vector<SSAInstruction>& ssa_ir,
-          const AllocationMap<RegType<P>>& allocation_map);
+      AssemblyWrapper assemble(const std::vector<SSAInstruction>& ssa_ir);
     };
   }
 }

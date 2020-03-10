@@ -52,24 +52,16 @@ namespace loxx
 
       explicit Assembler(const AllocationMap<RegisterX86>& allocation_map);
 
-      AssemblyWrapper assemble(
-          const std::vector<SSAInstruction>& ssa_ir,
-          const AllocationMap<RegisterX86>& allocation_map);
+      AssemblyWrapper assemble(const std::vector<SSAInstruction>& ssa_ir);
 
     private:
       void insert_type_guards(const ReferenceSet& operands);
 
       void emit_guard(const Value* location, const ValueType type);
 
-      void emit_add(
-          const SSAInstruction& instruction,
-          const AllocationMap<RegisterX86>& allocation_map);
-      void emit_move(
-          const SSAInstruction& instruction,
-          const AllocationMap<RegisterX86>& allocation_map);
-      void emit_multiply(
-          const SSAInstruction& instruction,
-          const AllocationMap<RegisterX86>& allocation_map);
+      void emit_add(const SSAInstruction& instruction);
+      void emit_move(const SSAInstruction& instruction);
+      void emit_multiply(const SSAInstruction& instruction);
 
       void emit_return();
       void emit_push(const RegisterX86 src);
