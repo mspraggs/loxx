@@ -138,7 +138,7 @@ namespace loxx
         op_stack_.push(result.first->second);
 
         if (result.second) {
-          entry_code_.emplace_back(
+          ssa_ir_.emplace_back(
               Operator::MOVE, op_stack_.top(), Operand(value));
         }
         break;
