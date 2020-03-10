@@ -151,6 +151,11 @@ namespace loxx
         case Operator::MULTIPLY:
           emit_multiply(instruction);
           break;
+
+        case Operator::NOOP:
+          // Do nothing.
+          break;
+
         case Operator::POP:
           emit_decrement(stack_size_);
           break;
