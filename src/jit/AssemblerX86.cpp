@@ -144,6 +144,11 @@ namespace loxx
         case Operator::ADD:
           emit_add(instruction);
           break;
+
+        case Operator::CONDITIONAL_JUMP:
+          emit_conditional_jump(instruction);
+          break;
+
         case Operator::DIVIDE:
           break;
 
@@ -304,10 +309,10 @@ namespace loxx
     {
       const auto& operands = instruction.operands();
 
-      if (holds_alternative<VirtualRegister>(operands[0]) and
-          holds_alternative<VirtualRegister>(operands[1])) {
-        const auto reg0 = get_register(operands[0]);
-        const auto reg1 = get_register(operands[1]);
+      if (holds_alternative<VirtualRegister>(operands[1]) and
+          holds_alternative<VirtualRegister>(operands[2])) {
+        const auto reg0 = get_register(operands[1]);
+        const auto reg1 = get_register(operands[2]);
 
         if (not reg0 or not reg1) {
           return;
@@ -335,6 +340,19 @@ namespace loxx
           emit_compare_reg_imm(*reg, reinterpret_cast<std::uint64_t>(ptr));
         }
       }
+    }
+
+
+    void Assembler<Platform::X86_64>::emit_conditional_jump(
+        const SSAInstruction& instruction)
+    {
+      if (not last_condition_) {
+        throw JITError("invalid assembler state");
+      }
+      const auto& operands = instruction.operands();
+      const auto jump_target = get<std::size_t>(operands[0]);
+      const auto offset_pos = emit_conditional_jump(*last_condition_, 0x100);
+      jump_offsets_.emplace_back(std::make_pair(offset_pos, jump_target));
     }
 
 

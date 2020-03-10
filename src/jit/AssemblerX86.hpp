@@ -61,6 +61,7 @@ namespace loxx
 
       void emit_add(const SSAInstruction& instruction);
       void emit_compare(const SSAInstruction& instruction);
+      void emit_conditional_jump(const SSAInstruction& instruction);
       void emit_move(const SSAInstruction& instruction);
       void emit_multiply(const SSAInstruction& instruction);
 
@@ -127,6 +128,7 @@ namespace loxx
       RegisterX86 float_scratch_;
       AssemblyWrapper func_;
       std::vector<std::size_t> instruction_offsets_;
+      std::vector<std::pair<std::size_t, std::size_t>> jump_offsets_;
     };
 
 
