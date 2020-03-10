@@ -60,6 +60,7 @@ namespace loxx
       void emit_guard(const Value* location, const ValueType type);
 
       void emit_add(const SSAInstruction& instruction);
+      void emit_compare(const SSAInstruction& instruction);
       void emit_move(const SSAInstruction& instruction);
       void emit_multiply(const SSAInstruction& instruction);
 
@@ -92,6 +93,8 @@ namespace loxx
       void emit_move_reg_imm(
           const RegisterX86 dst, const Value& value);
 
+      void emit_compare_reg_reg(
+          const RegisterX86 reg0, const RegisterX86 reg1);
       void emit_compare_reg_imm(
           const RegisterX86 reg, const std::uint64_t value);
 
@@ -118,6 +121,7 @@ namespace loxx
       Optional<RegisterX86> get_register(const Operand& operand) const;
 
       const AllocationMap<RegisterX86>* allocation_map_;
+      Optional<Condition> last_condition_;
       RegisterX86 general_scratch_;
       RegisterX86 stack_size_;
       RegisterX86 float_scratch_;

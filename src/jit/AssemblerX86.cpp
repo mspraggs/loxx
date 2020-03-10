@@ -145,6 +145,12 @@ namespace loxx
           break;
         case Operator::DIVIDE:
           break;
+
+        case Operator::LESS:
+          emit_compare(instruction);
+          last_condition_ = Condition::BELOW;
+          break;
+
         case Operator::MOVE:
           emit_move(instruction);
           break;
@@ -288,6 +294,45 @@ namespace loxx
 
         emit_move_reg_reg(*reg0, *reg1);
         emit_add_reg_reg(*reg0, *reg2);
+      }
+    }
+
+
+    void Assembler<Platform::X86_64>::emit_compare(
+        const SSAInstruction& instruction)
+    {
+      const auto& operands = instruction.operands();
+
+      if (holds_alternative<VirtualRegister>(operands[0]) and
+          holds_alternative<VirtualRegister>(operands[1])) {
+        const auto reg0 = get_register(operands[0]);
+        const auto reg1 = get_register(operands[1]);
+
+        if (not reg0 or not reg1) {
+          return;
+        }
+
+        emit_compare_reg_reg(*reg0, *reg1);
+      }
+      else if (holds_alternative<VirtualRegister>(operands[0]) and
+          holds_alternative<Value>(operands[1])) {
+        const auto reg = get_register(operands[0]);
+        if (not reg) {
+          return;
+        }
+
+        const auto& value = unsafe_get<Value>(operands[1]);
+
+        if (holds_alternative<double>(value)) {
+          emit_compare_reg_imm(*reg, unsafe_get<double>(value));
+        }
+        else if (holds_alternative<bool>(value)) {
+          emit_compare_reg_imm(*reg, unsafe_get<bool>(value));
+        }
+        else {
+          const auto ptr = unsafe_get<ObjectPtr>(value);
+          emit_compare_reg_imm(*reg, reinterpret_cast<std::uint64_t>(ptr));
+        }
       }
     }
 
@@ -523,6 +568,23 @@ namespace loxx
       }
       else {
         throw JITError("invalid move registers");
+      }
+    }
+
+
+    void Assembler<Platform::X86_64>::emit_compare_reg_reg(
+        const RegisterX86 reg0, const RegisterX86 reg1)
+    {
+      if (reg_supports_float(reg0) and reg_supports_float(reg1)) {
+        const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(reg1, reg0);
+        const auto mod_rm_byte =
+            0b11000000 | (get_reg_rm_bits(reg0) << 3) | get_reg_rm_bits(reg1);
+
+        func_.add_byte(0x66);
+        if (rex_prefix_reg_bits != 0) {
+          func_.add_bytes(0x40 | rex_prefix_reg_bits);
+        }
+        func_.add_bytes(0x0f, 0x2e, mod_rm_byte);
       }
     }
 
