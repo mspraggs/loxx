@@ -452,6 +452,14 @@ namespace loxx
         }
         func_.add_bytes(0x0f, 0x10, mod_rm_byte);
       }
+      else if (reg_supports_ptr(src) and reg_supports_float(dst)) {
+        const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(src, dst);
+        const auto mod_rm_byte =
+            0b11000000 | (get_reg_rm_bits(dst) << 3) | get_reg_rm_bits(src);
+
+        func_.add_bytes(
+            0x66, 0x48 | rex_prefix_reg_bits, 0x0f, 0x6e, mod_rm_byte);
+      }
       else {
         throw JITError("invalid move registers");
       }
