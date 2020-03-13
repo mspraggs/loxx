@@ -181,13 +181,15 @@ namespace loxx
     void execute_assembly<Platform::X86_64>(const AssemblyWrapper& function)
     {
       auto start = function.start();
+      bool guard_failed = false;
 
       asm volatile(
-        "movq %0, %%r14\n"
+        "movq %1, %%r14\n"
         "jmpq *%%r14\n"
         ".globl asm_exit_x86_64\n"
         "asm_exit_x86_64:\n"
-        : "=r"(start)
+        "movb %0, %%al\n"
+        : "=r"(guard_failed) : "r"(start)
       );
     }
   }
