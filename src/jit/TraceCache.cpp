@@ -52,5 +52,20 @@ namespace loxx
     {
       return recorded_ips_.at(ip);
     }
+
+
+    void TraceCache::add_assembly(
+        const CodeObject::InsPtr ip, AssemblyWrapper assembly)
+    {
+      assembly.lock();
+      assembly_cache_[ip] = std::move(assembly);
+    }
+
+
+    auto TraceCache::get_assembly(const CodeObject::InsPtr ip) const
+        -> const CodeObject::InsPtrHashTable<AssemblyWrapper>::Elem&
+    {
+      return assembly_cache_.get(ip);
+    }
   }
 }

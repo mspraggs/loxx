@@ -25,6 +25,7 @@
 
 #include "../CodeObject.hpp"
 
+#include "AssemblyWrapper.hpp"
 #include "SSAInstruction.hpp"
 
 
@@ -50,9 +51,14 @@ namespace loxx
       auto get_recorded_instructions(const CodeObject::InsPtr ip) const
           -> const RecordedInstructions&;
 
+      void add_assembly(const CodeObject::InsPtr ip, AssemblyWrapper assembly);
+      auto get_assembly(const CodeObject::InsPtr ip) const
+          -> const CodeObject::InsPtrHashTable<AssemblyWrapper>::Elem&;
+
     private:
       InsPtrHashTable<IRCacheElem> ir_cache_;
       InsPtrHashTable<RecordedInstructions> recorded_ips_;
+      InsPtrHashTable<AssemblyWrapper> assembly_cache_;
     };
   }
 }
