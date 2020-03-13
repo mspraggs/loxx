@@ -191,6 +191,7 @@ namespace loxx
         case Operator::MOVE:
           emit_move(instruction);
           break;
+
         case Operator::MULTIPLY:
           emit_multiply(instruction);
           break;
@@ -202,10 +203,13 @@ namespace loxx
         case Operator::POP:
           emit_decrement(stack_size_);
           break;
+
         case Operator::RETURN:
           break;
+
         case Operator::SUBTRACT:
           break;
+
         default:
           throw JITError("unsupported SSA opcode");
         }
