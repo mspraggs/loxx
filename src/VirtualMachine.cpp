@@ -29,6 +29,7 @@
 #include "VirtualMachine.hpp"
 
 #include "jit/Compiler.hpp"
+#include "jit/Register.hpp"
 
 
 namespace loxx
@@ -96,7 +97,14 @@ namespace loxx
             print_bytecode(*code_object_, compiled_bytecode);
           }
 #endif
-          jit::compile_trace(ssa_ir->second.second, debug_jit_);
+          auto assembly = jit::compile_trace(ssa_ir->second.second, debug_jit_);
+          trace_cache_->add_assembly(ip_, std::move(assembly));
+        }
+
+        const auto& assembly = trace_cache_->get_assembly(ip_);
+        if (assembly) {
+          jit::execute_assembly<jit::Platform::X86_64>(assembly->second);
+          ip_ = ssa_ir->first;
         }
       }
 

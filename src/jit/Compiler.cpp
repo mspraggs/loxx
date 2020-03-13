@@ -43,7 +43,7 @@ namespace loxx
     }
 
 
-    void compile_trace(SSABuffer<3>& ssa_ir, const bool debug)
+    AssemblyWrapper compile_trace(SSABuffer<3>& ssa_ir, const bool debug)
     {
       optimise(ssa_ir);
 
@@ -63,6 +63,9 @@ namespace loxx
         print_allocation_map(allocation_map);
       }
 #endif
+      Assembler<platform> assembler(allocation_map);
+      auto mcode = assembler.assemble(ssa_ir);
+      return std::move(mcode);
     }
   }
 }

@@ -36,7 +36,7 @@ namespace loxx
 
   namespace jit
   {
-    void compile_trace(SSABuffer<3>& ssa_ir, const bool debug);
+    AssemblyWrapper compile_trace(SSABuffer<3>& ssa_ir, const bool debug);
   }
 }
 
