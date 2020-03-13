@@ -159,8 +159,8 @@ namespace loxx
 
         finalise_ir();
         trace_cache_->add_ssa_ir(
-            current_block_head_, std::move(recorded_instructions_),
-            std::move(ssa_ir_));
+            current_block_head_, ip + sizeof(InstrArgUShort) + 1,
+            std::move(recorded_instructions_), std::move(ssa_ir_));
         break;
       }
 

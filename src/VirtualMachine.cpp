@@ -96,7 +96,7 @@ namespace loxx
             print_bytecode(*code_object_, compiled_bytecode);
           }
 #endif
-          jit::compile_trace(ssa_ir->second, debug_jit_);
+          jit::compile_trace(ssa_ir->second.second, debug_jit_);
         }
       }
 

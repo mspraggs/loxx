@@ -25,23 +25,23 @@ namespace loxx
   namespace jit
   {
     void TraceCache::add_ssa_ir(
-        const CodeObject::InsPtr ip,
+        const CodeObject::InsPtr begin, const CodeObject::InsPtr end,
         RecordedInstructions instructions, SSABuffer<3> ssa_ir)
     {
-      ir_cache_[ip] = std::move(ssa_ir);
-      recorded_ips_[ip] = std::move(instructions);
+      ir_cache_[begin] = std::make_pair(end, std::move(ssa_ir));
+      recorded_ips_[begin] = std::move(instructions);
     }
 
 
     auto TraceCache::get_ssa_ir(const CodeObject::InsPtr ip) const
-        -> const CodeObject::InsPtrHashTable<SSABuffer<3>>::Elem&
+        -> const InsPtrHashTable<IRCacheElem>::Elem&
     {
       return ir_cache_.get(ip);
     }
 
 
     auto TraceCache::get_ssa_ir(const CodeObject::InsPtr ip)
-        -> CodeObject::InsPtrHashTable<SSABuffer<3>>::Elem&
+        -> InsPtrHashTable<IRCacheElem>::Elem&
     {
       return ir_cache_.get(ip);
     }
