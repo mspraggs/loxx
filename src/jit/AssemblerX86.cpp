@@ -28,6 +28,33 @@ namespace loxx
 {
   namespace jit
   {
+    Condition get_inverse_condition(const Condition condition)
+    {
+      switch (condition) {
+      case Condition::ABOVE:
+        return Condition::BELOW_OR_EQUAL;
+      case Condition::ABOVE_OR_EQUAL:
+        return Condition::BELOW;
+      case Condition::BELOW:
+        return Condition::ABOVE_OR_EQUAL;
+      case Condition::BELOW_OR_EQUAL:
+        return Condition::ABOVE;
+      case Condition::EQUAL:
+        return Condition::NOT_EQUAL;
+      case Condition::NOT_EQUAL:
+        return Condition::EQUAL;
+      case Condition::GREATER:
+        return Condition::LESS_OR_EQUAL;
+      case Condition::GREATER_OR_EQUAL:
+        return Condition::LESS;
+      case Condition::LESS:
+        return Condition::GREATER_OR_EQUAL;
+      case Condition::LESS_OR_EQUAL:
+        return Condition::GREATER;
+      }
+    }
+
+
     std::uint8_t get_reg_rm_bits(const RegisterX86 reg)
     {
       switch (reg) {
@@ -368,7 +395,8 @@ namespace loxx
       }
       const auto& operands = instruction.operands();
       const auto jump_target = get<std::size_t>(operands[0]);
-      const auto offset_pos = emit_conditional_jump(*last_condition_, 0x100);
+      const auto offset_pos = emit_conditional_jump(
+          get_inverse_condition(*last_condition_), 0x100);
       jump_offsets_.emplace_back(std::make_pair(offset_pos, jump_target));
     }
 

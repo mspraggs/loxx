@@ -41,6 +41,9 @@ namespace loxx
     };
 
 
+    Condition get_inverse_condition(const Condition condition);
+
+
     std::uint8_t get_reg_rm_bits(const RegisterX86 reg);
 
 
