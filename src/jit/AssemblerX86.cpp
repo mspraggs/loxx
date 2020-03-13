@@ -201,7 +201,7 @@ namespace loxx
           break;
 
         case Operator::POP:
-          emit_decrement(stack_size_);
+          // Do nothing
           break;
 
         case Operator::RETURN:
