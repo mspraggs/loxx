@@ -136,7 +136,7 @@ namespace loxx
 
     Assembler<Platform::X86_64>::Assembler(
         const AllocationMap<RegisterX86>& allocation_map)
-        : allocation_map_(&allocation_map)
+        : pos_(0), allocation_map_(&allocation_map)
     {
       const auto scratch_registers =
           get_scratch_registers<Platform::X86_64>();
@@ -162,7 +162,8 @@ namespace loxx
     {
       emit_move_reg_mem(stack_size_, general_scratch_);
 
-      for (const auto& instruction : ssa_ir) {
+      for (pos_ = 0; pos_ < ssa_ir.size(); ++pos_) {
+        const auto& instruction = ssa_ir[pos_];
         instruction_offsets_.push_back(func_.size());
         const auto op = instruction.op();
 
@@ -180,6 +181,7 @@ namespace loxx
           break;
 
         case Operator::JUMP:
+        case Operator::LOOP:
           emit_jump(instruction);
           break;
 
@@ -398,7 +400,7 @@ namespace loxx
         throw JITError("invalid assembler state");
       }
       const auto& operands = instruction.operands();
-      const auto jump_target = get<std::size_t>(operands[0]);
+      const auto jump_target = pos_ + get<std::size_t>(operands[0]) + 1;
       const auto offset_pos = emit_conditional_jump(
           get_inverse_condition(*last_condition_), 0x100);
       jump_offsets_.emplace_back(std::make_pair(offset_pos, jump_target));
@@ -408,8 +410,11 @@ namespace loxx
     void Assembler<Platform::X86_64>::emit_jump(
         const SSAInstruction& instruction)
     {
+      const auto op = instruction.op();
       const auto& operands = instruction.operands();
-      const auto jump_target = get<std::size_t>(operands[0]);
+      const auto offset = get<std::size_t>(operands[0]);
+      const auto jump_target =
+          (op == Operator::LOOP) ? pos_ + 1 - offset : pos_ + 1 + offset;
       const auto offset_pos = emit_jump(0x100);
       jump_offsets_.emplace_back(std::make_pair(offset_pos, jump_target));
     }

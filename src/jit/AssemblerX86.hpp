@@ -127,6 +127,7 @@ namespace loxx
 
       Optional<RegisterX86> get_register(const Operand& operand) const;
 
+      std::size_t pos_;
       const AllocationMap<RegisterX86>* allocation_map_;
       Optional<Condition> last_condition_;
       RegisterX86 general_scratch_;

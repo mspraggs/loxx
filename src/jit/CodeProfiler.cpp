@@ -149,13 +149,12 @@ namespace loxx
 
         const auto jump_size = read_integer_at_pos<InstrArgUShort>(ip + 1);
         const auto target = ip + sizeof(InstrArgUShort) - jump_size + 1;
-        jump_targets_.push_back(std::make_pair(target, ssa_ir_.size()));
         const auto jump_pos = ssa_ir_map_.get(target);
 
         const auto operand = Operand(
             InPlace<std::size_t>(),
-            jump_pos->second + entry_code_.size());
-        ssa_ir_.emplace_back(Operator::JUMP);
+            ssa_ir_.size() + 1 - jump_pos->second);
+        ssa_ir_.emplace_back(Operator::LOOP, operand);
 
         finalise_ir();
         trace_cache_->add_ssa_ir(
@@ -231,7 +230,8 @@ namespace loxx
             target_elem ? target_elem->second : ssa_ir_.size();
 
         const auto pos = Operand(
-            InPlace<std::size_t>(), target_pos + entry_code_.size());
+            InPlace<std::size_t>(),
+            target_pos + entry_code_.size() - instruction_pos);
 
         ssa_ir_[instruction_pos].set_operand(0, pos);
       }
