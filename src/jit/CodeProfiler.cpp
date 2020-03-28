@@ -108,7 +108,7 @@ namespace loxx
         op_stack_.push(result.first->second);
 
         if (result.second) {
-          entry_code_.emplace_back(
+          ssa_ir_.emplace_back(
               Operator::MOVE, op_stack_.top(), Operand(&value));
         }
         break;
@@ -230,13 +230,10 @@ namespace loxx
             target_elem ? target_elem->second : ssa_ir_.size();
 
         const auto pos = Operand(
-            InPlace<std::size_t>(),
-            target_pos + entry_code_.size() - instruction_pos);
+            InPlace<std::size_t>(), target_pos - instruction_pos);
 
         ssa_ir_[instruction_pos].set_operand(0, pos);
       }
-
-      ssa_ir_.insert(ssa_ir_.begin(), entry_code_.begin(), entry_code_.end());
 
       for (const auto& assignment : exit_assignments_) {
         ssa_ir_.emplace_back(
