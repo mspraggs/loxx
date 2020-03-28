@@ -58,8 +58,6 @@ namespace loxx
       AssemblyWrapper assemble(const std::vector<SSAInstruction>& ssa_ir);
 
     private:
-      void insert_type_guards(const ReferenceSet& operands);
-
       void patch_jumps();
 
       void emit_guard(const Value* location, const ValueType type);

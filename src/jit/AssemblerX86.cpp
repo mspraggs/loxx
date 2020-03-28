@@ -226,68 +226,6 @@ namespace loxx
     }
 
 
-    void Assembler<Platform::X86_64>::insert_type_guards(
-        const ReferenceSet& references)
-    {
-      // The aim here is to generate assembly to check each operand in the
-      // supplied set against the expected type. If any of these checks returns
-      // false, the function should immediately return.
-      //
-      // Resulting assembly should look a bit like this:
-      //
-      //     mov     rax, [$op0_address]
-      //     cmp     rax, $op0_type
-      //     jne     quit
-      //     mov     rax, [$op1_address]
-      //     cmp     rax, $op1_type
-      //     jne     quit
-      //     ...
-      //     jmp     start
-      // quit:
-      //     mov     rax, 1
-      //     ret
-      // start:
-      //     ...     ; Function body here
-      //     mov     rax, 0
-      //     ret
-
-      std::vector<std::int32_t> jump_offsets;
-      jump_offsets.reserve(references.size());
-      std::vector<std::int32_t> jump_starts;
-      jump_starts.reserve(references.size());
-
-      for (const auto& reference : references) {
-        emit_move_reg_imm(general_scratch_, reference);
-        emit_move_reg_mem(general_scratch_, general_scratch_);
-        emit_compare_reg_imm(
-            general_scratch_, static_cast<std::uint64_t>(reference->index()));
-
-        /// TODO: Should be able to precompute all this given the input.
-        jump_offsets.push_back(
-            emit_conditional_jump(Condition::NOT_EQUAL, 256));
-        jump_starts.push_back(func_.size());
-      }
-
-      const auto start_jump_pos = emit_jump(0);
-      const auto start_jump_size = func_.size();
-
-      for (std::size_t i = 0; i < references.size(); ++i) {
-        const auto pos = jump_offsets[i];
-        const auto jump_size =
-            static_cast<std::int32_t>(func_.size() - jump_starts[i]);
-        func_.write_integer(pos, jump_size);
-      }
-
-      emit_move_reg_imm(RegisterX86::RAX, true);
-      emit_pop(RegisterX86::RBP);
-      emit_return();
-
-      func_.write_byte(
-          start_jump_pos,
-          static_cast<std::uint8_t>(func_.size() - start_jump_size));
-    }
-
-
     void Assembler<Platform::X86_64>::patch_jumps()
     {
       for (const auto& jump_offset : jump_offsets_) {
