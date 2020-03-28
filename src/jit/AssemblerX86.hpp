@@ -129,7 +129,6 @@ namespace loxx
       const AllocationMap<RegisterX86>* allocation_map_;
       Optional<Condition> last_condition_;
       RegisterX86 general_scratch_;
-      RegisterX86 stack_size_;
       RegisterX86 float_scratch_;
       AssemblyWrapper func_;
       std::vector<std::size_t> instruction_offsets_;

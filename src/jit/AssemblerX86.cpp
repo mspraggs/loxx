@@ -150,9 +150,6 @@ namespace loxx
           general_scratch_ = reg;
           gen_reg_count++;
         }
-        else {
-          stack_size_ = reg;
-        }
       }
     }
 
@@ -160,8 +157,6 @@ namespace loxx
     AssemblyWrapper Assembler<Platform::X86_64>::assemble(
         const std::vector<SSAInstruction>& ssa_ir)
     {
-      emit_move_reg_mem(stack_size_, general_scratch_);
-
       for (pos_ = 0; pos_ < ssa_ir.size(); ++pos_) {
         const auto& instruction = ssa_ir[pos_];
         instruction_offsets_.push_back(func_.size());
