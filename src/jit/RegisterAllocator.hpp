@@ -43,9 +43,7 @@ namespace loxx
 
 
     template <typename Reg>
-    using AllocationMap =
-        HashTable<VirtualRegister, Allocation<Reg>,
-        VirtualRegisterHasher, VirtualRegisterCompare>;
+    using AllocationMap = VRegHashTable<Allocation<Reg>>;
 
 
     class RegisterAllocator

@@ -22,6 +22,7 @@
 
 #include <array>
 
+#include "../HashTable.hpp"
 #include "../Value.hpp"
 #include "../Variant.hpp"
 
@@ -47,6 +48,11 @@ namespace loxx
     };
 
 
+    struct VirtualRegisterHasher;
+
+    struct VirtualRegisterCompare;
+
+
     struct VirtualRegister
     {
       ValueType type;
@@ -63,6 +69,12 @@ namespace loxx
     private:
       static std::size_t reg_count_;
     };
+
+
+    template <typename T>
+    using VRegHashTable =
+        HashTable<
+            VirtualRegister, T, VirtualRegisterHasher, VirtualRegisterCompare>;
 
 
     using OperandBase = Variant<
