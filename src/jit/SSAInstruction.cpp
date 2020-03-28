@@ -29,11 +29,18 @@ namespace loxx
 {
   namespace jit
   {
-    std::size_t Operand::reg_count_ = 0;
+    std::size_t VirtualRegisterGenerator::reg_count_ = 0;
+
+
+    VirtualRegister VirtualRegisterGenerator::make_register(
+        const ValueType type)
+    {
+      return VirtualRegister{type, reg_count_++};
+    }
 
 
     Operand::Operand(const ValueType value_type)
-        : OperandBase(VirtualRegister{value_type, reg_count_++})
+        : OperandBase(VirtualRegisterGenerator::make_register(value_type))
     {
     }
 

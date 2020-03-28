@@ -215,7 +215,7 @@ namespace loxx
       block_counts_.erase(current_block_head_);
       ssa_ir_.clear();
       operand_cache_.clear();
-      Operand::reset_reg_count();
+      VirtualRegisterGenerator::reset_reg_count();
       is_recording_ = true;
     }
 

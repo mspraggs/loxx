@@ -54,6 +54,17 @@ namespace loxx
     };
 
 
+    class VirtualRegisterGenerator
+    {
+    public:
+      static VirtualRegister make_register(const ValueType type);
+      static void reset_reg_count() { reg_count_ = 0; }
+
+    private:
+      static std::size_t reg_count_;
+    };
+
+
     using OperandBase = Variant<
         const Value*,
         VirtualRegister,
@@ -77,13 +88,8 @@ namespace loxx
 
       explicit Operand(const ValueType value_type);
 
-      static void reset_reg_count() { reg_count_ = 0; }
-
       Type op_type() const { return static_cast<Type>(index()); }
       ValueType value_type() const;
-
-    private:
-      static std::size_t reg_count_;
     };
 
 
