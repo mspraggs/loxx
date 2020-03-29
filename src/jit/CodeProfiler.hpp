@@ -75,7 +75,13 @@ namespace loxx
       };
 
       void start_recording();
-      void finalise_ir();
+      void peel_loop(const CodeObject::InsPtr ip);
+      VRegHashTable<VirtualRegister> CodeProfiler::build_loop_vreg_map() const;
+      void emit_loop_moves(const VRegHashTable<VirtualRegister>& loop_vreg_map);
+      void emit_loop(
+          const CodeObject::InsPtr ip, const std::size_t ir_offset);
+      void patch_jumps();
+      void emit_exit_assignments();
 
       bool is_recording_;
       std::size_t block_count_threshold_;

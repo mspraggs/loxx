@@ -141,16 +141,10 @@ namespace loxx
       case Instruction::LOOP: {
         is_recording_ = false;
 
-        const auto jump_size = read_integer_at_pos<InstrArgUShort>(ip + 1);
-        const auto target = ip + sizeof(InstrArgUShort) - jump_size + 1;
-        const auto jump_pos = ssa_ir_map_.get(target);
+        patch_jumps();
+        peel_loop(ip);
+        emit_exit_assignments();
 
-        const auto operand = Operand(
-            InPlace<std::size_t>(),
-            ssa_ir_.size() + 1 - jump_pos->second);
-        ssa_ir_.emplace_back(Operator::LOOP, operand);
-
-        finalise_ir();
         trace_cache_->add_ssa_ir(
             current_block_head_, ip + sizeof(InstrArgUShort) + 1,
             std::move(recorded_instructions_), std::move(ssa_ir_));
@@ -213,7 +207,98 @@ namespace loxx
     }
 
 
-    void CodeProfiler::finalise_ir()
+    void CodeProfiler::peel_loop(const CodeObject::InsPtr ip)
+    {
+      const auto prev_ssa_size = ssa_ir_.size();
+      const auto loop_vreg_map = build_loop_vreg_map();
+
+      for (std::size_t i = 0; i < prev_ssa_size; ++i) {
+        const auto& instruction = ssa_ir_[i];
+        ssa_ir_.emplace_back(instruction.op());
+        const auto& operands = instruction.operands();
+
+        for (int j = 0; j < operands.size(); ++j) {
+          if (operands[j].index() == Operand::npos) {
+            break;
+          }
+
+          if (holds_alternative<VirtualRegister>(operands[j])) {
+            const auto current_vreg = unsafe_get<VirtualRegister>(operands[j]);
+            const auto mapped_vreg = loop_vreg_map.get(current_vreg);
+
+            ssa_ir_.back().set_operand(
+                j, mapped_vreg ? Operand(mapped_vreg->second) : operands[j]);
+          }
+          else if (holds_alternative<const Value*>(operands[j])) {
+            const auto address = unsafe_get<const Value*>(operands[j]);
+            const auto vreg = operand_cache_.get(address);
+
+            ssa_ir_.back().set_operand(
+                j, vreg ? Operand(vreg->second) : operands[j]);
+          }
+          else if (holds_alternative<std::size_t>(operands[j])) {
+            const auto old_offset = unsafe_get<std::size_t>(operands[j]);
+            const auto new_offset = old_offset + loop_vreg_map.size();
+            const auto peeled_offset = new_offset + prev_ssa_size;
+
+            ssa_ir_.back().set_operand(
+                j, Operand(InPlace<std::size_t>(), new_offset));
+            ssa_ir_[i].set_operand(
+                j, Operand(InPlace<std::size_t>(), peeled_offset));
+          }
+          else {
+            ssa_ir_.back().set_operand(j, operands[j]);
+          }
+        }
+      }
+
+      emit_loop_moves(loop_vreg_map);
+      emit_loop(ip, prev_ssa_size + loop_vreg_map.size());
+    }
+
+
+    VRegHashTable<VirtualRegister> CodeProfiler::build_loop_vreg_map() const
+    {
+      VRegHashTable<VirtualRegister> loop_vreg_map;
+
+      for (const auto& elem : operand_cache_) {
+        if (not holds_alternative<VirtualRegister>(elem.second)) {
+          continue;
+        }
+
+        const auto& vreg_orig = unsafe_get<VirtualRegister>(elem.second);
+        loop_vreg_map[vreg_orig] =
+            VirtualRegisterGenerator::make_register(vreg_orig.type);
+      }
+
+      return loop_vreg_map;
+    }
+
+
+    void CodeProfiler::emit_loop_moves(
+        const VRegHashTable<VirtualRegister>& loop_vreg_map)
+    {
+      for (const auto& elem : loop_vreg_map) {
+        ssa_ir_.emplace_back(
+            Operator::MOVE, Operand(elem.first), Operand(elem.second));
+      }
+    }
+
+
+    void CodeProfiler::emit_loop(
+        const CodeObject::InsPtr ip, const std::size_t ir_offset)
+    {
+      const auto jump_size = read_integer_at_pos<InstrArgUShort>(ip + 1);
+      const auto target = ip + sizeof(InstrArgUShort) - jump_size + 1;
+      const auto jump_pos = ssa_ir_map_.get(target);
+
+      const auto operand = Operand(
+          InPlace<std::size_t>(), ir_offset - jump_pos->second);
+      ssa_ir_.emplace_back(Operator::LOOP, operand);
+    }
+
+
+    void CodeProfiler::patch_jumps()
     {
       for (const auto& jump_target : jump_targets_) {
         const auto instruction_pos = jump_target.second;
@@ -227,7 +312,11 @@ namespace loxx
 
         ssa_ir_[instruction_pos].set_operand(0, pos);
       }
+    }
 
+
+    void CodeProfiler::emit_exit_assignments()
+    {
       for (const auto& assignment : exit_assignments_) {
         ssa_ir_.emplace_back(
             Operator::MOVE, assignment.first, assignment.second);
