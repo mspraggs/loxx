@@ -318,6 +318,10 @@ namespace loxx
       return false;
     }
 
+    if (lhs.index() == Variant<Ts...>::npos) {
+      return true;
+    }
+
     return visit(
         [] (auto elem1, auto elem2) { return elem1 == elem2; }, lhs, rhs);
   }
