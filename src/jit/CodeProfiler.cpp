@@ -80,7 +80,8 @@ namespace loxx
           return ValueType::OBJECT;
         } ();
 
-        vreg_stack_.emplace(VirtualRegisterGenerator::make_register(result_type));
+        vreg_stack_.emplace(
+            VirtualRegisterGenerator::make_register(result_type));
 
         ssa_ir_.emplace_back(
             Operator::ADD, vreg_stack_.top(), first, second);
@@ -92,7 +93,8 @@ namespace loxx
         const auto offset = read_integer_at_pos<InstrArgUShort>(ip + 1);
         jump_targets_.push_back(std::make_pair(
             ip + sizeof(InstrArgUShort) + 1 + offset, ssa_ir_.size()));
-        ssa_ir_.emplace_back(Operator::CONDITIONAL_JUMP, 0ul, vreg_stack_.top());
+        ssa_ir_.emplace_back(
+            Operator::CONDITIONAL_JUMP, 0ul, vreg_stack_.top());
         break;
       }
 

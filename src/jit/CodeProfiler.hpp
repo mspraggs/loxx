@@ -93,7 +93,7 @@ namespace loxx
       CodeObject::InsPtrHashTable<std::size_t> block_counts_;
       CodeObject::InsPtrHashTable<std::size_t> ssa_ir_map_;
       SSABuffer<3> ssa_ir_;
-      HashTable<const Value*, Operand> exit_assignments_;
+      HashTable<const Value*, VirtualRegister> exit_assignments_;
       std::vector<std::pair<CodeObject::InsPtr, std::size_t>> jump_targets_;
       Stack<VirtualRegister, max_stack_size> vreg_stack_;
       HashTable<const Value*, VirtualRegister> vreg_cache_;
