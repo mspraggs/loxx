@@ -130,17 +130,12 @@ namespace loxx
         const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
         const auto& value = context.code.constants[idx];
 
-        const auto destination =
-            Operand(static_cast<ValueType>(value.index()));
-        const auto& result = operand_cache_.insert(
-            std::make_pair(OperandLocation::CONSTANT, idx), destination);
+        const auto destination = Operand(static_cast<ValueType>(value.index()));
 
-        op_stack_.push(result.first->second);
+        op_stack_.push(destination);
 
-        if (result.second) {
-          ssa_ir_.emplace_back(
-              Operator::MOVE, op_stack_.top(), Operand(value));
-        }
+        ssa_ir_.emplace_back(
+            Operator::MOVE, op_stack_.top(), Operand(value));
         break;
       }
 
