@@ -90,7 +90,7 @@ namespace loxx
       HashTable<const Value*, Operand> exit_assignments_;
       std::vector<std::pair<CodeObject::InsPtr, std::size_t>> jump_targets_;
       Stack<Operand, max_stack_size> op_stack_;
-      HashTable<OperandIndex, Operand, OperandIndexHasher> operand_cache_;
+      HashTable<const Value*, Operand> operand_cache_;
       std::vector<CodeObject::InsPtr> recorded_instructions_;
     };
   }

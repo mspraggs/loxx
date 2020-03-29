@@ -102,8 +102,7 @@ namespace loxx
 
         const auto destination =
             Operand(static_cast<ValueType>(value.index()));
-        const auto& result = operand_cache_.insert(
-            std::make_pair(OperandLocation::LOCAL, idx), destination);
+        const auto& result = operand_cache_.insert(&value, destination);
 
         op_stack_.push(result.first->second);
 
@@ -188,8 +187,7 @@ namespace loxx
 
         const auto destination =
             Operand(static_cast<ValueType>(value.index()));
-        const auto& result = operand_cache_.insert(
-            std::make_pair(OperandLocation::LOCAL, idx), destination);
+        const auto& result = operand_cache_.insert(&value, destination);
 
         ssa_ir_.emplace_back(
             Operator::MOVE, result.first->second, op_stack_.top());
