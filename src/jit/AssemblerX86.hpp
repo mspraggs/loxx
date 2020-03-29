@@ -51,23 +51,23 @@ namespace loxx
     class Assembler<Platform::X86_64>
     {
     public:
-      using SSAInstruction = SSAInstruction<3>;
+      using IRInstruction = SSAInstruction<3>;
 
       explicit Assembler(const AllocationMap<RegisterX86>& allocation_map);
 
-      AssemblyWrapper assemble(const std::vector<SSAInstruction>& ssa_ir);
+      AssemblyWrapper assemble(const std::vector<IRInstruction>& ssa_ir);
 
     private:
       void patch_jumps();
 
       void emit_guard(const Value* location, const ValueType type);
 
-      void emit_add(const SSAInstruction& instruction);
-      void emit_compare(const SSAInstruction& instruction);
-      void emit_conditional_jump(const SSAInstruction& instruction);
-      void emit_jump(const SSAInstruction& instruction);
-      void emit_move(const SSAInstruction& instruction);
-      void emit_multiply(const SSAInstruction& instruction);
+      void emit_add(const IRInstruction& instruction);
+      void emit_compare(const IRInstruction& instruction);
+      void emit_conditional_jump(const IRInstruction& instruction);
+      void emit_jump(const IRInstruction& instruction);
+      void emit_move(const IRInstruction& instruction);
+      void emit_multiply(const IRInstruction& instruction);
 
       void emit_return();
       void emit_push(const RegisterX86 src);

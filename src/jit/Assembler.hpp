@@ -33,9 +33,9 @@ namespace loxx
     class Assembler
     {
     public:
-      using SSAInstruction = SSAInstruction<3>;
+      using IRInstruction = SSAInstruction<3>;
 
-      AssemblyWrapper assemble(const std::vector<SSAInstruction>& ssa_ir);
+      AssemblyWrapper assemble(const std::vector<IRInstruction>& ssa_ir);
     };
   }
 }

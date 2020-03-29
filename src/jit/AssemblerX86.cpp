@@ -155,7 +155,7 @@ namespace loxx
 
 
     AssemblyWrapper Assembler<Platform::X86_64>::assemble(
-        const std::vector<SSAInstruction>& ssa_ir)
+        const std::vector<IRInstruction>& ssa_ir)
     {
       for (pos_ = 0; pos_ < ssa_ir.size(); ++pos_) {
         const auto& instruction = ssa_ir[pos_];
@@ -266,7 +266,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_add(
-        const SSAInstruction& instruction)
+        const IRInstruction& instruction)
     {
       const auto& operands = instruction.operands();
 
@@ -288,7 +288,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_compare(
-        const SSAInstruction& instruction)
+        const IRInstruction& instruction)
     {
       const auto& operands = instruction.operands();
 
@@ -327,7 +327,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_conditional_jump(
-        const SSAInstruction& instruction)
+        const IRInstruction& instruction)
     {
       if (not last_condition_) {
         throw JITError("invalid assembler state");
@@ -341,7 +341,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_jump(
-        const SSAInstruction& instruction)
+        const IRInstruction& instruction)
     {
       const auto op = instruction.op();
       const auto& operands = instruction.operands();
@@ -354,7 +354,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_move(
-        const SSAInstruction& instruction)
+        const IRInstruction& instruction)
     {
       const auto& operands = instruction.operands();
 
@@ -410,7 +410,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_multiply(
-        const SSAInstruction& instruction)
+        const IRInstruction& instruction)
     {
       const auto& operands = instruction.operands();
 

@@ -33,7 +33,7 @@ namespace loxx
     std::vector<std::pair<VirtualRegister, Range>> compute_live_ranges(
         const SSABuffer<3>& ssa_ir)
     {
-      using OperandSizeMap = VirtualRegisterHashTable<std::size_t>;
+      using OperandSizeMap = VRegHashTable<std::size_t>;
 
       OperandSizeMap operand_start_map;
       std::vector<std::pair<VirtualRegister, Range>> live_ranges;
