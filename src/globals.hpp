@@ -25,6 +25,21 @@
 #include <type_traits>
 
 
+#if defined __GNUC__ || defined __clang__ || defined __MINGW64__
+
+#define LOXX_NOINLINE __attribute__((noinline))
+
+#elif defined _MSC_VER
+
+#define LOXX_NOINLINE __declspec(noinline)
+
+#else
+
+#define LOXX_NOINLINE
+
+#endif
+
+
 namespace loxx
 {
   using InstrArgUByte = std::uint8_t;

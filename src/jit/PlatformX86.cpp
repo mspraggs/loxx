@@ -178,7 +178,8 @@ namespace loxx
 
 
     template <>
-    void execute_assembly<Platform::X86_64>(const AssemblyWrapper& function)
+    void LOXX_NOINLINE execute_assembly<Platform::X86_64>(
+        const AssemblyWrapper& function)
     {
       auto start = function.start();
       bool guard_failed = false;

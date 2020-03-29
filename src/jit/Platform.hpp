@@ -23,6 +23,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "../globals.hpp"
+
 #include "AssemblyWrapper.hpp"
 
 
@@ -74,7 +76,7 @@ namespace loxx
 
 
     template <Platform P>
-    void execute_assembly(const AssemblyWrapper& function);
+    void LOXX_NOINLINE execute_assembly(const AssemblyWrapper& function);
 
 
     constexpr Platform platform = Platform::X86_64;
