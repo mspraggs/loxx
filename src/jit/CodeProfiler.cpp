@@ -69,21 +69,21 @@ namespace loxx
       switch (instruction) {
 
       case Instruction::ADD: {
-        const auto second = op_stack_.pop();
-        const auto first = op_stack_.pop();
+        const auto second = vreg_stack_.pop();
+        const auto first = vreg_stack_.pop();
 
         const auto result_type = [&] {
-          if (second.value_type() == ValueType::FLOAT and
-              first.value_type() == ValueType::FLOAT) {
+          if (second.type == ValueType::FLOAT and
+              first.type == ValueType::FLOAT) {
             return ValueType::FLOAT;
           }
           return ValueType::OBJECT;
         } ();
 
-        op_stack_.emplace(result_type);
+        vreg_stack_.emplace(VirtualRegisterGenerator::make_register(result_type));
 
         ssa_ir_.emplace_back(
-            Operator::ADD, op_stack_.top(), first, second);
+            Operator::ADD, vreg_stack_.top(), first, second);
 
         break;
       }
@@ -92,7 +92,7 @@ namespace loxx
         const auto offset = read_integer_at_pos<InstrArgUShort>(ip + 1);
         jump_targets_.push_back(std::make_pair(
             ip + sizeof(InstrArgUShort) + 1 + offset, ssa_ir_.size()));
-        ssa_ir_.emplace_back(Operator::CONDITIONAL_JUMP, 0ul, op_stack_.top());
+        ssa_ir_.emplace_back(Operator::CONDITIONAL_JUMP, 0ul, vreg_stack_.top());
         break;
       }
 
@@ -100,27 +100,28 @@ namespace loxx
         const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
         const auto& value = context.stack_frame.slot(idx);
 
-        const auto destination =
-            Operand(static_cast<ValueType>(value.index()));
-        const auto& result = operand_cache_.insert(&value, destination);
+        const auto destination = VirtualRegisterGenerator::make_register(
+            static_cast<ValueType>(value.index()));
+        const auto& result = vreg_cache_.insert(&value, destination);
 
-        op_stack_.push(result.first->second);
+        vreg_stack_.push(result.first->second);
 
         if (result.second) {
           ssa_ir_.emplace_back(
-              Operator::MOVE, op_stack_.top(), Operand(&value));
+              Operator::MOVE, vreg_stack_.top(), Operand(&value));
         }
         break;
       }
 
       case Instruction::LESS: {
-        const auto second = op_stack_.pop();
-        const auto first = op_stack_.pop();
+        const auto second = vreg_stack_.pop();
+        const auto first = vreg_stack_.pop();
 
-        op_stack_.emplace(ValueType::BOOLEAN);
+        vreg_stack_.emplace(
+            VirtualRegisterGenerator::make_register(ValueType::BOOLEAN));
 
         ssa_ir_.emplace_back(
-            Operator::LESS, op_stack_.top(), first, second);
+            Operator::LESS, vreg_stack_.top(), first, second);
 
         break;
       }
@@ -129,12 +130,13 @@ namespace loxx
         const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
         const auto& value = context.code.constants[idx];
 
-        const auto destination = Operand(static_cast<ValueType>(value.index()));
+        const auto destination = VirtualRegisterGenerator::make_register(
+            static_cast<ValueType>(value.index()));
 
-        op_stack_.push(destination);
+        vreg_stack_.push(destination);
 
         ssa_ir_.emplace_back(
-            Operator::MOVE, op_stack_.top(), Operand(value));
+            Operator::MOVE, vreg_stack_.top(), Operand(value));
         break;
       }
 
@@ -152,39 +154,39 @@ namespace loxx
       }
 
       case Instruction::MULTIPLY: {
-        const auto second = op_stack_.pop();
-        const auto first = op_stack_.pop();
+        const auto second = vreg_stack_.pop();
+        const auto first = vreg_stack_.pop();
 
         const auto result_type = [&] {
-          if (second.value_type() == ValueType::FLOAT and
-              first.value_type() == ValueType::FLOAT) {
+          if (second.type == ValueType::FLOAT and
+              first.type == ValueType::FLOAT) {
             return ValueType::FLOAT;
           }
           return ValueType::OBJECT;
         } ();
 
-        op_stack_.emplace(result_type);
+        vreg_stack_.emplace(VirtualRegisterGenerator::make_register(result_type));
 
         ssa_ir_.emplace_back(
-            Operator::MULTIPLY, op_stack_.top(), first, second);
+            Operator::MULTIPLY, vreg_stack_.top(), first, second);
 
         break;
       }
 
       case Instruction::POP:
-        op_stack_.pop();
+        vreg_stack_.pop();
         break;
 
       case Instruction::SET_LOCAL: {
         const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
         const auto& value = context.stack_frame.slot(idx);
 
-        const auto destination =
-            Operand(static_cast<ValueType>(value.index()));
-        const auto& result = operand_cache_.insert(&value, destination);
+        const auto destination = VirtualRegisterGenerator::make_register(
+            static_cast<ValueType>(value.index()));
+        const auto& result = vreg_cache_.insert(&value, destination);
 
         ssa_ir_.emplace_back(
-            Operator::MOVE, result.first->second, op_stack_.top());
+            Operator::MOVE, result.first->second, vreg_stack_.top());
         exit_assignments_[&value] = result.first->second;
         break;
       }
@@ -201,7 +203,7 @@ namespace loxx
     {
       block_counts_.erase(current_block_head_);
       ssa_ir_.clear();
-      operand_cache_.clear();
+      vreg_cache_.clear();
       VirtualRegisterGenerator::reset_reg_count();
       is_recording_ = true;
     }
@@ -231,7 +233,7 @@ namespace loxx
           }
           else if (holds_alternative<const Value*>(operands[j])) {
             const auto address = unsafe_get<const Value*>(operands[j]);
-            const auto vreg = operand_cache_.get(address);
+            const auto vreg = vreg_cache_.get(address);
 
             ssa_ir_.back().set_operand(
                 j, vreg ? Operand(vreg->second) : operands[j]);
@@ -261,14 +263,9 @@ namespace loxx
     {
       VRegHashTable<VirtualRegister> loop_vreg_map;
 
-      for (const auto& elem : operand_cache_) {
-        if (not holds_alternative<VirtualRegister>(elem.second)) {
-          continue;
-        }
-
-        const auto& vreg_orig = unsafe_get<VirtualRegister>(elem.second);
-        loop_vreg_map[vreg_orig] =
-            VirtualRegisterGenerator::make_register(vreg_orig.type);
+      for (const auto& elem : vreg_cache_) {
+        loop_vreg_map[elem.second] =
+            VirtualRegisterGenerator::make_register(elem.second.type);
       }
 
       return loop_vreg_map;
