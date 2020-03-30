@@ -59,21 +59,6 @@ namespace loxx
       bool is_recording() const { return is_recording_; }
 
     private:
-      enum class OperandLocation
-      {
-        CONSTANT,
-        LOCAL,
-        UPVALUE,
-        GLOBAL,
-      };
-
-      using OperandIndex = std::pair<OperandLocation, std::size_t>;
-
-      struct OperandIndexHasher
-      {
-        bool operator() (const OperandIndex& value) const;
-      };
-
       void start_recording();
       void peel_loop(const CodeObject::InsPtr ip);
       VRegHashTable<VirtualRegister> build_loop_vreg_map() const;

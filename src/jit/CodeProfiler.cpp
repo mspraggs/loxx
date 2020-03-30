@@ -321,12 +321,5 @@ namespace loxx
             Operator::MOVE, assignment.first, assignment.second);
       }
     }
-
-
-    bool CodeProfiler::OperandIndexHasher::operator() (
-        const CodeProfiler::OperandIndex& value) const
-    {
-      return combine_hashes(static_cast<std::size_t>(value.first), value.second);
-    }
   }
 }
