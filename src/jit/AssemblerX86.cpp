@@ -134,6 +134,14 @@ namespace loxx
     }
 
 
+    std::uint8_t get_mod_rm_byte_for_regs(
+        const RegisterX86 reg0, const RegisterX86 reg1,
+        const std::uint8_t offset_bits = 0b11000000)
+    {
+      return offset_bits | (get_reg_rm_bits(reg0) << 3) | get_reg_rm_bits(reg1);
+    }
+
+
     Assembler<Platform::X86_64>::Assembler(
         const AllocationMap<RegisterX86>& allocation_map)
         : pos_(0), allocation_map_(&allocation_map)
@@ -501,16 +509,14 @@ namespace loxx
       if (reg_supports_ptr(src) and reg_supports_ptr(dst)) {
         const std::uint8_t rex_prefix =
             0b01001000 | get_rex_prefix_for_regs(dst, src);
-        const std::uint8_t mod_rm_byte =
-            0b11000000 | (get_reg_rm_bits(src) << 3) | get_reg_rm_bits(dst);
+        const std::uint8_t mod_rm_byte = get_mod_rm_byte_for_regs(src, dst);
         func_.add_byte(rex_prefix);
         func_.add_byte(0x89);
         func_.add_byte(mod_rm_byte);
       }
       else if (reg_supports_float(src) and reg_supports_float(dst)) {
         const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(src, dst);
-        const auto mod_rm_byte =
-            0b11000000 | (get_reg_rm_bits(dst) << 3) | get_reg_rm_bits(src);
+        const auto mod_rm_byte = get_mod_rm_byte_for_regs(dst, src);
 
         func_.add_byte(0xf2);
         if (rex_prefix_reg_bits != 0) {
@@ -520,8 +526,7 @@ namespace loxx
       }
       else if (reg_supports_ptr(src) and reg_supports_float(dst)) {
         const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(src, dst);
-        const auto mod_rm_byte =
-            0b11000000 | (get_reg_rm_bits(dst) << 3) | get_reg_rm_bits(src);
+        const auto mod_rm_byte = get_mod_rm_byte_for_regs(dst, src);
 
         func_.add_bytes(
             0x66, 0x48 | rex_prefix_reg_bits, 0x0f, 0x6e, mod_rm_byte);
@@ -544,7 +549,7 @@ namespace loxx
 
         const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(src, dst);
         const auto mod_rm_byte =
-            offset_bits | (get_reg_rm_bits(dst) << 3) | get_reg_rm_bits(src);
+            get_mod_rm_byte_for_regs(dst, src, offset_bits);
 
         func_.add_byte(0xf2);
         if (rex_prefix_reg_bits != 0) {
@@ -572,7 +577,7 @@ namespace loxx
 
         const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(dst, src);
         const auto mod_rm_byte =
-            offset_bits | (get_reg_rm_bits(src) << 3) | get_reg_rm_bits(dst);
+            get_mod_rm_byte_for_regs(src, dst, offset_bits);
 
         func_.add_byte(0xf2);
         if (rex_prefix_reg_bits != 0) {
@@ -593,8 +598,7 @@ namespace loxx
     {
       if (reg_supports_float(reg0) and reg_supports_float(reg1)) {
         const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(reg1, reg0);
-        const auto mod_rm_byte =
-            0b11000000 | (get_reg_rm_bits(reg0) << 3) | get_reg_rm_bits(reg1);
+        const auto mod_rm_byte = get_mod_rm_byte_for_regs(reg0, reg1);
 
         func_.add_byte(0x66);
         if (rex_prefix_reg_bits != 0) {
@@ -732,8 +736,7 @@ namespace loxx
         const RegisterX86 reg0, const RegisterX86 reg1)
     {
       const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(reg1, reg0);
-      const auto mod_rm_byte =
-          0b11000000 | (get_reg_rm_bits(reg0) << 3) | get_reg_rm_bits(reg1);
+      const auto mod_rm_byte = get_mod_rm_byte_for_regs(reg0, reg1);
 
       func_.add_byte(0xf2);
       if (rex_prefix_reg_bits != 0) {
@@ -752,7 +755,7 @@ namespace loxx
       const std::uint8_t rex_prefix =
           0b01001000 | get_rex_prefix_for_regs(src, dst);
       const std::uint8_t mod_rm_byte =
-          offset_bits | (get_reg_rm_bits(dst) << 3) | get_reg_rm_bits(src);
+          get_mod_rm_byte_for_regs(dst, src, offset_bits);
       func_.add_byte(rex_prefix);
       func_.add_byte(read ? 0x8b : 0x89);
       func_.add_byte(mod_rm_byte);
