@@ -293,7 +293,7 @@ namespace loxx
       const auto jump_pos = ssa_ir_map_.get(target);
 
       const auto operand = Operand(
-          InPlace<std::size_t>(), ir_offset - jump_pos->second);
+          InPlace<std::size_t>(), ir_offset + 1 - jump_pos->second);
       ssa_ir_.emplace_back(Operator::LOOP, operand);
     }
 
