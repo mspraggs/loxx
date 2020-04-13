@@ -64,8 +64,7 @@ namespace loxx
       void peel_loop(const CodeObject::InsPtr ip);
       VRegHashTable<VirtualRegister> build_loop_vreg_map() const;
       void emit_loop_moves(const VRegHashTable<VirtualRegister>& loop_vreg_map);
-      void emit_loop(
-          const CodeObject::InsPtr ip, const std::size_t ir_offset);
+      void emit_loop();
       void patch_jumps();
       void emit_exit_assignments();
 

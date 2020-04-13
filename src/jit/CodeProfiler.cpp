@@ -148,6 +148,7 @@ namespace loxx
           return;
         }
 
+        emit_ir(Operator::LOOP_START);
         patch_jumps();
         peel_loop(ip);
         emit_exit_assignments();
@@ -271,7 +272,7 @@ namespace loxx
       }
 
       emit_loop_moves(loop_vreg_map);
-      emit_loop(ip, prev_ssa_size + loop_vreg_map.size());
+      emit_loop();
     }
 
 
@@ -298,16 +299,16 @@ namespace loxx
     }
 
 
-    void CodeProfiler::emit_loop(
-        const CodeObject::InsPtr ip, const std::size_t ir_offset)
+    void CodeProfiler::emit_loop()
     {
-      const auto jump_size = read_integer_at_pos<InstrArgUShort>(ip + 1);
-      const auto target = ip + sizeof(InstrArgUShort) - jump_size + 1;
-      const auto jump_pos = ssa_ir_map_.get(target);
+      const auto loop_head_pos = std::find_if(
+          ssa_ir_.begin(), ssa_ir_.end(),
+          [] (const SSAInstruction<3>& instruction) {
+            return instruction.op() == Operator::LOOP_START;
+          });
 
-      const auto operand = Operand(
-          InPlace<std::size_t>(), ir_offset + 1 - jump_pos->second);
-      ssa_ir_.emplace_back(Operator::LOOP, operand);
+      const auto offset = std::distance(loop_head_pos, ssa_ir_.end());
+      emit_ir(Operator::LOOP, Operand(InPlace<std::size_t>(), offset + 1));
     }
 
 
