@@ -83,8 +83,7 @@ namespace loxx
         vreg_stack_.emplace(
             VirtualRegisterGenerator::make_register(result_type));
 
-        ssa_ir_.emplace_back(
-            Operator::ADD, vreg_stack_.top(), first, second);
+        emit_ir(Operator::ADD, vreg_stack_.top(), first, second);
 
         break;
       }
@@ -93,8 +92,7 @@ namespace loxx
         const auto offset = read_integer_at_pos<InstrArgUShort>(ip + 1);
         jump_targets_.push_back(std::make_pair(
             ip + sizeof(InstrArgUShort) + 1 + offset, ssa_ir_.size()));
-        ssa_ir_.emplace_back(
-            Operator::CONDITIONAL_JUMP, 0ul, vreg_stack_.top());
+        emit_ir(Operator::CONDITIONAL_JUMP, 0ul, vreg_stack_.top());
         break;
       }
 
@@ -109,8 +107,7 @@ namespace loxx
         vreg_stack_.push(result.first->second);
 
         if (result.second) {
-          ssa_ir_.emplace_back(
-              Operator::MOVE, vreg_stack_.top(), Operand(&value));
+          emit_ir(Operator::MOVE, vreg_stack_.top(), &value);
         }
         break;
       }
@@ -126,8 +123,7 @@ namespace loxx
         vreg_stack_.emplace(
             VirtualRegisterGenerator::make_register(ValueType::BOOLEAN));
 
-        ssa_ir_.emplace_back(
-            Operator::LESS, vreg_stack_.top(), first, second);
+        emit_ir(Operator::LESS, vreg_stack_.top(), first, second);
 
         break;
       }
@@ -141,8 +137,7 @@ namespace loxx
 
         vreg_stack_.push(destination);
 
-        ssa_ir_.emplace_back(
-            Operator::MOVE, vreg_stack_.top(), Operand(value));
+        emit_ir(Operator::MOVE, vreg_stack_.top(), value);
         break;
       }
 
@@ -174,8 +169,7 @@ namespace loxx
         vreg_stack_.emplace(
             VirtualRegisterGenerator::make_register(ValueType::FLOAT));
 
-        ssa_ir_.emplace_back(
-            Operator::MULTIPLY, vreg_stack_.top(), first, second);
+        emit_ir(Operator::MULTIPLY, vreg_stack_.top(), first, second);
 
         break;
       }
@@ -192,8 +186,7 @@ namespace loxx
             static_cast<ValueType>(value.index()));
         const auto& result = vreg_cache_.insert(&value, destination);
 
-        ssa_ir_.emplace_back(
-            Operator::MOVE, result.first->second, vreg_stack_.top());
+        emit_ir(Operator::MOVE, result.first->second, vreg_stack_.top());
         exit_assignments_[&value] = result.first->second;
         break;
       }

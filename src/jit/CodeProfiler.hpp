@@ -73,6 +73,9 @@ namespace loxx
           const VirtualRegister& first,
           const VirtualRegister& second) const;
 
+      template <typename... Args>
+      void emit_ir(const Operator op, Args&&... args);
+
       bool is_recording_;
       std::size_t block_count_threshold_;
       CodeObject::InsPtr current_block_head_;
@@ -89,6 +92,13 @@ namespace loxx
       HashTable<const Value*, VirtualRegister> vreg_cache_;
       std::vector<CodeObject::InsPtr> recorded_instructions_;
     };
+
+
+    template <typename... Args>
+    void CodeProfiler::emit_ir(const Operator op, Args&&... args)
+    {
+      ssa_ir_.emplace_back(op, Operand(args)...);
+    }
   }
 }
 
