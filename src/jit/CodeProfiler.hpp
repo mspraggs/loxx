@@ -68,6 +68,10 @@ namespace loxx
       void patch_jumps();
       void emit_exit_assignments();
 
+      bool virtual_registers_are_floats(
+          const VirtualRegister& first,
+          const VirtualRegister& second) const;
+
       bool is_recording_;
       std::size_t block_count_threshold_;
       CodeObject::InsPtr current_block_head_;

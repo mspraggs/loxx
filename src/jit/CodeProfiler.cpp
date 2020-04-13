@@ -119,6 +119,10 @@ namespace loxx
         const auto second = vreg_stack_.pop();
         const auto first = vreg_stack_.pop();
 
+        if (not virtual_registers_are_floats(first, second)) {
+          is_recording_ = false;
+          return;
+        }
         vreg_stack_.emplace(
             VirtualRegisterGenerator::make_register(ValueType::BOOLEAN));
 
@@ -159,15 +163,12 @@ namespace loxx
         const auto second = vreg_stack_.pop();
         const auto first = vreg_stack_.pop();
 
-        const auto result_type = [&] {
-          if (second.type == ValueType::FLOAT and
-              first.type == ValueType::FLOAT) {
-            return ValueType::FLOAT;
-          }
-          return ValueType::OBJECT;
-        } ();
-
-        vreg_stack_.emplace(VirtualRegisterGenerator::make_register(result_type));
+        if (not virtual_registers_are_floats(first, second)) {
+          is_recording_ = false;
+          return;
+        }
+        vreg_stack_.emplace(
+            VirtualRegisterGenerator::make_register(ValueType::FLOAT));
 
         ssa_ir_.emplace_back(
             Operator::MULTIPLY, vreg_stack_.top(), first, second);
@@ -320,6 +321,13 @@ namespace loxx
         ssa_ir_.emplace_back(
             Operator::MOVE, assignment.first, assignment.second);
       }
+    }
+
+
+    bool CodeProfiler::virtual_registers_are_floats(
+        const VirtualRegister& first, const VirtualRegister& second) const
+    {
+      return first.type == ValueType::FLOAT and second.type == ValueType::FLOAT;
     }
   }
 }
