@@ -87,8 +87,13 @@ namespace loxx
         profiler_->handle_basic_block_head(ip_);
 
         auto& ssa_ir = trace_cache_->get_ssa_ir(ip_);
+        const auto& assembly = trace_cache_->get_assembly(ip_);
 
-        if (ssa_ir) {
+        if (assembly) {
+          jit::execute_assembly<jit::Platform::X86_64>(assembly->second);
+          ip_ = ssa_ir->first;
+        }
+        else if (ssa_ir) {
 #ifndef NDEBUG
           if (debug_jit_) {
             const auto& compiled_bytecode =
@@ -99,11 +104,8 @@ namespace loxx
 #endif
           auto assembly = jit::compile_trace(ssa_ir->second.second, debug_jit_);
           trace_cache_->add_assembly(ip_, std::move(assembly));
-        }
-
-        const auto& assembly = trace_cache_->get_assembly(ip_);
-        if (assembly) {
-          jit::execute_assembly<jit::Platform::X86_64>(assembly->second);
+          const auto& locked_assembly = trace_cache_->get_assembly(ip_);
+          jit::execute_assembly<jit::Platform::X86_64>(locked_assembly->second);
           ip_ = ssa_ir->first;
         }
       }
