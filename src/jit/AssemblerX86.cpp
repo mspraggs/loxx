@@ -201,6 +201,7 @@ namespace loxx
           emit_multiply(instruction);
           break;
 
+        case Operator::LOOP_START:
         case Operator::NOOP:
           // Do nothing.
           break;

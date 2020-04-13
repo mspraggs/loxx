@@ -39,6 +39,7 @@ namespace loxx
       JUMP,
       LESS,
       LOOP,
+      LOOP_START,
       MOVE,
       MULTIPLY,
       NOOP,
@@ -175,6 +176,9 @@ namespace loxx
         break;
       case Operator::LOOP:
         os << "LOOP";
+        break;
+      case Operator::LOOP_START:
+        os << "LOOP_START";
         break;
       case Operator::MOVE:
         os << "MOVE";
