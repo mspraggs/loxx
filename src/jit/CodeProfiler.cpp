@@ -149,6 +149,10 @@ namespace loxx
       case Instruction::LOOP: {
         is_recording_ = false;
 
+        if (not instruction_ends_current_block(ip)) {
+          return;
+        }
+
         patch_jumps();
         peel_loop(ip);
         emit_exit_assignments();
@@ -209,6 +213,22 @@ namespace loxx
       vreg_cache_.clear();
       VirtualRegisterGenerator::reset_reg_count();
       is_recording_ = true;
+    }
+
+
+    bool CodeProfiler::instruction_ends_current_block(
+        const CodeObject::InsPtr ip) const
+    {
+      const auto instruction = static_cast<Instruction>(*ip);
+
+      if (instruction == Instruction::LOOP) {
+        const auto offset = read_integer_at_pos<InstrArgUShort>(ip + 1);
+        const auto target = ip + sizeof(InstrArgUShort) - offset + 1;
+
+        return target <= current_block_head_;
+      }
+
+      throw JITError("unhandled backward branch instruction");
     }
 
 
