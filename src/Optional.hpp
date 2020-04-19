@@ -101,7 +101,7 @@ namespace loxx
 
   template <typename T>
   constexpr Optional<T>::Optional()
-      : has_value_(false), value_()
+      : has_value_(false), no_value_()
   {
   }
 
@@ -125,10 +125,12 @@ namespace loxx
   {
     if (has_value_) {
       value_ = std::move(other.value_);
+      other.has_value_ = false;
+      other.no_value_ = {};
     }
-
-    other.has_value_ = false;
-    other.no_value_ = {};
+    else {
+      no_value_ = {};
+    }
   }
 
 
@@ -163,6 +165,9 @@ namespace loxx
       if (other.has_value_) {
         value_ = other.value_;
       }
+      else {
+        no_value_ = {};
+      }
     }
 
     return *this;
@@ -176,6 +181,9 @@ namespace loxx
 
     if (has_value_) {
       value_ = std::move(other.value_);
+    }
+    else {
+      no_value_ = {};
     }
 
     other.has_value_ = false;
