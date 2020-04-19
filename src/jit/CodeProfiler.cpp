@@ -151,7 +151,7 @@ namespace loxx
 
         emit_ir(Operator::LOOP_START);
         patch_jumps();
-        peel_loop(ip);
+        peel_loop();
         emit_exit_assignments();
 
         /// TODO: Remove this hack and update the stack when we leave the trace
@@ -229,7 +229,7 @@ namespace loxx
     }
 
 
-    void CodeProfiler::peel_loop(const CodeObject::InsPtr ip)
+    void CodeProfiler::peel_loop()
     {
       const auto prev_ssa_size = trace_->ir_buffer.size();
       const auto loop_vreg_map = build_loop_vreg_map();

@@ -61,7 +61,7 @@ namespace loxx
     private:
       void start_recording(const CodeObject::InsPtr ip);
       bool instruction_ends_current_block(const CodeObject::InsPtr ip) const;
-      void peel_loop(const CodeObject::InsPtr ip);
+      void peel_loop();
       VRegHashTable<VirtualRegister> build_loop_vreg_map() const;
       void emit_loop_moves(const VRegHashTable<VirtualRegister>& loop_vreg_map);
       void emit_loop();
