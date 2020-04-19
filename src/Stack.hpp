@@ -50,7 +50,6 @@ namespace loxx
     void clear() { top_ = 0; }
 
     std::size_t size() const { return top_; }
-    const std::size_t* size_ptr() const { return &top_; }
 
   private:
     std::size_t top_;
