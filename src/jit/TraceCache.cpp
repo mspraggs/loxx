@@ -17,6 +17,7 @@
  * Created by Matt Spraggs on 18/02/2020.
  */
 
+#include "JITError.hpp"
 #include "TraceCache.hpp"
 
 
@@ -24,48 +25,55 @@ namespace loxx
 {
   namespace jit
   {
-    void TraceCache::add_ssa_ir(
-        const CodeObject::InsPtr begin, const CodeObject::InsPtr end,
-        RecordedInstructions instructions, SSABuffer<3> ssa_ir)
+    Trace* TraceCache::get_trace(const CodeObject::InsPtr ip)
     {
-      ir_cache_[begin] = std::make_pair(end, std::move(ssa_ir));
-      recorded_ips_[begin] = std::move(instructions);
+      auto& result = trace_map_.get(ip);
+      if (result) {
+        return result->second;
+      }
+      return nullptr;
     }
 
 
-    auto TraceCache::get_ssa_ir(const CodeObject::InsPtr ip) const
-        -> const InsPtrHashTable<IRCacheElem>::Elem&
+    const Trace* TraceCache::get_trace(const CodeObject::InsPtr ip) const
     {
-      return ir_cache_.get(ip);
+      const auto& result = trace_map_.get(ip);
+      if (result) {
+        return result->second;
+      }
+      return nullptr;
     }
 
 
-    auto TraceCache::get_ssa_ir(const CodeObject::InsPtr ip)
-        -> InsPtrHashTable<IRCacheElem>::Elem&
+    void TraceCache::make_new_trace()
     {
-      return ir_cache_.get(ip);
+      active_.reset(new Trace);
+      active_->state = Trace::State::NEW;
     }
 
 
-    auto TraceCache::get_recorded_instructions(
-        const CodeObject::InsPtr ip) const -> const RecordedInstructions&
+    void TraceCache::store_active_trace()
     {
-      return recorded_ips_.at(ip);
-    }
+      if (not active_) {
+        throw JITError("no active trace exists");
+      }
 
+      const auto result = trace_map_.insert(active_->init_ip, active_.get());
 
-    void TraceCache::add_assembly(
-        const CodeObject::InsPtr ip, AssemblyWrapper assembly)
-    {
-      assembly.lock();
-      assembly_cache_[ip] = std::move(assembly);
-    }
+      if (not result.second) {
 
+        auto existing = result.first->second;
+        while (true) {
+          if (not existing->chained_trace) {
+            existing->chained_trace = active_.get();
+            break;
+          }
+          existing = existing->chained_trace;
+        }
 
-    auto TraceCache::get_assembly(const CodeObject::InsPtr ip) const
-        -> const CodeObject::InsPtrHashTable<AssemblyWrapper>::Elem&
-    {
-      return assembly_cache_.get(ip);
+      }
+
+      traces_.push_back(std::move(active_));
     }
   }
 }

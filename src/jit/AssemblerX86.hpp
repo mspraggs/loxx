@@ -27,6 +27,9 @@ namespace loxx
 {
   namespace jit
   {
+    struct Trace;
+
+
     enum class Condition {
       ABOVE,
       ABOVE_OR_EQUAL,
@@ -53,9 +56,9 @@ namespace loxx
     public:
       using IRInstruction = SSAInstruction<3>;
 
-      explicit Assembler(const AllocationMap<RegisterX86>& allocation_map);
+      explicit Assembler(Trace& trace);
 
-      AssemblyWrapper assemble(const std::vector<IRInstruction>& ssa_ir);
+      void assemble();
 
     private:
       void patch_jumps();
@@ -64,8 +67,9 @@ namespace loxx
 
       void emit_add(const IRInstruction& instruction);
       void emit_compare(const IRInstruction& instruction);
-      void emit_conditional_jump(const IRInstruction& instruction);
-      void emit_jump(const IRInstruction& instruction);
+      void emit_conditional_jump(
+          const std::size_t pos, const IRInstruction& instruction);
+      void emit_jump(const std::size_t pos, const IRInstruction& instruction);
       void emit_move(const IRInstruction& instruction);
       void emit_multiply(const IRInstruction& instruction);
 
@@ -123,14 +127,15 @@ namespace loxx
       template <typename T>
       void emit_immediate(const T value);
 
+      AssemblyWrapper& assembly();
+      const AssemblyWrapper& assembly() const;
+
       Optional<RegisterX86> get_register(const Operand& operand) const;
 
-      std::size_t pos_;
-      const AllocationMap<RegisterX86>* allocation_map_;
+      Trace* trace_;
       Optional<Condition> last_condition_;
       RegisterX86 general_scratch_;
       RegisterX86 float_scratch_;
-      AssemblyWrapper func_;
       std::vector<std::size_t> instruction_offsets_;
       std::vector<std::pair<std::size_t, std::size_t>> jump_offsets_;
     };
@@ -143,8 +148,8 @@ namespace loxx
     {
       const std::uint8_t rex_prefix =
           reg_is_64_bit(dst) ? 0b01001001 : 0b01001000;
-      func_.add_byte(rex_prefix);
-      func_.add_byte(0xb8 | get_reg_rm_bits(dst));
+      assembly().add_byte(rex_prefix);
+      assembly().add_byte(0xb8 | get_reg_rm_bits(dst));
       emit_immediate(value);
     }
 
@@ -155,10 +160,10 @@ namespace loxx
         -> typename std::enable_if_t<sizeof(T) < 8, void>
     {
       if (reg_is_64_bit(dst)) {
-        func_.add_byte(0x41);
+        assembly().add_byte(0x41);
       }
       constexpr std::uint8_t base_opcode = (sizeof(T) == 1) ? 0xb0 : 0xb8;
-      func_.add_byte(base_opcode | get_reg_rm_bits(dst));
+      assembly().add_byte(base_opcode | get_reg_rm_bits(dst));
       emit_immediate(value);
     }
 
@@ -168,7 +173,7 @@ namespace loxx
     {
       const auto begin = reinterpret_cast<const std::uint8_t*>(&value);
       const auto end = begin + sizeof(T);
-      func_.add_bytes(begin, end);
+      assembly().add_bytes(begin, end);
     }
   }
 }

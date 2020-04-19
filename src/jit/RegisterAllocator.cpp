@@ -24,6 +24,7 @@
 
 #include "logging.hpp"
 #include "RegisterAllocator.hpp"
+#include "TraceCache.hpp"
 
 
 namespace loxx
@@ -79,10 +80,9 @@ namespace loxx
     }
 
 
-    AllocationMap<Register> RegisterAllocator::allocate(
-        const SSABuffer<3>& ssa_ir)
+    void RegisterAllocator::allocate(Trace& trace)
     {
-      auto live_ranges = compute_live_ranges(ssa_ir);
+      auto live_ranges = compute_live_ranges(trace.ir_buffer);
 
 #ifndef NDEBUG
       if (debug_) {
@@ -112,8 +112,6 @@ namespace loxx
         }
       }
 
-      AllocationMap<Register> allocation_map;
-
       for (const auto& live_range : live_ranges) {
         const auto& virtual_register = live_range.first;
         const auto& interval = live_range.second;
@@ -124,16 +122,14 @@ namespace loxx
 
         const auto& reg = registers_.get(interval.first);
         if (reg) {
-          allocation_map[virtual_register] = Allocation<Register>(
+          trace.allocation_map[virtual_register] = Allocation<Register>(
               InPlace<Register>(), reg->second);
         }
         else {
-          allocation_map[virtual_register] = Allocation<Register>(
+          trace.allocation_map[virtual_register] = Allocation<Register>(
               InPlace<std::size_t>(), stack_slots_[interval.first]);
         }
       }
-
-      return allocation_map;
     }
 
 

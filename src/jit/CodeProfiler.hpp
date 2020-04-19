@@ -45,7 +45,7 @@ namespace loxx
       CodeProfiler(
           TraceCache& trace_cache, const std::size_t block_count_threshold)
           : is_recording_(false), block_count_threshold_(block_count_threshold),
-            trace_cache_(&trace_cache)
+            trace_(nullptr), trace_cache_(&trace_cache)
       {
       }
 
@@ -59,7 +59,7 @@ namespace loxx
       bool is_recording() const { return is_recording_; }
 
     private:
-      void start_recording();
+      void start_recording(const CodeObject::InsPtr ip);
       bool instruction_ends_current_block(const CodeObject::InsPtr ip) const;
       void peel_loop(const CodeObject::InsPtr ip);
       VRegHashTable<VirtualRegister> build_loop_vreg_map() const;
@@ -79,24 +79,22 @@ namespace loxx
       std::size_t block_count_threshold_;
       CodeObject::InsPtr current_block_head_;
 
+      Trace* trace_;
       TraceCache* trace_cache_;
 
       HashSet<CodeObject::InsPtr, CodeObject::InsPtrHasher> ignored_blocks_;
       CodeObject::InsPtrHashTable<std::size_t> block_counts_;
-      CodeObject::InsPtrHashTable<std::size_t> ssa_ir_map_;
-      SSABuffer<3> ssa_ir_;
       HashTable<const Value*, VirtualRegister> exit_assignments_;
       std::vector<std::pair<CodeObject::InsPtr, std::size_t>> jump_targets_;
       Stack<VirtualRegister, max_stack_size> vreg_stack_;
       HashTable<const Value*, VirtualRegister> vreg_cache_;
-      std::vector<CodeObject::InsPtr> recorded_instructions_;
     };
 
 
     template <typename... Args>
     void CodeProfiler::emit_ir(const Operator op, Args&&... args)
     {
-      ssa_ir_.emplace_back(op, Operand(args)...);
+      trace_->ir_buffer.emplace_back(op, Operand(args)...);
     }
   }
 }

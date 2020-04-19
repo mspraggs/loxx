@@ -46,6 +46,7 @@ set(SRC
   jit/RegisterAllocator.hpp
   jit/SSAGenerator.hpp
   jit/SSAInstruction.hpp
+  jit/Snapshot.hpp
   jit/TraceCache.hpp
 
   AstPrinter.cpp

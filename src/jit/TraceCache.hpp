@@ -26,39 +26,51 @@
 #include "../CodeObject.hpp"
 
 #include "AssemblyWrapper.hpp"
+#include "RegisterAllocator.hpp"
 #include "SSAInstruction.hpp"
+#include "Snapshot.hpp"
 
 
 namespace loxx
 {
   namespace jit
   {
+    struct Trace
+    {
+      enum class State {
+        NEW,
+        IR_COMPLETE,
+        ASSEMBLY_COMPLETE,
+      };
+      State state;
+      CodeObject::InsPtr init_ip;
+      CodeObject::InsPtr next_ip;
+      SSABuffer<3> ir_buffer;
+      CodeObject::InsPtrHashTable<std::size_t> ir_map;
+      std::vector<CodeObject::InsPtr> recorded_instructions;
+      HashTable<std::size_t, Snapshot> snaps;
+      AssemblyWrapper assembly;
+      AllocationMap<Register> allocation_map;
+      Trace* chained_trace;
+    };
+
+
     class TraceCache
     {
     public:
-      template <typename T>
-      using InsPtrHashTable = CodeObject::InsPtrHashTable<T>;
-      using IRCacheElem = std::pair<CodeObject::InsPtr, SSABuffer<3>>;
-      using RecordedInstructions = std::vector<CodeObject::InsPtr>;
+      Trace* active_trace() { return active_.get(); }
+      const Trace* active_trace() const { return active_.get(); }
 
-      void add_ssa_ir(
-          const CodeObject::InsPtr begin, const CodeObject::InsPtr end,
-          RecordedInstructions instructions, SSABuffer<3> ssa_ir);
-      auto get_ssa_ir(const CodeObject::InsPtr ip) const
-          -> const InsPtrHashTable<IRCacheElem>::Elem&;
-      auto get_ssa_ir(const CodeObject::InsPtr ip)
-          -> InsPtrHashTable<IRCacheElem>::Elem&;
-      auto get_recorded_instructions(const CodeObject::InsPtr ip) const
-          -> const RecordedInstructions&;
+      Trace* get_trace(const CodeObject::InsPtr ip);
+      const Trace* get_trace(const CodeObject::InsPtr ip) const;
 
-      void add_assembly(const CodeObject::InsPtr ip, AssemblyWrapper assembly);
-      auto get_assembly(const CodeObject::InsPtr ip) const
-          -> const CodeObject::InsPtrHashTable<AssemblyWrapper>::Elem&;
+      void make_new_trace();
+      void store_active_trace();
 
     private:
-      InsPtrHashTable<IRCacheElem> ir_cache_;
-      InsPtrHashTable<RecordedInstructions> recorded_ips_;
-      InsPtrHashTable<AssemblyWrapper> assembly_cache_;
+      std::unique_ptr<Trace> active_;
+      CodeObject::InsPtrHashTable<Trace*> trace_map_;
+      std::vector<std::unique_ptr<Trace>> traces_;
     };
   }
 }

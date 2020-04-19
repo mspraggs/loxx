@@ -14,28 +14,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Created by Matt Spraggs on 15/12/2019.
+ * Created by Matt Spraggs on 14/04/2020.
  */
 
-#ifndef LOXX_JIT_ASSEMBLER_HPP
-#define LOXX_JIT_ASSEMBLER_HPP
-
-#include "AssemblyWrapper.hpp"
-#include "RegisterAllocator.hpp"
-#include "SSAInstruction.hpp"
+#ifndef LOXX_JIT_SNAPSHOT_HPP
+#define LOXX_JIT_SNAPSHOT_HPP
 
 
 namespace loxx
 {
   namespace jit
   {
-    template <Platform P>
-    class Assembler
+    struct Snapshot
     {
-    public:
-      void assemble();
+
     };
   }
 }
 
-#endif // LOXX_JIT_ASSEMBLER_HPP
+#endif // LOXX_JIT_SNAPSHOT_HPP

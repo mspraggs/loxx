@@ -43,29 +43,27 @@ namespace loxx
     }
 
 
-    AssemblyWrapper compile_trace(SSABuffer<3>& ssa_ir, const bool debug)
+    void compile_trace(Trace& trace, const bool debug)
     {
-      optimise(ssa_ir);
+      optimise(trace.ir_buffer);
 
 #ifndef NDEBUG
       if (debug) {
         std::cout << "=== Generated SSA ===\n";
-        print_ssa_instructions(ssa_ir);
+        print_ssa_instructions(trace.ir_buffer);
       }
 #endif
 
-      RegisterAllocator reg_alloc(
-          debug, get_allocatable_registers<platform>());
-      const auto allocation_map = reg_alloc.allocate(ssa_ir);
+      RegisterAllocator reg_alloc(debug, get_allocatable_registers<platform>());
+      reg_alloc.allocate(trace);
 
 #ifndef NDEBUG
       if (debug) {
-        print_allocation_map(allocation_map);
+        print_allocation_map(trace.allocation_map);
       }
 #endif
-      Assembler<platform> assembler(allocation_map);
-      auto mcode = assembler.assemble(ssa_ir);
-      return std::move(mcode);
+      Assembler<platform> assembler(trace);
+      assembler.assemble();
     }
   }
 }

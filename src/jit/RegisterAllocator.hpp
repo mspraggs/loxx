@@ -31,6 +31,9 @@ namespace loxx
 {
   namespace jit
   {
+    struct Trace;
+
+
     using Range = std::pair<std::size_t, std::size_t>;
 
 
@@ -52,7 +55,7 @@ namespace loxx
       RegisterAllocator(
           const bool debug, const std::vector<Register>& registers);
 
-      AllocationMap<Register> allocate(const SSABuffer<3>& ssa_ir);
+      void allocate(Trace& trace);
 
     private:
       void expire_old_intervals(const Range& interval);

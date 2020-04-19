@@ -84,29 +84,13 @@ namespace loxx
 
       const auto pos = std::distance(code_object_->bytecode.begin(), ip_);
       if (code_object_->basic_block_boundary_flags[pos]) {
-        profiler_->handle_basic_block_head(ip_);
-
-        auto& ssa_ir = trace_cache_->get_ssa_ir(ip_);
-        const auto& assembly = trace_cache_->get_assembly(ip_);
-
-        if (assembly) {
-          jit::execute_assembly<jit::Platform::X86_64>(assembly->second);
-          ip_ = ssa_ir->first;
+        const auto trace = trace_cache_->get_trace(ip_);
+        if (trace) {
+          jit::execute_assembly<jit::Platform::X86_64>(trace->assembly);
+          ip_ = trace->next_ip;
         }
-        else if (ssa_ir) {
-#ifndef NDEBUG
-          if (debug_jit_) {
-            const auto& compiled_bytecode =
-                trace_cache_->get_recorded_instructions(ip_);
-            std::cout << "=== Compiling Bytecode ===\n";
-            print_bytecode(*code_object_, compiled_bytecode);
-          }
-#endif
-          auto assembly = jit::compile_trace(ssa_ir->second.second, debug_jit_);
-          trace_cache_->add_assembly(ip_, std::move(assembly));
-          const auto& locked_assembly = trace_cache_->get_assembly(ip_);
-          jit::execute_assembly<jit::Platform::X86_64>(locked_assembly->second);
-          ip_ = ssa_ir->first;
+        else {
+          profiler_->handle_basic_block_head(ip_);
         }
       }
 
@@ -114,6 +98,18 @@ namespace loxx
         profiler_->record_instruction(
             ip_, RuntimeContext{
                 stack_, *code_object_, call_stack_.top(), globals_});
+
+        auto trace = trace_cache_->active_trace();
+        if (trace->state == jit::Trace::State::IR_COMPLETE) {
+#ifndef NDEBUG
+          if (debug_jit_) {
+            std::cout << "=== Compiling Bytecode ===\n";
+            print_bytecode(*code_object_, trace->recorded_instructions);
+          }
+#endif
+          jit::compile_trace(*trace, debug_jit_);
+          trace_cache_->store_active_trace();
+        }
       }
       const auto instruction = static_cast<Instruction>(*ip_++);
 
