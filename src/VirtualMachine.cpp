@@ -609,7 +609,7 @@ namespace loxx
       throw make_runtime_error("Stack overflow.");
     }
 
-    call_stack_.emplace(ip_, code_object_, stack_.top(num_args), closure);
+    call_stack_.emplace(ip_, code_object_, &stack_.top(num_args), closure);
     code_object_ = closure->function().code_object();
     ip_ = code_object_->bytecode.begin();
   }

@@ -38,12 +38,6 @@ namespace loxx
     StackFrame() = default;
     StackFrame(
         const CodeObject::InsPtr prev_ip, const CodeObject* prev_code_object,
-        Value& slots_base, ClosureObject* closure)
-        : StackFrame(prev_ip, prev_code_object, &slots_base,
-                     closure)
-    {}
-    StackFrame(
-        const CodeObject::InsPtr prev_ip, const CodeObject* prev_code_object,
         Value* slots_base, ClosureObject* closure)
         : prev_ip_(prev_ip), prev_code_object_(prev_code_object),
           slots_(slots_base), closure_(closure)
