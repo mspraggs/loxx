@@ -22,8 +22,9 @@
 
 #include <utility>
 
+#include "../HashSet.hpp"
+
 #include "Register.hpp"
-#include "SSAGenerator.hpp"
 #include "SSAInstruction.hpp"
 
 

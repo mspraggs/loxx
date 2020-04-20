@@ -19,6 +19,8 @@
 
 #include <numeric>
 
+#include "../Object.hpp"
+
 #include "AssemblerX86.hpp"
 #include "JITError.hpp"
 #include "PlatformX86.hpp"

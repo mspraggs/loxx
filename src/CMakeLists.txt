@@ -44,7 +44,6 @@ set(SRC
   jit/PlatformX86.hpp
   jit/Register.hpp
   jit/RegisterAllocator.hpp
-  jit/SSAGenerator.hpp
   jit/SSAInstruction.hpp
   jit/Snapshot.hpp
   jit/TraceCache.hpp
@@ -71,7 +70,6 @@ set(SRC
   jit/Optimiser.cpp
   jit/PlatformX86.cpp
   jit/RegisterAllocator.cpp
-  jit/SSAGenerator.cpp
   jit/SSAInstruction.cpp
   jit/TraceCache.cpp
 )
