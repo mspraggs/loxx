@@ -49,7 +49,8 @@ namespace loxx
       {
       }
 
-      void handle_basic_block_head(const CodeObject::InsPtr ip);
+      void handle_basic_block_head(
+          const CodeObject::InsPtr ip, const RuntimeContext context);
 
       void skip_current_block();
 
@@ -59,21 +60,23 @@ namespace loxx
       bool is_recording() const { return is_recording_; }
 
     private:
-      void start_recording(const CodeObject::InsPtr ip);
+      void start_recording(
+          const CodeObject::InsPtr ip, const RuntimeContext context);
       bool instruction_ends_current_block(const CodeObject::InsPtr ip) const;
       void peel_loop();
-      VRegHashTable<VirtualRegister> build_loop_vreg_map() const;
-      void emit_loop_moves(const VRegHashTable<VirtualRegister>& loop_vreg_map);
+      HashTable<std::size_t, std::size_t> build_loop_ir_ref_map() const;
+      void emit_loop_moves(
+          const HashTable<std::size_t, std::size_t>& loop_vreg_map);
       void emit_loop();
       void patch_jumps();
       void emit_exit_assignments();
 
       bool virtual_registers_are_floats(
-          const VirtualRegister& first,
-          const VirtualRegister& second) const;
+          const std::size_t first, const std::size_t second) const;
 
       template <typename... Args>
-      void emit_ir(const Operator op, Args&&... args);
+      std::size_t emit_ir(
+          const Operator op, const ValueType type, Args&&... args);
 
       bool is_recording_;
       std::size_t block_count_threshold_;
@@ -84,17 +87,20 @@ namespace loxx
 
       HashSet<CodeObject::InsPtr, CodeObject::InsPtrHasher> ignored_blocks_;
       CodeObject::InsPtrHashTable<std::size_t> block_counts_;
-      HashTable<const Value*, VirtualRegister> exit_assignments_;
+      HashTable<std::size_t, std::size_t> exit_assignments_;
       std::vector<std::pair<CodeObject::InsPtr, std::size_t>> jump_targets_;
-      Stack<VirtualRegister, max_stack_size> vreg_stack_;
-      HashTable<const Value*, VirtualRegister> vreg_cache_;
+      Stack<std::size_t, max_stack_size> vreg_stack_;
+      std::array<Optional<std::size_t>, max_stack_size> ref_cache_;
     };
 
 
     template <typename... Args>
-    void CodeProfiler::emit_ir(const Operator op, Args&&... args)
+    std::size_t CodeProfiler::emit_ir(
+        const Operator op, const ValueType type, Args&&... args)
     {
-      trace_->ir_buffer.emplace_back(op, Operand(args)...);
+      const auto ret = trace_->ir_buffer.size();
+      trace_->ir_buffer.emplace_back(op, type, Operand(args)...);
+      return ret;
     }
   }
 }

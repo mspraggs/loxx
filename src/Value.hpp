@@ -48,19 +48,19 @@ namespace loxx
     switch (value_type) {
 
     case ValueType::FLOAT:
-      os << 'f';
+      os << "FLOAT";
       break;
 
     case ValueType::BOOLEAN:
-      os << 'b';
+      os << "BOOL";
       break;
 
     case ValueType::OBJECT:
-      os << 'p';
+      os << "OBJ";
       break;
 
     case ValueType::UNKNOWN:
-      os << '?';
+      os << "---";
       break;
     }
 

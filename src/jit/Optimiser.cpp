@@ -50,7 +50,8 @@ namespace loxx
 
             if (instructions_target_same_dest(
                 prior_instruction, current_instruction)) {
-              ssa_ir[i - j] = SSAInstruction<3>(Operator::NOOP);
+              ssa_ir[i - j] = SSAInstruction<3>(
+                  Operator::NOOP, ValueType::UNKNOWN);
             }
           }
         }
@@ -58,7 +59,8 @@ namespace loxx
         if (instructions_contain_redundant_move(
             prev_instruction, current_instruction)) {
           ssa_ir[i - 1].set_operand(0, current_operands[0]);
-          ssa_ir[i] = SSAInstruction<3>(Operator::NOOP);
+          ssa_ir[i] = SSAInstruction<3>(
+              Operator::NOOP, ValueType::UNKNOWN);
         }
       }
     }

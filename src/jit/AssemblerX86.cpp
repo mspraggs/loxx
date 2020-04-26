@@ -174,7 +174,7 @@ namespace loxx
         switch (op) {
 
         case Operator::ADD:
-          emit_add(instruction);
+          emit_add(pos, instruction);
           break;
 
         case Operator::CONDITIONAL_JUMP:
@@ -194,12 +194,16 @@ namespace loxx
           last_condition_ = Condition::BELOW;
           break;
 
-        case Operator::MOVE:
-          emit_move(instruction);
+        case Operator::LITERAL:
+          emit_literal(pos, instruction);
+          break;
+
+        case Operator::LOAD:
+          emit_load(pos, instruction);
           break;
 
         case Operator::MULTIPLY:
-          emit_multiply(instruction);
+          emit_multiply(pos, instruction);
           break;
 
         case Operator::LOOP_START:
@@ -214,6 +218,10 @@ namespace loxx
         case Operator::RETURN:
           break;
 
+        case Operator::STORE:
+          emit_store(instruction);
+          break;
+
         case Operator::SUBTRACT:
           break;
 
@@ -221,6 +229,8 @@ namespace loxx
           throw JITError("unsupported SSA opcode");
         }
       }
+
+      instruction_offsets_.push_back(trace_->assembly.size());
 
       const auto exit_location = get_exit_function_pointer<Platform::X86_64>();
       emit_move_reg_imm(general_scratch_, exit_location);
@@ -279,16 +289,15 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_add(
-        const IRInstruction& instruction)
+        const std::size_t ref, const IRInstruction& instruction)
     {
+      const auto reg0 = get_register(ref);
       const auto& operands = instruction.operands();
 
-      if (holds_alternative<VirtualRegister>(operands[0]) and
-          holds_alternative<VirtualRegister>(operands[1]) and
-          holds_alternative<VirtualRegister>(operands[2])) {
-        const auto reg0 = get_register(operands[0]);
-        const auto reg1 = get_register(operands[1]);
-        const auto reg2 = get_register(operands[2]);
+      if (operands[0].type() == Operand::Type::IR_REF and
+          operands[1].type() == Operand::Type::IR_REF) {
+        const auto reg1 = get_register(operands[0]);
+        const auto reg2 = get_register(operands[1]);
 
         if (not reg0 or not reg1 or not reg2) {
           return;
@@ -305,10 +314,10 @@ namespace loxx
     {
       const auto& operands = instruction.operands();
 
-      if (holds_alternative<VirtualRegister>(operands[1]) and
-          holds_alternative<VirtualRegister>(operands[2])) {
-        const auto reg0 = get_register(operands[1]);
-        const auto reg1 = get_register(operands[2]);
+      if (operands[0].type() == Operand::Type::IR_REF and
+          operands[1].type() == Operand::Type::IR_REF) {
+        const auto reg0 = get_register(operands[0]);
+        const auto reg1 = get_register(operands[1]);
 
         if (not reg0 or not reg1) {
           return;
@@ -316,19 +325,19 @@ namespace loxx
 
         emit_compare_reg_reg(*reg0, *reg1);
       }
-      else if (holds_alternative<VirtualRegister>(operands[0]) and
-          holds_alternative<Value>(operands[1])) {
+      else if (operands[0].type() == Operand::Type::IR_REF and
+          operands[1].is_literal()) {
         const auto reg = get_register(operands[0]);
         if (not reg) {
           return;
         }
 
-        const auto& value = unsafe_get<Value>(operands[1]);
+        const auto& value = operands[1];
 
-        if (holds_alternative<double>(value)) {
+        if (value.type() == Operand::Type::LITERAL_FLOAT) {
           emit_compare_reg_imm(*reg, unsafe_get<double>(value));
         }
-        else if (holds_alternative<bool>(value)) {
+        else if (value.type() == Operand::Type::LITERAL_BOOLEAN) {
           emit_compare_reg_imm(*reg, unsafe_get<bool>(value));
         }
         else {
@@ -346,7 +355,7 @@ namespace loxx
         throw JITError("invalid assembler state");
       }
       const auto& operands = instruction.operands();
-      const auto jump_target = pos + get<std::size_t>(operands[0]) + 1;
+      const auto jump_target = pos + get<std::size_t>(operands[0]);
       const auto offset_pos = emit_conditional_jump(
           get_inverse_condition(*last_condition_), 0x100);
       jump_offsets_.emplace_back(std::make_pair(offset_pos, jump_target));
@@ -366,74 +375,77 @@ namespace loxx
     }
 
 
-    void Assembler<Platform::X86_64>::emit_move(
-        const IRInstruction& instruction)
+    void Assembler<Platform::X86_64>::emit_literal(
+        const std::size_t pos, const IRInstruction& instruction)
     {
-      const auto& operands = instruction.operands();
+      const auto dst_reg = get_register(pos);
 
-      if (holds_alternative<VirtualRegister>(operands[0]) and
-          holds_alternative<const Value*>(operands[1])) {
-        const auto address = unsafe_get<const Value*>(operands[1]);
-        const auto dst_reg = get_register(operands[0]);
-
-        if (not dst_reg) {
-          return;
-        }
-
-        /// TODO: Store expected type and retrieve from snapshot.
-        emit_guard(address, static_cast<ValueType>(address->index()));
-        emit_move_reg_imm(general_scratch_, address);
-        emit_move_reg_mem(*dst_reg, general_scratch_, 8);
+      if (not dst_reg) {
+        throw JITError("no destination register for literal");
       }
-      else if (holds_alternative<VirtualRegister>(operands[0]) and
-          holds_alternative<Value>(operands[1])) {
-        const auto& value = unsafe_get<Value>(operands[1]);
-        const auto dst_reg = get_register(operands[0]);
 
-        if (not dst_reg) {
-          return;
-        }
-
+      const auto& operand = instruction.operand(0);
+      if (operand.type() == Operand::Type::LITERAL_FLOAT) {
+        const auto value = unsafe_get<double>(operand);
+        emit_move_reg_imm(general_scratch_, value);
+        emit_move_reg_reg(*dst_reg, general_scratch_);
+      }
+      else if (operand.type() == Operand::Type::LITERAL_BOOLEAN) {
+        const auto value = unsafe_get<bool>(operand);
         emit_move_reg_imm(*dst_reg, value);
       }
-      else if (holds_alternative<VirtualRegister>(operands[0]) and
-          holds_alternative<VirtualRegister>(operands[1])) {
-        const auto src_reg = get_register(operands[1]);
-        const auto dst_reg = get_register(operands[0]);
-
-        if (not src_reg or not dst_reg) {
-          return;
-        }
-
-        emit_move_reg_reg(*dst_reg, *src_reg);
-      }
-      else if (holds_alternative<const Value*>(operands[0]) and
-          holds_alternative<VirtualRegister>(operands[1])) {
-        const auto address = unsafe_get<const Value*>(operands[0]);
-        const auto src_reg = get_register(operands[1]);
-
-        if (not src_reg) {
-          return;
-        }
-
-        emit_guard(address, static_cast<ValueType>(address->index()));
-        emit_move_reg_imm(general_scratch_, address);
-        emit_move_mem_reg(general_scratch_, *src_reg, 8);
+      else if (operand.type() == Operand::Type::LITERAL_OBJECT) {
+        const auto value = unsafe_get<ObjectPtr>(operand);
+        emit_move_reg_imm(*dst_reg, value);
       }
     }
 
 
-    void Assembler<Platform::X86_64>::emit_multiply(
+    void Assembler<Platform::X86_64>::emit_load(
+        const std::size_t pos, const IRInstruction& instruction)
+    {
+      const auto dst_reg = get_register(pos);
+      const auto address = get_stack_address(instruction.operand(0));
+
+      if (not dst_reg) {
+        return;
+      }
+
+      if (not address) {
+        throw JITError("invalid source address for load");
+      }
+
+      emit_move_reg_imm(general_scratch_, address);
+      emit_move_reg_mem(*dst_reg, general_scratch_, 8);
+    }
+
+
+    void Assembler<Platform::X86_64>::emit_store(
         const IRInstruction& instruction)
     {
+      const auto address = get_stack_address(instruction.operand(0));
+      const auto src_reg = get_register(instruction.operand(1));
+
+      if (not src_reg or not address) {
+        throw JITError(
+            "invalid source register or destination address for store");
+      }
+
+      emit_move_reg_imm(general_scratch_, address);
+      emit_move_mem_reg(general_scratch_, *src_reg, 8);
+    }
+
+
+    void Assembler<Platform::X86_64>::emit_multiply(
+        const std::size_t ref, const IRInstruction& instruction)
+    {
+      const auto reg0 = get_register(ref);
       const auto& operands = instruction.operands();
 
-      if (holds_alternative<VirtualRegister>(operands[0]) and
-          holds_alternative<VirtualRegister>(operands[1]) and
-          holds_alternative<VirtualRegister>(operands[2])) {
-        const auto reg0 = get_register(operands[0]);
-        const auto reg1 = get_register(operands[1]);
-        const auto reg2 = get_register(operands[2]);
+      if (operands[0].type() == Operand::Type::IR_REF and
+          operands[1].type() == Operand::Type::IR_REF) {
+        const auto reg1 = get_register(operands[0]);
+        const auto reg2 = get_register(operands[1]);
 
         if (not reg0 or not reg1 or not reg2) {
           return;
@@ -649,13 +661,13 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_move_reg_imm(
-        const RegisterX86 dst, const Value& value)
+        const RegisterX86 dst, const Operand& value)
     {
-      if (holds_alternative<double>(value)) {
+      if (value.type() == Operand::Type::LITERAL_FLOAT) {
         emit_move_reg_imm(general_scratch_, unsafe_get<double>(value));
         emit_move_reg_reg(dst, general_scratch_);
       }
-      else if (holds_alternative<double>(value)) {
+      else if (value.type() == Operand::Type::LITERAL_BOOLEAN) {
         emit_move_reg_imm(dst, unsafe_get<bool>(value));
       }
       else {
@@ -800,14 +812,9 @@ namespace loxx
 
 
     Optional<RegisterX86> Assembler<Platform::X86_64>::get_register(
-        const Operand& operand) const
+        const std::size_t ref) const
     {
-      if (not holds_alternative<VirtualRegister>(operand)) {
-        return {};
-      }
-
-      const auto pos = trace_->allocation_map.find(
-          unsafe_get<VirtualRegister>(operand));
+      const auto pos = trace_->allocation_map.find(ref);
 
       if (pos == trace_->allocation_map.end()) {
         return {};
@@ -818,6 +825,29 @@ namespace loxx
       }
 
       return unsafe_get<RegisterX86>(pos->second);
+    }
+
+
+    Optional<RegisterX86> Assembler<Platform::X86_64>::get_register(
+        const Operand& operand) const
+    {
+      if (operand.type() != Operand::Type::IR_REF) {
+        return {};
+      }
+
+      return get_register(unsafe_get<std::size_t>(operand));
+    }
+
+
+    const Value* Assembler<Platform::X86_64>::get_stack_address(
+        const Operand& operand) const
+    {
+      if (operand.type() != Operand::Type::STACK_REF) {
+        return nullptr;
+      }
+
+      const auto idx = unsafe_get<std::size_t>(operand);
+      return trace_->stack_base + idx;
     }
 
 

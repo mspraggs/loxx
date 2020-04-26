@@ -20,6 +20,8 @@
 #ifndef LOXX_JIT_SNAPSHOT_HPP
 #define LOXX_JIT_SNAPSHOT_HPP
 
+#include "../HashTable.hpp"
+
 
 namespace loxx
 {
@@ -27,7 +29,7 @@ namespace loxx
   {
     struct Snapshot
     {
-
+      HashTable<std::size_t, std::size_t> stack_regs_;
     };
   }
 }

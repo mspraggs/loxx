@@ -31,28 +31,39 @@ namespace loxx
 {
   namespace jit
   {
-    std::vector<std::pair<VirtualRegister, Range>> compute_live_ranges(
+    std::vector<std::pair<std::size_t, Range>> compute_live_ranges(
         const SSABuffer<3>& ssa_ir)
     {
-      using OperandSizeMap = VRegHashTable<std::size_t>;
-
-      OperandSizeMap operand_start_map;
-      std::vector<std::pair<VirtualRegister, Range>> live_ranges;
+      HashTable<std::size_t, std::size_t> operand_start_map;
+      std::vector<std::pair<std::size_t, Range>> live_ranges;
       live_ranges.reserve(ssa_ir.size() * 2);
 
       for (std::size_t i = 0; i < ssa_ir.size(); ++i) {
         const auto& instruction = ssa_ir[i];
 
+        /// TODO: Refactor this into a function in line with DRY
+        if (instruction.type() != ValueType::UNKNOWN) {
+          const auto operand_start =
+              operand_start_map.insert(i, live_ranges.size());
+
+          if (operand_start.second) {
+            live_ranges.push_back({i, Range{i, i}});
+          }
+
+          auto& live_range = live_ranges[operand_start.first->second];
+          live_range.second.second = i;
+        }
+
         for (const auto& operand : instruction.operands()) {
-          if (operand.index() == Operand::npos) {
+          if (operand.type() == Operand::Type::UNUSED) {
             break;
           }
 
-          if (not holds_alternative<VirtualRegister>(operand)) {
+          if (operand.type() != Operand::Type::IR_REF) {
             continue;
           }
 
-          const auto& reg = unsafe_get<VirtualRegister>(operand);
+          const auto reg = unsafe_get<std::size_t>(operand);
 
           auto operand_start =
               operand_start_map.insert(reg, live_ranges.size());
@@ -83,6 +94,7 @@ namespace loxx
     void RegisterAllocator::allocate(Trace& trace)
     {
       auto live_ranges = compute_live_ranges(trace.ir_buffer);
+      const auto& ir_buffer = trace.ir_buffer;
 
 #ifndef NDEBUG
       if (debug_) {
@@ -92,7 +104,7 @@ namespace loxx
 #endif
 
       for (const auto& live_range : live_ranges) {
-        const auto& virtual_regsiter = live_range.first;
+        const auto& virtual_register = live_range.first;
         const auto& interval = live_range.second;
 
         if (interval.first == interval.second) {
@@ -101,7 +113,8 @@ namespace loxx
 
         expire_old_intervals(interval);
 
-        const auto candidate_register = get_register(virtual_regsiter.type);
+        const auto& ir_instruction = ir_buffer[virtual_register];
+        const auto candidate_register = get_register(ir_instruction.type());
 
         if (not candidate_register) {
           spill_at_interval(interval);

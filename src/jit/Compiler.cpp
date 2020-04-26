@@ -45,7 +45,7 @@ namespace loxx
 
     void compile_trace(Trace& trace, const bool debug)
     {
-      optimise(trace.ir_buffer);
+      // optimise(trace.ir_buffer);
 
 #ifndef NDEBUG
       if (debug) {

@@ -52,6 +52,8 @@ namespace loxx
       AssemblyWrapper assembly;
       AllocationMap<Register> allocation_map;
       Trace* chained_trace;
+      const Value* stack_base;
+      const CodeObject* code_object;
     };
 
 

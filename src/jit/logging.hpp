@@ -22,6 +22,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "RegisterAllocator.hpp"
 #include "SSAInstruction.hpp"
@@ -39,7 +40,7 @@ namespace loxx
         const std::vector<SSAInstruction<N>>& instructions);
 
     void print_live_ranges(
-        const std::vector<std::pair<VirtualRegister, Range>>& live_ranges);
+        const std::vector<std::pair<std::size_t, Range>>& live_ranges);
 
     void print_allocation_map(const AllocationMap<Register>& allocation_map);
 
@@ -47,17 +48,20 @@ namespace loxx
     void print_ssa_instruction(const SSAInstruction<N>& instruction)
     {
       std::cout << std::setw(20) << std::setfill(' ') << instruction.op();
+      std::cout << std::setw(10) << std::setfill(' ') << instruction.type();
 
       const auto& operands = instruction.operands();
 
       for (std::size_t i = 0; i < operands.size(); ++i) {
-        if (operands[i].index() == Operand::npos) {
+        if (operands[i].type() == Operand::Type::UNUSED) {
           break;
         }
         if (i != 0) {
-          std::cout << ", ";
+          // std::cout << ", ";
         }
-        std::cout << operands[i];
+        std::stringstream ss;
+        ss << operands[i];
+        std::cout << std::setw(15) << ss.str();
       }
 
       std::cout << '\n';

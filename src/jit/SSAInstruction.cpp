@@ -29,54 +29,134 @@ namespace loxx
 {
   namespace jit
   {
-    std::size_t VirtualRegisterGenerator::reg_count_ = 0;
-
-
-    VirtualRegister VirtualRegisterGenerator::make_register(
-        const ValueType type)
-    {
-      return VirtualRegister{type, reg_count_++};
-    }
-
-
-    Operand::Operand(const ValueType value_type)
-        : OperandBase(VirtualRegisterGenerator::make_register(value_type))
+    Operand::Operand()
+        : type_(Type::UNUSED)
     {
     }
 
 
-    ValueType Operand::value_type() const
+    Operand::Operand(const Type type, const std::size_t value)
+        : type_(type)
     {
-      switch (op_type()) {
-      case Type::MEMORY:
-        return static_cast<ValueType>(unsafe_get<const Value*>(*this)->index());
-      case Type::REGISTER:
-        return unsafe_get<VirtualRegister>(*this).type;
-      case Type::IMMEDIATE:
-        return static_cast<ValueType>(unsafe_get<Value>(*this).index());
-      default:
-        throw std::logic_error("invalid operand");
+      if (is_literal()) {
+        throw BadOperandAccess(
+            "Operand cannot be instantiated with specified type.");
       }
+      std::memcpy(&storage_, &value, sizeof(std::size_t));
     }
 
 
-    std::size_t VirtualRegisterHasher::operator() (
-        const VirtualRegister& value) const
+    Operand::Operand(const Type type)
+        : type_(type)
     {
-      return combine_hashes(static_cast<std::size_t>(value.type), value.index);
     }
 
 
-    bool VirtualRegisterCompare::operator() (
-        const VirtualRegister& first, const VirtualRegister& second) const
+    Operand::Operand(const double value)
+        : type_(Type::LITERAL_FLOAT)
     {
-      return first.type == second.type and first.index == second.index;
+      std::memcpy(&storage_, &value, sizeof(double));
     }
 
 
-    bool operator==(const VirtualRegister& first, const VirtualRegister& second)
+    Operand::Operand(const bool value)
+        : type_(Type::LITERAL_BOOLEAN)
     {
-      return first.type == second.type and first.index == second.index;
+      std::memcpy(&storage_, &value, sizeof(bool));
+    }
+
+
+    Operand::Operand(const ObjectPtr value)
+        : type_(Type::LITERAL_OBJECT)
+    {
+      std::memcpy(&storage_, &value, sizeof(ObjectPtr));
+    }
+
+
+    bool Operand::is_literal() const
+    {
+      return
+          type_ == Type::LITERAL_BOOLEAN or
+          type_ == Type::LITERAL_FLOAT or
+          type_ == Type::LITERAL_OBJECT or
+          type_ == Type::LITERAL_NIL;
+    }
+
+
+    template <>
+    std::size_t unsafe_get<std::size_t>(const Operand& operand)
+    {
+      return *reinterpret_cast<const std::size_t*>(&operand.storage_);
+    }
+
+
+    template <>
+    double unsafe_get<double>(const Operand& operand)
+    {
+      return *reinterpret_cast<const double*>(&operand.storage_);
+    }
+
+
+    template <>
+    bool unsafe_get<bool>(const Operand& operand)
+    {
+      return *reinterpret_cast<const bool*>(&operand.storage_);
+    }
+
+
+    template <>
+    ObjectPtr unsafe_get<ObjectPtr>(const Operand& operand)
+    {
+      return *reinterpret_cast<const ObjectPtr*>(&operand.storage_);
+    }
+
+
+    template <>
+    std::size_t get<std::size_t>(const Operand& operand)
+    {
+      if (operand.is_literal()) {
+        throw BadOperandAccess("Operand does not contain requested object.");
+      }
+      return *reinterpret_cast<const std::size_t*>(&operand.storage_);
+    }
+
+
+    template <>
+    double get<double>(const Operand& operand)
+    {
+      if (operand.type_ != Operand::Type::LITERAL_FLOAT) {
+        throw BadOperandAccess("Operand does not contain requested object.");
+      }
+      return *reinterpret_cast<const double*>(&operand.storage_);
+    }
+
+
+    template <>
+    bool get<bool>(const Operand& operand)
+    {
+      if (operand.type_ != Operand::Type::LITERAL_BOOLEAN) {
+        throw BadOperandAccess("Operand does not contain requested object.");
+      }
+      return *reinterpret_cast<const bool*>(&operand.storage_);
+    }
+
+
+    template <>
+    ObjectPtr get<ObjectPtr>(const Operand& operand)
+    {
+      if (operand.type_ != Operand::Type::LITERAL_OBJECT) {
+        throw BadOperandAccess("Operand does not contain requested object.");
+      }
+      return *reinterpret_cast<const ObjectPtr*>(&operand.storage_);
+    }
+
+
+    bool operator==(const Operand& first, const Operand& second)
+    {
+      if (first.type_ != second.type_) {
+        return false;
+      }
+      return std::memcmp(&first.storage_, &second.storage_, 8);
     }
   }
 }

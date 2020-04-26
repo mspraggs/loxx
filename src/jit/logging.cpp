@@ -31,9 +31,9 @@ namespace loxx
   namespace jit
   {
     void print_live_ranges(
-        const std::vector<std::pair<VirtualRegister, Range>>& live_ranges)
+        const std::vector<std::pair<std::size_t, Range>>& live_ranges)
     {
-      using RegisterRangePair = std::pair<VirtualRegister, Range>;
+      using RegisterRangePair = std::pair<std::size_t, Range>;
 
       const auto range_max_elem = std::max_element(
           live_ranges.begin(), live_ranges.end(),

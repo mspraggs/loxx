@@ -21,10 +21,11 @@
 #define LOXX_JIT_SSAINSTRUCTION_HPP
 
 #include <array>
+#include <iomanip>
 
 #include "../HashTable.hpp"
+#include "../Object.hpp"
 #include "../Value.hpp"
-#include "../Variant.hpp"
 
 
 namespace loxx
@@ -38,6 +39,8 @@ namespace loxx
       DIVIDE,
       JUMP,
       LESS,
+      LITERAL,
+      LOAD,
       LOOP,
       LOOP_START,
       MOVE,
@@ -45,80 +48,70 @@ namespace loxx
       NOOP,
       POP,
       RETURN,
+      STORE,
       SUBTRACT,
     };
 
 
-    struct VirtualRegisterHasher;
-
-    struct VirtualRegisterCompare;
-
-
-    struct VirtualRegister
-    {
-      ValueType type;
-      std::size_t index;
-    };
-
-
-    class VirtualRegisterGenerator
-    {
-    public:
-      static VirtualRegister make_register(const ValueType type);
-      static void reset_reg_count() { reg_count_ = 0; }
-
-    private:
-      static std::size_t reg_count_;
-    };
-
-
-    template <typename T>
-    using VRegHashTable =
-        HashTable<
-            VirtualRegister, T, VirtualRegisterHasher, VirtualRegisterCompare>;
-
-
-    using OperandBase = Variant<
-        const Value*,
-        VirtualRegister,
-        Value,
-        std::size_t>;
-
-
-    class Operand : public OperandBase
+    struct Operand
     {
     public:
       enum class Type
       {
-        MEMORY = 0,
-        REGISTER = 1,
-        IMMEDIATE = 2,
-        OFFSET = 3,
-        UNUSED = 4,
+        IR_REF = 0,
+        STACK_REF = 1,
+        JUMP_OFFSET = 2,
+        LITERAL_BOOLEAN = 3,
+        LITERAL_FLOAT = 4,
+        LITERAL_OBJECT = 5,
+        LITERAL_NIL = 6,
+        UNUSED = 7,
       };
 
-      using OperandBase::Variant;
+      Operand();
+      Operand(const Type type, const std::size_t value);
+      Operand(const Type type);
+      explicit Operand(const double value);
+      explicit Operand(const bool value);
+      explicit Operand(const ObjectPtr value);
 
-      explicit Operand(const ValueType value_type);
+      Type type() const { return type_; }
+      bool is_literal() const;
 
-      Type op_type() const { return static_cast<Type>(index()); }
-      ValueType value_type() const;
+    private:
+      template <typename T>
+      friend T unsafe_get(const Operand& operand);
+
+      template <typename T>
+      friend T get(const Operand& operand);
+
+      friend bool operator==(
+          const Operand& first, const Operand& second);
+
+      Type type_;
+      std::aligned_storage_t<8, 8> storage_;
     };
 
 
-    struct VirtualRegisterHasher
+    class BadOperandAccess : public std::exception
     {
-      std::size_t operator() (const VirtualRegister& value) const;
+    public:
+      explicit BadOperandAccess(std::string what)
+          : std::exception(), what_(std::move(what))
+      {}
+      const char* what() const noexcept override { return what_.c_str(); }
 
-      std::hash<const Value*> pointer_hasher;
+    private:
+      std::string what_;
     };
 
 
-    struct VirtualRegisterCompare
-    {
-      bool operator() (
-          const VirtualRegister& first, const VirtualRegister& second) const;
-    };
+    template <typename T>
+    T unsafe_get(const Operand& operand);
+
+
+    template <typename T>
+    T get(const Operand& operand);
 
 
     template <std::size_t N>
@@ -126,14 +119,18 @@ namespace loxx
     {
     public:
       template <typename... Args>
-      explicit SSAInstruction(const Operator op, const Args&... operands);
+      explicit SSAInstruction(
+          const Operator op, const ValueType type, const Args&... operands);
 
       Operator op() const { return op_; }
+      ValueType type() const { return type_; }
       const std::array<Operand, N>& operands() const { return operands_; }
+      const Operand& operand(const std::size_t i) const { return operands_[i]; }
       void set_operand(const std::size_t i, const Operand& value)
       { operands_[i] = value; }
 
     private:
+      ValueType type_;
       Operator op_;
       std::array<Operand, N> operands_;
     };
@@ -143,15 +140,50 @@ namespace loxx
     using SSABuffer = std::vector<SSAInstruction<N>>;
 
 
-    bool operator==(const VirtualRegister& first, const VirtualRegister& second);
-
-
     template <std::size_t N>
     template <typename... Args>
     SSAInstruction<N>::SSAInstruction(
-        const Operator op, const Args&... operands)
-        : op_(op), operands_{operands...}
+        const Operator op, const ValueType type, const Args&... operands)
+        : type_(type), op_(op), operands_{operands...}
     {
+    }
+
+
+    bool operator==(const Operand& first, const Operand& second);
+
+
+    template <typename Os>
+    Os& operator<<(Os& os, const Operand::Type type)
+    {
+      switch (type)
+      {
+      case Operand::Type::IR_REF:
+        os << "IR";
+        break;
+      case Operand::Type::STACK_REF:
+        os << "STACK";
+        break;
+      case Operand::Type::JUMP_OFFSET:
+        os << "JMP";
+        break;
+      case Operand::Type::LITERAL_BOOLEAN:
+        os << "BOOL";
+        break;
+      case Operand::Type::LITERAL_FLOAT:
+        os << "FLOAT";
+        break;
+      case Operand::Type::LITERAL_OBJECT:
+        os << "OBJ";
+        break;
+      case Operand::Type::LITERAL_NIL:
+        os << "NIL";
+        break;
+      case Operand::Type::UNUSED:
+        os << "---";
+        break;
+      }
+
+      return os;
     }
 
 
@@ -174,6 +206,12 @@ namespace loxx
       case Operator::LESS:
         os << "LESS";
         break;
+      case Operator::LITERAL:
+        os << "LITERAL";
+        break;
+      case Operator::LOAD:
+        os << "LOAD";
+        break;
       case Operator::LOOP:
         os << "LOOP";
         break;
@@ -195,6 +233,9 @@ namespace loxx
       case Operator::RETURN:
         os << "RETURN";
         break;
+      case Operator::STORE:
+        os << "STORE";
+        break;
       case Operator::SUBTRACT:
         os << "SUBTRACT";
         break;
@@ -205,30 +246,27 @@ namespace loxx
 
 
     template <typename Os>
-    Os& operator<<(Os& os, const VirtualRegister& reg)
-    {
-      os << reg.type << reg.index;
-      return os;
-    }
-
-
-    template <typename Os>
     Os& operator<<(Os& os, const Operand& operand)
     {
 
-      if (holds_alternative<VirtualRegister>(operand)) {
-        os << unsafe_get<VirtualRegister>(operand);
-      }
-      else if (holds_alternative<const Value*>(operand)) {
-        os << "[ " << operand.value_type() << '@'
-           << unsafe_get<const Value*>(operand) << " ]";
-      }
-      else if (holds_alternative<Value>(operand)) {
-        os << '\'' <<  unsafe_get<Value>(operand) << '\'';
-      }
-      else if (holds_alternative<std::size_t>(operand)) {
+      os << std::setw(5) << std::setfill('.') << std::left;
+      os << operand.type() << "[ ";
+      if (operand.type() == Operand::Type::IR_REF or
+          operand.type() == Operand::Type::STACK_REF or
+          operand.type() == Operand::Type::JUMP_OFFSET) {
+        os << std::setw(4) << std::setfill('0') << std::right;
         os << unsafe_get<std::size_t>(operand);
       }
+      else if (operand.type() == Operand::Type::LITERAL_FLOAT) {
+        os << '\'' <<  unsafe_get<double>(operand) << '\'';
+      }
+      else if (operand.type() == Operand::Type::LITERAL_BOOLEAN) {
+        os << '\'' <<  unsafe_get<bool>(operand) << '\'';
+      }
+      else if (operand.type() == Operand::Type::LITERAL_OBJECT) {
+        os << '\'' <<  unsafe_get<ObjectPtr>(operand) << '\'';
+      }
+      os << " ]";
 
       return os;
     }

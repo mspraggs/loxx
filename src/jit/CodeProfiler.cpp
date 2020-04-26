@@ -34,7 +34,8 @@ namespace loxx
 {
   namespace jit
   {
-    void CodeProfiler::handle_basic_block_head(const CodeObject::InsPtr ip)
+    void CodeProfiler::handle_basic_block_head(
+        const CodeObject::InsPtr ip, const RuntimeContext context)
     {
       if (is_recording_) {
         return;
@@ -48,7 +49,7 @@ namespace loxx
       count_elem.first->second += 1;
 
       if (count_elem.first->second >= block_count_threshold_) {
-        start_recording(ip);
+        start_recording(ip, context);
       }
     }
 
@@ -73,17 +74,19 @@ namespace loxx
         const auto first = vreg_stack_.pop();
 
         const auto result_type = [&] {
-          if (second.type == ValueType::FLOAT and
-              first.type == ValueType::FLOAT) {
+          const auto& op_first = trace_->ir_buffer[first];
+          const auto& op_second = trace_->ir_buffer[second];
+          if (op_second.type() == ValueType::FLOAT and
+              op_first.type() == ValueType::FLOAT) {
             return ValueType::FLOAT;
           }
           return ValueType::OBJECT;
         } ();
 
-        vreg_stack_.emplace(
-            VirtualRegisterGenerator::make_register(result_type));
-
-        emit_ir(Operator::ADD, vreg_stack_.top(), first, second);
+        vreg_stack_.emplace(emit_ir(
+            Operator::ADD, result_type,
+            Operand(Operand::Type::IR_REF, first),
+            Operand(Operand::Type::IR_REF, second)));
 
         break;
       }
@@ -91,8 +94,11 @@ namespace loxx
       case Instruction::CONDITIONAL_JUMP: {
         const auto offset = read_integer_at_pos<InstrArgUShort>(ip + 1);
         jump_targets_.push_back(std::make_pair(
-            ip + sizeof(InstrArgUShort) + 1 + offset, trace_->ir_buffer.size()));
-        emit_ir(Operator::CONDITIONAL_JUMP, 0ul, vreg_stack_.top());
+            ip + 1 + sizeof(InstrArgUShort) + offset, trace_->ir_buffer.size()));
+        vreg_stack_.emplace(emit_ir(
+            Operator::CONDITIONAL_JUMP, ValueType::UNKNOWN,
+            Operand(Operand::Type::JUMP_OFFSET, 0ul),
+            Operand(Operand::Type::IR_REF, vreg_stack_.top())));
         break;
       }
 
@@ -100,15 +106,18 @@ namespace loxx
         const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
         const auto& value = context.stack_frame.slot(idx);
 
-        const auto destination = VirtualRegisterGenerator::make_register(
-            static_cast<ValueType>(value.index()));
-        const auto& result = vreg_cache_.insert(&value, destination);
+        const auto pos = std::distance(context.stack.data(), &value);
+        const auto ref =
+            ref_cache_[pos] ? *ref_cache_[pos] : trace_->ir_buffer.size();
 
-        vreg_stack_.push(result.first->second);
+        vreg_stack_.push(ref);
 
-        if (result.second) {
+        if (not ref_cache_[pos]) {
           /// TODO: Store type information in a snapshot for use in guards
-          emit_ir(Operator::MOVE, vreg_stack_.top(), &value);
+          emit_ir(
+              Operator::LOAD, static_cast<ValueType>(value.index()),
+              Operand(Operand::Type::STACK_REF, pos));
+          ref_cache_[pos] = ref;
         }
         break;
       }
@@ -121,10 +130,11 @@ namespace loxx
           is_recording_ = false;
           return;
         }
-        vreg_stack_.emplace(
-            VirtualRegisterGenerator::make_register(ValueType::BOOLEAN));
 
-        emit_ir(Operator::LESS, vreg_stack_.top(), first, second);
+        emit_ir(
+            Operator::LESS, ValueType::BOOLEAN,
+            Operand(Operand::Type::IR_REF, first),
+            Operand(Operand::Type::IR_REF, second));
 
         break;
       }
@@ -132,13 +142,22 @@ namespace loxx
       case Instruction::LOAD_CONSTANT: {
         const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
         const auto& value = context.code.constants[idx];
+        const auto type = static_cast<ValueType>(value.index());
 
-        const auto destination = VirtualRegisterGenerator::make_register(
-            static_cast<ValueType>(value.index()));
+        const auto operand = [&] {
+          switch (type) {
+          case ValueType::FLOAT:
+            return Operand(unsafe_get<double>(value));
+          case ValueType::BOOLEAN:
+            return Operand(unsafe_get<bool>(value));
+          case ValueType::OBJECT:
+            return Operand(unsafe_get<ObjectPtr>(value));
+          case ValueType::UNKNOWN:
+            return Operand(Operand::Type::LITERAL_NIL);
+          }
+        } ();
 
-        vreg_stack_.push(destination);
-
-        emit_ir(Operator::MOVE, vreg_stack_.top(), value);
+        vreg_stack_.push(emit_ir(Operator::LITERAL, type, operand));
         break;
       }
 
@@ -149,10 +168,13 @@ namespace loxx
           return;
         }
 
-        emit_ir(Operator::LOOP_START);
+        // emit_ir(Operator::LOOP, ValueType::UNKNOWN, );
+        // peel_loop();
+        // emit_exit_assignments();
+        emit_ir(
+            Operator::LOOP, ValueType::UNKNOWN,
+            Operand(Operand::Type::JUMP_OFFSET, trace_->ir_buffer.size() + 1));
         patch_jumps();
-        peel_loop();
-        emit_exit_assignments();
 
         /// TODO: Remove this hack and update the stack when we leave the trace
         trace_->next_ip = ip + sizeof(InstrArgUShort) + 2;
@@ -168,10 +190,11 @@ namespace loxx
           is_recording_ = false;
           return;
         }
-        vreg_stack_.emplace(
-            VirtualRegisterGenerator::make_register(ValueType::FLOAT));
 
-        emit_ir(Operator::MULTIPLY, vreg_stack_.top(), first, second);
+        vreg_stack_.emplace(emit_ir(
+            Operator::MULTIPLY, ValueType::FLOAT,
+            Operand(Operand::Type::IR_REF, first),
+            Operand(Operand::Type::IR_REF, second)));
 
         break;
       }
@@ -184,13 +207,16 @@ namespace loxx
         const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
         const auto& value = context.stack_frame.slot(idx);
 
-        const auto destination = VirtualRegisterGenerator::make_register(
-            static_cast<ValueType>(value.index()));
-        const auto& result = vreg_cache_.insert(&value, destination);
+        const auto pos = std::distance(context.stack.data(), &value);
+        const auto ref =
+            ref_cache_[pos] ? *ref_cache_[pos] : trace_->ir_buffer.size();
 
-        /// TODO: Store type information in a snapshot for use in guards
-        emit_ir(Operator::MOVE, result.first->second, vreg_stack_.top());
-        exit_assignments_[&value] = result.first->second;
+        emit_ir(
+            Operator::STORE, static_cast<ValueType>(value.index()),
+            Operand(Operand::Type::STACK_REF, pos),
+            Operand(Operand::Type::IR_REF, vreg_stack_.top()));
+        exit_assignments_[pos] = ref;
+        ref_cache_[pos].reset();
         break;
       }
 
@@ -202,13 +228,15 @@ namespace loxx
     }
 
 
-    void CodeProfiler::start_recording(const CodeObject::InsPtr ip)
+    void CodeProfiler::start_recording(
+        const CodeObject::InsPtr ip, const RuntimeContext context)
     {
       block_counts_.erase(ip);
       trace_cache_->make_new_trace();
       trace_ = trace_cache_->active_trace();
       trace_->init_ip = ip;
-      VirtualRegisterGenerator::reset_reg_count();
+      trace_->stack_base = context.stack.data();
+      trace_->code_object = &context.code;
       is_recording_ = true;
     }
 
@@ -232,44 +260,47 @@ namespace loxx
     void CodeProfiler::peel_loop()
     {
       const auto prev_ssa_size = trace_->ir_buffer.size();
-      const auto loop_vreg_map = build_loop_vreg_map();
+      const auto loop_vreg_map = build_loop_ir_ref_map();
 
       for (std::size_t i = 0; i < prev_ssa_size; ++i) {
         const auto& instruction = trace_->ir_buffer[i];
         if (instruction.op() == Operator::LOOP_START) {
           continue;
         }
-        trace_->ir_buffer.emplace_back(instruction.op());
+        trace_->ir_buffer.emplace_back(instruction.op(), instruction.type());
         const auto& operands = instruction.operands();
 
         for (int j = 0; j < operands.size(); ++j) {
-          if (operands[j].index() == Operand::npos) {
+          if (operands[j].type() == Operand::Type::UNUSED) {
             break;
           }
 
-          if (holds_alternative<VirtualRegister>(operands[j])) {
-            const auto current_vreg = unsafe_get<VirtualRegister>(operands[j]);
+          if (operands[j].type() == Operand::Type::IR_REF) {
+            const auto current_vreg = unsafe_get<std::size_t>(operands[j]);
             const auto mapped_vreg = loop_vreg_map.get(current_vreg);
 
-            trace_->ir_buffer.back().set_operand(
-                j, mapped_vreg ? Operand(mapped_vreg->second) : operands[j]);
+            const auto new_op =
+                mapped_vreg ?
+                Operand(operands[j].type(), mapped_vreg->second) : operands[j];
+
+            trace_->ir_buffer.back().set_operand(j, new_op);
           }
-          else if (holds_alternative<const Value*>(operands[j])) {
-            const auto address = unsafe_get<const Value*>(operands[j]);
-            const auto vreg = vreg_cache_.get(address);
+          else if (operands[j].type() == Operand::Type::STACK_REF) {
+            const auto pos = unsafe_get<std::size_t>(operands[j]);
+            const auto ref = ref_cache_[pos];
 
             trace_->ir_buffer.back().set_operand(
-                j, vreg ? Operand(vreg->second) : operands[j]);
+                j, ref ? Operand(Operand::Type::IR_REF, *ref) : operands[j]);
           }
-          else if (holds_alternative<std::size_t>(operands[j])) {
+          else if (operands[j].type() == Operand::Type::JUMP_OFFSET) {
             const auto old_offset = unsafe_get<std::size_t>(operands[j]);
             const auto new_offset = old_offset + loop_vreg_map.size();
             const auto peeled_offset = new_offset + prev_ssa_size;
 
             trace_->ir_buffer.back().set_operand(
-                j, Operand(InPlace<std::size_t>(), new_offset));
+                j, Operand(Operand::Type::JUMP_OFFSET, new_offset));
             trace_->ir_buffer[i].set_operand(
-                j, Operand(InPlace<std::size_t>(), peeled_offset));
+                j, Operand(Operand::Type::JUMP_OFFSET, peeled_offset));
           }
           else {
             trace_->ir_buffer.back().set_operand(j, operands[j]);
@@ -282,13 +313,18 @@ namespace loxx
     }
 
 
-    VRegHashTable<VirtualRegister> CodeProfiler::build_loop_vreg_map() const
+    auto CodeProfiler::build_loop_ir_ref_map() const
+        -> HashTable<std::size_t, std::size_t>
     {
-      VRegHashTable<VirtualRegister> loop_vreg_map;
+      HashTable<std::size_t, std::size_t> loop_vreg_map;
 
-      for (const auto& elem : vreg_cache_) {
-        loop_vreg_map[elem.second] =
-            VirtualRegisterGenerator::make_register(elem.second.type);
+      for (std::size_t i = 0; i < ref_cache_.size(); ++i) {
+        const auto& elem = ref_cache_[i];
+        if (not elem) {
+          continue;
+        }
+        // loop_vreg_map[*elem] =
+        //     VirtualRegisterGenerator::make_register(elem.second.type);
       }
 
       return loop_vreg_map;
@@ -296,11 +332,11 @@ namespace loxx
 
 
     void CodeProfiler::emit_loop_moves(
-        const VRegHashTable<VirtualRegister>& loop_vreg_map)
+        const HashTable<std::size_t, std::size_t>& loop_vreg_map)
     {
-      for (const auto& elem : loop_vreg_map) {
-        emit_ir(Operator::MOVE, elem.first, elem.second);
-      }
+      // for (const auto& elem : loop_vreg_map) {
+      //   emit_ir(Operator::MOVE, elem.first, elem.second);
+      // }
     }
 
 
@@ -313,7 +349,9 @@ namespace loxx
           });
 
       const auto offset = std::distance(loop_head_pos, trace_->ir_buffer.end());
-      emit_ir(Operator::LOOP, Operand(InPlace<std::size_t>(), offset + 1));
+      emit_ir(
+          Operator::LOOP, ValueType::UNKNOWN,
+          Operand(Operand::Type::JUMP_OFFSET, offset + 1));
     }
 
 
@@ -326,10 +364,10 @@ namespace loxx
         const auto target_pos =
             target_elem ? target_elem->second : trace_->ir_buffer.size();
 
-        const auto pos = Operand(
-            InPlace<std::size_t>(), target_pos - instruction_pos);
+        const auto jump = Operand(
+            Operand::Type::JUMP_OFFSET, target_pos - instruction_pos);
 
-        trace_->ir_buffer[instruction_pos].set_operand(0, pos);
+        trace_->ir_buffer[instruction_pos].set_operand(0, jump);
       }
     }
 
@@ -337,15 +375,16 @@ namespace loxx
     void CodeProfiler::emit_exit_assignments()
     {
       for (const auto& assignment : exit_assignments_) {
-        emit_ir(Operator::MOVE, assignment.first, assignment.second);
+        // emit_ir(Operator::MOVE, assignment.first, assignment.second);
       }
     }
 
 
     bool CodeProfiler::virtual_registers_are_floats(
-        const VirtualRegister& first, const VirtualRegister& second) const
+        const std::size_t first, const std::size_t second) const
     {
-      return first.type == ValueType::FLOAT and second.type == ValueType::FLOAT;
+      return trace_->ir_buffer[first].type() == ValueType::FLOAT and
+          trace_->ir_buffer[second].type() == ValueType::FLOAT;
     }
   }
 }

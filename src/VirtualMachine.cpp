@@ -90,7 +90,9 @@ namespace loxx
           ip_ = trace->next_ip;
         }
         else {
-          profiler_->handle_basic_block_head(ip_);
+          profiler_->handle_basic_block_head(
+              ip_, RuntimeContext{
+                  stack_, *code_object_, call_stack_.top(), globals_});
         }
       }
 

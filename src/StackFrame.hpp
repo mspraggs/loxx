@@ -50,6 +50,9 @@ namespace loxx
     const Value& slot(const std::size_t i) const { return slots_[i]; }
     Value& slot(const std::size_t i) { return slots_[i]; }
 
+    const Value* slots_base() const { return slots_; }
+    Value* slots_base() { return slots_; }
+
     const ClosureObject* closure() const { return closure_; }
     ClosureObject* closure() { return closure_; }
 

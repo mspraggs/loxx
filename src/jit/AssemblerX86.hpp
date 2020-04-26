@@ -65,13 +65,17 @@ namespace loxx
 
       void emit_guard(const Value* location, const ValueType type);
 
-      void emit_add(const IRInstruction& instruction);
+      void emit_add(const std::size_t ref, const IRInstruction& instruction);
       void emit_compare(const IRInstruction& instruction);
       void emit_conditional_jump(
           const std::size_t pos, const IRInstruction& instruction);
       void emit_jump(const std::size_t pos, const IRInstruction& instruction);
-      void emit_move(const IRInstruction& instruction);
-      void emit_multiply(const IRInstruction& instruction);
+      void emit_literal(const std::size_t pos, const IRInstruction& instruction);
+      void emit_load(const std::size_t pos, const IRInstruction& instruction);
+      void emit_move(const std::size_t ref, const IRInstruction& instruction);
+      void emit_multiply(
+          const std::size_t ref, const IRInstruction& instruction);
+      void emit_store(const IRInstruction& instruction);
 
       void emit_return();
       void emit_push(const RegisterX86 src);
@@ -100,7 +104,7 @@ namespace loxx
           const RegisterX86 dst, const T value)
           -> typename std::enable_if_t<sizeof(T) < 8, void>;
       void emit_move_reg_imm(
-          const RegisterX86 dst, const Value& value);
+          const RegisterX86 dst, const Operand& value);
 
       void emit_compare_reg_reg(
           const RegisterX86 reg0, const RegisterX86 reg1);
@@ -130,7 +134,9 @@ namespace loxx
       AssemblyWrapper& assembly();
       const AssemblyWrapper& assembly() const;
 
+      Optional<RegisterX86> get_register(const std::size_t operand) const;
       Optional<RegisterX86> get_register(const Operand& operand) const;
+      const Value* get_stack_address(const Operand& operand) const;
 
       Trace* trace_;
       Optional<Condition> last_condition_;
