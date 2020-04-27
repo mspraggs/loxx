@@ -70,8 +70,8 @@ namespace loxx
       switch (instruction) {
 
       case Instruction::ADD: {
-        const auto second = vreg_stack_.pop();
-        const auto first = vreg_stack_.pop();
+        const auto second = stack_.pop();
+        const auto first = stack_.pop();
 
         const auto result_type = [&] {
           const auto& op_first = trace_->ir_buffer[first];
@@ -83,7 +83,7 @@ namespace loxx
           return ValueType::OBJECT;
         } ();
 
-        vreg_stack_.emplace(emit_ir(
+        stack_.emplace(emit_ir(
             Operator::ADD, result_type,
             Operand(Operand::Type::IR_REF, first),
             Operand(Operand::Type::IR_REF, second)));
@@ -95,10 +95,10 @@ namespace loxx
         const auto offset = read_integer_at_pos<InstrArgUShort>(ip + 1);
         jump_targets_.push_back(std::make_pair(
             ip + 1 + sizeof(InstrArgUShort) + offset, trace_->ir_buffer.size()));
-        vreg_stack_.emplace(emit_ir(
+        emit_ir(
             Operator::CONDITIONAL_JUMP, ValueType::UNKNOWN,
             Operand(Operand::Type::JUMP_OFFSET, 0ul),
-            Operand(Operand::Type::IR_REF, vreg_stack_.top())));
+            Operand(Operand::Type::IR_REF, stack_.top()));
         break;
       }
 
@@ -107,34 +107,34 @@ namespace loxx
         const auto& value = context.stack_frame.slot(idx);
 
         const auto pos = std::distance(context.stack.data(), &value);
-        const auto ref =
-            ref_cache_[pos] ? *ref_cache_[pos] : trace_->ir_buffer.size();
+        const auto& slot = stack_.get(pos);
+        const auto ref = slot ? *slot : trace_->ir_buffer.size();
 
-        vreg_stack_.push(ref);
+        stack_.push(ref);
 
-        if (not ref_cache_[pos]) {
+        if (not slot) {
           /// TODO: Store type information in a snapshot for use in guards
           emit_ir(
               Operator::LOAD, static_cast<ValueType>(value.index()),
               Operand(Operand::Type::STACK_REF, pos));
-          ref_cache_[pos] = ref;
+          stack_.set(pos, ref);
         }
         break;
       }
 
       case Instruction::LESS: {
-        const auto second = vreg_stack_.pop();
-        const auto first = vreg_stack_.pop();
+        const auto second = stack_.pop();
+        const auto first = stack_.pop();
 
         if (not virtual_registers_are_floats(first, second)) {
           is_recording_ = false;
           return;
         }
 
-        emit_ir(
+        stack_.push(emit_ir(
             Operator::LESS, ValueType::BOOLEAN,
             Operand(Operand::Type::IR_REF, first),
-            Operand(Operand::Type::IR_REF, second));
+            Operand(Operand::Type::IR_REF, second)));
 
         break;
       }
@@ -157,7 +157,7 @@ namespace loxx
           }
         } ();
 
-        vreg_stack_.push(emit_ir(Operator::LITERAL, type, operand));
+        stack_.push(emit_ir(Operator::LITERAL, type, operand));
         break;
       }
 
@@ -183,15 +183,15 @@ namespace loxx
       }
 
       case Instruction::MULTIPLY: {
-        const auto second = vreg_stack_.pop();
-        const auto first = vreg_stack_.pop();
+        const auto second = stack_.pop();
+        const auto first = stack_.pop();
 
         if (not virtual_registers_are_floats(first, second)) {
           is_recording_ = false;
           return;
         }
 
-        vreg_stack_.emplace(emit_ir(
+        stack_.emplace(emit_ir(
             Operator::MULTIPLY, ValueType::FLOAT,
             Operand(Operand::Type::IR_REF, first),
             Operand(Operand::Type::IR_REF, second)));
@@ -200,7 +200,7 @@ namespace loxx
       }
 
       case Instruction::POP:
-        vreg_stack_.pop();
+        stack_.pop();
         break;
 
       case Instruction::SET_LOCAL: {
@@ -208,15 +208,15 @@ namespace loxx
         const auto& value = context.stack_frame.slot(idx);
 
         const auto pos = std::distance(context.stack.data(), &value);
-        const auto ref =
-            ref_cache_[pos] ? *ref_cache_[pos] : trace_->ir_buffer.size();
+        const auto& slot = stack_.get(pos);
+        const auto ref = slot ? *slot : trace_->ir_buffer.size();
 
         emit_ir(
             Operator::STORE, static_cast<ValueType>(value.index()),
             Operand(Operand::Type::STACK_REF, pos),
-            Operand(Operand::Type::IR_REF, vreg_stack_.top()));
+            Operand(Operand::Type::IR_REF, stack_.top()));
         exit_assignments_[pos] = ref;
-        ref_cache_[pos].reset();
+        stack_.reset_slot(pos);
         break;
       }
 
@@ -232,6 +232,7 @@ namespace loxx
         const CodeObject::InsPtr ip, const RuntimeContext context)
     {
       block_counts_.erase(ip);
+      stack_.resize(context.stack.size());
       trace_cache_->make_new_trace();
       trace_ = trace_cache_->active_trace();
       trace_->init_ip = ip;
@@ -287,7 +288,7 @@ namespace loxx
           }
           else if (operands[j].type() == Operand::Type::STACK_REF) {
             const auto pos = unsafe_get<std::size_t>(operands[j]);
-            const auto ref = ref_cache_[pos];
+            const auto ref = stack_.get(pos);
 
             trace_->ir_buffer.back().set_operand(
                 j, ref ? Operand(Operand::Type::IR_REF, *ref) : operands[j]);
@@ -318,8 +319,8 @@ namespace loxx
     {
       HashTable<std::size_t, std::size_t> loop_vreg_map;
 
-      for (std::size_t i = 0; i < ref_cache_.size(); ++i) {
-        const auto& elem = ref_cache_[i];
+      for (std::size_t i = 0; i < stack_.size(); ++i) {
+        const auto& elem = stack_.get(i);
         if (not elem) {
           continue;
         }

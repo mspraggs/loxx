@@ -29,6 +29,7 @@
 #include "../Value.hpp"
 
 #include "AssemblyWrapper.hpp"
+#include "OptionalStack.hpp"
 #include "TraceCache.hpp"
 
 
@@ -89,8 +90,7 @@ namespace loxx
       CodeObject::InsPtrHashTable<std::size_t> block_counts_;
       HashTable<std::size_t, std::size_t> exit_assignments_;
       std::vector<std::pair<CodeObject::InsPtr, std::size_t>> jump_targets_;
-      Stack<std::size_t, max_stack_size> vreg_stack_;
-      std::array<Optional<std::size_t>, max_stack_size> ref_cache_;
+      OptionalStack<std::size_t, max_stack_size> stack_;
     };
 
 

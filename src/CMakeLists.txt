@@ -40,6 +40,7 @@ set(SRC
   jit/JITError.hpp
   jit/logging.hpp
   jit/Optimiser.hpp
+  jit/OptionalStack.hpp
   jit/Platform.hpp
   jit/PlatformX86.hpp
   jit/Register.hpp
