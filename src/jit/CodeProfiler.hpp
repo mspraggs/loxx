@@ -29,7 +29,7 @@
 #include "../Value.hpp"
 
 #include "AssemblyWrapper.hpp"
-#include "OptionalStack.hpp"
+#include "TaggedStack.hpp"
 #include "TraceCache.hpp"
 
 
@@ -42,11 +42,18 @@ namespace loxx
   {
     class CodeProfiler
     {
+      enum class Tag
+      {
+        EMPTY = 0,
+        CACHED = 1,
+        WRITTEN = 2,
+      };
     public:
       CodeProfiler(
           TraceCache& trace_cache, const std::size_t block_count_threshold)
           : is_recording_(false), block_count_threshold_(block_count_threshold),
-            trace_(nullptr), trace_cache_(&trace_cache)
+            trace_(nullptr), trace_cache_(&trace_cache),
+            stack_({Tag::CACHED})
       {
       }
 
@@ -90,7 +97,7 @@ namespace loxx
       CodeObject::InsPtrHashTable<std::size_t> block_counts_;
       HashTable<std::size_t, std::size_t> exit_assignments_;
       std::vector<std::pair<CodeObject::InsPtr, std::size_t>> jump_targets_;
-      OptionalStack<std::size_t, max_stack_size> stack_;
+      TaggedStack<std::size_t, Tag, max_stack_size> stack_;
     };
 
 

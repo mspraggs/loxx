@@ -110,12 +110,12 @@ namespace loxx
         const auto& value = context.stack_frame.slot(idx);
 
         const auto pos = std::distance(context.stack.data(), &value);
-        const auto& slot = stack_.get(pos);
-        const auto ref = slot ? *slot : trace_->ir_buffer.size();
+        const auto is_cached = stack_.has_tag(pos, Tag::CACHED);
+        const auto ref = is_cached ? stack_.get(pos) : trace_->ir_buffer.size();
 
         stack_.push(ref);
 
-        if (not slot) {
+        if (not is_cached) {
           /// TODO: Store type information in a snapshot for use in guards
           emit_ir(
               Operator::LOAD, static_cast<ValueType>(value.index()),
@@ -211,15 +211,14 @@ namespace loxx
         const auto& value = context.stack_frame.slot(idx);
 
         const auto pos = std::distance(context.stack.data(), &value);
-        const auto& slot = stack_.get(pos);
-        const auto ref = slot ? *slot : trace_->ir_buffer.size();
+        const auto is_cached = stack_.has_tag(pos, Tag::CACHED);
+        const auto ref = is_cached ? stack_.get(pos) : trace_->ir_buffer.size();
 
         emit_ir(
             Operator::STORE, static_cast<ValueType>(value.index()),
             Operand(Operand::Type::STACK_REF, pos),
             Operand(Operand::Type::IR_REF, stack_.top()));
-        exit_assignments_[pos] = ref;
-        stack_.reset_slot(pos);
+        stack_.add_tag(pos, Tag::WRITTEN);
         break;
       }
 
@@ -291,10 +290,11 @@ namespace loxx
           }
           else if (operands[j].type() == Operand::Type::STACK_REF) {
             const auto pos = unsafe_get<std::size_t>(operands[j]);
+            const auto is_cached = stack_.has_tag(pos, Tag::CACHED);
             const auto ref = stack_.get(pos);
 
             trace_->ir_buffer.back().set_operand(
-                j, ref ? Operand(Operand::Type::IR_REF, *ref) : operands[j]);
+                j, is_cached ? Operand(Operand::Type::IR_REF, ref) : operands[j]);
           }
           else if (operands[j].type() == Operand::Type::JUMP_OFFSET) {
             const auto old_offset = unsafe_get<std::size_t>(operands[j]);

@@ -40,13 +40,13 @@ set(SRC
   jit/JITError.hpp
   jit/logging.hpp
   jit/Optimiser.hpp
-  jit/OptionalStack.hpp
   jit/Platform.hpp
   jit/PlatformX86.hpp
   jit/Register.hpp
   jit/RegisterAllocator.hpp
   jit/SSAInstruction.hpp
   jit/Snapshot.hpp
+  jit/TaggedStack.hpp
   jit/TraceCache.hpp
 
   AstPrinter.cpp
