@@ -48,7 +48,7 @@ namespace loxx
       SSABuffer<3> ir_buffer;
       CodeObject::InsPtrHashTable<std::size_t> ir_map;
       std::vector<CodeObject::InsPtr> recorded_instructions;
-      HashTable<std::size_t, Snapshot> snaps;
+      std::vector<Snapshot> snaps;
       AssemblyWrapper assembly;
       AllocationMap<Register> allocation_map;
       Trace* chained_trace;

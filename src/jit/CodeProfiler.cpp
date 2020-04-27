@@ -384,6 +384,28 @@ namespace loxx
     }
 
 
+    std::size_t CodeProfiler::create_snapshot(const CodeObject::InsPtr ip) const
+    {
+      const auto exit_num = trace_->snaps.size();
+      HashTable<std::size_t, std::size_t> stack_ir_map;
+
+      for (std::size_t i = 0; i < stack_.size(); ++i) {
+        if (stack_.has_tag(i, Tag::WRITTEN)) {
+          stack_ir_map[i] = stack_.get(i);
+        }
+      }
+
+      trace_->snaps.emplace_back(
+          Snapshot{
+            .next_ip = ip,
+            .stack_ir_map = stack_ir_map,
+          }
+      );
+
+      return exit_num;
+    }
+
+
     bool CodeProfiler::virtual_registers_are_floats(
         const std::size_t first, const std::size_t second) const
     {

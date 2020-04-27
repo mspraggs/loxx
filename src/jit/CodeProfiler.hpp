@@ -79,6 +79,8 @@ namespace loxx
       void patch_jumps();
       void emit_exit_assignments();
 
+      std::size_t create_snapshot(const CodeObject::InsPtr ip) const;
+
       bool virtual_registers_are_floats(
           const std::size_t first, const std::size_t second) const;
 
