@@ -56,7 +56,9 @@ namespace loxx
 
     void CodeProfiler::skip_current_block()
     {
-      ignored_blocks_.insert(trace_cache_->active_trace()->init_ip);
+      if (trace_) {
+        ignored_blocks_.insert(trace_->init_ip);
+      }
     }
 
 
