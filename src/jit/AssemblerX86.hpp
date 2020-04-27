@@ -72,7 +72,6 @@ namespace loxx
       void emit_jump(const std::size_t pos, const IRInstruction& instruction);
       void emit_literal(const std::size_t pos, const IRInstruction& instruction);
       void emit_load(const std::size_t pos, const IRInstruction& instruction);
-      void emit_move(const std::size_t ref, const IRInstruction& instruction);
       void emit_multiply(
           const std::size_t ref, const IRInstruction& instruction);
       void emit_store(const IRInstruction& instruction);
