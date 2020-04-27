@@ -95,8 +95,9 @@ namespace loxx
         const auto offset = read_integer_at_pos<InstrArgUShort>(ip + 1);
         jump_targets_.push_back(std::make_pair(
             ip + 1 + sizeof(InstrArgUShort) + offset, trace_->ir_buffer.size()));
+        /// TODO: Insert snapshot here
         emit_ir(
-            Operator::CONDITIONAL_JUMP, ValueType::UNKNOWN,
+            Operator::CHECK_CONDITION, ValueType::UNKNOWN,
             Operand(Operand::Type::JUMP_OFFSET, 0ul),
             Operand(Operand::Type::IR_REF, stack_.top()));
         break;

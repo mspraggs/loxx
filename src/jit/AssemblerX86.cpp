@@ -177,7 +177,7 @@ namespace loxx
           emit_add(pos, instruction);
           break;
 
-        case Operator::CONDITIONAL_JUMP:
+        case Operator::CHECK_CONDITION:
           emit_conditional_jump(pos, instruction);
           break;
 

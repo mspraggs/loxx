@@ -35,7 +35,7 @@ namespace loxx
     enum class Operator
     {
       ADD,
-      CONDITIONAL_JUMP,
+      CHECK_CONDITION,
       DIVIDE,
       JUMP,
       LESS,
@@ -194,8 +194,8 @@ namespace loxx
       case Operator::ADD:
         os << "ADD";
         break;
-      case Operator::CONDITIONAL_JUMP:
-        os << "CONDITIONAL_JUMP";
+      case Operator::CHECK_CONDITION:
+        os << "CHECK_CONDITION";
         break;
       case Operator::DIVIDE:
         os << "DIVIDE";
