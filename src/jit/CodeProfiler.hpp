@@ -100,6 +100,7 @@ namespace loxx
       HashTable<std::size_t, std::size_t> exit_assignments_;
       std::vector<std::pair<CodeObject::InsPtr, std::size_t>> jump_targets_;
       TaggedStack<std::size_t, Tag, max_stack_size> stack_;
+      const Stack<Value, max_stack_size>* vm_stack_ptr_;
     };
 
 

@@ -69,6 +69,12 @@ namespace loxx
       trace_->recorded_instructions.push_back(ip);
       const auto instruction = static_cast<Instruction>(*ip);
 
+#ifndef NDEBUG
+      if (stack_.size() != vm_stack_ptr_->size()) {
+        throw JITError("stack size mismatch");
+      }
+#endif
+
       switch (instruction) {
 
       case Instruction::ADD: {
@@ -234,6 +240,7 @@ namespace loxx
         const CodeObject::InsPtr ip, const RuntimeContext context)
     {
       block_counts_.erase(ip);
+      vm_stack_ptr_ = &context.stack;
       stack_.resize(context.stack.size());
       trace_cache_->make_new_trace();
       trace_ = trace_cache_->active_trace();
