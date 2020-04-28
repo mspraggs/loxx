@@ -25,7 +25,7 @@
 #include <sstream>
 
 #include "RegisterAllocator.hpp"
-#include "SSAInstruction.hpp"
+#include "IRInstruction.hpp"
 
 
 namespace loxx
@@ -33,11 +33,11 @@ namespace loxx
   namespace jit
   {
     template <std::size_t N>
-    void print_ssa_instruction(const SSAInstruction<N>& instruction);
+    void print_ssa_instruction(const IRInstruction<N>& instruction);
 
     template <std::size_t N>
     void print_ssa_instructions(
-        const std::vector<SSAInstruction<N>>& instructions);
+        const std::vector<IRInstruction<N>>& instructions);
 
     void print_live_ranges(
         const std::vector<std::pair<std::size_t, Range>>& live_ranges);
@@ -45,7 +45,7 @@ namespace loxx
     void print_allocation_map(const AllocationMap<Register>& allocation_map);
 
     template <std::size_t N>
-    void print_ssa_instruction(const SSAInstruction<N>& instruction)
+    void print_ssa_instruction(const IRInstruction<N>& instruction)
     {
       std::cout << std::setw(20) << std::setfill(' ') << instruction.op();
       std::cout << std::setw(10) << std::setfill(' ') << instruction.type();
@@ -69,7 +69,7 @@ namespace loxx
 
     template <std::size_t N>
     void print_ssa_instructions(
-        const std::vector<SSAInstruction<N>>& instructions)
+        const std::vector<IRInstruction<N>>& instructions)
     {
         for (std::size_t i = 0; i < instructions.size(); ++i) {
           std::cout << std::setw(4) << std::setfill('0') << std::right

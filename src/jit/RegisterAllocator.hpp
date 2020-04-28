@@ -25,7 +25,7 @@
 #include "../HashSet.hpp"
 
 #include "Register.hpp"
-#include "SSAInstruction.hpp"
+#include "IRInstruction.hpp"
 
 
 namespace loxx
@@ -39,7 +39,7 @@ namespace loxx
 
 
     std::vector<std::pair<std::size_t, Range>> compute_live_ranges(
-        const std::vector<SSAInstruction<2>>& ssa_ir);
+        const std::vector<IRInstruction<2>>& ssa_ir);
 
 
     template <typename Reg>

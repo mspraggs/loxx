@@ -355,7 +355,7 @@ namespace loxx
     {
       const auto loop_head_pos = std::find_if(
           trace_->ir_buffer.begin(), trace_->ir_buffer.end(),
-          [] (const SSAInstruction<3>& instruction) {
+          [] (const IRInstruction<3>& instruction) {
             return instruction.op() == Operator::LOOP_START;
           });
 

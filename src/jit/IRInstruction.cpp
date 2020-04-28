@@ -23,7 +23,7 @@
 
 #include "../utils.hpp"
 
-#include "SSAInstruction.hpp"
+#include "IRInstruction.hpp"
 
 namespace loxx
 {

@@ -20,14 +20,14 @@
 #ifndef LOXX_JIT_OPTIMISER_HPP
 #define LOXX_JIT_OPTIMISER_HPP
 
-#include "SSAInstruction.hpp"
+#include "IRInstruction.hpp"
 
 
 namespace loxx
 {
   namespace jit
   {
-    void optimise(SSABuffer<3>& ssa_ir);
+    void optimise(IRBuffer<3>& ssa_ir);
   }
 }
 

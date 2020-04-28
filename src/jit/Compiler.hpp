@@ -26,7 +26,7 @@
 
 #include "../CodeObject.hpp"
 
-#include "SSAInstruction.hpp"
+#include "IRInstruction.hpp"
 
 
 namespace loxx

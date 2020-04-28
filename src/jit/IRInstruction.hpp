@@ -17,8 +17,8 @@
  * Created by Matt Spraggs on 06/11/2019.
  */
 
-#ifndef LOXX_JIT_SSAINSTRUCTION_HPP
-#define LOXX_JIT_SSAINSTRUCTION_HPP
+#ifndef LOXX_JIT_IRINSTRUCTION_HPP
+#define LOXX_JIT_IRINSTRUCTION_HPP
 
 #include <array>
 #include <iomanip>
@@ -115,11 +115,11 @@ namespace loxx
 
 
     template <std::size_t N>
-    class SSAInstruction
+    class IRInstruction
     {
     public:
       template <typename... Args>
-      explicit SSAInstruction(
+      explicit IRInstruction(
           const Operator op, const ValueType type, const Args&... operands);
 
       Operator op() const { return op_; }
@@ -137,12 +137,12 @@ namespace loxx
 
 
     template <std::size_t N>
-    using SSABuffer = std::vector<SSAInstruction<N>>;
+    using IRBuffer = std::vector<IRInstruction<N>>;
 
 
     template <std::size_t N>
     template <typename... Args>
-    SSAInstruction<N>::SSAInstruction(
+    IRInstruction<N>::IRInstruction(
         const Operator op, const ValueType type, const Args&... operands)
         : type_(type), op_(op), operands_{operands...}
     {
@@ -273,4 +273,4 @@ namespace loxx
   }
 }
 
-#endif // LOXX_JIT_SSAINSTRUCTION_HPP
+#endif // LOXX_JIT_IRINSTRUCTION_HPP

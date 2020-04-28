@@ -32,7 +32,7 @@ namespace loxx
   namespace jit
   {
     std::vector<std::pair<std::size_t, Range>> compute_live_ranges(
-        const SSABuffer<3>& ssa_ir)
+        const IRBuffer<3>& ssa_ir)
     {
       HashTable<std::size_t, std::size_t> operand_start_map;
       std::vector<std::pair<std::size_t, Range>> live_ranges;

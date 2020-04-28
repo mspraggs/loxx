@@ -22,7 +22,7 @@
 
 #include "AssemblyWrapper.hpp"
 #include "RegisterAllocator.hpp"
-#include "SSAInstruction.hpp"
+#include "IRInstruction.hpp"
 
 
 namespace loxx

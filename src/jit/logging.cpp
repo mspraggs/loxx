@@ -24,7 +24,7 @@
 #include <sstream>
 
 #include "logging.hpp"
-#include "SSAInstruction.hpp"
+#include "IRInstruction.hpp"
 
 namespace loxx
 {

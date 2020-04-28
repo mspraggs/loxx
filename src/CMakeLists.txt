@@ -37,6 +37,7 @@ set(SRC
   jit/AssemblyWrapper.hpp
   jit/CodeProfiler.hpp
   jit/Compiler.hpp
+  jit/IRInstruction.hpp
   jit/JITError.hpp
   jit/logging.hpp
   jit/Optimiser.hpp
@@ -44,7 +45,6 @@ set(SRC
   jit/PlatformX86.hpp
   jit/Register.hpp
   jit/RegisterAllocator.hpp
-  jit/SSAInstruction.hpp
   jit/Snapshot.hpp
   jit/TaggedStack.hpp
   jit/TraceCache.hpp
@@ -67,11 +67,11 @@ set(SRC
   jit/AssemblyWrapper.cpp
   jit/CodeProfiler.cpp
   jit/Compiler.cpp
+  jit/IRInstruction.cpp
   jit/logging.cpp
   jit/Optimiser.cpp
   jit/PlatformX86.cpp
   jit/RegisterAllocator.cpp
-  jit/SSAInstruction.cpp
   jit/TraceCache.cpp
 )
 
