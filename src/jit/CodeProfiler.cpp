@@ -100,13 +100,10 @@ namespace loxx
       }
 
       case Instruction::CONDITIONAL_JUMP: {
-        const auto offset = read_integer_at_pos<InstrArgUShort>(ip + 1);
-        jump_targets_.push_back(std::make_pair(
-            ip + 1 + sizeof(InstrArgUShort) + offset, trace_->ir_buffer.size()));
-        /// TODO: Insert snapshot here
+        const auto exit_num = create_snapshot();
         emit_ir(
             Operator::CHECK_CONDITION, ValueType::UNKNOWN,
-            Operand(Operand::Type::JUMP_OFFSET, 0ul),
+            Operand(Operand::Type::EXIT_NUMBER, exit_num),
             Operand(Operand::Type::IR_REF, stack_.top()));
         break;
       }
@@ -183,10 +180,8 @@ namespace loxx
         emit_ir(
             Operator::LOOP, ValueType::UNKNOWN,
             Operand(Operand::Type::JUMP_OFFSET, trace_->ir_buffer.size() + 1));
-        patch_jumps();
+        patch_snaps(ip + sizeof(InstrArgUShort) + 2);
 
-        /// TODO: Remove this hack and update the stack when we leave the trace
-        trace_->next_ip = ip + sizeof(InstrArgUShort) + 2;
         trace_->state = Trace::State::IR_COMPLETE;
         break;
       }
@@ -366,19 +361,12 @@ namespace loxx
     }
 
 
-    void CodeProfiler::patch_jumps()
+    void CodeProfiler::patch_snaps(const CodeObject::InsPtr ip)
     {
-      for (const auto& jump_target : jump_targets_) {
-        const auto instruction_pos = jump_target.second;
-        const auto target_elem = trace_->ir_map.get(jump_target.first);
-
-        const auto target_pos =
-            target_elem ? target_elem->second : trace_->ir_buffer.size();
-
-        const auto jump = Operand(
-            Operand::Type::JUMP_OFFSET, target_pos - instruction_pos);
-
-        trace_->ir_buffer[instruction_pos].set_operand(0, jump);
+      for (auto& snap : trace_->snaps) {
+        if (snap.next_ip == trace_->code_object->bytecode.end()) {
+          snap.next_ip = ip;
+        }
       }
     }
 
@@ -388,6 +376,12 @@ namespace loxx
       for (const auto& assignment : exit_assignments_) {
         // emit_ir(Operator::MOVE, assignment.first, assignment.second);
       }
+    }
+
+
+    std::size_t CodeProfiler::create_snapshot() const
+    {
+      return create_snapshot(trace_->code_object->bytecode.end());
     }
 
 

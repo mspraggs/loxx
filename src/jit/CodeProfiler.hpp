@@ -76,9 +76,10 @@ namespace loxx
       void emit_loop_moves(
           const HashTable<std::size_t, std::size_t>& loop_vreg_map);
       void emit_loop();
-      void patch_jumps();
+      void patch_snaps(const CodeObject::InsPtr ip);
       void emit_exit_assignments();
 
+      std::size_t create_snapshot() const;
       std::size_t create_snapshot(const CodeObject::InsPtr ip) const;
 
       bool virtual_registers_are_floats(
@@ -98,7 +99,6 @@ namespace loxx
       HashSet<CodeObject::InsPtr, CodeObject::InsPtrHasher> ignored_blocks_;
       CodeObject::InsPtrHashTable<std::size_t> block_counts_;
       HashTable<std::size_t, std::size_t> exit_assignments_;
-      std::vector<std::pair<CodeObject::InsPtr, std::size_t>> jump_targets_;
       TaggedStack<std::size_t, Tag, max_stack_size> stack_;
       const Stack<Value, max_stack_size>* vm_stack_ptr_;
     };
