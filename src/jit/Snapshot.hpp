@@ -30,7 +30,7 @@ namespace loxx
   {
     struct Snapshot
     {
-      const CodeObject::InsPtr next_ip;
+      CodeObject::InsPtr next_ip;
       HashTable<std::size_t, std::size_t> stack_ir_map;
     };
   }
