@@ -58,14 +58,15 @@ namespace loxx
     public:
       enum class Type
       {
-        IR_REF = 0,
-        STACK_REF = 1,
-        JUMP_OFFSET = 2,
-        LITERAL_BOOLEAN = 3,
-        LITERAL_FLOAT = 4,
-        LITERAL_OBJECT = 5,
-        LITERAL_NIL = 6,
-        UNUSED = 7,
+        IR_REF,
+        STACK_REF,
+        JUMP_OFFSET,
+        EXIT_NUMBER,
+        LITERAL_BOOLEAN,
+        LITERAL_FLOAT,
+        LITERAL_OBJECT,
+        LITERAL_NIL,
+        UNUSED,
       };
 
       Operand();
@@ -166,6 +167,9 @@ namespace loxx
       case Operand::Type::JUMP_OFFSET:
         os << "JMP";
         break;
+      case Operand::Type::EXIT_NUMBER:
+        os << "EXIT";
+        break;
       case Operand::Type::LITERAL_BOOLEAN:
         os << "BOOL";
         break;
@@ -251,9 +255,7 @@ namespace loxx
 
       os << std::setw(5) << std::setfill('.') << std::left;
       os << operand.type() << "[ ";
-      if (operand.type() == Operand::Type::IR_REF or
-          operand.type() == Operand::Type::STACK_REF or
-          operand.type() == Operand::Type::JUMP_OFFSET) {
+      if (not operand.is_literal()) {
         os << std::setw(4) << std::setfill('0') << std::right;
         os << unsafe_get<std::size_t>(operand);
       }
