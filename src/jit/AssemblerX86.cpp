@@ -178,7 +178,7 @@ namespace loxx
           break;
 
         case Operator::CHECK_CONDITION:
-          emit_conditional_jump(pos, instruction);
+          emit_condition_guard(pos, instruction);
           break;
 
         case Operator::DIVIDE:
@@ -232,7 +232,7 @@ namespace loxx
 
       instruction_offsets_.push_back(trace_->assembly.size());
 
-      const auto exit_location = get_exit_function_pointer<Platform::X86_64>();
+      const auto exit_location = get_exit_stub_pointer<Platform::X86_64>();
       emit_move_reg_imm(general_scratch_, exit_location);
       emit_move_reg_imm(RegisterX86::RAX, false);
       emit_jump(general_scratch_);
@@ -277,7 +277,7 @@ namespace loxx
       const auto short_jump_pos = emit_conditional_jump(Condition::EQUAL, 0);
       const auto short_jump_start = trace_->assembly.size();
 
-      const auto exit_address = get_exit_function_pointer<Platform::X86_64>();
+      const auto exit_address = get_exit_stub_pointer<Platform::X86_64>();
       emit_move_reg_imm(RegisterX86::RAX, true);
 
       emit_move_reg_imm(general_scratch_, exit_address);
@@ -348,17 +348,26 @@ namespace loxx
     }
 
 
-    void Assembler<Platform::X86_64>::emit_conditional_jump(
+    void Assembler<Platform::X86_64>::emit_condition_guard(
         const std::size_t pos, const IRInstruction& instruction)
     {
       if (not last_condition_) {
         throw JITError("invalid assembler state");
       }
-      const auto& operands = instruction.operands();
-      const auto jump_target = pos + get<std::size_t>(operands[0]);
-      const auto offset_pos = emit_conditional_jump(
-          get_inverse_condition(*last_condition_), 0x100);
-      jump_offsets_.emplace_back(std::make_pair(offset_pos, jump_target));
+      const auto exit_num = get<std::size_t>(instruction.operand(0));
+      const auto offset_pos = emit_conditional_jump(*last_condition_, 0x100);
+      const auto mcode_size = trace_->assembly.size();
+
+      emit_move_reg_imm(general_scratch_, exit_num);
+      emit_push(general_scratch_);
+      emit_move_reg_imm(general_scratch_, trace_);
+      emit_push(general_scratch_);
+      emit_move_reg_imm(
+          general_scratch_, get_exit_stub_pointer<Platform::X86_64>());
+      emit_jump(general_scratch_);
+
+      const std::int32_t offset = trace_->assembly.size() - mcode_size;
+      trace_->assembly.write_integer(offset_pos, offset);
     }
 
 
