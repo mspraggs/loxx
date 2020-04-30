@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "../CodeObject.hpp"
 #include "../globals.hpp"
 
 #include "AssemblyWrapper.hpp"
@@ -32,10 +33,16 @@ namespace loxx
 {
   namespace jit
   {
+    struct Trace;
+
+
     enum class Platform
     {
       X86_64,
     };
+
+
+    using ExitHandler = CodeObject::InsPtr (*) (Trace*, const std::size_t);
 
 
     template <Platform P>
@@ -72,11 +79,15 @@ namespace loxx
 
 
     template <Platform P>
-    auto get_exit_function_pointer() -> void (*) ();
+    auto get_exit_stub_pointer() -> void (*) ();
 
 
     template <Platform P>
-    void LOXX_NOINLINE execute_assembly(const AssemblyWrapper& function);
+    auto get_exit_handler_pointer() -> ExitHandler;
+
+
+    template <Platform P>
+    CodeObject::InsPtr LOXX_NOINLINE execute_assembly(Trace* trace);
 
 
     constexpr Platform platform = Platform::X86_64;

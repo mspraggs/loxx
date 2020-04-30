@@ -17,9 +17,17 @@
  * Created by Matt Spraggs on 08/12/2019.
  */
 
+#include <iostream>
+
+#include "../CodeObject.hpp"
+
 #include "Platform.hpp"
 #include "PlatformX86.hpp"
+#include "TraceCache.hpp"
 
+
+extern "C" loxx::CodeObject::InsPtr asm_enter_x86_64(
+    const std::uint8_t* mcode, loxx::jit::ExitHandler exit_handler);
 
 extern "C" void asm_exit_x86_64();
 
@@ -171,27 +179,63 @@ namespace loxx
 
 
     template <>
-    auto get_exit_function_pointer<Platform::X86_64>() -> void (*) ()
+    auto get_exit_stub_pointer<Platform::X86_64>() -> void (*) ()
     {
       return &asm_exit_x86_64;
     }
 
 
-    template <>
-    void LOXX_NOINLINE execute_assembly<Platform::X86_64>(
-        const AssemblyWrapper& function)
+    CodeObject::InsPtr handle_exit_x86_64(
+        Trace* trace, const std::size_t exit_num)
     {
-      auto start = function.start();
-      bool guard_failed = false;
+      return trace->snaps[exit_num].next_ip;
+    }
 
+
+    template <>
+    auto get_exit_handler_pointer<Platform::X86_64>() -> ExitHandler
+    {
+      return handle_exit_x86_64;
+    }
+
+
+    CodeObject::InsPtr LOXX_NOINLINE asm_enter_x86_64_impl(
+        const std::uint8_t* mcode, loxx::jit::ExitHandler exit_handler)
+    {
       asm volatile(
-        "movq %1, %%r14\n"
-        "jmpq *%%r14\n"
+        ".globl asm_enter_x86_64\n"
+        "asm_enter_x86_64:\n"
+        "push %%rbp\n"
+        "push %%rsi\n"
+        "jmpq *%%rdi\n"
+        : :
+      );
+    }
+
+
+    void LOXX_NOINLINE asm_exit_x86_64_impl()
+    {
+      asm volatile(
         ".globl asm_exit_x86_64\n"
         "asm_exit_x86_64:\n"
-        "movb %0, %%al\n"
-        : "=r"(guard_failed) : "r"(start)
+        "pop %%rdi\n"
+        "pop %%rsi\n"
+        "pop %%r14\n"
+        "callq *%%r14\n"
+        "pop %%rbp\n"
+        "ret\n"
+        : :
       );
+    }
+
+
+    template <>
+    CodeObject::InsPtr LOXX_NOINLINE execute_assembly<Platform::X86_64>(
+        Trace* trace)
+    {
+      return asm_enter_x86_64(
+          trace->assembly.start(),
+          get_exit_handler_pointer<Platform::X86_64>());
     }
   }
 }

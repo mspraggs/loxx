@@ -86,8 +86,7 @@ namespace loxx
       if (code_object_->basic_block_boundary_flags[pos]) {
         const auto trace = trace_cache_->get_trace(ip_);
         if (trace) {
-          jit::execute_assembly<jit::Platform::X86_64>(trace->assembly);
-          ip_ = trace->next_ip;
+          ip_ = jit::execute_assembly<jit::Platform::X86_64>(trace);
         }
         else {
           profiler_->handle_basic_block_head(
