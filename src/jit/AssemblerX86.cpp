@@ -465,12 +465,18 @@ namespace loxx
 
     void Assembler<Platform::X86_64>::emit_push(const RegisterX86 src)
     {
+      if (reg_is_64_bit(src)) {
+        trace_->assembly.add_byte(0x41);
+      }
       trace_->assembly.add_byte(0x50 | get_reg_rm_bits(src));
     }
 
 
     void Assembler<Platform::X86_64>::emit_pop(const RegisterX86 dst)
     {
+      if (reg_is_64_bit(dst)) {
+        trace_->assembly.add_byte(0x41);
+      }
       trace_->assembly.add_byte(0x58 | get_reg_rm_bits(dst));
     }
 
