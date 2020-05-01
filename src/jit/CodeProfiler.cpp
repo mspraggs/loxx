@@ -116,8 +116,6 @@ namespace loxx
         const auto is_cached = stack_.has_tag(pos, Tag::CACHED);
         const auto ref = is_cached ? stack_.get(pos) : trace_->ir_buffer.size();
 
-        stack_.push(ref);
-
         if (not is_cached) {
           /// TODO: Store type information in a snapshot for use in guards
           emit_ir(
@@ -125,6 +123,8 @@ namespace loxx
               Operand(Operand::Type::STACK_REF, pos));
           stack_.set(pos, ref);
         }
+
+        stack_.push(ref);
         break;
       }
 
@@ -219,6 +219,7 @@ namespace loxx
             Operator::STORE, static_cast<ValueType>(value.index()),
             Operand(Operand::Type::STACK_REF, pos),
             Operand(Operand::Type::IR_REF, stack_.top()));
+        stack_.set(pos, stack_.top());
         stack_.add_tag(pos, Tag::WRITTEN);
         break;
       }
