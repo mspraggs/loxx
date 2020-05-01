@@ -32,7 +32,9 @@ namespace loxx
     {
     private:
     public:
-      explicit TaggedStack(std::initializer_list<Tag> default_tags);
+      explicit TaggedStack(
+          std::initializer_list<Tag> set_tags,
+          std::initializer_list<Tag> push_tags);
 
       void set(const std::size_t i, const T& value);
       const T& get(const std::size_t i) const { return stack_[i].value; }
@@ -58,18 +60,24 @@ namespace loxx
         std::size_t tags;
       };
 
-      std::size_t default_tags_;
+      std::size_t set_tags_;
+      std::size_t push_tags_;
       std::size_t top_;
       std::array<Elem, N> stack_;
     };
 
 
     template <typename T, typename Tag, std::size_t N>
-    TaggedStack<T, Tag, N>::TaggedStack(std::initializer_list<Tag> default_tags)
-        : default_tags_(0), top_(0)
+    TaggedStack<T, Tag, N>::TaggedStack(
+        std::initializer_list<Tag> set_tags,
+        std::initializer_list<Tag> push_tags)
+        : set_tags_(0), push_tags_(0), top_(0)
     {
-      for (const auto tag : default_tags) {
-        default_tags_ |= static_cast<std::size_t>(tag);
+      for (const auto tag : set_tags) {
+        set_tags_ |= static_cast<std::size_t>(tag);
+      }
+      for (const auto tag : push_tags) {
+        push_tags_ |= static_cast<std::size_t>(tag);
       }
     }
 
@@ -77,7 +85,7 @@ namespace loxx
     template <typename T, typename Tag, std::size_t N>
     void TaggedStack<T, Tag, N>::set(const std::size_t i, const T& value)
     {
-      stack_[i] = Elem{value, default_tags_};
+      stack_[i] = Elem{value, set_tags_};
 
       if (i >= top_) {
         top_ = i + 1;
@@ -89,14 +97,14 @@ namespace loxx
     template <typename... Args>
     void TaggedStack<T, Tag, N>::emplace(Args&&... values)
     {
-      stack_[top_++] = Elem{T(std::forward<Args>(values)...), default_tags_};
+      stack_[top_++] = Elem{T(std::forward<Args>(values)...), push_tags_};
     }
 
 
     template <typename T, typename Tag, std::size_t N>
     void TaggedStack<T, Tag, N>::push(const T& value)
     {
-      stack_[top_++] = Elem{value, default_tags_};
+      stack_[top_++] = Elem{value, push_tags_};
     }
 
 

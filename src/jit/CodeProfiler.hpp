@@ -53,7 +53,7 @@ namespace loxx
           TraceCache& trace_cache, const std::size_t block_count_threshold)
           : is_recording_(false), block_count_threshold_(block_count_threshold),
             trace_(nullptr), trace_cache_(&trace_cache),
-            stack_({Tag::CACHED})
+            stack_({Tag::CACHED}, {Tag::WRITTEN})
       {
       }
 
