@@ -20,8 +20,9 @@
 #ifndef LOXX_JIT_SNAPSHOT_HPP
 #define LOXX_JIT_SNAPSHOT_HPP
 
+#include <vector>
+
 #include "../CodeObject.hpp"
-#include "../HashTable.hpp"
 
 
 namespace loxx
@@ -31,7 +32,7 @@ namespace loxx
     struct Snapshot
     {
       CodeObject::InsPtr next_ip;
-      HashTable<std::size_t, std::size_t> stack_ir_map;
+      std::vector<std::pair<std::size_t, std::size_t>> stack_ir_map;
     };
   }
 }
