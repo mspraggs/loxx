@@ -117,10 +117,12 @@ namespace loxx
         const auto ref = is_cached ? stack_.get(pos) : trace_->ir_buffer.size();
 
         if (not is_cached) {
-          /// TODO: Store type information in a snapshot for use in guards
+          const auto exit_num = create_snapshot(ip + 1 + sizeof(InstrArgUByte));
+
           emit_ir(
               Operator::LOAD, static_cast<ValueType>(value.index()),
-              Operand(Operand::Type::STACK_REF, pos));
+              Operand(Operand::Type::STACK_REF, pos),
+              Operand(Operand::Type::EXIT_NUMBER, exit_num));
           stack_.set(pos, ref);
         }
 
