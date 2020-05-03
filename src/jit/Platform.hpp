@@ -43,8 +43,14 @@ namespace loxx
     };
 
 
+    template <Platform P>
+    struct ExitState;
+
+
+    template <Platform P>
     using ExitHandler = CodeObject::InsPtr (*) (
-        Trace*, const std::size_t, Stack<Value, max_stack_size>*);
+        Trace*, const std::size_t, Stack<Value, max_stack_size>*,
+        const ExitState<P>*);
 
 
     template <Platform P>

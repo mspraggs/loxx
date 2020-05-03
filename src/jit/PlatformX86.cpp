@@ -17,8 +17,6 @@
  * Created by Matt Spraggs on 08/12/2019.
  */
 
-#include <iostream>
-
 #include "../CodeObject.hpp"
 
 #include "Platform.hpp"
@@ -28,7 +26,7 @@
 
 extern "C" loxx::CodeObject::InsPtr asm_enter_x86_64(
     const loxx::jit::Trace* trace, const std::uint8_t* mcode,
-    loxx::jit::ExitHandler exit_handler,
+    loxx::jit::ExitHandler<loxx::jit::Platform::X86_64> exit_handler,
     loxx::Stack<loxx::Value, loxx::max_stack_size>* stack);
 
 extern "C" void asm_exit_x86_64();
@@ -37,6 +35,14 @@ namespace loxx
 {
   namespace jit
   {
+    template <>
+    struct ExitState<Platform::X86_64>
+    {
+      std::array<double, 16> xmm_reg_vals;
+      std::array<std::uint64_t, 16> gp_reg_vals;
+    };
+
+
     bool reg_is_64_bit(const RegisterX86 reg)
     {
       switch (reg) {
@@ -180,6 +186,14 @@ namespace loxx
     }
 
 
+    std::size_t get_reg_index(const RegisterX86 reg)
+    {
+      const auto base = static_cast<std::size_t>(
+          reg_supports_float(reg) ? RegisterX86::XMM0 : Register::RAX);
+      return static_cast<std::size_t>(reg) - base;
+    }
+
+
     template <>
     auto get_exit_stub_pointer<Platform::X86_64>() -> void (*) ()
     {
@@ -189,8 +203,36 @@ namespace loxx
 
     CodeObject::InsPtr handle_exit_x86_64(
         Trace* trace, const std::size_t exit_num,
-        Stack<Value, max_stack_size>* stack)
+        Stack<Value, max_stack_size>* stack,
+        const ExitState<Platform::X86_64>* exit_state)
     {
+      const auto& snapshot = trace->snaps[exit_num];
+
+      for (const auto& stack_mapping : snapshot.stack_ir_map) {
+        const auto slot = stack_mapping.first;
+        const auto ir_ref = stack_mapping.second;
+        const auto& ir_instruction = trace->ir_buffer[ir_ref];
+        const auto& allocation = trace->allocation_map.get(ir_ref);
+        const auto reg = get<RegisterX86>(allocation.value().second);
+        const auto reg_idx = get_reg_index(reg);
+
+        const auto value = [&] {
+          switch(ir_instruction.type()) {
+          case ValueType::FLOAT:
+            return Value(exit_state->xmm_reg_vals[reg_idx]);
+          case ValueType::BOOLEAN:
+            return Value(InPlace<bool>(), exit_state->gp_reg_vals[reg_idx]);
+          case ValueType::OBJECT:
+            return Value(
+                InPlace<ObjectPtr>(),
+                reinterpret_cast<ObjectPtr>(exit_state->gp_reg_vals[reg_idx]));
+          case ValueType::UNKNOWN:
+            return Value();
+          }
+        } ();
+
+        stack->set(slot, value);
+      }
       return trace->snaps[exit_num].next_ip;
     }
 
@@ -198,13 +240,14 @@ namespace loxx
     CodeObject::InsPtr LOXX_NOINLINE asm_enter_x86_64_impl(
         const Trace* trace,
         const std::uint8_t* mcode,
-        loxx::jit::ExitHandler exit_handler,
+        ExitHandler<Platform::X86_64> exit_handler,
         Stack<Value, max_stack_size>* stack)
     {
       asm volatile(
         ".globl asm_enter_x86_64\n"
         "asm_enter_x86_64:\n"
         "push %%rbp\n"
+        "movq %%rsp, %%rbp\n"
         "push %%rdi\n"   // trace
         "push %%rdx\n"   // exit_handler
         "push %%rcx\n"   // stack
@@ -219,11 +262,49 @@ namespace loxx
       asm volatile(
         ".globl asm_exit_x86_64\n"
         "asm_exit_x86_64:\n"
-        "pop %%rsi\n"    // exit_num
-        "pop %%rdx\n"    // stack
-        "pop %%r14\n"    // exit_handler
-        "pop %%rdi\n"    // trace
+        // Saver registers on the stack
+        "push %%r15\n"
+        "push %%r14\n"
+        "push %%r13\n"
+        "push %%r12\n"
+        "push %%r11\n"
+        "push %%r10\n"
+        "push %%r9\n"
+        "push %%r8\n"
+        "push %%rdi\n"
+        "push %%rsi\n"
+        "push %%rbp\n"
+        "push %%rsp\n"
+        "push %%rdx\n"
+        "push %%rcx\n"
+        "push %%rbx\n"
+        "push %%rax\n"
+        "subq $128, %%rsp\n"
+        "movsd %%xmm0,  -288(%%rbp)\n"
+        "movsd %%xmm1,  -280(%%rbp)\n"
+        "movsd %%xmm2,  -272(%%rbp)\n"
+        "movsd %%xmm3,  -264(%%rbp)\n"
+        "movsd %%xmm4,  -256(%%rbp)\n"
+        "movsd %%xmm5,  -248(%%rbp)\n"
+        "movsd %%xmm6,  -240(%%rbp)\n"
+        "movsd %%xmm7,  -232(%%rbp)\n"
+        "movsd %%xmm8,  -224(%%rbp)\n"
+        "movsd %%xmm9,  -216(%%rbp)\n"
+        "movsd %%xmm10, -208(%%rbp)\n"
+        "movsd %%xmm11, -200(%%rbp)\n"
+        "movsd %%xmm12, -192(%%rbp)\n"
+        "movsd %%xmm13, -184(%%rbp)\n"
+        "movsd %%xmm14, -176(%%rbp)\n"
+        "movsd %%xmm15, -168(%%rbp)\n"
+        // Set up call to exit handler
+        "mov -32(%%rbp),  %%rsi\n"    // exit_num
+        "mov -24(%%rbp),  %%rdx\n"    // stack
+        "mov -16(%%rbp),  %%r14\n"    // exit_handler
+        "mov -8(%%rbp),   %%rdi\n"    // trace
+        "lea -288(%%rbp), %%rcx\n"    // constructed exit_state
         "callq *%%r14\n"
+        // Fix up stack pointer - we've use 32 + 128 + 128 = 288 bytes
+        "addq $288, %%rsp\n"
         "pop %%rbp\n"
         "ret\n"
         : :
