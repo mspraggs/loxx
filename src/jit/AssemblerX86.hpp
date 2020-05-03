@@ -67,8 +67,7 @@ namespace loxx
 
       void emit_add(const std::size_t ref, const IRIns& instruction);
       void emit_compare(const IRIns& instruction);
-      void emit_condition_guard(
-          const std::size_t pos, const IRIns& instruction);
+      void emit_condition_guard(const IRIns& instruction);
       void emit_jump(const std::size_t pos, const IRIns& instruction);
       void emit_loop(const std::size_t pos, const IRIns& instruction);
       void emit_literal(const std::size_t pos, const IRIns& instruction);

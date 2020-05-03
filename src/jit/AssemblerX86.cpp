@@ -178,7 +178,7 @@ namespace loxx
           break;
 
         case Operator::CHECK_CONDITION:
-          emit_condition_guard(pos, instruction);
+          emit_condition_guard(instruction);
           break;
 
         case Operator::DIVIDE:
@@ -349,7 +349,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_condition_guard(
-        const std::size_t pos, const IRIns& instruction)
+        const IRIns& instruction)
     {
       if (not last_condition_) {
         throw JITError("invalid assembler state");
@@ -372,7 +372,6 @@ namespace loxx
     void Assembler<Platform::X86_64>::emit_jump(
         const std::size_t pos, const IRIns& instruction)
     {
-      const auto op = instruction.op();
       const auto& operands = instruction.operands();
       const auto offset = get<std::size_t>(operands[0]);
       const auto jump_target = pos + 1 + offset;
@@ -384,7 +383,6 @@ namespace loxx
     void Assembler<Platform::X86_64>::emit_loop(
         const std::size_t pos, const IRIns& instruction)
     {
-      const auto op = instruction.op();
       const auto& operands = instruction.operands();
       const auto offset = get<std::size_t>(operands[0]);
       const auto jump_target = pos + 1 - offset;
