@@ -238,14 +238,6 @@ namespace loxx
         }
       }
 
-      instruction_offsets_.push_back(trace_->assembly.size());
-
-      const auto exit_location = get_exit_stub_pointer<Platform::X86_64>();
-      emit_move_reg_imm(general_scratch_, exit_location);
-      emit_move_reg_imm(RegisterX86::RAX, false);
-      emit_jump(general_scratch_);
-      patch_jumps();
-
       trace_->assembly.lock();
       trace_->state = Trace::State::ASSEMBLY_COMPLETE;
     }
