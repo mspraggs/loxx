@@ -184,6 +184,11 @@ namespace loxx
         case Operator::DIVIDE:
           break;
 
+        case Operator::EQUAL:
+          emit_compare(instruction);
+          last_condition_ = Condition::EQUAL;
+          break;
+
         case Operator::JUMP:
           emit_jump(pos, instruction);
           break;

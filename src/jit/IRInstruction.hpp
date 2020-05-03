@@ -37,6 +37,7 @@ namespace loxx
       ADD,
       CHECK_CONDITION,
       DIVIDE,
+      EQUAL,
       JUMP,
       LESS,
       LITERAL,
@@ -203,6 +204,9 @@ namespace loxx
         break;
       case Operator::DIVIDE:
         os << "DIVIDE";
+        break;
+      case Operator::EQUAL:
+        os << "EQUAL";
         break;
       case Operator::JUMP:
         os << "JUMP";

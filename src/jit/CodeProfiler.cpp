@@ -108,6 +108,23 @@ namespace loxx
         break;
       }
 
+      case Instruction::EQUAL: {
+        const auto second = stack_.pop();
+        const auto first = stack_.pop();
+
+        if (not virtual_registers_are_floats(first, second)) {
+          is_recording_ = false;
+          return;
+        }
+
+        stack_.push(emit_ir(
+            Operator::EQUAL, ValueType::BOOLEAN,
+            Operand(Operand::Type::IR_REF, first),
+            Operand(Operand::Type::IR_REF, second)));
+
+        break;
+      }
+
       case Instruction::GET_LOCAL: {
         const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
         const auto& value = context.stack_frame.slot(idx);
