@@ -176,9 +176,6 @@ namespace loxx
           return;
         }
 
-        // emit_ir(Operator::LOOP, ValueType::UNKNOWN, );
-        // peel_loop();
-        // emit_exit_assignments();
         emit_ir(
             Operator::LOOP, ValueType::UNKNOWN,
             Operand(Operand::Type::JUMP_OFFSET, trace_->ir_buffer.size() + 1));
