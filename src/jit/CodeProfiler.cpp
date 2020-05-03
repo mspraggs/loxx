@@ -383,6 +383,7 @@ namespace loxx
       for (auto& snap : trace_->snaps) {
         if (snap.next_ip == trace_->code_object->bytecode.end()) {
           snap.next_ip = ip;
+          snap.stack_ir_map = create_compressed_stack();
         }
       }
     }
