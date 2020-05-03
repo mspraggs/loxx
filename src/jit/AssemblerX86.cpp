@@ -289,7 +289,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_add(
-        const std::size_t ref, const IRInstruction& instruction)
+        const std::size_t ref, const IRIns& instruction)
     {
       const auto reg0 = get_register(ref);
       const auto& operands = instruction.operands();
@@ -310,7 +310,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_compare(
-        const IRInstruction& instruction)
+        const IRIns& instruction)
     {
       const auto& operands = instruction.operands();
 
@@ -349,7 +349,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_condition_guard(
-        const std::size_t pos, const IRInstruction& instruction)
+        const std::size_t pos, const IRIns& instruction)
     {
       if (not last_condition_) {
         throw JITError("invalid assembler state");
@@ -370,7 +370,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_jump(
-        const std::size_t pos, const IRInstruction& instruction)
+        const std::size_t pos, const IRIns& instruction)
     {
       const auto op = instruction.op();
       const auto& operands = instruction.operands();
@@ -382,7 +382,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_loop(
-        const std::size_t pos, const IRInstruction& instruction)
+        const std::size_t pos, const IRIns& instruction)
     {
       const auto op = instruction.op();
       const auto& operands = instruction.operands();
@@ -398,7 +398,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_literal(
-        const std::size_t pos, const IRInstruction& instruction)
+        const std::size_t pos, const IRIns& instruction)
     {
       const auto dst_reg = get_register(pos);
 
@@ -424,7 +424,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_load(
-        const std::size_t pos, const IRInstruction& instruction)
+        const std::size_t pos, const IRIns& instruction)
     {
       const auto dst_reg = get_register(pos);
       const auto address = get_stack_address(instruction.operand(0));
@@ -443,7 +443,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_store(
-        const IRInstruction& instruction)
+        const IRIns& instruction)
     {
       const auto address = get_stack_address(instruction.operand(0));
       const auto src_reg = get_register(instruction.operand(1));
@@ -459,7 +459,7 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_multiply(
-        const std::size_t ref, const IRInstruction& instruction)
+        const std::size_t ref, const IRIns& instruction)
     {
       const auto reg0 = get_register(ref);
       const auto& operands = instruction.operands();

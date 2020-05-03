@@ -54,7 +54,7 @@ namespace loxx
     class Assembler<Platform::X86_64>
     {
     public:
-      using IRInstruction = IRInstruction<2>;
+      using IRIns = IRInstruction<2>;
 
       explicit Assembler(Trace& trace);
 
@@ -65,17 +65,17 @@ namespace loxx
 
       void emit_guard(const Value* location, const ValueType type);
 
-      void emit_add(const std::size_t ref, const IRInstruction& instruction);
-      void emit_compare(const IRInstruction& instruction);
+      void emit_add(const std::size_t ref, const IRIns& instruction);
+      void emit_compare(const IRIns& instruction);
       void emit_condition_guard(
-          const std::size_t pos, const IRInstruction& instruction);
-      void emit_jump(const std::size_t pos, const IRInstruction& instruction);
-      void emit_loop(const std::size_t pos, const IRInstruction& instruction);
-      void emit_literal(const std::size_t pos, const IRInstruction& instruction);
-      void emit_load(const std::size_t pos, const IRInstruction& instruction);
+          const std::size_t pos, const IRIns& instruction);
+      void emit_jump(const std::size_t pos, const IRIns& instruction);
+      void emit_loop(const std::size_t pos, const IRIns& instruction);
+      void emit_literal(const std::size_t pos, const IRIns& instruction);
+      void emit_load(const std::size_t pos, const IRIns& instruction);
       void emit_multiply(
-          const std::size_t ref, const IRInstruction& instruction);
-      void emit_store(const IRInstruction& instruction);
+          const std::size_t ref, const IRIns& instruction);
+      void emit_store(const IRIns& instruction);
 
       void emit_return();
       void emit_push(const RegisterX86 src);
