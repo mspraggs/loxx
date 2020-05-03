@@ -185,7 +185,6 @@ namespace loxx
           break;
 
         case Operator::JUMP:
-        case Operator::LOOP:
           emit_jump(pos, instruction);
           break;
 
@@ -200,6 +199,10 @@ namespace loxx
 
         case Operator::LOAD:
           emit_load(pos, instruction);
+          break;
+
+        case Operator::LOOP:
+          emit_loop(pos, instruction);
           break;
 
         case Operator::MULTIPLY:
@@ -377,10 +380,25 @@ namespace loxx
       const auto op = instruction.op();
       const auto& operands = instruction.operands();
       const auto offset = get<std::size_t>(operands[0]);
-      const auto jump_target =
-          (op == Operator::LOOP) ? pos + 1 - offset : pos + 1 + offset;
+      const auto jump_target = pos + 1 + offset;
       const auto offset_pos = emit_jump(0x100);
       jump_offsets_.emplace_back(std::make_pair(offset_pos, jump_target));
+    }
+
+
+    void Assembler<Platform::X86_64>::emit_loop(
+        const std::size_t pos, const IRInstruction& instruction)
+    {
+      const auto op = instruction.op();
+      const auto& operands = instruction.operands();
+      const auto offset = get<std::size_t>(operands[0]);
+      const auto jump_target = pos + 1 - offset;
+      const auto offset_pos = emit_jump(0x100);
+
+      const auto assembly_jump_target = instruction_offsets_[jump_target];
+      const std::int32_t assembly_offset =
+          assembly_jump_target - offset_pos - sizeof(std::int32_t);
+      trace_->assembly.write_integer(offset_pos, assembly_offset);
     }
 
 
