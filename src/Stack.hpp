@@ -39,7 +39,7 @@ namespace loxx
     { return stack_[top_ - 1 - depth]; }
     const T& top(const std::size_t depth = 0) const
     { return stack_[top_ - 1 - depth]; }
-    T& get(const std::size_t idx) { return stack_[idx]; }
+    void set(const std::size_t idx, const T& value) { stack_[idx] = value; }
     const T& get(const std::size_t idx) const { return stack_[idx]; }
 
     template <typename... Us>
