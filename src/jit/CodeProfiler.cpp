@@ -103,8 +103,8 @@ namespace loxx
         const auto exit_num = create_snapshot();
         emit_ir(
             Operator::CHECK_CONDITION, ValueType::UNKNOWN,
-            Operand(Operand::Type::EXIT_NUMBER, exit_num),
-            Operand(Operand::Type::IR_REF, stack_.top()));
+            Operand(Operand::Type::IR_REF, stack_.top()),
+            Operand(Operand::Type::EXIT_NUMBER, exit_num));
         break;
       }
 

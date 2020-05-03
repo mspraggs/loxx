@@ -357,7 +357,7 @@ namespace loxx
       if (not last_condition_) {
         throw JITError("invalid assembler state");
       }
-      const auto exit_num = get<std::size_t>(instruction.operand(0));
+      const auto exit_num = get<std::size_t>(instruction.operand(1));
       const auto offset_pos = emit_conditional_jump(*last_condition_, 0x100);
       const auto mcode_size = trace_->assembly.size();
 
