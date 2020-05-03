@@ -25,19 +25,19 @@ namespace loxx
   namespace jit
   {
     bool instructions_target_same_dest(
-        const IRInstruction<3>& first, const IRInstruction<3>& second)
+        const IRInstruction<2>& first, const IRInstruction<2>& second)
     {
       return first.operands()[0] == second.operands()[0];
     }
 
     bool instructions_contain_redundant_move(
-        const IRInstruction<3>& first, const IRInstruction<3>& second)
+        const IRInstruction<2>& first, const IRInstruction<2>& second)
     {
       return second.op() == Operator::MOVE and
           first.operands()[0] == second.operands()[1];
     }
 
-    void optimise(IRBuffer<3>& ssa_ir)
+    void optimise(IRBuffer<2>& ssa_ir)
     {
       for (std::size_t i = 1; i < ssa_ir.size(); ++i) {
         const auto& prev_instruction = ssa_ir[i - 1];
@@ -50,7 +50,7 @@ namespace loxx
 
             if (instructions_target_same_dest(
                 prior_instruction, current_instruction)) {
-              ssa_ir[i - j] = IRInstruction<3>(
+              ssa_ir[i - j] = IRInstruction<2>(
                   Operator::NOOP, ValueType::UNKNOWN);
             }
           }
@@ -59,7 +59,7 @@ namespace loxx
         if (instructions_contain_redundant_move(
             prev_instruction, current_instruction)) {
           ssa_ir[i - 1].set_operand(0, current_operands[0]);
-          ssa_ir[i] = IRInstruction<3>(
+          ssa_ir[i] = IRInstruction<2>(
               Operator::NOOP, ValueType::UNKNOWN);
         }
       }

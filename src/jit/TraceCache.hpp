@@ -45,7 +45,7 @@ namespace loxx
       State state;
       CodeObject::InsPtr init_ip;
       CodeObject::InsPtr next_ip;
-      IRBuffer<3> ir_buffer;
+      IRBuffer<2> ir_buffer;
       CodeObject::InsPtrHashTable<std::size_t> ir_map;
       std::vector<CodeObject::InsPtr> recorded_instructions;
       std::vector<Snapshot> snaps;

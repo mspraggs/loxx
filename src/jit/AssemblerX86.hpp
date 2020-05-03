@@ -54,7 +54,7 @@ namespace loxx
     class Assembler<Platform::X86_64>
     {
     public:
-      using IRInstruction = IRInstruction<3>;
+      using IRInstruction = IRInstruction<2>;
 
       explicit Assembler(Trace& trace);
 

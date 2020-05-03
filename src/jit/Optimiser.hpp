@@ -27,7 +27,7 @@ namespace loxx
 {
   namespace jit
   {
-    void optimise(IRBuffer<3>& ssa_ir);
+    void optimise(IRBuffer<2>& ssa_ir);
   }
 }
 
