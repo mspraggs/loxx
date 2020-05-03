@@ -83,9 +83,6 @@ namespace loxx
 
 
     template <Platform P>
-    auto get_exit_handler_pointer() -> ExitHandler;
-
-
     template <Platform P>
     CodeObject::InsPtr LOXX_NOINLINE execute_assembly(Trace* trace);
 

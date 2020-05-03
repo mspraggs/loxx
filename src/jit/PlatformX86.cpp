@@ -192,13 +192,6 @@ namespace loxx
     }
 
 
-    template <>
-    auto get_exit_handler_pointer<Platform::X86_64>() -> ExitHandler
-    {
-      return handle_exit_x86_64;
-    }
-
-
     CodeObject::InsPtr LOXX_NOINLINE asm_enter_x86_64_impl(
         const std::uint8_t* mcode, loxx::jit::ExitHandler exit_handler)
     {
@@ -233,9 +226,7 @@ namespace loxx
     CodeObject::InsPtr LOXX_NOINLINE execute_assembly<Platform::X86_64>(
         Trace* trace)
     {
-      return asm_enter_x86_64(
-          trace->assembly.start(),
-          get_exit_handler_pointer<Platform::X86_64>());
+      return asm_enter_x86_64(trace->assembly.start(), &handle_exit_x86_64);
     }
   }
 }
