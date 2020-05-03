@@ -230,8 +230,6 @@ namespace loxx
         const auto& value = stack_frame.slot(idx);
 
         const auto pos = std::distance(trace_->stack_base, &value);
-        const auto is_cached = stack_.has_tag(pos, Tag::CACHED);
-        const auto ref = is_cached ? stack_.get(pos) : trace_->ir_buffer.size();
 
         emit_ir(
             Operator::STORE, static_cast<ValueType>(value.index()),
