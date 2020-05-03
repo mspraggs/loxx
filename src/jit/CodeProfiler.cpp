@@ -35,7 +35,8 @@ namespace loxx
   namespace jit
   {
     void CodeProfiler::handle_basic_block_head(
-        const CodeObject::InsPtr ip, const RuntimeContext context)
+        const CodeObject::InsPtr ip, const Stack<Value, max_stack_size>& stack,
+        const CodeObject* code_object)
     {
       if (is_recording_) {
         return;
@@ -49,7 +50,7 @@ namespace loxx
       count_elem.first->second += 1;
 
       if (count_elem.first->second >= block_count_threshold_) {
-        start_recording(ip, context);
+        start_recording(ip, stack, code_object);
       }
     }
 
@@ -63,7 +64,8 @@ namespace loxx
 
 
     void CodeProfiler::record_instruction(
-        const CodeObject::InsPtr ip, const RuntimeContext context)
+        const CodeObject::InsPtr ip, const StackFrame& stack_frame,
+        const std::vector<Value>& constants)
     {
       trace_->ir_map[ip] = trace_->ir_buffer.size();
       trace_->recorded_instructions.push_back(ip);
@@ -127,9 +129,9 @@ namespace loxx
 
       case Instruction::GET_LOCAL: {
         const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
-        const auto& value = context.stack_frame.slot(idx);
+        const auto& value = stack_frame.slot(idx);
 
-        const auto pos = std::distance(context.stack.data(), &value);
+        const auto pos = std::distance(trace_->stack_base, &value);
         const auto is_cached = stack_.has_tag(pos, Tag::CACHED);
         const auto ref = is_cached ? stack_.get(pos) : trace_->ir_buffer.size();
 
@@ -166,7 +168,7 @@ namespace loxx
 
       case Instruction::LOAD_CONSTANT: {
         const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
-        const auto& value = context.code.constants[idx];
+        const auto& value = constants[idx];
         const auto type = static_cast<ValueType>(value.index());
 
         const auto operand = [&] {
@@ -225,9 +227,9 @@ namespace loxx
 
       case Instruction::SET_LOCAL: {
         const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
-        const auto& value = context.stack_frame.slot(idx);
+        const auto& value = stack_frame.slot(idx);
 
-        const auto pos = std::distance(context.stack.data(), &value);
+        const auto pos = std::distance(trace_->stack_base, &value);
         const auto is_cached = stack_.has_tag(pos, Tag::CACHED);
         const auto ref = is_cached ? stack_.get(pos) : trace_->ir_buffer.size();
 
@@ -249,16 +251,17 @@ namespace loxx
 
 
     void CodeProfiler::start_recording(
-        const CodeObject::InsPtr ip, const RuntimeContext context)
+        const CodeObject::InsPtr ip, const Stack<Value, max_stack_size>& stack,
+        const CodeObject* code_object)
     {
       block_counts_.erase(ip);
-      vm_stack_ptr_ = &context.stack;
-      stack_.resize(context.stack.size());
+      vm_stack_ptr_ = &stack;
+      stack_.resize(stack.size());
       trace_cache_->make_new_trace();
       trace_ = trace_cache_->active_trace();
       trace_->init_ip = ip;
-      trace_->stack_base = context.stack.data();
-      trace_->code_object = &context.code;
+      trace_->stack_base = stack.data();
+      trace_->code_object = code_object;
       is_recording_ = true;
     }
 

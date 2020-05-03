@@ -26,6 +26,7 @@
 #include "../CodeObject.hpp"
 #include "../Object.hpp"
 #include "../Stack.hpp"
+#include "../StackFrame.hpp"
 #include "../Value.hpp"
 
 #include "AssemblyWrapper.hpp"
@@ -58,18 +59,23 @@ namespace loxx
       }
 
       void handle_basic_block_head(
-          const CodeObject::InsPtr ip, const RuntimeContext context);
+          const CodeObject::InsPtr ip,
+          const Stack<Value, max_stack_size>& stack,
+          const CodeObject* code_object);
 
       void skip_current_block();
 
       void record_instruction(
-          const CodeObject::InsPtr ip, const RuntimeContext context);
+          const CodeObject::InsPtr ip, const StackFrame& stack_frame,
+          const std::vector<Value>& constants);
 
       bool is_recording() const { return is_recording_; }
 
     private:
       void start_recording(
-          const CodeObject::InsPtr ip, const RuntimeContext context);
+          const CodeObject::InsPtr ip,
+          const Stack<Value, max_stack_size>& stack,
+          const CodeObject* code_object);
       bool instruction_ends_current_block(const CodeObject::InsPtr ip) const;
       void patch_snaps(const CodeObject::InsPtr ip);
 

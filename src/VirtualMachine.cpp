@@ -89,16 +89,13 @@ namespace loxx
           ip_ = jit::execute_assembly<jit::Platform::X86_64>(trace);
         }
         else {
-          profiler_->handle_basic_block_head(
-              ip_, RuntimeContext{
-                  stack_, *code_object_, call_stack_.top(), globals_});
+          profiler_->handle_basic_block_head(ip_, stack_, code_object_);
         }
       }
 
       if (profiler_->is_recording()) {
         profiler_->record_instruction(
-            ip_, RuntimeContext{
-                stack_, *code_object_, call_stack_.top(), globals_});
+            ip_, call_stack_.top(), code_object_->constants);
 
         auto trace = trace_cache_->active_trace();
         if (trace->state == jit::Trace::State::IR_COMPLETE) {

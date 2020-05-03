@@ -40,15 +40,6 @@
 
 namespace loxx
 {
-  struct RuntimeContext
-  {
-    const Stack<Value, max_stack_size>& stack;
-    const CodeObject& code;
-    const StackFrame& stack_frame;
-    StringHashTable<Value>& globals;
-  };
-
-
   class VirtualMachine
   {
   public:
