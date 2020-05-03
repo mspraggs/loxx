@@ -25,6 +25,7 @@
 
 #include "../CodeObject.hpp"
 #include "../globals.hpp"
+#include "../Stack.hpp"
 
 #include "AssemblyWrapper.hpp"
 
@@ -42,7 +43,8 @@ namespace loxx
     };
 
 
-    using ExitHandler = CodeObject::InsPtr (*) (Trace*, const std::size_t);
+    using ExitHandler = CodeObject::InsPtr (*) (
+        Trace*, const std::size_t, Stack<Value, max_stack_size>*);
 
 
     template <Platform P>
@@ -83,8 +85,8 @@ namespace loxx
 
 
     template <Platform P>
-    template <Platform P>
-    CodeObject::InsPtr LOXX_NOINLINE execute_assembly(Trace* trace);
+    CodeObject::InsPtr LOXX_NOINLINE execute_assembly(
+        Trace* trace, Stack<Value, max_stack_size>* stack);
 
 
     constexpr Platform platform = Platform::X86_64;

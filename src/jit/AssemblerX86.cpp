@@ -360,8 +360,6 @@ namespace loxx
 
       emit_move_reg_imm(general_scratch_, exit_num);
       emit_push(general_scratch_);
-      emit_move_reg_imm(general_scratch_, trace_);
-      emit_push(general_scratch_);
       emit_move_reg_imm(
           general_scratch_, get_exit_stub_pointer<Platform::X86_64>());
       emit_jump(general_scratch_);

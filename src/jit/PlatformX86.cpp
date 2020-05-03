@@ -27,7 +27,9 @@
 
 
 extern "C" loxx::CodeObject::InsPtr asm_enter_x86_64(
-    const std::uint8_t* mcode, loxx::jit::ExitHandler exit_handler);
+    const loxx::jit::Trace* trace, const std::uint8_t* mcode,
+    loxx::jit::ExitHandler exit_handler,
+    loxx::Stack<loxx::Value, loxx::max_stack_size>* stack);
 
 extern "C" void asm_exit_x86_64();
 
@@ -186,21 +188,27 @@ namespace loxx
 
 
     CodeObject::InsPtr handle_exit_x86_64(
-        Trace* trace, const std::size_t exit_num)
+        Trace* trace, const std::size_t exit_num,
+        Stack<Value, max_stack_size>* stack)
     {
       return trace->snaps[exit_num].next_ip;
     }
 
 
     CodeObject::InsPtr LOXX_NOINLINE asm_enter_x86_64_impl(
-        const std::uint8_t* mcode, loxx::jit::ExitHandler exit_handler)
+        const Trace* trace,
+        const std::uint8_t* mcode,
+        loxx::jit::ExitHandler exit_handler,
+        Stack<Value, max_stack_size>* stack)
     {
       asm volatile(
         ".globl asm_enter_x86_64\n"
         "asm_enter_x86_64:\n"
         "push %%rbp\n"
-        "push %%rsi\n"
-        "jmpq *%%rdi\n"
+        "push %%rdi\n"   // trace
+        "push %%rdx\n"   // exit_handler
+        "push %%rcx\n"   // stack
+        "jmpq *%%rsi\n"  // mcode
         : :
       );
     }
@@ -211,9 +219,10 @@ namespace loxx
       asm volatile(
         ".globl asm_exit_x86_64\n"
         "asm_exit_x86_64:\n"
-        "pop %%rdi\n"
-        "pop %%rsi\n"
-        "pop %%r14\n"
+        "pop %%rsi\n"    // exit_num
+        "pop %%rdx\n"    // stack
+        "pop %%r14\n"    // exit_handler
+        "pop %%rdi\n"    // trace
         "callq *%%r14\n"
         "pop %%rbp\n"
         "ret\n"
@@ -224,9 +233,10 @@ namespace loxx
 
     template <>
     CodeObject::InsPtr LOXX_NOINLINE execute_assembly<Platform::X86_64>(
-        Trace* trace)
+        Trace* trace, Stack<Value, max_stack_size>* stack)
     {
-      return asm_enter_x86_64(trace->assembly.start(), &handle_exit_x86_64);
+      return asm_enter_x86_64(
+          trace, trace->assembly.start(), &handle_exit_x86_64, stack);
     }
   }
 }
