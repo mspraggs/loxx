@@ -252,6 +252,8 @@ namespace loxx
         "jmpq *%%rsi\n"  // mcode
         : :
       );
+
+      return {};
     }
 
 
