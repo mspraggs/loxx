@@ -81,6 +81,8 @@ namespace loxx
 
       std::size_t create_snapshot() const;
       std::size_t create_snapshot(const CodeObject::InsPtr ip) const;
+      auto create_compressed_stack() const
+          -> std::vector<std::pair<std::size_t, std::size_t>>;
 
       bool virtual_registers_are_floats(
           const std::size_t first, const std::size_t second) const;
