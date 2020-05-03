@@ -24,7 +24,7 @@
 #include "TraceCache.hpp"
 
 
-extern "C" loxx::CodeObject::InsPtr asm_enter_x86_64(
+extern "C" const std::uint8_t* asm_enter_x86_64(
     const loxx::jit::Trace* trace, const std::uint8_t* mcode,
     loxx::jit::ExitHandler<loxx::jit::Platform::X86_64> exit_handler,
     loxx::Stack<loxx::Value, loxx::max_stack_size>* stack);
@@ -238,10 +238,8 @@ namespace loxx
 
 
     CodeObject::InsPtr LOXX_NOINLINE asm_enter_x86_64_impl(
-        const Trace* trace,
-        const std::uint8_t* mcode,
-        ExitHandler<Platform::X86_64> exit_handler,
-        Stack<Value, max_stack_size>* stack)
+        const Trace*, const std::uint8_t*, ExitHandler<Platform::X86_64>,
+        Stack<Value, max_stack_size>*)
     {
       asm volatile(
         ".globl asm_enter_x86_64\n"
@@ -316,8 +314,10 @@ namespace loxx
     CodeObject::InsPtr LOXX_NOINLINE execute_assembly<Platform::X86_64>(
         Trace* trace, Stack<Value, max_stack_size>* stack)
     {
-      return asm_enter_x86_64(
+      const auto& bytecode = trace->code_object->bytecode;
+      const auto ip_ptr = asm_enter_x86_64(
           trace, trace->assembly.start(), &handle_exit_x86_64, stack);
+      return bytecode.begin() + std::distance(bytecode.data(), ip_ptr);
     }
   }
 }
