@@ -71,13 +71,7 @@ namespace loxx
       void start_recording(
           const CodeObject::InsPtr ip, const RuntimeContext context);
       bool instruction_ends_current_block(const CodeObject::InsPtr ip) const;
-      void peel_loop();
-      HashTable<std::size_t, std::size_t> build_loop_ir_ref_map() const;
-      void emit_loop_moves(
-          const HashTable<std::size_t, std::size_t>& loop_vreg_map);
-      void emit_loop();
       void patch_snaps(const CodeObject::InsPtr ip);
-      void emit_exit_assignments();
 
       std::size_t create_snapshot() const;
       std::size_t create_snapshot(const CodeObject::InsPtr ip) const;

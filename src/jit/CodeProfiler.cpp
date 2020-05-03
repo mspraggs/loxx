@@ -279,105 +279,6 @@ namespace loxx
     }
 
 
-    void CodeProfiler::peel_loop()
-    {
-      const auto prev_ssa_size = trace_->ir_buffer.size();
-      const auto loop_vreg_map = build_loop_ir_ref_map();
-
-      for (std::size_t i = 0; i < prev_ssa_size; ++i) {
-        const auto& instruction = trace_->ir_buffer[i];
-        if (instruction.op() == Operator::LOOP_START) {
-          continue;
-        }
-        trace_->ir_buffer.emplace_back(instruction.op(), instruction.type());
-        const auto& operands = instruction.operands();
-
-        for (int j = 0; j < operands.size(); ++j) {
-          if (operands[j].type() == Operand::Type::UNUSED) {
-            break;
-          }
-
-          if (operands[j].type() == Operand::Type::IR_REF) {
-            const auto current_vreg = unsafe_get<std::size_t>(operands[j]);
-            const auto mapped_vreg = loop_vreg_map.get(current_vreg);
-
-            const auto new_op =
-                mapped_vreg ?
-                Operand(operands[j].type(), mapped_vreg->second) : operands[j];
-
-            trace_->ir_buffer.back().set_operand(j, new_op);
-          }
-          else if (operands[j].type() == Operand::Type::STACK_REF) {
-            const auto pos = unsafe_get<std::size_t>(operands[j]);
-            const auto is_cached = stack_.has_tag(pos, Tag::CACHED);
-            const auto ref = stack_.get(pos);
-
-            trace_->ir_buffer.back().set_operand(
-                j, is_cached ? Operand(Operand::Type::IR_REF, ref) : operands[j]);
-          }
-          else if (operands[j].type() == Operand::Type::JUMP_OFFSET) {
-            const auto old_offset = unsafe_get<std::size_t>(operands[j]);
-            const auto new_offset = old_offset + loop_vreg_map.size();
-            const auto peeled_offset = new_offset + prev_ssa_size;
-
-            trace_->ir_buffer.back().set_operand(
-                j, Operand(Operand::Type::JUMP_OFFSET, new_offset));
-            trace_->ir_buffer[i].set_operand(
-                j, Operand(Operand::Type::JUMP_OFFSET, peeled_offset));
-          }
-          else {
-            trace_->ir_buffer.back().set_operand(j, operands[j]);
-          }
-        }
-      }
-
-      emit_loop_moves(loop_vreg_map);
-      emit_loop();
-    }
-
-
-    auto CodeProfiler::build_loop_ir_ref_map() const
-        -> HashTable<std::size_t, std::size_t>
-    {
-      HashTable<std::size_t, std::size_t> loop_vreg_map;
-
-      for (std::size_t i = 0; i < stack_.size(); ++i) {
-        const auto& elem = stack_.get(i);
-        if (not elem) {
-          continue;
-        }
-        // loop_vreg_map[*elem] =
-        //     VirtualRegisterGenerator::make_register(elem.second.type);
-      }
-
-      return loop_vreg_map;
-    }
-
-
-    void CodeProfiler::emit_loop_moves(
-        const HashTable<std::size_t, std::size_t>& loop_vreg_map)
-    {
-      // for (const auto& elem : loop_vreg_map) {
-      //   emit_ir(Operator::MOVE, elem.first, elem.second);
-      // }
-    }
-
-
-    void CodeProfiler::emit_loop()
-    {
-      const auto loop_head_pos = std::find_if(
-          trace_->ir_buffer.begin(), trace_->ir_buffer.end(),
-          [] (const IRInstruction<3>& instruction) {
-            return instruction.op() == Operator::LOOP_START;
-          });
-
-      const auto offset = std::distance(loop_head_pos, trace_->ir_buffer.end());
-      emit_ir(
-          Operator::LOOP, ValueType::UNKNOWN,
-          Operand(Operand::Type::JUMP_OFFSET, offset + 1));
-    }
-
-
     void CodeProfiler::patch_snaps(const CodeObject::InsPtr ip)
     {
       for (auto& snap : trace_->snaps) {
@@ -385,14 +286,6 @@ namespace loxx
           snap.next_ip = ip;
           snap.stack_ir_map = create_compressed_stack();
         }
-      }
-    }
-
-
-    void CodeProfiler::emit_exit_assignments()
-    {
-      for (const auto& assignment : exit_assignments_) {
-        // emit_ir(Operator::MOVE, assignment.first, assignment.second);
       }
     }
 
