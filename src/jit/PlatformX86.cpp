@@ -209,8 +209,11 @@ namespace loxx
       const auto& snapshot = trace->snaps[exit_num];
 
       for (const auto& stack_mapping : snapshot.stack_ir_map) {
+        if (not stack_mapping.second.has_tag(StackTag::WRITTEN)) {
+          continue;
+        }
         const auto slot = stack_mapping.first;
-        const auto ir_ref = stack_mapping.second;
+        const auto ir_ref = stack_mapping.second.value;
         const auto& ir_instruction = trace->ir_buffer[ir_ref];
         const auto& allocation = trace->allocation_map.get(ir_ref);
         const auto reg = get<RegisterX86>(allocation.value().second);

@@ -20,6 +20,7 @@
 #ifndef LOXX_JIT_TAGGEDSTACK_HPP
 #define LOXX_JIT_TAGGEDSTACK_HPP
 
+#include <algorithm>
 #include <array>
 
 
@@ -27,20 +28,36 @@ namespace loxx
 {
   namespace jit
   {
+    template <typename T, typename Tag>
+    struct TaggedElem
+    {
+      bool has_tag(const Tag tag) const
+      { return (tags & static_cast<std::uint8_t>(tag)) != 0; }
+      void add_tag(const Tag tag) { tags |= static_cast<std::uint8_t>(tag); }
+      void remove_tag(const Tag tag)
+      { tags &= ~static_cast<std::uint8_t>(tag); }
+
+      T value;
+      std::uint8_t tags;
+    };
+
+
     template <typename T, typename Tag, std::size_t N>
     class TaggedStack
     {
-    private:
     public:
-      explicit TaggedStack(
-          std::initializer_list<Tag> set_tags,
-          std::initializer_list<Tag> push_tags);
+      using Elem = TaggedElem<T, Tag>;
 
-      void set(const std::size_t i, const T& value);
+      TaggedStack();
+
+      void set(
+          const std::size_t i, const T& value,
+          std::initializer_list<Tag> tags = {});
       const T& get(const std::size_t i) const { return stack_[i].value; }
+      const Elem& operator[] (const std::size_t i) const { return stack_[i]; }
       template <typename... Args>
       void emplace(Args&&... values);
-      void push(const T& value);
+      void push(const T& value, std::initializer_list<Tag> tags = {});
       T pop();
       const T& top(const std::size_t depth = 0) const
       { return stack_[top_ - depth - 1].value; }
@@ -54,38 +71,28 @@ namespace loxx
       void remove_tag(const std::size_t i, const Tag tag);
 
     private:
-      struct Elem
-      {
-        T value;
-        std::size_t tags;
-      };
-
-      std::size_t set_tags_;
-      std::size_t push_tags_;
       std::size_t top_;
       std::array<Elem, N> stack_;
     };
 
 
     template <typename T, typename Tag, std::size_t N>
-    TaggedStack<T, Tag, N>::TaggedStack(
-        std::initializer_list<Tag> set_tags,
-        std::initializer_list<Tag> push_tags)
-        : set_tags_(0), push_tags_(0), top_(0)
+    TaggedStack<T, Tag, N>::TaggedStack()
+        : top_(0)
     {
-      for (const auto tag : set_tags) {
-        set_tags_ |= static_cast<std::size_t>(tag);
-      }
-      for (const auto tag : push_tags) {
-        push_tags_ |= static_cast<std::size_t>(tag);
-      }
     }
 
 
     template <typename T, typename Tag, std::size_t N>
-    void TaggedStack<T, Tag, N>::set(const std::size_t i, const T& value)
+    void TaggedStack<T, Tag, N>::set(
+        const std::size_t i, const T& value, std::initializer_list<Tag> tags)
     {
-      stack_[i] = Elem{value, set_tags_};
+      stack_[i] = Elem{value, 0};
+      std::for_each(
+          tags.begin(), tags.end(),
+          [&] (const Tag tag) {
+            stack_[i].add_tag(tag);
+          });
 
       if (i >= top_) {
         top_ = i + 1;
@@ -97,14 +104,21 @@ namespace loxx
     template <typename... Args>
     void TaggedStack<T, Tag, N>::emplace(Args&&... values)
     {
-      stack_[top_++] = Elem{T(std::forward<Args>(values)...), push_tags_};
+      stack_[top_++] = Elem{T(std::forward<Args>(values)...), 0};
     }
 
 
     template <typename T, typename Tag, std::size_t N>
-    void TaggedStack<T, Tag, N>::push(const T& value)
+    void TaggedStack<T, Tag, N>::push(
+        const T& value, std::initializer_list<Tag> tags)
     {
-      stack_[top_++] = Elem{value, push_tags_};
+      stack_[top_] = Elem{value, 0};
+      std::for_each(
+          tags.begin(), tags.end(),
+          [&] (const Tag tag) {
+            stack_[top_].add_tag(tag);
+          });
+      ++top_;
     }
 
 
@@ -120,21 +134,21 @@ namespace loxx
     template <typename T, typename Tag, std::size_t N>
     bool TaggedStack<T, Tag, N>::has_tag(const std::size_t i, const Tag tag) const
     {
-      return (stack_[i].tags & static_cast<std::size_t>(tag)) != 0;
+      return stack_[i].has_tag(tag);
     }
 
 
     template <typename T, typename Tag, std::size_t N>
     void TaggedStack<T, Tag, N>::add_tag(const std::size_t i, const Tag tag)
     {
-      stack_[i].tags |= static_cast<std::size_t>(tag);
+      stack_[i].add_tag(tag);
     }
 
 
     template <typename T, typename Tag, std::size_t N>
     void TaggedStack<T, Tag, N>::remove_tag(const std::size_t i, const Tag tag)
     {
-      stack_[i].tags &= ~static_cast<std::size_t>(tag);
+      stack_[i].remove_tag(tag);
     }
   }
 }

@@ -93,10 +93,11 @@ namespace loxx
           return ValueType::OBJECT;
         } ();
 
-        stack_.emplace(emit_ir(
+        stack_.push(emit_ir(
             Operator::ADD, result_type,
             Operand(Operand::Type::IR_REF, first),
-            Operand(Operand::Type::IR_REF, second)));
+            Operand(Operand::Type::IR_REF, second)),
+            {Tag::CACHED, Tag::WRITTEN});
 
         break;
       }
@@ -122,7 +123,8 @@ namespace loxx
         stack_.push(emit_ir(
             Operator::EQUAL, ValueType::BOOLEAN,
             Operand(Operand::Type::IR_REF, first),
-            Operand(Operand::Type::IR_REF, second)));
+            Operand(Operand::Type::IR_REF, second)),
+            {Tag::CACHED, Tag::WRITTEN});
 
         break;
       }
@@ -142,10 +144,10 @@ namespace loxx
               Operator::LOAD, static_cast<ValueType>(value.index()),
               Operand(Operand::Type::STACK_REF, pos),
               Operand(Operand::Type::EXIT_NUMBER, exit_num));
-          stack_.set(pos, ref);
+          stack_.set(pos, ref, {Tag::CACHED});
         }
 
-        stack_.push(ref);
+        stack_.push(ref, {Tag::CACHED, Tag::WRITTEN});
         break;
       }
 
@@ -161,7 +163,8 @@ namespace loxx
         stack_.push(emit_ir(
             Operator::LESS, ValueType::BOOLEAN,
             Operand(Operand::Type::IR_REF, first),
-            Operand(Operand::Type::IR_REF, second)));
+            Operand(Operand::Type::IR_REF, second)),
+            {Tag::CACHED, Tag::WRITTEN});
 
         break;
       }
@@ -184,7 +187,9 @@ namespace loxx
           }
         } ();
 
-        stack_.push(emit_ir(Operator::LITERAL, type, operand));
+        stack_.push(
+            emit_ir(Operator::LITERAL, type, operand),
+            {Tag::CACHED, Tag::WRITTEN});
         break;
       }
 
@@ -213,10 +218,11 @@ namespace loxx
           return;
         }
 
-        stack_.emplace(emit_ir(
+        stack_.push(emit_ir(
             Operator::MULTIPLY, ValueType::FLOAT,
             Operand(Operand::Type::IR_REF, first),
-            Operand(Operand::Type::IR_REF, second)));
+            Operand(Operand::Type::IR_REF, second)),
+            {Tag::CACHED, Tag::WRITTEN});
 
         break;
       }
@@ -235,8 +241,8 @@ namespace loxx
             Operator::STORE, static_cast<ValueType>(value.index()),
             Operand(Operand::Type::STACK_REF, pos),
             Operand(Operand::Type::IR_REF, stack_.top()));
-        stack_.set(pos, stack_.top());
-        stack_.add_tag(pos, Tag::WRITTEN);
+
+        stack_.set(pos, stack_.top(), {Tag::CACHED, Tag::WRITTEN});
         break;
       }
 
@@ -313,13 +319,14 @@ namespace loxx
 
 
     auto CodeProfiler::create_compressed_stack() const
-        -> std::vector<std::pair<std::size_t, std::size_t>>
+        -> std::vector<std::pair<std::size_t, VStackElem>>
     {
-      std::vector<std::pair<std::size_t, std::size_t>> compressed_stack;
+      using Elem = TaggedStack<std::size_t, Tag, max_stack_size>::Elem;
+      std::vector<std::pair<std::size_t, Elem>> compressed_stack;
 
       for (std::size_t i = 0; i < stack_.size(); ++i) {
-        if (stack_.has_tag(i, Tag::WRITTEN)) {
-          compressed_stack.emplace_back(i, stack_.get(i));
+        if (stack_[i].tags != 0) {
+          compressed_stack.emplace_back(i, stack_[i]);
         }
       }
 

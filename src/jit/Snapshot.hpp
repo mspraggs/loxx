@@ -24,15 +24,29 @@
 
 #include "../CodeObject.hpp"
 
+#include "TaggedStack.hpp"
+
 
 namespace loxx
 {
   namespace jit
   {
+    enum class StackTag
+    {
+      EMPTY = 0,
+      CACHED = 1,
+      WRITTEN = 2,
+    };
+
+
+    using VStackElem = TaggedElem<std::size_t, StackTag>;
+
+
     struct Snapshot
     {
+      std::size_t ir_ref;
       CodeObject::InsPtr next_ip;
-      std::vector<std::pair<std::size_t, std::size_t>> stack_ir_map;
+      std::vector<std::pair<std::size_t, VStackElem>> stack_ir_map;
     };
   }
 }

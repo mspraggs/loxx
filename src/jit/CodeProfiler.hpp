@@ -43,18 +43,13 @@ namespace loxx
   {
     class CodeProfiler
     {
-      enum class Tag
-      {
-        EMPTY = 0,
-        CACHED = 1,
-        WRITTEN = 2,
-      };
+      using Tag = StackTag;
+
     public:
       CodeProfiler(
           TraceCache& trace_cache, const std::size_t block_count_threshold)
           : is_recording_(false), block_count_threshold_(block_count_threshold),
-            trace_(nullptr), trace_cache_(&trace_cache),
-            stack_({Tag::CACHED}, {Tag::WRITTEN})
+            trace_(nullptr), trace_cache_(&trace_cache)
       {
       }
 
@@ -82,7 +77,7 @@ namespace loxx
       std::size_t create_snapshot() const;
       std::size_t create_snapshot(const CodeObject::InsPtr ip) const;
       auto create_compressed_stack() const
-          -> std::vector<std::pair<std::size_t, std::size_t>>;
+          -> std::vector<std::pair<std::size_t, VStackElem>>;
 
       bool virtual_registers_are_floats(
           const std::size_t first, const std::size_t second) const;
