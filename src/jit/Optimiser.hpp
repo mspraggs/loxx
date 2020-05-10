@@ -21,12 +21,16 @@
 #define LOXX_JIT_OPTIMISER_HPP
 
 #include "IRInstruction.hpp"
+#include "TraceCache.hpp"
 
 
 namespace loxx
 {
   namespace jit
   {
+    void unroll_loop(
+        Trace& trace, TaggedStack<std::size_t, StackTag, max_stack_size>& stack);
+
     void optimise(IRBuffer<2>& ssa_ir);
   }
 }
