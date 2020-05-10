@@ -231,7 +231,7 @@ namespace loxx
           break;
 
         case Operator::STORE:
-          emit_store(instruction);
+          // Do nothing
           break;
 
         case Operator::SUBTRACT:
