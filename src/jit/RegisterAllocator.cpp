@@ -32,26 +32,32 @@ namespace loxx
   namespace jit
   {
     std::vector<std::pair<std::size_t, Range>> compute_live_ranges(
-        const IRBuffer<2>& ssa_ir)
+        const IRBuffer<2>& ir_buffer, const std::vector<Snapshot>& snapshots)
     {
       HashTable<std::size_t, std::size_t> operand_start_map;
       std::vector<std::pair<std::size_t, Range>> live_ranges;
-      live_ranges.reserve(ssa_ir.size() * 2);
+      live_ranges.reserve(ir_buffer.size() * 2);
+      auto snap_it = snapshots.begin();
 
-      for (std::size_t i = 0; i < ssa_ir.size(); ++i) {
-        const auto& instruction = ssa_ir[i];
+      const auto update_live_ranges = [&] (
+          const std::size_t ref0, const std::size_t ref1) {
+        const auto operand_start =
+            operand_start_map.insert(ref0, live_ranges.size());
+
+        if (operand_start.second) {
+          live_ranges.push_back({ref0, Range{ref1, ref1}});
+        }
+
+        auto& live_range = live_ranges[operand_start.first->second];
+        live_range.second.second = ref1;
+      };
+
+      for (std::size_t i = 0; i < ir_buffer.size(); ++i) {
+        const auto& instruction = ir_buffer[i];
 
         /// TODO: Refactor this into a function in line with DRY
         if (instruction.type() != ValueType::UNKNOWN) {
-          const auto operand_start =
-              operand_start_map.insert(i, live_ranges.size());
-
-          if (operand_start.second) {
-            live_ranges.push_back({i, Range{i, i}});
-          }
-
-          auto& live_range = live_ranges[operand_start.first->second];
-          live_range.second.second = i;
+          update_live_ranges(i, i);
         }
 
         for (const auto& operand : instruction.operands()) {
@@ -64,16 +70,14 @@ namespace loxx
           }
 
           const auto reg = unsafe_get<std::size_t>(operand);
+          update_live_ranges(reg, i);
+        }
 
-          auto operand_start =
-              operand_start_map.insert(reg, live_ranges.size());
-
-          if (operand_start.second) {
-            live_ranges.push_back({reg, Range{i, i}});
+        while (i == snap_it->ir_ref) {
+          for (const auto& mapping : snap_it->stack_ir_map) {
+            update_live_ranges(mapping.second.value, i);
           }
-
-          auto& live_range = live_ranges[operand_start.first->second];
-          live_range.second.second = i;
+          ++snap_it;
         }
       }
 
@@ -93,7 +97,7 @@ namespace loxx
 
     void RegisterAllocator::allocate(Trace& trace)
     {
-      auto live_ranges = compute_live_ranges(trace.ir_buffer);
+      auto live_ranges = compute_live_ranges(trace.ir_buffer, trace.snaps);
       const auto& ir_buffer = trace.ir_buffer;
 
 #ifndef NDEBUG
