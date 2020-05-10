@@ -47,6 +47,7 @@ namespace loxx
       MOVE,
       MULTIPLY,
       NOOP,
+      PHI,
       POP,
       RETURN,
       STORE,
@@ -246,6 +247,9 @@ namespace loxx
         break;
       case Operator::NOOP:
         os << "NOOP";
+        break;
+      case Operator::PHI:
+        os << "PHI";
         break;
       case Operator::POP:
         os << "POP";
