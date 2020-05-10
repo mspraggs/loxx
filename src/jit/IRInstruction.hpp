@@ -131,6 +131,8 @@ namespace loxx
       void set_operand(const std::size_t i, const Operand& value)
       { operands_[i] = value; }
 
+      bool is_loop_invariant() const;
+
     private:
       ValueType type_;
       Operator op_;
@@ -148,6 +150,16 @@ namespace loxx
         const Operator op, const ValueType type, const Args&... operands)
         : type_(type), op_(op), operands_{operands...}
     {
+    }
+
+
+    template <std::size_t N>
+    bool IRInstruction<N>::is_loop_invariant() const
+    {
+      if (op_ == Operator::STORE or op_ == Operator::LOAD) {
+        return true;
+      }
+      return false;
     }
 
 
