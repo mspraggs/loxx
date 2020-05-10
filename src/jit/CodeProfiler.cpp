@@ -236,12 +236,6 @@ namespace loxx
         const auto& value = stack_frame.slot(idx);
 
         const auto pos = std::distance(trace_->stack_base, &value);
-
-        emit_ir(
-            Operator::STORE, static_cast<ValueType>(value.index()),
-            Operand(Operand::Type::STACK_REF, pos),
-            Operand(Operand::Type::IR_REF, stack_.top()));
-
         stack_.set(pos, stack_.top(), {Tag::CACHED, Tag::WRITTEN});
         break;
       }
