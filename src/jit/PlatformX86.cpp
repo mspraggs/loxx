@@ -234,7 +234,12 @@ namespace loxx
           }
         } ();
 
-        stack->set(slot, value);
+        if (stack->size() <= slot) {
+          stack->push(value);
+        }
+        else {
+          stack->set(slot, value);
+        }
       }
       return trace->snaps[exit_num].next_ip;
     }
