@@ -134,21 +134,29 @@ namespace loxx
         const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
         const auto& value = stack_frame.slot(idx);
 
+        const auto type = static_cast<ValueType>(value.index());
+
         const auto pos = std::distance(trace_->stack_base, &value);
         const auto is_cached = stack_.has_tag(pos, Tag::CACHED);
-        const auto ref = is_cached ? stack_.get(pos) : trace_->ir_buffer.size();
 
         if (not is_cached) {
           const auto exit_num = create_snapshot(ip + 1 + sizeof(InstrArgUByte));
 
           emit_ir(
-              Operator::LOAD, static_cast<ValueType>(value.index()),
+              Operator::CHECK_TYPE, type,
               Operand(Operand::Type::STACK_REF, pos),
               Operand(Operand::Type::EXIT_NUMBER, exit_num));
+
+          const auto ref = emit_ir(
+              Operator::LOAD, type,
+              Operand(Operand::Type::STACK_REF, pos));
           stack_.set(pos, ref, {Tag::CACHED});
+          stack_.push(ref, {Tag::CACHED, Tag::WRITTEN});
+        }
+        else {
+          stack_.push(stack_.get(pos), {Tag::CACHED, Tag::WRITTEN});
         }
 
-        stack_.push(ref, {Tag::CACHED, Tag::WRITTEN});
         break;
       }
 
