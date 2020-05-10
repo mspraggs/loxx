@@ -219,6 +219,10 @@ namespace loxx
           // Do nothing.
           break;
 
+        case Operator::PHI:
+          emit_phi(instruction);
+          break;
+
         case Operator::POP:
           // Do nothing
           break;
@@ -437,6 +441,20 @@ namespace loxx
 
       emit_move_reg_imm(general_scratch_, address);
       emit_move_reg_mem(*dst_reg, general_scratch_, 8);
+    }
+
+
+    void Assembler<Platform::X86_64>::emit_phi(const IRIns& instruction)
+    {
+      const auto dst_reg = get_register(instruction.operand(0));
+      const auto src_reg = get_register(instruction.operand(1));
+
+      if (not src_reg or not dst_reg) {
+        throw JITError(
+            "invalid source register or destination address for store");
+      }
+
+      emit_move_reg_reg(*dst_reg, *src_reg);
     }
 
 

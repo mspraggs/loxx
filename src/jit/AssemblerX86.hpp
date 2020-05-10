@@ -74,6 +74,7 @@ namespace loxx
       void emit_load(const std::size_t pos, const IRIns& instruction);
       void emit_multiply(
           const std::size_t ref, const IRIns& instruction);
+      void emit_phi(const IRIns& instruction);
       void emit_store(const IRIns& instruction);
 
       void emit_return();
