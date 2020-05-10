@@ -36,6 +36,7 @@ namespace loxx
     {
       ADD,
       CHECK_CONDITION,
+      CHECK_TYPE,
       DIVIDE,
       EQUAL,
       JUMP,
@@ -157,7 +158,9 @@ namespace loxx
     template <std::size_t N>
     bool IRInstruction<N>::is_loop_invariant() const
     {
-      if (op_ == Operator::STORE or op_ == Operator::LOAD) {
+      if (op_ == Operator::STORE or
+          op_ == Operator::LOAD or
+          op_ == Operator::CHECK_TYPE) {
         return true;
       }
       return false;
@@ -214,6 +217,9 @@ namespace loxx
         break;
       case Operator::CHECK_CONDITION:
         os << "CHECK_CONDITION";
+        break;
+      case Operator::CHECK_TYPE:
+        os << "CHECK_TYPE";
         break;
       case Operator::DIVIDE:
         os << "DIVIDE";
