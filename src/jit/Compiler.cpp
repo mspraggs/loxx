@@ -50,7 +50,7 @@ namespace loxx
 #ifndef NDEBUG
       if (debug) {
         std::cout << "=== Generated SSA ===\n";
-        print_ssa_instructions(trace.ir_buffer);
+        print_trace(trace);
       }
 #endif
 

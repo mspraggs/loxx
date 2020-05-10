@@ -30,6 +30,24 @@ namespace loxx
 {
   namespace jit
   {
+    void print_trace(const Trace& trace)
+    {
+      const auto& snaps = trace.snaps;
+      std::size_t snap_counter = 0;
+
+      for (std::size_t i = 0; i < trace.ir_buffer.size(); ++i) {
+        while (snaps[snap_counter].ir_ref == i and
+            snap_counter < snaps.size()) {
+          print_snapshot(snap_counter, snaps[snap_counter]);
+          ++snap_counter;
+        }
+        std::cout << std::setw(4) << std::setfill('0') << std::right
+                  << i << ' ' << std::left;
+        print_ssa_instruction(trace.ir_buffer[i]);
+      }
+    }
+
+
     void print_live_ranges(
         const std::vector<std::pair<std::size_t, Range>>& live_ranges)
     {
@@ -94,6 +112,27 @@ namespace loxx
                     << unsafe_get<std::size_t>(allocation.second) << " ]\n";
         }
       }
+    }
+
+
+    void print_snapshot(const std::size_t snap_num, const Snapshot& snapshot)
+    {
+      std::size_t stack_pos = 0;
+      std::cout << ".... SNAPSHOT            #" << std::setw(3)
+                << std::setfill(' ') << snap_num << "      ";
+
+      for (const auto& mapping : snapshot.stack_ir_map) {
+        while (stack_pos < mapping.first) {
+          std::cout << "[ ---- ] ";
+          ++stack_pos;
+        }
+
+        std::cout << "[ " << std::setw(4) << std::setfill('0') << std::right
+                  << mapping.second.value << " ] ";
+        ++stack_pos;
+      }
+
+      std::cout << std::left << '\n';
     }
   }
 }

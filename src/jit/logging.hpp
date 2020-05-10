@@ -26,12 +26,15 @@
 
 #include "RegisterAllocator.hpp"
 #include "IRInstruction.hpp"
+#include "TraceCache.hpp"
 
 
 namespace loxx
 {
   namespace jit
   {
+    void print_trace(const Trace& trace);
+
     template <std::size_t N>
     void print_ssa_instruction(const IRInstruction<N>& instruction);
 
@@ -77,6 +80,8 @@ namespace loxx
           print_ssa_instruction(instructions[i]);
         }
     }
+
+    void print_snapshot(const std::size_t snap_num, const Snapshot& snapshot);
   }
 }
 
