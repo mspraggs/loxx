@@ -302,6 +302,7 @@ namespace loxx
 
       trace_->snaps.emplace_back(
           Snapshot{
+            .ir_ref = trace_->ir_buffer.size(),
             .next_ip = ip,
             .stack_ir_map = compress_stack(stack_),
           }
