@@ -201,6 +201,7 @@ namespace loxx
           return;
         }
 
+        create_snapshot(ip);
         emit_ir(
             Operator::LOOP, ValueType::UNKNOWN,
             Operand(Operand::Type::JUMP_OFFSET, trace_->ir_buffer.size() + 1));
