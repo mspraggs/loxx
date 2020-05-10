@@ -54,6 +54,7 @@ namespace loxx
           const std::size_t i, const T& value,
           std::initializer_list<Tag> tags = {});
       const T& get(const std::size_t i) const { return stack_[i].value; }
+      Elem& operator[] (const std::size_t i) { return stack_[i]; }
       const Elem& operator[] (const std::size_t i) const { return stack_[i]; }
       template <typename... Args>
       void emplace(Args&&... values);
