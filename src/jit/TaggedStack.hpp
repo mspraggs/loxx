@@ -70,6 +70,11 @@ namespace loxx
       void add_tag(const std::size_t i, const Tag tag);
       void remove_tag(const std::size_t i, const Tag tag);
 
+      auto begin() { return stack_.begin(); }
+      auto begin() const { return stack_.begin(); }
+      auto end() { return stack_.begin() + top_; }
+      auto end() const { return stack_.begin() + top_; }
+
     private:
       std::size_t top_;
       std::array<Elem, N> stack_;
