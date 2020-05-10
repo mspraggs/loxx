@@ -181,6 +181,10 @@ namespace loxx
           emit_condition_guard(instruction);
           break;
 
+        case Operator::CHECK_TYPE:
+          emit_type_guard(instruction);
+          break;
+
         case Operator::DIVIDE:
           break;
 
@@ -360,6 +364,29 @@ namespace loxx
       }
       const auto exit_num = get<std::size_t>(instruction.operand(1));
       const auto offset_pos = emit_conditional_jump(*last_condition_, 0x100);
+      const auto mcode_size = trace_->assembly.size();
+
+      emit_move_reg_imm(general_scratch_, exit_num);
+      emit_push(general_scratch_);
+      emit_move_reg_imm(
+          general_scratch_, get_exit_stub_pointer<Platform::X86_64>());
+      emit_jump(general_scratch_);
+
+      const std::int32_t offset = trace_->assembly.size() - mcode_size;
+      trace_->assembly.write_integer(offset_pos, offset);
+    }
+
+
+    void Assembler<Platform::X86_64>::emit_type_guard(
+        const IRIns& instruction)
+    {
+      const auto address = get_stack_address(instruction.operand(0));
+      const auto exit_num = get<std::size_t>(instruction.operand(1));
+      emit_move_reg_imm(general_scratch_, address);
+      emit_move_reg_mem(general_scratch_, general_scratch_);
+      emit_compare_reg_imm(
+          general_scratch_, static_cast<std::size_t>(instruction.type()));
+      const auto offset_pos = emit_conditional_jump(Condition::EQUAL, 0x100);
       const auto mcode_size = trace_->assembly.size();
 
       emit_move_reg_imm(general_scratch_, exit_num);
