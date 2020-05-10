@@ -291,7 +291,6 @@ namespace loxx
       for (auto& snap : trace_->snaps) {
         if (snap.next_ip == trace_->code_object->bytecode.end()) {
           snap.next_ip = ip;
-          snap.stack_ir_map = create_compressed_stack();
         }
       }
     }
@@ -310,27 +309,11 @@ namespace loxx
       trace_->snaps.emplace_back(
           Snapshot{
             .next_ip = ip,
-            .stack_ir_map = create_compressed_stack(),
+            .stack_ir_map = compress_stack(stack_),
           }
       );
 
       return exit_num;
-    }
-
-
-    auto CodeProfiler::create_compressed_stack() const
-        -> std::vector<std::pair<std::size_t, VStackElem>>
-    {
-      using Elem = TaggedStack<std::size_t, Tag, max_stack_size>::Elem;
-      std::vector<std::pair<std::size_t, Elem>> compressed_stack;
-
-      for (std::size_t i = 0; i < stack_.size(); ++i) {
-        if (stack_[i].tags != 0) {
-          compressed_stack.emplace_back(i, stack_[i]);
-        }
-      }
-
-      return compressed_stack;
     }
 
 
