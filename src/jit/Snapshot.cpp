@@ -14,45 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Created by Matt Spraggs on 14/04/2020.
+ * Created by Matt Spraggs on 07/05/2020.
  */
 
-#ifndef LOXX_JIT_SNAPSHOT_HPP
-#define LOXX_JIT_SNAPSHOT_HPP
-
-#include <vector>
-
-#include "../CodeObject.hpp"
-
-#include "TaggedStack.hpp"
+#include "Snapshot.hpp"
 
 
 namespace loxx
 {
   namespace jit
   {
-    enum class StackTag
-    {
-      EMPTY = 0,
-      CACHED = 1,
-      WRITTEN = 2,
-    };
-
-
-    using VStackElem = TaggedElem<std::size_t, StackTag>;
-
-
-    struct Snapshot
-    {
-      std::size_t ir_ref;
-      CodeObject::InsPtr next_ip;
-      std::vector<std::pair<std::size_t, VStackElem>> stack_ir_map;
-    };
-
-
     std::vector<std::pair<std::size_t, VStackElem>> compress_stack(
-        const TaggedStack<std::size_t, StackTag, max_stack_size>& stack);
+        const TaggedStack<std::size_t, StackTag, max_stack_size>& stack)
+    {
+      using Elem = TaggedStack<std::size_t, StackTag, max_stack_size>::Elem;
+
+      std::vector<std::pair<std::size_t, Elem>> compressed_stack;
+
+      for (std::size_t i = 0; i < stack.size(); ++i) {
+        if (stack[i].tags != 0) {
+          compressed_stack.emplace_back(i, stack[i]);
+        }
+      }
+
+      return compressed_stack;
+    }
   }
 }
-
-#endif // LOXX_JIT_SNAPSHOT_HPP

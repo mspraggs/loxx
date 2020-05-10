@@ -72,6 +72,7 @@ set(SRC
   jit/Optimiser.cpp
   jit/PlatformX86.cpp
   jit/RegisterAllocator.cpp
+  jit/Snapshot.cpp
   jit/TraceCache.cpp
 )
 
