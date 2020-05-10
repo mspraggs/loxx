@@ -28,6 +28,7 @@
 #include "CodeProfiler.hpp"
 #include "JITError.hpp"
 #include "logging.hpp"
+#include "Optimiser.hpp"
 
 
 namespace loxx
@@ -205,6 +206,7 @@ namespace loxx
             Operand(Operand::Type::JUMP_OFFSET, trace_->ir_buffer.size() + 1));
         patch_snaps(ip + sizeof(InstrArgUShort) + 2);
 
+        unroll_loop(*trace_, stack_);
         trace_->state = Trace::State::IR_COMPLETE;
         break;
       }
