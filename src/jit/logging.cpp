@@ -42,7 +42,21 @@ namespace loxx
           ++snap_counter;
         }
         std::cout << std::setw(4) << std::setfill('0') << std::right
-                  << i << ' ' << std::left;
+                  << i << "  " << std::left;
+        const auto& allocation = trace.allocation_map.get(i);
+        if (allocation) {
+          if (holds_alternative<Register>(allocation->second)) {
+            const auto reg = unsafe_get<Register>(allocation->second);
+            std::cout << std::setw(6) << std::setfill(' ') << reg << ' ';
+          }
+          else {
+            const auto slot = unsafe_get<std::size_t>(allocation->second);
+            std::cout << '+' << std::setw(5) << std::setfill(' ') << slot << ' ';
+          }
+        }
+        else {
+          std::cout << "       ";
+        }
         print_ssa_instruction(trace.ir_buffer[i]);
       }
     }
@@ -118,7 +132,7 @@ namespace loxx
     void print_snapshot(const std::size_t snap_num, const Snapshot& snapshot)
     {
       std::size_t stack_pos = 0;
-      std::cout << ".... SNAPSHOT            #" << std::setw(3)
+      std::cout << "....         SNAPSHOT       #" << std::setw(3)
                 << std::setfill(' ') << snap_num << "      ";
 
       for (const auto& mapping : snapshot.stack_ir_map) {

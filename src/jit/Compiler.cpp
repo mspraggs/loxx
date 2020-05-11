@@ -47,6 +47,9 @@ namespace loxx
     {
       // optimise(trace);
 
+      RegisterAllocator reg_alloc(debug, get_allocatable_registers<platform>());
+      reg_alloc.allocate(trace);
+
 #ifndef NDEBUG
       if (debug) {
         std::cout << "=== Generated SSA ===\n";
@@ -54,14 +57,6 @@ namespace loxx
       }
 #endif
 
-      RegisterAllocator reg_alloc(debug, get_allocatable_registers<platform>());
-      reg_alloc.allocate(trace);
-
-#ifndef NDEBUG
-      if (debug) {
-        print_allocation_map(trace.allocation_map);
-      }
-#endif
       Assembler<platform> assembler(trace);
       assembler.assemble();
     }

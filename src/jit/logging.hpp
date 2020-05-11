@@ -50,7 +50,7 @@ namespace loxx
     template <std::size_t N>
     void print_ssa_instruction(const IRInstruction<N>& instruction)
     {
-      std::cout << std::setw(20) << std::setfill(' ') << instruction.op();
+      std::cout << std::setw(15) << std::setfill(' ') << instruction.op();
       std::cout << std::setw(10) << std::setfill(' ') << instruction.type();
 
       const auto& operands = instruction.operands();

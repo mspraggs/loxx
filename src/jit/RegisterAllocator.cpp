@@ -100,13 +100,6 @@ namespace loxx
       auto live_ranges = compute_live_ranges(trace.ir_buffer, trace.snaps);
       const auto& ir_buffer = trace.ir_buffer;
 
-#ifndef NDEBUG
-      if (debug_) {
-        std::cout << "=== Register live ranges ===\n";
-        print_live_ranges(live_ranges);
-      }
-#endif
-
       for (const auto& live_range : live_ranges) {
         const auto& virtual_register = live_range.first;
         const auto& interval = live_range.second;

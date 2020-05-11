@@ -216,7 +216,7 @@ namespace loxx
         os << "ADD";
         break;
       case Operator::CHECK_CONDITION:
-        os << "CHECK_CONDITION";
+        os << "CHECK_COND";
         break;
       case Operator::CHECK_TYPE:
         os << "CHECK_TYPE";
