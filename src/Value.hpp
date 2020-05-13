@@ -71,6 +71,18 @@ namespace loxx
   template <typename OStream, typename T>
   auto operator<<(OStream& os, const T& value)
       -> std::enable_if_t<std::is_same<T, Value>::value, OStream&>;
+
+
+  inline bool is_truthy(const Value& value)
+  {
+    if (value.index() == Value::npos) {
+      return false;
+    }
+    if (holds_alternative<bool>(value)) {
+      return unsafe_get<bool>(value);
+    }
+    return true;
+  }
 }
 
 #endif // LOXX_VALUE_HPP

@@ -647,18 +647,6 @@ namespace loxx
   }
 
 
-  bool VirtualMachine::is_truthy(const Value& value) const
-  {
-    if (value.index() == Value::npos) {
-      return false;
-    }
-    if (holds_alternative<bool>(value)) {
-      return unsafe_get<bool>(value);
-    }
-    return true;
-  }
-
-
   void VirtualMachine::incorrect_arg_num(const InstrArgUByte arity,
                                          const InstrArgUByte num_args) const
   {

@@ -66,7 +66,6 @@ namespace loxx
     void check_number_operands(const Value& first,
                                const Value& second) const;
     bool are_equal(const Value& first, const Value& second) const;
-    bool is_truthy(const Value& value) const;
     void incorrect_arg_num(const InstrArgUByte arity,
                            const InstrArgUByte num_args) const;
     RuntimeError make_runtime_error(const std::string& msg) const;
