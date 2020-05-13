@@ -35,7 +35,8 @@ namespace loxx
     enum class Operator
     {
       ADD,
-      CHECK_CONDITION,
+      CHECK_FALSE,
+      CHECK_TRUE,
       CHECK_TYPE,
       DIVIDE,
       EQUAL,
@@ -215,8 +216,11 @@ namespace loxx
       case Operator::ADD:
         os << "ADD";
         break;
-      case Operator::CHECK_CONDITION:
-        os << "CHECK_COND";
+      case Operator::CHECK_FALSE:
+        os << "CHECK_FALSE";
+        break;
+      case Operator::CHECK_TRUE:
+        os << "CHECK_TRUE";
         break;
       case Operator::CHECK_TYPE:
         os << "CHECK_TYPE";

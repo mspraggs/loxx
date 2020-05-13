@@ -177,8 +177,12 @@ namespace loxx
           emit_add(pos, instruction);
           break;
 
-        case Operator::CHECK_CONDITION:
-          emit_condition_guard(instruction);
+        case Operator::CHECK_FALSE:
+          emit_condition_guard(instruction, true);
+          break;
+
+        case Operator::CHECK_TRUE:
+          emit_condition_guard(instruction, false);
           break;
 
         case Operator::CHECK_TYPE:
@@ -357,13 +361,17 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_condition_guard(
-        const IRIns& instruction)
+        const IRIns& instruction, const bool invert_condition)
     {
       if (not last_condition_) {
         throw JITError("invalid assembler state");
       }
+      const auto condition =
+          invert_condition ?
+          get_inverse_condition(*last_condition_) :
+          *last_condition_;
       const auto exit_num = get<std::size_t>(instruction.operand(1));
-      const auto offset_pos = emit_conditional_jump(*last_condition_, 0x100);
+      const auto offset_pos = emit_conditional_jump(condition, 0x100);
       const auto mcode_size = trace_->assembly.size();
 
       emit_move_reg_imm(general_scratch_, exit_num);

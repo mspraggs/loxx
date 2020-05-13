@@ -105,8 +105,11 @@ namespace loxx
 
       case Instruction::CONDITIONAL_JUMP: {
         const auto exit_num = create_snapshot();
+        const auto op =
+            is_truthy(vm_stack_ptr_->top()) ?
+            Operator::CHECK_TRUE : Operator::CHECK_FALSE;
         emit_ir(
-            Operator::CHECK_CONDITION, ValueType::UNKNOWN,
+            op, ValueType::UNKNOWN,
             Operand(Operand::Type::IR_REF, stack_.top()),
             Operand(Operand::Type::EXIT_NUMBER, exit_num));
         break;
