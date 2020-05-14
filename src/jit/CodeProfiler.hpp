@@ -84,6 +84,9 @@ namespace loxx
       std::size_t emit_ir(
           const Operator op, const ValueType type, Args&&... args);
 
+      Value read_constant(const CodeObject::InsPtr ip) const;
+      StringObject* read_string(const CodeObject::InsPtr ip) const;
+
       bool is_recording_;
       std::size_t block_count_threshold_;
       CodeObject::InsPtr current_block_head_;

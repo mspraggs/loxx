@@ -335,5 +335,19 @@ namespace loxx
       return trace_->ir_buffer[first].type() == ValueType::FLOAT and
           trace_->ir_buffer[second].type() == ValueType::FLOAT;
     }
+
+
+    Value CodeProfiler::read_constant(const CodeObject::InsPtr ip) const
+    {
+      const auto code_object = trace_->code_object;
+      return code_object->constants[read_integer_at_pos<InstrArgUByte>(ip)];
+    }
+
+
+    loxx::StringObject* CodeProfiler::read_string(
+        const CodeObject::InsPtr ip) const
+    {
+      return get_object<StringObject>(read_constant(ip));
+    }
   }
 }
