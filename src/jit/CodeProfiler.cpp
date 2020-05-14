@@ -104,10 +104,13 @@ namespace loxx
       }
 
       case Instruction::CONDITIONAL_JUMP: {
-        const auto exit_num = create_snapshot();
+        const auto condition_true = is_truthy(vm_stack_ptr_->top());
         const auto op =
-            is_truthy(vm_stack_ptr_->top()) ?
-            Operator::CHECK_TRUE : Operator::CHECK_FALSE;
+            condition_true ? Operator::CHECK_TRUE : Operator::CHECK_FALSE;
+        const auto offset = read_integer_at_pos<InstrArgUShort>(ip + 1);
+        const auto next_ip =
+            ip + 1 + sizeof(InstrArgUShort) + (condition_true ? offset : 0);
+        const auto exit_num = create_snapshot(next_ip);
         emit_ir(
             op, ValueType::UNKNOWN,
             Operand(Operand::Type::IR_REF, stack_.top()),
