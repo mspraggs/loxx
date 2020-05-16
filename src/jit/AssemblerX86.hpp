@@ -61,6 +61,11 @@ namespace loxx
       void assemble();
 
     private:
+      using ConstantMap =
+          HashTable<
+              std::uint64_t,
+              std::vector<std::pair<std::size_t, std::size_t>>>;
+
       void patch_jumps();
 
       void emit_guard(const Value* location, const ValueType type);
@@ -78,6 +83,7 @@ namespace loxx
           const std::size_t ref, const IRIns& instruction);
       void emit_phi(const IRIns& instruction);
       void emit_store(const IRIns& instruction);
+      void emit_constants();
 
       void emit_return();
       void emit_push(const RegisterX86 src);
@@ -91,7 +97,7 @@ namespace loxx
       void emit_decrement(const RegisterX86 reg);
 
       void emit_move_reg_reg(const RegisterX86 dst, const RegisterX86 src);
-      void emit_move_reg_mem(
+      std::size_t emit_move_reg_mem(
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int displacement = 0);
       void emit_move_mem_reg(
@@ -122,13 +128,13 @@ namespace loxx
           const std::uint8_t opcode,
           const RegisterX86 reg0, const RegisterX86 reg1);
 
-      void emit_move_reg_to_from_mem(
+      std::size_t emit_move_reg_to_from_mem(
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int offset, const bool read);
 
       void emit_offset(const std::int32_t offset);
 
-      void emit_displacement(const unsigned int displacement);
+      std::size_t emit_displacement(const unsigned int displacement);
 
       template <typename T>
       void emit_immediate(const T value);
@@ -146,6 +152,7 @@ namespace loxx
       RegisterX86 float_scratch_;
       std::vector<std::size_t> instruction_offsets_;
       std::vector<std::pair<std::size_t, std::size_t>> jump_offsets_;
+      ConstantMap constant_map_;
     };
 
 

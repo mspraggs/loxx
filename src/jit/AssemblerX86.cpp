@@ -90,6 +90,7 @@ namespace loxx
       case RegisterX86::R13:
       case RegisterX86::XMM5:
       case RegisterX86::XMM13:
+      case RegisterX86::RIP:
         return 0b101;
       case RegisterX86::RSI:
       case RegisterX86::R14:
@@ -250,6 +251,7 @@ namespace loxx
         }
       }
 
+      emit_constants();
       trace_->assembly.lock();
       trace_->state = Trace::State::ASSEMBLY_COMPLETE;
     }
@@ -445,17 +447,22 @@ namespace loxx
 
       const auto& operand = instruction.operand(0);
       if (operand.type() == Operand::Type::LITERAL_FLOAT) {
-        const auto value = unsafe_get<double>(operand);
-        emit_move_reg_imm(general_scratch_, value);
-        emit_move_reg_reg(*dst_reg, general_scratch_);
+        const auto value = unsafe_get<std::uint64_t>(operand);
+        const auto offset_pos = emit_move_reg_mem(
+            *dst_reg, RegisterX86::RIP, 0x100);
+        constant_map_[value].emplace_back(offset_pos, trace_->assembly.size());
       }
       else if (operand.type() == Operand::Type::LITERAL_BOOLEAN) {
         const auto value = unsafe_get<bool>(operand);
         emit_move_reg_imm(*dst_reg, value);
       }
       else if (operand.type() == Operand::Type::LITERAL_OBJECT) {
-        const auto value = unsafe_get<ObjectPtr>(operand);
-        emit_move_reg_imm(*dst_reg, value);
+        const auto value = unsafe_get<std::uint64_t>(operand);
+        const auto offset_pos = emit_move_reg_mem(
+            *dst_reg, RegisterX86::RIP, 0x100);
+        constant_map_[value].emplace_back(offset_pos, trace_->assembly.size());
+        // const auto value = unsafe_get<ObjectPtr>(operand);
+        // emit_move_reg_imm(*dst_reg, value);
       }
     }
 
@@ -506,6 +513,20 @@ namespace loxx
 
       emit_move_reg_imm(general_scratch_, address);
       emit_move_mem_reg(general_scratch_, *src_reg, 8);
+    }
+
+
+    void Assembler<Platform::X86_64>::emit_constants()
+    {
+      for (const auto& mapping : constant_map_) {
+        const auto constant_pos = trace_->assembly.size();
+        emit_immediate(mapping.first);
+        for (const auto& offset_spec : mapping.second) {
+          const auto offset = static_cast<std::uint32_t>(
+              constant_pos - offset_spec.second);
+          trace_->assembly.write_integer(offset_spec.first, offset);
+        }
+      }
     }
 
 
@@ -634,15 +655,16 @@ namespace loxx
     }
 
 
-    void Assembler<Platform::X86_64>::emit_move_reg_mem(
+    std::size_t Assembler<Platform::X86_64>::emit_move_reg_mem(
         const RegisterX86 dst, const RegisterX86 src,
         const unsigned int displacement)
     {
       if (reg_supports_ptr(dst)) {
-        emit_move_reg_to_from_mem(dst, src, displacement, true);
+        return emit_move_reg_to_from_mem(dst, src, displacement, true);
       }
       else if (reg_supports_float(dst)) {
-        const std::uint8_t offset_bits = get_offset_bits(displacement);
+        const std::uint8_t offset_bits =
+            src != RegisterX86::RIP ? get_offset_bits(displacement) : 0;
 
         const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(src, dst);
         const auto mod_rm_byte =
@@ -654,7 +676,7 @@ namespace loxx
         }
         trace_->assembly.add_bytes(0x0f, 0x10, mod_rm_byte);
 
-        emit_displacement(displacement);
+        return emit_displacement(displacement);
       }
       else {
         throw JITError("invalid move registers");
@@ -843,11 +865,12 @@ namespace loxx
     }
 
 
-    void Assembler<Platform::X86_64>::emit_move_reg_to_from_mem(
+    std::size_t Assembler<Platform::X86_64>::emit_move_reg_to_from_mem(
         const RegisterX86 dst, const RegisterX86 src,
         const unsigned int offset, const bool read)
     {
-      const std::uint8_t offset_bits = get_offset_bits(offset);
+      const std::uint8_t offset_bits =
+          src != RegisterX86::RIP ? get_offset_bits(offset) : 0;
 
       const std::uint8_t rex_prefix =
           0b01001000 | get_rex_prefix_for_regs(src, dst);
@@ -857,12 +880,7 @@ namespace loxx
       trace_->assembly.add_byte(read ? 0x8b : 0x89);
       trace_->assembly.add_byte(mod_rm_byte);
 
-      if (offset > std::numeric_limits<std::uint8_t>::max()) {
-        emit_immediate(static_cast<std::uint32_t>(offset));
-      }
-      else if (offset > 0) {
-        emit_immediate(static_cast<std::uint8_t>(offset));
-      }
+      return emit_displacement(offset);
     }
 
 
@@ -878,15 +896,17 @@ namespace loxx
     }
 
 
-    void Assembler<Platform::X86_64>::emit_displacement(
+    std::size_t Assembler<Platform::X86_64>::emit_displacement(
         const unsigned int displacement)
     {
+      const auto ret = trace_->assembly.size();
       if (displacement > std::numeric_limits<std::uint8_t>::max()) {
         emit_immediate(static_cast<std::uint32_t>(displacement));
       }
       else if (displacement > 0) {
         emit_immediate(static_cast<std::uint8_t>(displacement));
       }
+      return ret;
     }
 
 
