@@ -47,6 +47,7 @@ namespace loxx
       R13,
       R14,
       R15,
+      RIP,
       XMM0,
       XMM1,
       XMM2,
@@ -139,6 +140,9 @@ namespace loxx
         break;
       case RegisterX86::R15:
         stream << "r15";
+        break;
+      case RegisterX86::RIP:
+        stream << "rip";
         break;
       case RegisterX86::XMM0:
         stream << "xmm0";
