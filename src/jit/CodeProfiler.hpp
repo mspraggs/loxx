@@ -61,8 +61,7 @@ namespace loxx
       void skip_current_block();
 
       void record_instruction(
-          const CodeObject::InsPtr ip, const StackFrame& stack_frame,
-          const std::vector<Value>& constants);
+          const CodeObject::InsPtr ip, const StackFrame& stack_frame);
 
       bool is_recording() const { return is_recording_; }
 

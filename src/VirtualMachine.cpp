@@ -94,8 +94,7 @@ namespace loxx
       }
 
       if (profiler_->is_recording()) {
-        profiler_->record_instruction(
-            ip_, call_stack_.top(), code_object_->constants);
+        profiler_->record_instruction(ip_, call_stack_.top());
 
         auto trace = trace_cache_->active_trace();
         if (trace->state == jit::Trace::State::IR_COMPLETE) {

@@ -65,8 +65,7 @@ namespace loxx
 
 
     void CodeProfiler::record_instruction(
-        const CodeObject::InsPtr ip, const StackFrame& stack_frame,
-        const std::vector<Value>& constants)
+        const CodeObject::InsPtr ip, const StackFrame& stack_frame)
     {
       trace_->ir_map[ip] = trace_->ir_buffer.size();
       trace_->recorded_instructions.push_back(ip);
@@ -185,8 +184,7 @@ namespace loxx
       }
 
       case Instruction::LOAD_CONSTANT: {
-        const auto idx = read_integer_at_pos<InstrArgUByte>(ip + 1);
-        const auto& value = constants[idx];
+        const auto value = read_constant(ip + 1);
         const auto type = static_cast<ValueType>(value.index());
 
         const auto operand = [&] {
