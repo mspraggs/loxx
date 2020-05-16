@@ -111,7 +111,7 @@ namespace loxx
       : has_value_(other.has_value_)
   {
     if (other.has_value_) {
-      value_ = other.value_;
+      new (&value_) T(other.value_);
     }
     else {
       no_value_ = {};
@@ -124,9 +124,7 @@ namespace loxx
       : has_value_(other.has_value_)
   {
     if (has_value_) {
-      value_ = std::move(other.value_);
-      other.has_value_ = false;
-      other.no_value_ = {};
+      new (&value_) T(std::move(other.value_));
     }
     else {
       no_value_ = {};
@@ -144,16 +142,18 @@ namespace loxx
   template <typename T>
   template <typename U, typename>
   constexpr Optional<T>::Optional(U&& value) noexcept
-      : has_value_(true), value_(value)
+      : has_value_(true)
   {
+    new (&value_) T(std::forward<U>(value));
   }
 
 
   template<typename T>
   template <typename U0, typename... Us>
   constexpr Optional<T>::Optional(InPlace<U0>, Us&&... args)
-      : has_value_(true), value_(std::forward<Us>(args)...)
+      : has_value_(true)
   {
+    new (&value_) T(std::forward<Us>(args)...);
   };
 
 
@@ -163,7 +163,7 @@ namespace loxx
     if (&other != this) {
       has_value_ = other.has_value_;
       if (other.has_value_) {
-        value_ = other.value_;
+        new (&value_) T(other.value_);
       }
       else {
         no_value_ = {};
@@ -180,14 +180,12 @@ namespace loxx
     has_value_ = other.has_value_;
 
     if (has_value_) {
-      value_ = std::move(other.value_);
+      new (&value_) T(std::move(other.value_));
     }
     else {
       no_value_ = {};
     }
 
-    other.has_value_ = false;
-    other.no_value_ = {};
     return *this;
   }
 
@@ -197,7 +195,7 @@ namespace loxx
   constexpr Optional<T>& Optional<T>::operator=(U&& value) noexcept
   {
     has_value_ = true;
-    value_ = T(std::forward<U>(value));
+    new (&value_) T(std::forward<U>(value));
     return *this;
   }
 
@@ -273,6 +271,7 @@ namespace loxx
   {
     if (has_value_) {
       (&value_)->~T();
+      no_value_ = {};
     }
     has_value_ = false;
   }
