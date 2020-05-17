@@ -280,6 +280,8 @@ namespace loxx
     {
       block_counts_.erase(ip);
       vm_stack_ptr_ = &stack;
+      constant_map_.clear();
+      stack_.reset();
       stack_.resize(stack.size());
       trace_cache_->make_new_trace();
       trace_ = trace_cache_->active_trace();
