@@ -83,11 +83,20 @@ namespace loxx
     friend class detail::VariantImpl<
         detail::all_types_trivial<Ts...>(), Variant<Ts...>, Ts...>;
 
+    friend struct VariantHasher;
+
     static constexpr std::size_t max_size = detail::static_max(sizeof(Ts)...);
     static constexpr std::size_t max_align = detail::static_max(alignof(Ts)...);
 
     std::size_t type_index_;
     std::aligned_storage_t<max_size, max_align> storage_;
+  };
+
+
+  struct VariantHasher
+  {
+    template <typename... Ts>
+    std::size_t operator() (const Variant<Ts...>& value) const;
   };
 
 
@@ -327,6 +336,13 @@ namespace loxx
   }
 
 
+  template <typename T>
+  constexpr bool detail::validate_variants(const T&)
+  {
+    return true;
+  }
+
+
   template <typename T0, typename T1>
   constexpr bool detail::validate_variants(const T0& first, const T1& second)
   {
@@ -372,6 +388,19 @@ namespace loxx
     }
     return detail::visit<Ret>(std::forward<Fn>(func), shared_index,
                               std::index_sequence<Is...>(), operands...);
+  }
+
+
+  template <typename... Ts>
+  std::size_t VariantHasher::operator() (const Variant<Ts...>& value) const
+  {
+    const auto type_hash = value.type_index_;
+    const auto value_hash = visit(
+        [] (auto elem) {
+          return std::hash<decltype(elem)>()(elem);
+        },
+        value);
+    return type_hash + 0x9e3779b9 + (value_hash << 6) + (value_hash >> 2);
   }
 }
 

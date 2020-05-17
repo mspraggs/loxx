@@ -110,6 +110,10 @@ namespace loxx
     };
 
 
+    template <typename T>
+    constexpr bool validate_variants(const T& variant);
+
+
     template<typename T0, typename T1>
     constexpr bool validate_variants(const T0& first, const T1& second);
 
