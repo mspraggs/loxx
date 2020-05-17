@@ -66,6 +66,7 @@ namespace loxx
 
       std::size_t size() const { return top_; }
       void resize(const std::size_t size) { top_ = size; }
+      void reset();
 
       bool has_tag(const std::size_t i, const Tag tag) const;
       void add_tag(const std::size_t i, const Tag tag);
@@ -134,6 +135,14 @@ namespace loxx
       const auto ret = stack_[--top_].value;
       reset_slot(top_);
       return ret;
+    }
+
+
+    template <typename T, typename Tag, std::size_t N>
+    void TaggedStack<T, Tag, N>::reset()
+    {
+      stack_.fill(Elem{0, 0});
+      top_ = 0;
     }
 
 
