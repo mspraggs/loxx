@@ -31,6 +31,41 @@ namespace loxx
         Trace& trace, TaggedStack<std::size_t, StackTag, max_stack_size>& stack);
 
     void optimise(Trace& trace);
+
+
+    class Optimiser
+    {
+    public:
+      Optimiser(
+          Trace& trace,
+          TaggedStack<std::size_t, StackTag, max_stack_size>& stack)
+          : trace_(&trace), stack_(&stack)
+      {}
+
+      void optimise();
+
+    private:
+      void unroll_loop();
+
+      void handle_invariant_instruction(
+          const std::size_t ref, const IRInstruction<2>& instruction);
+      IRInstruction<2> make_instruction(
+          const std::size_t ref, const IRInstruction<2>& instruction);
+      void emit_phi_instructions() const;
+
+      std::size_t get_ref(const std::size_t ref) const
+      { return copied_ir_refs_[ref].value_or(ref); }
+
+      Operand make_operand(const Operand& operand);
+      std::size_t create_snapshot(const Snapshot& prev_snapshot);
+      void update_phi(const Operand& operand);
+
+      Trace* trace_;
+      TaggedStack<std::size_t, StackTag, max_stack_size>* stack_;
+      std::vector<bool> ir_refs_in_use_;
+      std::vector<Optional<std::size_t>> copied_ir_refs_;
+      std::vector<bool> phi_flags_;
+    };
   }
 }
 

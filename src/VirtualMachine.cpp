@@ -97,14 +97,14 @@ namespace loxx
         profiler_->record_instruction(ip_, call_stack_.top());
 
         auto trace = trace_cache_->active_trace();
-        if (trace->state == jit::Trace::State::IR_COMPLETE) {
+        if (trace->state == jit::Trace::State::RECORDING_COMPLETE) {
 #ifndef NDEBUG
           if (debug_jit_) {
             std::cout << "=== Compiling Bytecode ===\n";
             print_bytecode(*code_object_, trace->recorded_instructions);
           }
 #endif
-          jit::compile_trace(*trace, debug_jit_);
+          jit::compile_trace(*trace, profiler_->virtual_stack(), debug_jit_);
           trace_cache_->store_active_trace();
         }
       }

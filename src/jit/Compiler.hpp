@@ -36,7 +36,10 @@ namespace loxx
 
   namespace jit
   {
-    void compile_trace(Trace& trace, const bool debug);
+    void compile_trace(
+        Trace& trace,
+        TaggedStack<std::size_t, StackTag, max_stack_size>& virtual_stack,
+        const bool debug);
   }
 }
 

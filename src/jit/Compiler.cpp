@@ -43,9 +43,13 @@ namespace loxx
     }
 
 
-    void compile_trace(Trace& trace, const bool debug)
+    void compile_trace(
+        Trace& trace,
+        TaggedStack<std::size_t, StackTag, max_stack_size>& virtual_stack,
+        const bool debug)
     {
-      // optimise(trace);
+      Optimiser optimiser(trace, virtual_stack);
+      optimiser.optimise();
 
       RegisterAllocator reg_alloc(debug, get_allocatable_registers<platform>());
       reg_alloc.allocate(trace);

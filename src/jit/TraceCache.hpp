@@ -39,6 +39,7 @@ namespace loxx
     {
       enum class State {
         NEW,
+        RECORDING_COMPLETE,
         IR_COMPLETE,
         ASSEMBLY_COMPLETE,
       };

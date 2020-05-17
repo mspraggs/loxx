@@ -38,56 +38,49 @@ namespace loxx
     }
 
 
-    class InstructionCopier
+    void Optimiser::optimise()
     {
-    public:
-      InstructionCopier(
-          Trace& trace,
-          const TaggedStack<std::size_t, StackTag, max_stack_size>& stack,
-          const std::size_t num_refs)
-          : copied_ir_refs_(num_refs), phi_flags_(num_refs, false),
-            stack_(&stack), trace_(&trace)
-      {}
+      unroll_loop();
+      trace_->state = Trace::State::IR_COMPLETE;
 
-      void handle_invariant_instruction(
-          const std::size_t ref, const IRInstruction<2>& instruction);
+      auto& ir_buffer = trace_->ir_buffer;
+      ir_refs_in_use_.resize(ir_buffer.size(), false);
 
-      IRInstruction<2> make_instruction(
-          const std::size_t ref, const IRInstruction<2>& instruction);
+      for (int i = ir_buffer.size() - 1; i > 0; --i) {
+        const auto& cur_ins = ir_buffer[i];
+        if (not ir_refs_in_use_[i] and cur_ins.needs_dependents()) {
+          ir_buffer[i] = IRInstruction<2>(Operator::NOOP, ValueType::UNKNOWN);
+          continue;
+        }
 
-      IRBuffer<2> generate_phi_instructions() const;
+        const auto& operands = cur_ins.operands();
+        for (const auto& operand : operands) {
+          if (operand.type() == Operand::Type::UNUSED) {
+            break;
+          }
 
-      std::size_t get_ref(const std::size_t ref) const
-      { return copied_ir_refs_[ref].value_or(ref); }
-
-    private:
-      Operand make_operand(const Operand& operand);
-
-      std::size_t create_snapshot(const Snapshot& prev_snapshot);
-
-      void update_phi(const Operand& operand);
-
-      std::vector<Optional<std::size_t>> copied_ir_refs_;
-      std::vector<bool> phi_flags_;
-      const TaggedStack<std::size_t, StackTag, max_stack_size>* stack_;
-      Trace* trace_;
-    };
+          if (operand.type() == Operand::Type::IR_REF) {
+            const auto ir_ref = unsafe_get<std::size_t>(operand);
+            ir_refs_in_use_[ir_ref] = true;
+          }
+        }
+      }
+    }
 
 
-    void unroll_loop(
-        Trace& trace, TaggedStack<std::size_t, StackTag, max_stack_size>& stack)
+    void Optimiser::unroll_loop()
     {
-      auto& ir_buffer = trace.ir_buffer;
+      auto& ir_buffer = trace_->ir_buffer;
       const auto init_ir_size = ir_buffer.size();
-      auto snap = trace.snaps.begin();
-
-      InstructionCopier ins_copier(trace, stack, init_ir_size);
+      copied_ir_refs_.resize(init_ir_size);
+      phi_flags_.resize(init_ir_size, false);
+      auto snap = trace_->snaps.begin();
 
       for (std::size_t ref = 0; ref < init_ir_size - 1; ++ref) {
         if (snap->ir_ref == ref) {
           for (const auto& ir_mapping : snap->stack_ir_map) {
-            stack.set(
-                ir_mapping.first, ins_copier.get_ref(ir_mapping.second.value),
+            stack_->set(
+                ir_mapping.first, get_ref(ir_mapping.second.value),
                 {StackTag::CACHED, StackTag::WRITTEN});
           }
           ++snap;
@@ -95,15 +88,14 @@ namespace loxx
         const auto& instruction = ir_buffer[ref];
 
         if (instruction.is_loop_invariant()) {
-          ins_copier.handle_invariant_instruction(ref, instruction);
+          handle_invariant_instruction(ref, instruction);
           continue;
         }
 
-        ir_buffer.push_back(ins_copier.make_instruction(ref, instruction));
+        ir_buffer.push_back(make_instruction(ref, instruction));
       }
 
-      const auto phis = ins_copier.generate_phi_instructions();
-      ir_buffer.insert(ir_buffer.end(), phis.begin(), phis.end());
+      emit_phi_instructions();
 
       ir_buffer[init_ir_size - 1] = IRInstruction<2>(
           Operator::LOOP_START, ValueType::UNKNOWN);
@@ -115,7 +107,7 @@ namespace loxx
     }
 
 
-    void InstructionCopier::handle_invariant_instruction(
+    void Optimiser::handle_invariant_instruction(
         const std::size_t ref, const IRInstruction<2>& instruction)
     {
       if (instruction.op() == Operator::LOAD) {
@@ -129,7 +121,7 @@ namespace loxx
     }
 
 
-    IRInstruction<2> InstructionCopier::make_instruction(
+    IRInstruction<2> Optimiser::make_instruction(
         const std::size_t ref, const IRInstruction<2>& instruction)
     {
       const auto buf_size = trace_->ir_buffer.size();
@@ -151,7 +143,7 @@ namespace loxx
     }
 
 
-    Operand InstructionCopier::make_operand(const Operand& operand)
+    Operand Optimiser::make_operand(const Operand& operand)
     {
       if (operand.type() == Operand::Type::IR_REF) {
         const auto op_ref = unsafe_get<std::size_t>(operand);
@@ -175,7 +167,7 @@ namespace loxx
     }
 
 
-    std::size_t InstructionCopier::create_snapshot(const Snapshot& prev_snapshot)
+    std::size_t Optimiser::create_snapshot(const Snapshot& prev_snapshot)
     {
       const auto snapshot_index = trace_->snaps.size();
       trace_->snaps.emplace_back(Snapshot{
@@ -192,7 +184,7 @@ namespace loxx
     }
 
 
-    void InstructionCopier::update_phi(const Operand& operand)
+    void Optimiser::update_phi(const Operand& operand)
     {
       if (operand.type() == Operand::Type::IR_REF) {
         const auto op_ref = unsafe_get<std::size_t>(operand);
@@ -203,48 +195,14 @@ namespace loxx
     }
 
 
-    IRBuffer<2> InstructionCopier::generate_phi_instructions() const
+    void Optimiser::emit_phi_instructions() const
     {
-      IRBuffer<2> ret;
       for (std::size_t ref = 0; ref < phi_flags_.size(); ++ref) {
         if (phi_flags_[ref] and copied_ir_refs_[ref]) {
-          ret.emplace_back(
+          trace_->ir_buffer.emplace_back(
               Operator::PHI, ValueType::UNKNOWN,
               Operand(Operand::Type::IR_REF, ref),
               Operand(Operand::Type::IR_REF, *copied_ir_refs_[ref]));
-        }
-      }
-
-      return ret;
-    }
-
-
-    void optimise(Trace& trace)
-    {
-      auto& ir_buffer = trace.ir_buffer;
-
-      for (std::size_t i = 1; i < ir_buffer.size(); ++i) {
-        const auto& prev_instruction = ir_buffer[i - 1];
-        const auto& current_instruction = ir_buffer[i];
-        const auto& current_operands = current_instruction.operands();
-
-        for (std::size_t j = 1; j < 4; ++j) {
-          if (i >= j) {
-            const auto& prior_instruction = ir_buffer[i - j];
-
-            if (instructions_target_same_dest(
-                prior_instruction, current_instruction)) {
-              ir_buffer[i - j] = IRInstruction<2>(
-                  Operator::NOOP, ValueType::UNKNOWN);
-            }
-          }
-        }
-
-        if (instructions_contain_redundant_move(
-            prev_instruction, current_instruction)) {
-          ir_buffer[i - 1].set_operand(0, current_operands[0]);
-          ir_buffer[i] = IRInstruction<2>(
-              Operator::NOOP, ValueType::UNKNOWN);
         }
       }
     }

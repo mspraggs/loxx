@@ -65,6 +65,9 @@ namespace loxx
 
       bool is_recording() const { return is_recording_; }
 
+      auto& virtual_stack() { return stack_; }
+      auto& virtual_stack() const { return stack_; }
+
     private:
       void start_recording(
           const CodeObject::InsPtr ip,
