@@ -187,22 +187,33 @@ namespace loxx
         const auto value = read_constant(ip + 1);
         const auto type = static_cast<ValueType>(value.index());
 
-        const auto operand = [&] {
-          switch (type) {
-          case ValueType::FLOAT:
-            return Operand(unsafe_get<double>(value));
-          case ValueType::BOOLEAN:
-            return Operand(unsafe_get<bool>(value));
-          case ValueType::OBJECT:
-            return Operand(unsafe_get<ObjectPtr>(value));
-          case ValueType::UNKNOWN:
-            return Operand(Operand::Type::LITERAL_NIL);
+
+        const auto ir_ref = [&] {
+          const auto existing_constant = constant_map_.insert(
+              value, trace_->ir_buffer.size());
+
+          if (not existing_constant.second) {
+            return existing_constant.first->second;
           }
+
+          const auto operand = [&] {
+            switch (type) {
+            case ValueType::FLOAT:
+              return Operand(unsafe_get<double>(value));
+            case ValueType::BOOLEAN:
+              return Operand(unsafe_get<bool>(value));
+            case ValueType::OBJECT:
+              return Operand(unsafe_get<ObjectPtr>(value));
+            case ValueType::UNKNOWN:
+              return Operand(Operand::Type::LITERAL_NIL);
+            }
+          } ();
+          emit_ir(Operator::LITERAL, type, operand);
+
+          return existing_constant.first->second;
         } ();
 
-        stack_.push(
-            emit_ir(Operator::LITERAL, type, operand),
-            {Tag::CACHED, Tag::WRITTEN});
+        stack_.push(ir_ref, {Tag::CACHED, Tag::WRITTEN});
         break;
       }
 
