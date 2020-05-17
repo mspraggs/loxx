@@ -161,6 +161,13 @@ namespace loxx
         const RegisterX86 dst, const T value)
         -> typename std::enable_if_t<sizeof(T) == 8, void>
     {
+      const std::uint64_t value_as_int =
+          *(reinterpret_cast<const std::uint64_t*>(&value));
+      if (value_as_int >> 32 == 0) {
+        emit_move_reg_imm(dst, static_cast<std::uint32_t>(value_as_int));
+        return;
+      }
+
       const std::uint8_t rex_prefix =
           reg_is_64_bit(dst) ? 0b01001001 : 0b01001000;
       assembly().add_byte(rex_prefix);
