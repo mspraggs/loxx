@@ -235,6 +235,9 @@ namespace loxx
         } ();
 
         if (stack->size() <= slot) {
+          while (stack->size() < slot) {
+            stack->emplace();
+          }
           stack->push(value);
         }
         else {
