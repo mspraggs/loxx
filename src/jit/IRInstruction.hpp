@@ -135,6 +135,7 @@ namespace loxx
       { operands_[i] = value; }
 
       bool is_loop_invariant() const;
+      bool needs_dependents() const;
 
     private:
       ValueType type_;
@@ -165,6 +166,20 @@ namespace loxx
         return true;
       }
       return false;
+    }
+
+
+    template <std::size_t N>
+    bool IRInstruction<N>::needs_dependents() const
+    {
+      if (op_ == Operator::LOOP or
+          op_ == Operator::PHI or
+          op_ == Operator::CHECK_FALSE or
+          op_ == Operator::CHECK_TRUE or
+          op_ == Operator::CHECK_TYPE) {
+        return false;
+      }
+      return true;
     }
 
 
