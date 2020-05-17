@@ -376,8 +376,8 @@ namespace loxx
       const auto offset_pos = emit_conditional_jump(condition, 0x100);
       const auto mcode_size = trace_->assembly.size();
 
-      emit_move_reg_imm(general_scratch_, exit_num);
-      emit_push(general_scratch_);
+      /// TODO: Validate exit num
+      emit_push(static_cast<std::uint32_t>(exit_num));
       emit_move_reg_imm(
           general_scratch_, get_exit_stub_pointer<Platform::X86_64>());
       emit_jump(general_scratch_);
@@ -399,8 +399,8 @@ namespace loxx
       const auto offset_pos = emit_conditional_jump(Condition::EQUAL, 0x100);
       const auto mcode_size = trace_->assembly.size();
 
-      emit_move_reg_imm(general_scratch_, exit_num);
-      emit_push(general_scratch_);
+      /// TODO: Validate exit num
+      emit_push(static_cast<std::uint32_t>(exit_num));
       emit_move_reg_imm(
           general_scratch_, get_exit_stub_pointer<Platform::X86_64>());
       emit_jump(general_scratch_);
@@ -563,6 +563,13 @@ namespace loxx
         trace_->assembly.add_byte(0x41);
       }
       trace_->assembly.add_byte(0x50 | get_reg_rm_bits(src));
+    }
+
+
+    void Assembler<Platform::X86_64>::emit_push(const std::uint32_t value)
+    {
+      trace_->assembly.add_byte(0x68);
+      emit_immediate(value);
     }
 
 

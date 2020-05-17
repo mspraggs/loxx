@@ -87,6 +87,7 @@ namespace loxx
 
       void emit_return();
       void emit_push(const RegisterX86 src);
+      void emit_push(const std::uint32_t value);
       void emit_pop(const RegisterX86 dst);
 
       void emit_add_reg_reg(
