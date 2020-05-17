@@ -164,7 +164,7 @@ namespace loxx
     {
       const std::uint64_t value_as_int =
           *(reinterpret_cast<const std::uint64_t*>(&value));
-      if (value_as_int >> 32 == 0) {
+      if (value_as_int < std::numeric_limits<std::uint32_t>::max()) {
         emit_move_reg_imm(dst, static_cast<std::uint32_t>(value_as_int));
         return;
       }
