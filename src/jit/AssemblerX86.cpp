@@ -373,7 +373,7 @@ namespace loxx
           get_inverse_condition(*last_condition_) :
           *last_condition_;
       const auto exit_num = get<std::size_t>(instruction.operand(1));
-      const auto offset_pos = emit_conditional_jump(condition, 0x100);
+      const auto offset_pos = emit_conditional_jump(condition, 0x01);
       const auto mcode_size = trace_->assembly.size();
 
       /// TODO: Validate exit num
@@ -382,7 +382,7 @@ namespace loxx
           general_scratch_, get_exit_stub_pointer<Platform::X86_64>());
       emit_jump(general_scratch_);
 
-      const std::int32_t offset = trace_->assembly.size() - mcode_size;
+      const std::int8_t offset = trace_->assembly.size() - mcode_size;
       trace_->assembly.write_integer(offset_pos, offset);
     }
 
@@ -396,7 +396,7 @@ namespace loxx
       emit_move_reg_mem(general_scratch_, general_scratch_);
       emit_compare_reg_imm(
           general_scratch_, static_cast<std::size_t>(instruction.type()));
-      const auto offset_pos = emit_conditional_jump(Condition::EQUAL, 0x100);
+      const auto offset_pos = emit_conditional_jump(Condition::EQUAL, 0x01);
       const auto mcode_size = trace_->assembly.size();
 
       /// TODO: Validate exit num
@@ -405,7 +405,7 @@ namespace loxx
           general_scratch_, get_exit_stub_pointer<Platform::X86_64>());
       emit_jump(general_scratch_);
 
-      const std::int32_t offset = trace_->assembly.size() - mcode_size;
+      const std::int8_t offset = trace_->assembly.size() - mcode_size;
       trace_->assembly.write_integer(offset_pos, offset);
     }
 
