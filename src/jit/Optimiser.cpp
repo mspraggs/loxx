@@ -47,23 +47,7 @@ namespace loxx
       ir_refs_in_use_.resize(ir_buffer.size(), false);
 
       for (int i = ir_buffer.size() - 1; i > 0; --i) {
-        const auto& cur_ins = ir_buffer[i];
-        if (not ir_refs_in_use_[i] and cur_ins.needs_dependents()) {
-          ir_buffer[i] = IRInstruction<2>(Operator::NOOP, ValueType::UNKNOWN);
-          continue;
-        }
-
-        const auto& operands = cur_ins.operands();
-        for (const auto& operand : operands) {
-          if (operand.type() == Operand::Type::UNUSED) {
-            break;
-          }
-
-          if (operand.type() == Operand::Type::IR_REF) {
-            const auto ir_ref = unsafe_get<std::size_t>(operand);
-            ir_refs_in_use_[ir_ref] = true;
-          }
-        }
+        try_eliminate_ir_ref(i);
       }
     }
 
@@ -104,6 +88,29 @@ namespace loxx
       ir_buffer.emplace_back(
           Operator::LOOP, ValueType::UNKNOWN,
           Operand(Operand::Type::JUMP_OFFSET, jump_size));
+    }
+
+
+    void Optimiser::try_eliminate_ir_ref(const std::size_t ref)
+    {
+      auto& ir_buffer = trace_->ir_buffer;
+      const auto& cur_ins = ir_buffer[ref];
+      if (not ir_refs_in_use_[ref] and cur_ins.needs_dependents()) {
+        ir_buffer[ref] = IRInstruction<2>(Operator::NOOP, ValueType::UNKNOWN);
+        return;
+      }
+
+      const auto& operands = cur_ins.operands();
+      for (const auto& operand : operands) {
+        if (operand.type() == Operand::Type::UNUSED) {
+          return;
+        }
+
+        if (operand.type() == Operand::Type::IR_REF) {
+          const auto ir_ref = unsafe_get<std::size_t>(operand);
+          ir_refs_in_use_[ir_ref] = true;
+        }
+      }
     }
 
 

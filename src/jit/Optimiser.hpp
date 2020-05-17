@@ -47,6 +47,8 @@ namespace loxx
     private:
       void unroll_loop();
 
+      void try_eliminate_ir_ref(const std::size_t ref);
+
       void handle_invariant_instruction(
           const std::size_t ref, const IRInstruction<2>& instruction);
       IRInstruction<2> make_instruction(
