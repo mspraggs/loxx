@@ -98,7 +98,6 @@ namespace loxx
 
       HashSet<CodeObject::InsPtr, CodeObject::InsPtrHasher> ignored_blocks_;
       CodeObject::InsPtrHashTable<std::size_t> block_counts_;
-      HashTable<std::size_t, std::size_t> exit_assignments_;
       TaggedStack<std::size_t, Tag, max_stack_size> stack_;
       const Stack<Value, max_stack_size>* vm_stack_ptr_;
       HashTable<Value, std::size_t, VariantHasher> constant_map_;
