@@ -43,14 +43,14 @@ namespace loxx
         }
         std::cout << std::setw(4) << std::setfill('0') << std::right
                   << i << "  " << std::left;
-        const auto& allocation = trace.allocation_map.get(i);
+        const auto& allocation = trace.allocation_map[i];
         if (allocation) {
-          if (holds_alternative<Register>(allocation->second)) {
-            const auto reg = unsafe_get<Register>(allocation->second);
+          if (holds_alternative<Register>(*allocation)) {
+            const auto reg = unsafe_get<Register>(*allocation);
             std::cout << std::setw(6) << std::setfill(' ') << reg << ' ';
           }
           else {
-            const auto slot = unsafe_get<std::size_t>(allocation->second);
+            const auto slot = unsafe_get<std::size_t>(*allocation);
             std::cout << '+' << std::setw(5) << std::setfill(' ') << slot << ' ';
           }
         }
@@ -115,15 +115,19 @@ namespace loxx
         const AllocationMap<Register>& allocation_map)
     {
       std::cout << "=== Register Allocation Map ===\n";
-      for (const auto& allocation : allocation_map) {
-        const auto is_register = holds_alternative<Register>(allocation.second);
-        std::cout << allocation.first << " -> ";
+      for (unsigned int ref = 0; ref < allocation_map.size(); ++ref) {
+        const auto& allocation = allocation_map[ref];
+        if (not allocation) {
+          continue;
+        }
+        const auto is_register = holds_alternative<Register>(*allocation);
+        std::cout << ref << " -> ";
         if (is_register) {
-          std::cout << unsafe_get<Register>(allocation.second) << "\n";
+          std::cout << unsafe_get<Register>(*allocation) << "\n";
         }
         else {
           std::cout << "[ +" << std::right << std::setw(3) << std::setfill('0')
-                    << unsafe_get<std::size_t>(allocation.second) << " ]\n";
+                    << unsafe_get<std::size_t>(*allocation) << " ]\n";
         }
       }
     }

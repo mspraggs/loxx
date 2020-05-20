@@ -105,6 +105,7 @@ namespace loxx
 
     void RegisterAllocator::allocate(Trace& trace)
     {
+      trace.allocation_map.resize(trace.ir_buffer.size(), {});
       auto live_ranges = compute_live_ranges(trace.ir_buffer, trace.snaps);
       const auto& ir_buffer = trace.ir_buffer;
 

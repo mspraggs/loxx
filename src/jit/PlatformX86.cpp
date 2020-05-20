@@ -215,8 +215,8 @@ namespace loxx
         const auto slot = stack_mapping.first;
         const auto ir_ref = stack_mapping.second.value;
         const auto& ir_instruction = trace->ir_buffer[ir_ref];
-        const auto& allocation = trace->allocation_map.get(ir_ref);
-        const auto reg = get<RegisterX86>(allocation.value().second);
+        const auto& allocation = trace->allocation_map[ir_ref];
+        const auto reg = get<RegisterX86>(allocation.value());
         const auto reg_idx = get_reg_index(reg);
 
         const auto value = [&] {

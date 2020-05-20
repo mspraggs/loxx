@@ -49,7 +49,7 @@ namespace loxx
 
 
     template <typename Reg>
-    using AllocationMap = HashTable<std::size_t, Allocation<Reg>>;
+    using AllocationMap = std::vector<Optional<Allocation<Reg>>>;
 
 
     class RegisterAllocator

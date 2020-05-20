@@ -920,17 +920,13 @@ namespace loxx
     Optional<RegisterX86> Assembler<Platform::X86_64>::get_register(
         const std::size_t ref) const
     {
-      const auto pos = trace_->allocation_map.find(ref);
+      const auto& allocation = trace_->allocation_map[ref];
 
-      if (pos == trace_->allocation_map.end()) {
-        return {};
+      if (allocation and holds_alternative<RegisterX86>(*allocation)) {
+        return unsafe_get<RegisterX86>(*allocation);
       }
 
-      if (not holds_alternative<RegisterX86>(pos->second)) {
-        return {};
-      }
-
-      return unsafe_get<RegisterX86>(pos->second);
+      return {};
     }
 
 
