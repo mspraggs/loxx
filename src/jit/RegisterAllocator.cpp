@@ -55,7 +55,6 @@ namespace loxx
       for (std::size_t i = 0; i < ir_buffer.size(); ++i) {
         const auto& instruction = ir_buffer[i];
 
-        /// TODO: Refactor this into a function in line with DRY
         if (instruction.type() != ValueType::UNKNOWN) {
           update_live_ranges(i, i);
         }
@@ -105,6 +104,7 @@ namespace loxx
 
     void RegisterAllocator::allocate(Trace& trace)
     {
+      trace_ = &trace;
       trace.allocation_map.resize(trace.ir_buffer.size(), {});
       auto live_ranges = compute_live_ranges(trace.ir_buffer, trace.snaps);
       const auto& ir_buffer = trace.ir_buffer;
@@ -126,27 +126,8 @@ namespace loxx
           spill_at_interval(interval);
         }
         else {
-          registers_[interval.first] = *candidate_register;
+          trace.allocation_map[interval.first] = *candidate_register;
           insert_active_interval(interval);
-        }
-      }
-
-      for (const auto& live_range : live_ranges) {
-        const auto& virtual_register = live_range.first;
-        const auto& interval = live_range.second;
-
-        if (interval.first == interval.second) {
-          continue;
-        }
-
-        const auto& reg = registers_.get(interval.first);
-        if (reg) {
-          trace.allocation_map[virtual_register] = Allocation<Register>(
-              InPlace<Register>(), reg->second);
-        }
-        else {
-          trace.allocation_map[virtual_register] = Allocation<Register>(
-              InPlace<std::size_t>(), stack_slots_[interval.first]);
         }
       }
     }
@@ -168,8 +149,8 @@ namespace loxx
         }
 
         to_remove.push_back(it);
-        const auto& reg = registers_[active_interval.first];
-        add_register(reg);
+        const auto& reg = trace_->allocation_map[active_interval.first];
+        add_register(get<Register>(reg.value()));
       }
 
       for (auto it = to_remove.rbegin(); it != to_remove.rend(); ++it) {
@@ -183,10 +164,9 @@ namespace loxx
       const auto& spill_interval = active_intervals_.back();
 
       if (spill_interval.second > interval.second) {
-        const auto elem = registers_.find(spill_interval.first);
-        registers_[interval.first] = elem->second;
-        registers_.erase(elem);
-        stack_slots_[spill_interval.first] = stack_index_++;
+        const auto elem = trace_->allocation_map[spill_interval.first];
+        trace_->allocation_map[interval.first] = get<Register>(elem.value());
+        trace_->allocation_map[spill_interval.first] = stack_index_++;
 
         remove_active_interval(spill_interval);
         insert_active_interval(interval);

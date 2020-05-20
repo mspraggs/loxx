@@ -70,10 +70,13 @@ namespace loxx
 
       bool debug_;
       std::size_t stack_index_;
-      HashTable<std::size_t, Register> registers_;
-      HashTable<std::size_t, std::size_t> stack_slots_;
+      // HashTable<std::size_t, Register> registers_;
+      // HashTable<std::size_t, std::size_t> stack_slots_;
+      std::vector<Optional<Register>> registers_;
+      std::vector<Optional<std::size_t>> stack_slots_;
       std::vector<bool> register_pool_;
       std::vector<Range> active_intervals_;
+      Trace* trace_;
     };
   }
 }
