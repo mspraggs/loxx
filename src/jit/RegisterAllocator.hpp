@@ -66,12 +66,13 @@ namespace loxx
       void insert_active_interval(const Range& interval);
       void remove_active_interval(const Range& interval);
       Optional<Register> get_register(const ValueType type);
+      void add_register(const Register reg);
 
       bool debug_;
       std::size_t stack_index_;
       HashTable<std::size_t, Register> registers_;
       HashTable<std::size_t, std::size_t> stack_slots_;
-      HashSet<Register> register_pool_;
+      std::vector<bool> register_pool_;
       std::vector<Range> active_intervals_;
     };
   }

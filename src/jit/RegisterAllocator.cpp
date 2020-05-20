@@ -34,21 +34,21 @@ namespace loxx
     std::vector<std::pair<std::size_t, Range>> compute_live_ranges(
         const IRBuffer<2>& ir_buffer, const std::vector<Snapshot>& snapshots)
     {
-      HashTable<std::size_t, std::size_t> operand_start_map;
+      std::vector<Optional<std::size_t>> operand_start_map(ir_buffer.size());
       std::vector<std::pair<std::size_t, Range>> live_ranges;
       live_ranges.reserve(ir_buffer.size() * 2);
       auto snap_it = snapshots.begin();
 
       const auto update_live_ranges = [&] (
           const std::size_t ref0, const std::size_t ref1) {
-        const auto operand_start =
-            operand_start_map.insert(ref0, live_ranges.size());
+        const auto new_entry = not static_cast<bool>(operand_start_map[ref0]);
 
-        if (operand_start.second) {
+        if (new_entry) {
+          operand_start_map[ref0] = live_ranges.size();
           live_ranges.push_back({ref0, Range{ref1, ref1}});
         }
 
-        auto& live_range = live_ranges[operand_start.first->second];
+        auto& live_range = live_ranges[*operand_start_map[ref0]];
         live_range.second.second = ref1;
       };
 
@@ -89,8 +89,16 @@ namespace loxx
         const bool debug, const std::vector<Register>& registers)
         : debug_(debug), stack_index_(0)
     {
+      const auto max_reg = std::max_element(
+          registers.begin(), registers.end(),
+          [] (const Register first, const Register second) {
+            return static_cast<unsigned int>(first) <
+                static_cast<unsigned int>(second);
+          });
+
+      register_pool_.resize(static_cast<unsigned int>(*max_reg) + 1, false);
       for (const auto reg : registers) {
-        register_pool_.insert(reg);
+        add_register(reg);
       }
     }
 
@@ -160,7 +168,7 @@ namespace loxx
 
         to_remove.push_back(it);
         const auto& reg = registers_[active_interval.first];
-        register_pool_.insert(reg);
+        add_register(reg);
       }
 
       for (auto it = to_remove.rbegin(); it != to_remove.rend(); ++it) {
@@ -215,18 +223,19 @@ namespace loxx
     Optional<Register> RegisterAllocator::get_register(
         const ValueType type)
     {
-      const auto elem = std::find_if(
-        register_pool_.begin(), register_pool_.end(),
-        [=] (const Register& reg) {
-          return reg_supports_value_type(reg, type);
+      for (unsigned int i = 0; i < register_pool_.size(); ++i) {
+        if (register_pool_[i] and
+            reg_supports_value_type(static_cast<Register>(i), type)) {
+          register_pool_[i] = false;
+          return static_cast<Register>(i);
         }
-      );
-      if (elem == register_pool_.end()) {
-        return {};
       }
-      const auto ret = *elem;
-      register_pool_.erase(elem);
-      return ret;
+    }
+
+
+    void RegisterAllocator::add_register(const Register reg)
+    {
+      register_pool_[static_cast<unsigned int>(reg)] = true;
     }
   }
 }
