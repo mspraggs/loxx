@@ -92,10 +92,9 @@ namespace loxx
     auto HashStructIterator<Item, Hash, Compare>::operator++()
         -> HashStructIterator<Item, Hash, Compare>&
     {
-      ++it_;
-      while (it_ != finish_ and not *it_) {
-        ++it_;
-      }
+      do {
+        it_++;
+      } while (it_ != finish_ and not *it_);
 
       return *this;
     }
@@ -107,10 +106,9 @@ namespace loxx
     {
       const auto ret = *this;
 
-      it_++;
-      while (it_ != finish_ and not *it_) {
+      do {
         it_++;
-      }
+      } while (it_ != finish_ and not *it_);
 
       return ret;
     }
