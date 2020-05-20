@@ -173,6 +173,7 @@ namespace loxx
     bool IRInstruction<N>::needs_dependents() const
     {
       if (op_ == Operator::LOOP or
+          op_ == Operator::LOOP_START or
           op_ == Operator::PHI or
           op_ == Operator::CHECK_FALSE or
           op_ == Operator::CHECK_TRUE or
