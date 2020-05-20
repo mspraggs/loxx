@@ -224,6 +224,9 @@ namespace loxx
   {
     data_.clear();
     data_.resize(detail::default_size);
+    num_used_slots_ = 0;
+    max_used_slots_ = detail::default_max_used_slots;
+    mask_ = detail::default_size - 1;
   }
 
 
