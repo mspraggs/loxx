@@ -141,7 +141,7 @@ namespace loxx
     template <typename T, typename Tag, std::size_t N>
     void TaggedStack<T, Tag, N>::reset()
     {
-      stack_.fill(Elem{0, 0});
+      std::fill(stack_.begin(), stack_.begin() + top_, Elem{0, 0});
       top_ = 0;
     }
 
