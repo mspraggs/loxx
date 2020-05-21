@@ -256,6 +256,11 @@ namespace loxx
         ".globl asm_enter_x86_64\n"
         "asm_enter_x86_64:\n"
         "push %%rbp\n"
+        "push %%r15\n"
+        "push %%r14\n"
+        "push %%r13\n"
+        "push %%r12\n"
+        "push %%rbx\n"
         "movq %%rsp, %%rbp\n"
         "push %%rdi\n"   // trace
         "push %%rdx\n"   // exit_handler
@@ -316,6 +321,11 @@ namespace loxx
         "callq *%%r14\n"
         // Fix up stack pointer - we've use 32 + 128 + 128 = 288 bytes
         "addq $288, %%rsp\n"
+        "pop %%rbx\n"
+        "pop %%r12\n"
+        "pop %%r13\n"
+        "pop %%r14\n"
+        "pop %%r15\n"
         "pop %%rbp\n"
         "ret\n"
         : :
