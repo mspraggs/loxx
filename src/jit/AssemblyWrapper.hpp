@@ -54,6 +54,8 @@ namespace loxx
       template <typename... Args>
       void add_bytes(Args&&... bytes);
 
+      void add_bytes(std::initializer_list<std::uint8_t> bytes);
+
       void write_byte(const std::size_t pos, const std::uint8_t byte);
 
       template <typename Iter>
