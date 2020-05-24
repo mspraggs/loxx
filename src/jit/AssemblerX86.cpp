@@ -876,18 +876,39 @@ namespace loxx
         const RegisterX86 dst, const RegisterX86 src,
         const unsigned int offset, const bool read)
     {
-      const std::uint8_t offset_bits =
-          src != RegisterX86::RIP ? get_offset_bits(offset) : 0;
+      if (reg_supports_ptr(src) and reg_supports_ptr(dst)) {
+        const std::uint8_t offset_bits =
+            src != RegisterX86::RIP ? get_offset_bits(offset) : 0;
+        const std::uint8_t rex_prefix =
+            0b01001000 | get_rex_prefix_for_regs(src, dst);
+        const std::uint8_t mod_rm_byte =
+            get_mod_rm_byte_for_regs(dst, src, offset_bits);
+        trace_->assembly.add_bytes(rex_prefix, read ? 0x8b : 0x89, mod_rm_byte);
+        return emit_displacement(offset);
+      }
+      else if (
+          (reg_supports_float(dst) and read) or
+          (reg_supports_float(src) and not read)) {
+        const auto reg0 = read ? src : dst;
+        const auto reg1 = read ? dst : src;
+        const std::uint8_t offset_bits =
+            reg0 != RegisterX86::RIP ? get_offset_bits(offset) : 0;
 
-      const std::uint8_t rex_prefix =
-          0b01001000 | get_rex_prefix_for_regs(src, dst);
-      const std::uint8_t mod_rm_byte =
-          get_mod_rm_byte_for_regs(dst, src, offset_bits);
-      trace_->assembly.add_byte(rex_prefix);
-      trace_->assembly.add_byte(read ? 0x8b : 0x89);
-      trace_->assembly.add_byte(mod_rm_byte);
+        const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(reg0, reg1);
+        const auto mod_rm_byte =
+            get_mod_rm_byte_for_regs(reg1, reg0, offset_bits);
 
-      return emit_displacement(offset);
+        trace_->assembly.add_byte(0xf2);
+        if (rex_prefix_reg_bits != 0) {
+          trace_->assembly.add_bytes(0x40 | rex_prefix_reg_bits);
+        }
+        trace_->assembly.add_bytes(0x0f, read ? 0x10 : 0x11, mod_rm_byte);
+
+        return emit_displacement(offset);
+      }
+      else {
+        throw JITError("invalid move registers");
+      }
     }
 
 
