@@ -101,8 +101,14 @@ namespace loxx
       std::size_t emit_move_reg_mem(
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int displacement = 0);
-      void emit_move_mem_reg(
+      std::size_t emit_move_reg_mem(
+          const RegisterX86 dst, const Value* src,
+          const unsigned int displacement = 0);
+      std::size_t emit_move_mem_reg(
           const RegisterX86 dst, const RegisterX86 src,
+          const unsigned int displacement = 0);
+      std::size_t emit_move_mem_reg(
+          const RegisterX86 dst, const Value* src,
           const unsigned int displacement = 0);
       template <typename T>
       auto emit_move_reg_imm(

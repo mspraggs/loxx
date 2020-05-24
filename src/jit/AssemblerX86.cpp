@@ -284,8 +284,7 @@ namespace loxx
       // not_okay:
       //     ???
 
-      emit_move_reg_imm(general_scratch_, location);
-      emit_move_reg_mem(general_scratch_, general_scratch_);
+      emit_move_reg_mem(general_scratch_, location);
       emit_compare_reg_imm(general_scratch_, static_cast<std::size_t>(type));
 
       const auto short_jump_pos = emit_conditional_jump(Condition::EQUAL, 0);
@@ -392,8 +391,7 @@ namespace loxx
     {
       const auto address = get_stack_address(instruction.operand(0));
       const auto exit_num = get<std::size_t>(instruction.operand(1));
-      emit_move_reg_imm(general_scratch_, address);
-      emit_move_reg_mem(general_scratch_, general_scratch_);
+      emit_move_reg_mem(general_scratch_, address);
       emit_compare_reg_imm(
           general_scratch_, static_cast<std::size_t>(instruction.type()));
       const auto offset_pos = emit_conditional_jump(Condition::EQUAL, 0x01);
@@ -461,8 +459,6 @@ namespace loxx
         const auto offset_pos = emit_move_reg_mem(
             *dst_reg, RegisterX86::RIP, 0x100);
         constant_map_[value].emplace_back(offset_pos, trace_->assembly.size());
-        // const auto value = unsafe_get<ObjectPtr>(operand);
-        // emit_move_reg_imm(*dst_reg, value);
       }
     }
 
@@ -481,8 +477,7 @@ namespace loxx
         throw JITError("invalid source address for load");
       }
 
-      emit_move_reg_imm(general_scratch_, address);
-      emit_move_reg_mem(*dst_reg, general_scratch_, 8);
+      emit_move_reg_mem(*dst_reg, address, 8);
     }
 
 
@@ -666,56 +661,31 @@ namespace loxx
         const RegisterX86 dst, const RegisterX86 src,
         const unsigned int displacement)
     {
-      if (reg_supports_ptr(dst)) {
-        return emit_move_reg_to_from_mem(dst, src, displacement, true);
-      }
-      else if (reg_supports_float(dst)) {
-        const std::uint8_t offset_bits =
-            src != RegisterX86::RIP ? get_offset_bits(displacement) : 0;
-
-        const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(src, dst);
-        const auto mod_rm_byte =
-            get_mod_rm_byte_for_regs(dst, src, offset_bits);
-
-        trace_->assembly.add_byte(0xf2);
-        if (rex_prefix_reg_bits != 0) {
-          trace_->assembly.add_bytes(0x40 | rex_prefix_reg_bits);
-        }
-        trace_->assembly.add_bytes(0x0f, 0x10, mod_rm_byte);
-
-        return emit_displacement(displacement);
-      }
-      else {
-        throw JITError("invalid move registers");
-      }
+      return emit_move_reg_to_from_mem(dst, src, displacement, true);
     }
 
 
-    void Assembler<Platform::X86_64>::emit_move_mem_reg(
+    std::size_t Assembler<Platform::X86_64>::emit_move_reg_mem(
+        const RegisterX86 dst, const Value* src,
+        const unsigned int displacement)
+    {
+      return emit_move_reg_to_from_mem(dst, src, displacement, true);
+    }
+
+
+    std::size_t Assembler<Platform::X86_64>::emit_move_mem_reg(
         const RegisterX86 dst, const RegisterX86 src,
         const unsigned int displacement)
     {
-      if (reg_supports_ptr(src)) {
-        emit_move_reg_to_from_mem(dst, src, displacement, false);
-      }
-      else if (reg_supports_float(src)) {
-        const std::uint8_t offset_bits = get_offset_bits(displacement);
+      return emit_move_reg_to_from_mem(dst, src, displacement, false);
+    }
 
-        const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(dst, src);
-        const auto mod_rm_byte =
-            get_mod_rm_byte_for_regs(src, dst, offset_bits);
 
-        trace_->assembly.add_byte(0xf2);
-        if (rex_prefix_reg_bits != 0) {
-          trace_->assembly.add_bytes(0x40 | rex_prefix_reg_bits);
-        }
-        trace_->assembly.add_bytes(0x0f, 0x11, mod_rm_byte);
-
-        emit_displacement(displacement);
-      }
-      else {
-        throw JITError("invalid move registers");
-      }
+    std::size_t Assembler<Platform::X86_64>::emit_move_mem_reg(
+        const RegisterX86 dst, const Value* src,
+        const unsigned int displacement)
+    {
+      return emit_move_reg_to_from_mem(dst, src, displacement, false);
     }
 
 
