@@ -891,6 +891,51 @@ namespace loxx
     }
 
 
+    std::size_t Assembler<Platform::X86_64>::emit_move_reg_to_from_mem(
+        const RegisterX86 reg, const Value* address,
+        const unsigned int displacement, const bool read)
+    {
+      const auto is_float = reg_supports_float(reg);
+      const std::uint8_t rex_prefix = [&] {
+        if (is_float) {
+          return reg_is_64_bit(reg) * 0x44;
+        }
+        else {
+          return 0b01001000 | (reg_is_64_bit(reg) << 2);
+        }
+      } ();
+
+      const std::uint8_t opcode = [&] {
+        if (is_float) {
+          return 0x10 | (not read);
+        }
+        else {
+          return 0x89 | (read << 1);
+        }
+      } ();
+      const std::uint8_t mod_rm_byte = (get_reg_rm_bits(reg) << 3) | 0b0100;
+      const std::uint8_t sib_byte = 0x25;
+
+      if (is_float) {
+        trace_->assembly.add_byte(0xf2);
+        if (rex_prefix != 0) {
+          trace_->assembly.add_byte(rex_prefix);
+        }
+        trace_->assembly.add_bytes(
+            {0x0f, opcode, mod_rm_byte, sib_byte});
+      }
+      else {
+        trace_->assembly.add_bytes(
+            {rex_prefix, opcode, mod_rm_byte, sib_byte});
+      }
+
+      const auto ret = trace_->assembly.size();
+      auto value = reinterpret_cast<std::uint64_t>(address) + displacement;
+      emit_immediate(static_cast<std::uint32_t>(value));
+      return ret;
+    }
+
+
     void Assembler<Platform::X86_64>::emit_offset(const std::int32_t offset)
     {
       const auto is_short = offset <= 127 and offset >= -128;

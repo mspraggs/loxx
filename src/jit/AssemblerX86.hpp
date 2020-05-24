@@ -132,6 +132,9 @@ namespace loxx
       std::size_t emit_move_reg_to_from_mem(
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int offset, const bool read);
+      std::size_t emit_move_reg_to_from_mem(
+          const RegisterX86 dst, const Value* address,
+          const unsigned int displacement, const bool read);
 
       void emit_offset(const std::int32_t offset);
 
