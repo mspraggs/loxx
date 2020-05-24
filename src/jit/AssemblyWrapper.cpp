@@ -27,7 +27,6 @@ namespace loxx
   {
     void AssemblyWrapper::add_byte(const std::uint8_t byte)
     {
-      check_unlocked();
       assembly_.push_back(byte);
     }
 
@@ -35,7 +34,6 @@ namespace loxx
     void AssemblyWrapper::write_byte(
         const std::size_t pos, const std::uint8_t byte)
     {
-      check_unlocked();
       assembly_[pos] = byte;
     }
 

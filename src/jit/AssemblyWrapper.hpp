@@ -101,7 +101,6 @@ namespace loxx
     template <typename Iter>
     void AssemblyWrapper::add_bytes(const Iter begin, const Iter end)
     {
-      check_unlocked();
       assembly_.insert(assembly_.end(), begin, end);
     }
 
@@ -117,7 +116,6 @@ namespace loxx
     void AssemblyWrapper::write_bytes(
         const std::size_t pos, const Iter begin, const Iter end)
     {
-      check_unlocked();
       std::copy(begin, end, assembly_.begin() + pos);
     }
 
