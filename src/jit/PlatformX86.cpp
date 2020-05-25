@@ -45,86 +45,39 @@ namespace loxx
 
     bool reg_is_64_bit(const RegisterX86 reg)
     {
-      switch (reg) {
-        case RegisterX86::R8:
-        case RegisterX86::R9:
-        case RegisterX86::R10:
-        case RegisterX86::R11:
-        case RegisterX86::R12:
-        case RegisterX86::R13:
-        case RegisterX86::R14:
-        case RegisterX86::R15:
-        case RegisterX86::XMM8:
-        case RegisterX86::XMM9:
-        case RegisterX86::XMM10:
-        case RegisterX86::XMM11:
-        case RegisterX86::XMM12:
-        case RegisterX86::XMM13:
-        case RegisterX86::XMM14:
-        case RegisterX86::XMM15:
-          return true;
-        default:
-          return false;
-        }
+      return (
+          static_cast<std::uint8_t>(reg) >=
+          static_cast<std::uint8_t>(RegisterX86::R8) and
+          static_cast<std::uint8_t>(reg) <=
+          static_cast<std::uint8_t>(RegisterX86::R15)) or (
+          static_cast<std::uint8_t>(reg) >=
+          static_cast<std::uint8_t>(RegisterX86::XMM8));
     }
 
 
     bool reg_supports_float(const RegisterX86 reg)
     {
-      switch (reg) {
-      case RegisterX86::XMM0:
-      case RegisterX86::XMM1:
-      case RegisterX86::XMM2:
-      case RegisterX86::XMM3:
-      case RegisterX86::XMM4:
-      case RegisterX86::XMM5:
-      case RegisterX86::XMM6:
-      case RegisterX86::XMM7:
-      case RegisterX86::XMM8:
-      case RegisterX86::XMM9:
-      case RegisterX86::XMM10:
-      case RegisterX86::XMM11:
-      case RegisterX86::XMM12:
-      case RegisterX86::XMM13:
-      case RegisterX86::XMM14:
-      case RegisterX86::XMM15:
-        return true;
-      default:
-        return false;
-      }
+      return
+          static_cast<std::uint8_t>(reg) >=
+          static_cast<std::uint8_t>(RegisterX86::XMM0);
     }
 
 
     bool reg_supports_int(const RegisterX86 reg)
     {
-      switch (reg) {
-      case RegisterX86::RAX:
-      case RegisterX86::RBX:
-      case RegisterX86::RCX:
-      case RegisterX86::RDX:
-      case RegisterX86::RSI:
-      case RegisterX86::RDI:
-      case RegisterX86::R8:
-      case RegisterX86::R9:
-      case RegisterX86::R10:
-      case RegisterX86::R11:
-      case RegisterX86::R12:
-      case RegisterX86::R13:
-      case RegisterX86::R14:
-      case RegisterX86::R15:
-        return true;
-      default:
-        return false;
-      }
+      return
+          reg != RegisterX86::RSP and
+          reg != RegisterX86::RBP and
+          static_cast<std::uint8_t>(reg) <=
+          static_cast<std::uint8_t>(RegisterX86::R15);
     }
 
 
     bool reg_supports_ptr(const RegisterX86 reg)
     {
-      if (reg == RegisterX86::RBP or reg == RegisterX86::RSP) {
-        return true;
-      }
-      return reg_supports_int(reg);
+      return
+          static_cast<std::uint8_t>(reg) <=
+          static_cast<std::uint8_t>(RegisterX86::R15);
     }
 
 
