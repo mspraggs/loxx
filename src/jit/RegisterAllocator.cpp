@@ -43,55 +43,42 @@ namespace loxx
     }
 
 
-    std::vector<std::pair<std::size_t, Range>> compute_live_ranges(
+    std::vector<Range> compute_live_ranges(
         const IRBuffer<2>& ir_buffer, const std::vector<Snapshot>& snapshots)
     {
-      std::vector<Optional<std::size_t>> operand_start_map(ir_buffer.size());
-      std::vector<std::pair<std::size_t, Range>> live_ranges;
-      live_ranges.reserve(
-          ir_buffer.size() * 3 + count_snapshot_mappings(snapshots));
-      auto snap_it = snapshots.begin();
+      std::vector<bool> ref_seen(ir_buffer.size(), false);
+      std::vector<Range> live_ranges;
+      live_ranges.reserve(ir_buffer.size());
+      auto snap_it = snapshots.rbegin();
 
-      const auto update_live_ranges = [&] (
-          const std::size_t ref0, const std::size_t ref1) {
-        const auto new_entry = not static_cast<bool>(operand_start_map[ref0]);
-
-        if (new_entry) {
-          operand_start_map[ref0] = live_ranges.size();
-          live_ranges.push_back({ref0, Range{ref1, ref1}});
-        }
-
-        auto& live_range = live_ranges[*operand_start_map[ref0]];
-        live_range.second.second = ref1;
-      };
-
-      for (std::size_t i = 0; i < ir_buffer.size(); ++i) {
+      for (int i = ir_buffer.size() - 1; i >= 0; --i) {
         const auto& instruction = ir_buffer[i];
 
-        if (instruction.type() != ValueType::UNKNOWN) {
-          update_live_ranges(i, i);
+        const auto& op0 = instruction.operand(0);
+        const auto& op1 = instruction.operand(1);
+
+        if (op0.type() == Operand::Type::IR_REF) {
+          const auto ref = unsafe_get<std::size_t>(op0);
+          if (not ref_seen[ref]) {
+            live_ranges.emplace_back(ref, i);
+            ref_seen[ref] = true;
+          }
         }
 
-        for (const auto& operand : instruction.operands()) {
-          if (operand.type() == Operand::Type::UNUSED) {
-            break;
+        if (op1.type() == Operand::Type::IR_REF) {
+          const auto ref = unsafe_get<std::size_t>(op1);
+          if (not ref_seen[ref]) {
+            live_ranges.emplace_back(ref, i);
+            ref_seen[ref] = true;
           }
-
-          if (operand.type() != Operand::Type::IR_REF) {
-            continue;
-          }
-
-          const auto reg = unsafe_get<std::size_t>(operand);
-          update_live_ranges(reg, i);
-        }
-
-        while (i == snap_it->ir_ref) {
-          for (const auto& mapping : snap_it->stack_ir_map) {
-            update_live_ranges(mapping.second.value, i);
-          }
-          ++snap_it;
         }
       }
+
+      std::sort(
+          live_ranges.begin(), live_ranges.end(),
+          [] (const Range& first, const Range& second) {
+            return first.first < second.first;
+          });
 
       return live_ranges;
     }
@@ -119,28 +106,22 @@ namespace loxx
     {
       trace_ = &trace;
       trace.allocation_map.resize(trace.ir_buffer.size(), {});
-      auto live_ranges = compute_live_ranges(trace.ir_buffer, trace.snaps);
+      const auto live_ranges =
+          compute_live_ranges(trace.ir_buffer, trace.snaps);
       const auto& ir_buffer = trace.ir_buffer;
 
       for (const auto& live_range : live_ranges) {
-        const auto& virtual_register = live_range.first;
-        const auto& interval = live_range.second;
+        expire_old_intervals(live_range);
 
-        if (interval.first == interval.second) {
-          continue;
-        }
-
-        expire_old_intervals(interval);
-
-        const auto& ir_instruction = ir_buffer[virtual_register];
+        const auto& ir_instruction = ir_buffer[live_range.first];
         const auto candidate_register = get_register(ir_instruction.type());
 
         if (not candidate_register) {
-          spill_at_interval(interval);
+          spill_at_interval(live_range);
         }
         else {
-          trace.allocation_map[interval.first] = *candidate_register;
-          insert_active_interval(interval);
+          trace.allocation_map[live_range.first] = *candidate_register;
+          insert_active_interval(live_range);
         }
       }
     }
@@ -214,8 +195,7 @@ namespace loxx
     }
 
 
-    Optional<Register> RegisterAllocator::get_register(
-        const ValueType type)
+    Optional<Register> RegisterAllocator::get_register(const ValueType type)
     {
       for (unsigned int i = 0; i < register_pool_.size(); ++i) {
         if (register_pool_[i] and

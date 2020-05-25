@@ -39,7 +39,7 @@ namespace loxx
     using Range = std::pair<std::size_t, std::size_t>;
 
 
-    std::vector<std::pair<std::size_t, Range>> compute_live_ranges(
+    std::vector<Range> compute_live_ranges(
         const std::vector<IRInstruction<2>>& ir_buffer,
         const std::vector<Snapshot>& snapshots);
 
