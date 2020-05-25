@@ -17,7 +17,7 @@
  * Created by Matt Spraggs on 23/11/2019.
  */
 
-#include <iostream>
+#include <numeric>
 #include <utility>
 
 #include "../HashTable.hpp"
@@ -31,12 +31,25 @@ namespace loxx
 {
   namespace jit
   {
+    std::size_t count_snapshot_mappings(const std::vector<Snapshot>& snapshots)
+    {
+      std::size_t ret = 0;
+      std::accumulate(
+          snapshots.begin(), snapshots.end(), 0ul,
+          [] (const std::size_t value, const Snapshot& snapshot) {
+            return value + snapshot.stack_ir_map.size();
+          });
+      return ret;
+    }
+
+
     std::vector<std::pair<std::size_t, Range>> compute_live_ranges(
         const IRBuffer<2>& ir_buffer, const std::vector<Snapshot>& snapshots)
     {
       std::vector<Optional<std::size_t>> operand_start_map(ir_buffer.size());
       std::vector<std::pair<std::size_t, Range>> live_ranges;
-      live_ranges.reserve(ir_buffer.size() * 2);
+      live_ranges.reserve(
+          ir_buffer.size() * 3 + count_snapshot_mappings(snapshots));
       auto snap_it = snapshots.begin();
 
       const auto update_live_ranges = [&] (
@@ -211,6 +224,8 @@ namespace loxx
           return static_cast<Register>(i);
         }
       }
+
+      return {};
     }
 
 
