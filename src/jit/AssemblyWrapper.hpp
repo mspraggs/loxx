@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <limits>
+#include <memory>
 #include <vector>
 
 // TODO: Windows support
@@ -36,11 +37,7 @@ namespace loxx
     class AssemblyWrapper
     {
     public:
-      AssemblyWrapper(const std::size_t reserve_size = 4096)
-          : locked_(false)
-      {
-        assembly_.reserve(reserve_size);
-      }
+      AssemblyWrapper(const std::size_t capacity = 4096);
 
       AssemblyWrapper(AssemblyWrapper&&) = default;
 
@@ -48,8 +45,8 @@ namespace loxx
 
       void add_byte(const std::uint8_t byte);
 
-      template <typename Iter>
-      void add_bytes(const Iter begin, const Iter end);
+      template <typename It>
+      void add_bytes(const It begin, const It end);
 
       template <typename... Args>
       void add_bytes(Args&&... bytes);
@@ -58,34 +55,28 @@ namespace loxx
 
       void write_byte(const std::size_t pos, const std::uint8_t byte);
 
-      template <typename Iter>
-      void write_bytes(
-          const std::size_t pos, const Iter begin, const Iter end);
+      template <typename It>
+      void write_bytes(const std::size_t pos, const It begin, const It end);
 
       template <typename T>
       void write_integer(const std::size_t pos, const T value);
 
       void lock();
 
-      std::size_t size() const { return assembly_.size(); }
-      const std::uint8_t* start() const { return assembly_.data(); }
+      std::size_t size() const { return std::distance(data_.get(), ptr_); }
+      const std::uint8_t* start() const { return data_.get(); }
+      const std::uint8_t* finish() const { return ptr_; }
 
     private:
       template <typename T>
-      struct MMapAllocator
+      struct MUnMapper
       {
-        using value_type = T;
-
-        T* allocate(const std::size_t n);
-        void deallocate(T* ptr, const std::size_t n);
+        void operator() (T* ptr) const;
+        AssemblyWrapper* wrapper;
       };
 
       template <typename T>
-      friend bool operator==(
-          const MMapAllocator<T>&, const MMapAllocator<T>&);
-      template <typename T>
-      friend bool operator!=(
-          const MMapAllocator<T>&, const MMapAllocator<T>&);
+      friend struct MUnMapper;
 
       void add_bytes_impl() {}
 
@@ -96,14 +87,17 @@ namespace loxx
       void check_unlocked() const;
 
       bool locked_;
-      std::vector<std::uint8_t, MMapAllocator<std::uint8_t>> assembly_;
+      std::size_t capacity_;
+      std::uint8_t* ptr_;
+      std::unique_ptr<std::uint8_t[], MUnMapper<std::uint8_t>> data_;
     };
 
 
-    template <typename Iter>
-    void AssemblyWrapper::add_bytes(const Iter begin, const Iter end)
+    template <typename It>
+    void AssemblyWrapper::add_bytes(const It begin, const It end)
     {
-      assembly_.insert(assembly_.end(), begin, end);
+      std::copy(begin, end, ptr_);
+      ptr_ += std::distance(begin, end);
     }
 
 
@@ -114,11 +108,11 @@ namespace loxx
     }
 
 
-    template <typename Iter>
+    template <typename It>
     void AssemblyWrapper::write_bytes(
-        const std::size_t pos, const Iter begin, const Iter end)
+        const std::size_t pos, const It begin, const It end)
     {
-      std::copy(begin, end, assembly_.begin() + pos);
+      std::copy(begin, end, data_.get() + pos);
     }
 
 
@@ -140,49 +134,9 @@ namespace loxx
 
 
     template <typename T>
-    T* AssemblyWrapper::MMapAllocator<T>::allocate(const std::size_t n)
+    void AssemblyWrapper::MUnMapper<T>::operator() (T* ptr) const
     {
-      if (n > std::numeric_limits<std::size_t>::max() / sizeof(T)) {
-        throw std::bad_alloc();
-      }
-
-      auto ptr = static_cast<T*>(mmap(
-          nullptr, n * sizeof(T),
-          PROT_READ | PROT_WRITE,
-          MAP_PRIVATE | MAP_ANONYMOUS,
-          -1, 0));
-
-      if (ptr == nullptr) {
-        throw std::bad_alloc();
-      }
-
-      return ptr;
-    }
-
-
-    template <typename T>
-    void AssemblyWrapper::MMapAllocator<T>::deallocate(
-        T* ptr, const std::size_t n)
-    {
-      munmap(ptr, n);
-    }
-
-
-    template <typename T>
-    bool operator==(
-        const AssemblyWrapper::MMapAllocator<T>&,
-        const AssemblyWrapper::MMapAllocator<T>&)
-    {
-      return true;
-    }
-
-
-    template <typename T>
-    bool operator!=(
-        const AssemblyWrapper::MMapAllocator<T>&,
-        const AssemblyWrapper::MMapAllocator<T>&)
-    {
-      return false;
+      munmap(ptr, wrapper->capacity_);
     }
   }
 }

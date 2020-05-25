@@ -25,9 +25,40 @@ namespace loxx
 {
   namespace jit
   {
+    template <typename T>
+    T* mmap_allocate(const std::size_t n)
+    {
+      if (n > std::numeric_limits<std::size_t>::max() / sizeof(T)) {
+        throw std::bad_alloc();
+      }
+
+      auto ptr = static_cast<T*>(mmap(
+          nullptr, n * sizeof(T),
+          PROT_READ | PROT_WRITE,
+          MAP_PRIVATE | MAP_ANONYMOUS,
+          -1, 0));
+
+      if (ptr == nullptr) {
+        throw std::bad_alloc();
+      }
+
+      return ptr;
+    }
+
+
+    AssemblyWrapper::AssemblyWrapper(const std::size_t capacity)
+        : capacity_(capacity),
+          data_(
+              mmap_allocate<std::uint8_t>(capacity),
+              MUnMapper<std::uint8_t>{this})
+    {
+      ptr_ = data_.get();
+    }
+
+
     void AssemblyWrapper::add_byte(const std::uint8_t byte)
     {
-      assembly_.push_back(byte);
+      *(ptr_++) = byte;
     }
 
 
@@ -40,14 +71,14 @@ namespace loxx
     void AssemblyWrapper::write_byte(
         const std::size_t pos, const std::uint8_t byte)
     {
-      assembly_[pos] = byte;
+      data_[pos] = byte;
     }
 
 
     void AssemblyWrapper::lock()
     {
       const auto result = mprotect(
-          assembly_.data(), assembly_.capacity(),
+          data_.get(), capacity_,
           PROT_READ | PROT_EXEC);
       if (result == -1) {
         throw JITError("memory lock failure");
