@@ -31,25 +31,22 @@ namespace loxx
 {
   namespace jit
   {
-    std::size_t count_snapshot_mappings(const std::vector<Snapshot>& snapshots)
+    RegisterAllocator::RegisterAllocator(
+        const std::vector<Register>& registers)
+        : stack_index_(0)
     {
-      std::size_t ret = 0;
-      std::accumulate(
-          snapshots.begin(), snapshots.end(), 0ul,
-          [] (const std::size_t value, const Snapshot& snapshot) {
-            return value + snapshot.stack_ir_map.size();
-          });
-      return ret;
+      register_pool_.fill(false);
+      for (const auto reg : registers) {
+        add_register(reg);
+      }
     }
 
 
-    std::vector<Range> compute_live_ranges(
-        const IRBuffer<2>& ir_buffer, const std::vector<Snapshot>& snapshots)
+    void RegisterAllocator::allocate(Trace& trace)
     {
-      std::vector<bool> ref_seen(ir_buffer.size(), false);
-      std::vector<Range> live_ranges;
-      live_ranges.reserve(ir_buffer.size());
-      auto snap_it = snapshots.rbegin();
+      const auto& ir_buffer = trace.ir_buffer;
+      auto& allocation_map = trace.allocation_map;
+      allocation_map.resize(trace.ir_buffer.size(), {});
 
       for (int i = ir_buffer.size() - 1; i >= 0; --i) {
         const auto& instruction = ir_buffer[i];
@@ -59,139 +56,35 @@ namespace loxx
 
         if (op0.type() == Operand::Type::IR_REF) {
           const auto ref = unsafe_get<std::size_t>(op0);
-          if (not ref_seen[ref]) {
-            live_ranges.emplace_back(ref, i);
-            ref_seen[ref] = true;
+          if (not allocation_map[ref]) {
+            const auto reg = get_register(ir_buffer[ref].type());
+            if (reg) {
+              allocation_map[ref] = *reg;
+            }
+            else {
+              allocation_map[ref] = stack_index_++;
+            }
           }
         }
 
         if (op1.type() == Operand::Type::IR_REF) {
           const auto ref = unsafe_get<std::size_t>(op1);
-          if (not ref_seen[ref]) {
-            live_ranges.emplace_back(ref, i);
-            ref_seen[ref] = true;
+          if (not allocation_map[ref]) {
+            const auto reg = get_register(ir_buffer[ref].type());
+            if (reg) {
+              allocation_map[ref] = *reg;
+            }
+            else {
+              allocation_map[ref] = stack_index_++;
+            }
           }
         }
-      }
 
-      std::sort(
-          live_ranges.begin(), live_ranges.end(),
-          [] (const Range& first, const Range& second) {
-            return first.first < second.first;
-          });
-
-      return live_ranges;
-    }
-
-
-    RegisterAllocator::RegisterAllocator(
-        const bool debug, const std::vector<Register>& registers)
-        : debug_(debug), stack_index_(0)
-    {
-      const auto max_reg = std::max_element(
-          registers.begin(), registers.end(),
-          [] (const Register first, const Register second) {
-            return static_cast<unsigned int>(first) <
-                static_cast<unsigned int>(second);
-          });
-
-      register_pool_.resize(static_cast<unsigned int>(*max_reg) + 1, false);
-      for (const auto reg : registers) {
-        add_register(reg);
-      }
-    }
-
-
-    void RegisterAllocator::allocate(Trace& trace)
-    {
-      trace_ = &trace;
-      trace.allocation_map.resize(trace.ir_buffer.size(), {});
-      const auto live_ranges =
-          compute_live_ranges(trace.ir_buffer, trace.snaps);
-      const auto& ir_buffer = trace.ir_buffer;
-
-      for (const auto& live_range : live_ranges) {
-        expire_old_intervals(live_range);
-
-        const auto& ir_instruction = ir_buffer[live_range.first];
-        const auto candidate_register = get_register(ir_instruction.type());
-
-        if (not candidate_register) {
-          spill_at_interval(live_range);
-        }
-        else {
-          trace.allocation_map[live_range.first] = *candidate_register;
-          insert_active_interval(live_range);
+        if (allocation_map[i] and
+            holds_alternative<Register>(*allocation_map[i])) {
+          add_register(unsafe_get<Register>(*allocation_map[i]));
         }
       }
-    }
-
-
-    void RegisterAllocator::expire_old_intervals(const Range& interval)
-    {
-      std::vector<decltype(active_intervals_.begin())> to_remove;
-      to_remove.reserve(active_intervals_.size());
-
-      for (
-          auto it = active_intervals_.begin();
-          it != active_intervals_.end(); ++it) {
-
-        const auto active_interval = *it;
-
-        if (active_interval.second >= interval.first) {
-          break;
-        }
-
-        to_remove.push_back(it);
-        const auto& reg = trace_->allocation_map[active_interval.first];
-        add_register(get<Register>(reg.value()));
-      }
-
-      for (auto it = to_remove.rbegin(); it != to_remove.rend(); ++it) {
-        active_intervals_.erase(*it);
-      }
-    }
-
-
-    void RegisterAllocator::spill_at_interval(const Range& interval)
-    {
-      const auto& spill_interval = active_intervals_.back();
-
-      if (spill_interval.second > interval.second) {
-        const auto elem = trace_->allocation_map[spill_interval.first];
-        trace_->allocation_map[interval.first] = get<Register>(elem.value());
-        trace_->allocation_map[spill_interval.first] = stack_index_++;
-
-        remove_active_interval(spill_interval);
-        insert_active_interval(interval);
-      }
-      else {
-        stack_slots_[interval.first] = stack_index_++;
-      }
-    }
-
-
-    void RegisterAllocator::insert_active_interval(const Range& interval)
-    {
-      const auto new_pos = std::upper_bound(
-          active_intervals_.begin(), active_intervals_.end(), interval,
-          [] (const Range& first, const Range second) {
-            return first.second < second.second;
-          });
-
-      active_intervals_.insert(new_pos, interval);
-    }
-
-
-    void RegisterAllocator::remove_active_interval(const Range& interval)
-    {
-      const auto pos = std::lower_bound(
-          active_intervals_.begin(), active_intervals_.end(), interval,
-          [] (const Range& first, const Range second) {
-            return first.second < second.second;
-          });
-
-      active_intervals_.erase(pos);
     }
 
 

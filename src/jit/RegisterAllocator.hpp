@@ -55,8 +55,7 @@ namespace loxx
     class RegisterAllocator
     {
     public:
-      RegisterAllocator(
-          const bool debug, const std::vector<Register>& registers);
+      RegisterAllocator(const std::vector<Register>& registers);
 
       void allocate(Trace& trace);
 
@@ -68,15 +67,8 @@ namespace loxx
       Optional<Register> get_register(const ValueType type);
       void add_register(const Register reg);
 
-      bool debug_;
       std::size_t stack_index_;
-      // HashTable<std::size_t, Register> registers_;
-      // HashTable<std::size_t, std::size_t> stack_slots_;
-      std::vector<Optional<Register>> registers_;
-      std::vector<Optional<std::size_t>> stack_slots_;
-      std::vector<bool> register_pool_;
-      std::vector<Range> active_intervals_;
-      Trace* trace_;
+      std::array<bool, 128> register_pool_;
     };
   }
 }

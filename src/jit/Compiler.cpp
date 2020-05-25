@@ -51,7 +51,7 @@ namespace loxx
       Optimiser optimiser(trace, virtual_stack);
       optimiser.optimise();
 
-      RegisterAllocator reg_alloc(debug, get_allocatable_registers<platform>());
+      RegisterAllocator reg_alloc(get_allocatable_registers<platform>());
       reg_alloc.allocate(trace);
 
 #ifndef NDEBUG
