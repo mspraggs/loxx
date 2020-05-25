@@ -92,4 +92,4 @@ if __name__ == "__main__":
         print("Results for benchmark '{}':".format(name))
 
         for label, stat in stats:
-            print("* {:<20} = {:>4.3f} s".format(label, stat))
+            print("* {:<20} = {:>4.4f} s".format(label, stat))
