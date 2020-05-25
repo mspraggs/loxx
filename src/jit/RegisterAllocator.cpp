@@ -55,7 +55,7 @@ namespace loxx
         const auto& op1 = instruction.operand(1);
 
         if (op0.type() == Operand::Type::IR_REF) {
-          const auto ref = unsafe_get<std::size_t>(op0);
+          const auto ref = op0.index();
           if (not allocation_map[ref]) {
             const auto reg = get_register(ir_buffer[ref].type());
             if (reg) {
@@ -68,7 +68,7 @@ namespace loxx
         }
 
         if (op1.type() == Operand::Type::IR_REF) {
-          const auto ref = unsafe_get<std::size_t>(op1);
+          const auto ref = op1.index();
           if (not allocation_map[ref]) {
             const auto reg = get_register(ir_buffer[ref].type());
             if (reg) {

@@ -149,6 +149,7 @@ namespace loxx
     Assembler<Platform::X86_64>::Assembler(Trace& trace)
         : trace_(&trace)
     {
+      constant_map_.resize(trace_->code_object->constants.size());
       const auto scratch_registers =
           get_scratch_registers<Platform::X86_64>();
 
@@ -352,12 +353,12 @@ namespace loxx
           return;
         }
 
-        const auto& value = operands[1];
+        const auto& value = trace_->code_object->constants[operands[1].index()];
 
-        if (value.type() == Operand::Type::LITERAL_FLOAT) {
+        if (holds_alternative<double>(value)) {
           emit_compare_reg_imm(*reg, unsafe_get<double>(value));
         }
-        else if (value.type() == Operand::Type::LITERAL_BOOLEAN) {
+        else if (holds_alternative<bool>(value)) {
           emit_compare_reg_imm(*reg, unsafe_get<bool>(value));
         }
         else {
@@ -378,7 +379,7 @@ namespace loxx
           invert_condition ?
           get_inverse_condition(*last_condition_) :
           *last_condition_;
-      const auto exit_num = get<std::size_t>(instruction.operand(1));
+      const auto exit_num = instruction.operand(1).index();
       const auto offset_pos = emit_conditional_jump(condition, 0x01);
       const auto mcode_size = trace_->assembly.size();
 
@@ -397,7 +398,7 @@ namespace loxx
         const IRIns& instruction)
     {
       const auto address = get_stack_address(instruction.operand(0));
-      const auto exit_num = get<std::size_t>(instruction.operand(1));
+      const auto exit_num = instruction.operand(1).index();
       emit_move_reg_mem(
           general_scratch_, stack_base_, get_stack_offset(address));
       emit_compare_reg_imm(
@@ -420,7 +421,7 @@ namespace loxx
         const std::size_t pos, const IRIns& instruction)
     {
       const auto& operands = instruction.operands();
-      const auto offset = get<std::size_t>(operands[0]);
+      const auto offset = operands[0].index();
       const auto jump_target = pos + 1 + offset;
       const auto offset_pos = emit_jump(0x100);
       jump_offsets_.emplace_back(std::make_pair(offset_pos, jump_target));
@@ -431,7 +432,7 @@ namespace loxx
         const std::size_t pos, const IRIns& instruction)
     {
       const auto& operands = instruction.operands();
-      const auto offset = get<std::size_t>(operands[0]);
+      const auto offset = operands[0].index();
       const auto jump_target = pos + 1 - offset;
       const auto offset_pos = emit_jump(0x100);
 
@@ -451,22 +452,21 @@ namespace loxx
         throw JITError("no destination register for literal");
       }
 
-      const auto& operand = instruction.operand(0);
-      if (operand.type() == Operand::Type::LITERAL_FLOAT) {
-        const auto value = unsafe_get<std::uint64_t>(operand);
+      const auto index = instruction.operand(0).index();
+      const auto& value = trace_->code_object->constants[index];
+      if (holds_alternative<double>(value)) {
         const auto offset_pos = emit_move_reg_mem(
             *dst_reg, RegisterX86::RIP, 0x100);
-        constant_map_[value].emplace_back(offset_pos, trace_->assembly.size());
+        constant_map_[index].emplace_back(
+            offset_pos, trace_->assembly.size());
       }
-      else if (operand.type() == Operand::Type::LITERAL_BOOLEAN) {
-        const auto value = unsafe_get<bool>(operand);
-        emit_move_reg_imm(*dst_reg, value);
+      else if (holds_alternative<bool>(value)) {
+        emit_move_reg_imm(*dst_reg, unsafe_get<bool>(value));
       }
-      else if (operand.type() == Operand::Type::LITERAL_OBJECT) {
-        const auto value = unsafe_get<std::uint64_t>(operand);
+      else if (holds_alternative<ObjectPtr>(value)) {
         const auto offset_pos = emit_move_reg_mem(
             *dst_reg, RegisterX86::RIP, 0x100);
-        constant_map_[value].emplace_back(offset_pos, trace_->assembly.size());
+        constant_map_[index].emplace_back(offset_pos, trace_->assembly.size());
       }
     }
 
@@ -521,13 +521,29 @@ namespace loxx
 
     void Assembler<Platform::X86_64>::emit_constants()
     {
-      for (const auto& mapping : constant_map_) {
+      for (std::size_t idx = 0; idx < constant_map_.size(); ++idx) {
+        const auto& mappings = constant_map_[idx];
+        if (mappings.size() == 0) {
+          continue;
+        }
+
         const auto constant_pos = trace_->assembly.size();
-        emit_immediate(mapping.first);
-        for (const auto& offset_spec : mapping.second) {
+        const auto& constant = trace_->code_object->constants[idx];
+
+        if (holds_alternative<double>(constant)) {
+          emit_immediate(unsafe_get<double>(constant));
+        }
+        else if (holds_alternative<bool>(constant)) {
+          emit_immediate(unsafe_get<bool>(constant));
+        }
+        else if (holds_alternative<ObjectPtr>(constant)) {
+          emit_immediate(unsafe_get<ObjectPtr>(constant));
+        }
+
+        for (const auto& mapping : mappings) {
           const auto offset = static_cast<std::uint32_t>(
-              constant_pos - offset_spec.second);
-          trace_->assembly.write_integer(offset_spec.first, offset);
+              constant_pos - mapping.second);
+          trace_->assembly.write_integer(mapping.first, offset);
         }
       }
     }
@@ -747,16 +763,20 @@ namespace loxx
 
 
     void Assembler<Platform::X86_64>::emit_move_reg_imm(
-        const RegisterX86 dst, const Operand& value)
+        const RegisterX86 dst, const Operand& operand)
     {
-      if (value.type() == Operand::Type::LITERAL_FLOAT) {
+      if (operand.type() != Operand::Type::LITERAL) {
+        return;
+      }
+      const auto& value = trace_->code_object->constants[operand.index()];
+      if (holds_alternative<double>(value)) {
         emit_move_reg_imm(general_scratch_, unsafe_get<double>(value));
         emit_move_reg_reg(dst, general_scratch_);
       }
-      else if (value.type() == Operand::Type::LITERAL_BOOLEAN) {
+      else if (holds_alternative<bool>(value)) {
         emit_move_reg_imm(dst, unsafe_get<bool>(value));
       }
-      else {
+      else if (holds_alternative<ObjectPtr>(value)) {
         emit_move_reg_imm(dst, unsafe_get<ObjectPtr>(value));
       }
     }
@@ -981,7 +1001,7 @@ namespace loxx
         return {};
       }
 
-      return get_register(unsafe_get<std::size_t>(operand));
+      return get_register(operand.index());
     }
 
 
@@ -992,7 +1012,7 @@ namespace loxx
         return nullptr;
       }
 
-      const auto idx = unsafe_get<std::size_t>(operand);
+      const auto idx = operand.index();
       return trace_->stack_base + idx;
     }
 

@@ -48,7 +48,8 @@ namespace loxx
     void print_allocation_map(const AllocationMap<Register>& allocation_map);
 
     template <std::size_t N>
-    void print_ssa_instruction(const IRInstruction<N>& instruction)
+    void print_ssa_instruction(
+        const Trace& trace, const IRInstruction<N>& instruction)
     {
       std::cout << std::setw(15) << std::setfill(' ') << instruction.op();
       std::cout << std::setw(10) << std::setfill(' ') << instruction.type();
@@ -59,11 +60,28 @@ namespace loxx
         if (operands[i].type() == Operand::Type::UNUSED) {
           break;
         }
-        if (i != 0) {
-          // std::cout << ", ";
-        }
         std::stringstream ss;
-        ss << operands[i];
+        if (operands[i].type() == Operand::Type::LITERAL) {
+          const auto& value = trace.code_object->constants[operands[i].index()];
+          ss << std::setw(5) << std::setfill('.') << std::left;
+          ss << static_cast<ValueType>(value.index()) << "[ '";
+          if (holds_alternative<double>(value)) {
+            ss << unsafe_get<double>(value);
+          }
+          else if (holds_alternative<bool>(value)) {
+            ss << unsafe_get<bool>(value);
+          }
+          else if (holds_alternative<ObjectPtr>(value)) {
+            ss << std::hex << unsafe_get<ObjectPtr>(value);
+          }
+          else {
+            ss << "nil";
+          }
+          ss << "' ]";
+        }
+        else {
+          ss << operands[i];
+        }
         std::cout << std::setw(15) << ss.str();
       }
 

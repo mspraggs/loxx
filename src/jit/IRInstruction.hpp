@@ -66,35 +66,24 @@ namespace loxx
         STACK_REF,
         JUMP_OFFSET,
         EXIT_NUMBER,
-        LITERAL_BOOLEAN,
-        LITERAL_FLOAT,
-        LITERAL_OBJECT,
-        LITERAL_NIL,
+        LITERAL,
         UNUSED,
       };
 
       Operand();
       Operand(const Type type, const std::size_t value);
       Operand(const Type type);
-      explicit Operand(const double value);
-      explicit Operand(const bool value);
-      explicit Operand(const ObjectPtr value);
 
       Type type() const { return type_; }
+      std::size_t index() const { return index_; }
       bool is_literal() const;
 
     private:
-      template <typename T>
-      friend T unsafe_get(const Operand& operand);
-
-      template <typename T>
-      friend T get(const Operand& operand);
-
       friend bool operator==(
           const Operand& first, const Operand& second);
 
       Type type_;
-      std::aligned_storage_t<8, 8> storage_;
+      std::size_t index_;
     };
 
 
@@ -109,14 +98,6 @@ namespace loxx
     private:
       std::string what_;
     };
-
-
-    template <typename T>
-    T unsafe_get(const Operand& operand);
-
-
-    template <typename T>
-    T get(const Operand& operand);
 
 
     template <std::size_t N>
@@ -204,17 +185,8 @@ namespace loxx
       case Operand::Type::EXIT_NUMBER:
         os << "EXIT";
         break;
-      case Operand::Type::LITERAL_BOOLEAN:
-        os << "BOOL";
-        break;
-      case Operand::Type::LITERAL_FLOAT:
-        os << "FLOAT";
-        break;
-      case Operand::Type::LITERAL_OBJECT:
-        os << "OBJ";
-        break;
-      case Operand::Type::LITERAL_NIL:
-        os << "NIL";
+      case Operand::Type::LITERAL:
+        os << "LITERAL";
         break;
       case Operand::Type::UNUSED:
         os << "---";
@@ -301,19 +273,8 @@ namespace loxx
 
       os << std::setw(5) << std::setfill('.') << std::left;
       os << operand.type() << "[ ";
-      if (not operand.is_literal()) {
-        os << std::setw(4) << std::setfill('0') << std::right;
-        os << unsafe_get<std::size_t>(operand);
-      }
-      else if (operand.type() == Operand::Type::LITERAL_FLOAT) {
-        os << '\'' <<  unsafe_get<double>(operand) << '\'';
-      }
-      else if (operand.type() == Operand::Type::LITERAL_BOOLEAN) {
-        os << '\'' <<  unsafe_get<bool>(operand) << '\'';
-      }
-      else if (operand.type() == Operand::Type::LITERAL_OBJECT) {
-        os << '\'' <<  unsafe_get<ObjectPtr>(operand) << '\'';
-      }
+      os << std::setw(4) << std::setfill('0') << std::right;
+      os << operand.index();
       os << " ]";
 
       return os;

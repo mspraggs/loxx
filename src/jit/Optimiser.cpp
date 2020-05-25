@@ -107,7 +107,7 @@ namespace loxx
         }
 
         if (operand.type() == Operand::Type::IR_REF) {
-          const auto ir_ref = unsafe_get<std::size_t>(operand);
+          const auto ir_ref = operand.index();
           ir_refs_in_use_[ir_ref] = true;
         }
       }
@@ -118,8 +118,7 @@ namespace loxx
         const std::size_t ref, const IRInstruction<2>& instruction)
     {
       if (instruction.op() == Operator::LOAD) {
-        const auto stack_pos =
-            unsafe_get<std::size_t>(instruction.operand(0));
+        const auto stack_pos = instruction.operand(0).index();
         copied_ir_refs_[ref] = stack_->get(stack_pos);
       }
       else {
@@ -139,7 +138,7 @@ namespace loxx
       copied_ir_refs_[ref] = buf_size;
       for (const auto& op : {&op0, &op1}) {
         if (op->type() == Operand::Type::IR_REF) {
-          const auto op_ref = unsafe_get<std::size_t>(*op);
+          const auto op_ref = op->index();
           if (op_ref < copied_ir_refs_.size() and copied_ir_refs_[op_ref]) {
             phi_flags_[op_ref] = true;
           }
@@ -153,20 +152,20 @@ namespace loxx
     Operand Optimiser::make_operand(const Operand& operand)
     {
       if (operand.type() == Operand::Type::IR_REF) {
-        const auto op_ref = unsafe_get<std::size_t>(operand);
+        const auto op_ref = operand.index();
         if (copied_ir_refs_[op_ref]) {
           return Operand(Operand::Type::IR_REF, *copied_ir_refs_[op_ref]);
         }
       }
       else if (operand.type() == Operand::Type::STACK_REF) {
-        const auto stack_ref = unsafe_get<std::size_t>(operand);
+        const auto stack_ref = operand.index();
         const auto& vstack_elem = (*stack_)[stack_ref];
         if (vstack_elem.tags != 0) {
           return Operand(Operand::Type::IR_REF, vstack_elem.value);
         }
       }
       else if (operand.type() == Operand::Type::EXIT_NUMBER) {
-        const auto prev_exit_num = unsafe_get<std::size_t>(operand);
+        const auto prev_exit_num = operand.index();
         const auto new_exit_num = create_snapshot(trace_->snaps[prev_exit_num]);
         return Operand(Operand::Type::EXIT_NUMBER, new_exit_num);
       }
@@ -194,7 +193,7 @@ namespace loxx
     void Optimiser::update_phi(const Operand& operand)
     {
       if (operand.type() == Operand::Type::IR_REF) {
-        const auto op_ref = unsafe_get<std::size_t>(operand);
+        const auto op_ref = operand.index();
         if (op_ref < copied_ir_refs_.size() and copied_ir_refs_[op_ref]) {
           phi_flags_[op_ref] = true;
         }

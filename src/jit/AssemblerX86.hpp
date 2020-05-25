@@ -62,9 +62,7 @@ namespace loxx
 
     private:
       using ConstantMap =
-          HashTable<
-              std::uint64_t,
-              std::vector<std::pair<std::size_t, std::size_t>>>;
+          std::vector<std::vector<std::pair<std::size_t, std::size_t>>>;
 
       void patch_jumps();
 

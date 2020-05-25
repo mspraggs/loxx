@@ -57,7 +57,7 @@ namespace loxx
         else {
           std::cout << "       ";
         }
-        print_ssa_instruction(trace.ir_buffer[i]);
+        print_ssa_instruction(trace, trace.ir_buffer[i]);
       }
     }
 
