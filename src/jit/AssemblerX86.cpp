@@ -161,12 +161,18 @@ namespace loxx
           general_scratch_ = reg;
           gen_reg_count++;
         }
+        else if (reg_supports_ptr(reg) and gen_reg_count == 1) {
+          stack_base_ = reg;
+          gen_reg_count++;
+        }
       }
     }
 
 
     void Assembler<Platform::X86_64>::assemble()
     {
+      emit_move_reg_imm(stack_base_, trace_->stack_base);
+
       for (std::size_t pos = 0; pos < trace_->ir_buffer.size(); ++pos) {
         const auto& instruction = trace_->ir_buffer[pos];
         instruction_offsets_.push_back(trace_->assembly.size());
@@ -284,7 +290,8 @@ namespace loxx
       // not_okay:
       //     ???
 
-      emit_move_reg_mem(general_scratch_, location);
+      emit_move_reg_mem(
+          general_scratch_, stack_base_, get_stack_offset(location));
       emit_compare_reg_imm(general_scratch_, static_cast<std::size_t>(type));
 
       const auto short_jump_pos = emit_conditional_jump(Condition::EQUAL, 0);
@@ -391,7 +398,8 @@ namespace loxx
     {
       const auto address = get_stack_address(instruction.operand(0));
       const auto exit_num = get<std::size_t>(instruction.operand(1));
-      emit_move_reg_mem(general_scratch_, address);
+      emit_move_reg_mem(
+          general_scratch_, stack_base_, get_stack_offset(address));
       emit_compare_reg_imm(
           general_scratch_, static_cast<std::size_t>(instruction.type()));
       const auto offset_pos = emit_conditional_jump(Condition::EQUAL, 0x01);
@@ -477,7 +485,7 @@ namespace loxx
         throw JITError("invalid source address for load");
       }
 
-      emit_move_reg_mem(*dst_reg, address, 8);
+      emit_move_reg_mem(*dst_reg, stack_base_, get_stack_offset(address) + 8);
     }
 
 
@@ -986,6 +994,13 @@ namespace loxx
 
       const auto idx = unsafe_get<std::size_t>(operand);
       return trace_->stack_base + idx;
+    }
+
+
+    unsigned int Assembler<Platform::X86_64>::get_stack_offset(
+        const Value* ptr) const
+    {
+      return std::distance(trace_->stack_base, ptr) * sizeof(Value);
     }
 
 

@@ -155,11 +155,13 @@ namespace loxx
       Optional<RegisterX86> get_register(const std::size_t operand) const;
       Optional<RegisterX86> get_register(const Operand& operand) const;
       const Value* get_stack_address(const Operand& operand) const;
+      unsigned int get_stack_offset(const Value* ptr) const;
 
       Trace* trace_;
       Optional<Condition> last_condition_;
       RegisterX86 general_scratch_;
       RegisterX86 float_scratch_;
+      RegisterX86 stack_base_;
       std::vector<std::size_t> instruction_offsets_;
       std::vector<std::pair<std::size_t, std::size_t>> jump_offsets_;
       ConstantMap constant_map_;
