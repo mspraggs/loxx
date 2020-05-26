@@ -49,6 +49,7 @@ namespace loxx
     {
       active_.reset(new Trace);
       active_->state = Trace::State::NEW;
+      active_->snaps.reserve(64);
     }
 
 
