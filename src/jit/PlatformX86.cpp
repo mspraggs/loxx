@@ -51,7 +51,9 @@ namespace loxx
           static_cast<std::uint8_t>(reg) <=
           static_cast<std::uint8_t>(RegisterX86::R15)) or (
           static_cast<std::uint8_t>(reg) >=
-          static_cast<std::uint8_t>(RegisterX86::XMM8));
+          static_cast<std::uint8_t>(RegisterX86::XMM8) and
+          static_cast<std::uint8_t>(reg) <=
+          static_cast<std::uint8_t>(RegisterX86::XMM15));
     }
 
 
@@ -59,7 +61,9 @@ namespace loxx
     {
       return
           static_cast<std::uint8_t>(reg) >=
-          static_cast<std::uint8_t>(RegisterX86::XMM0);
+          static_cast<std::uint8_t>(RegisterX86::XMM0) and
+          static_cast<std::uint8_t>(reg) <=
+          static_cast<std::uint8_t>(RegisterX86::XMM15);
     }
 
 
