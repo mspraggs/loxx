@@ -33,28 +33,7 @@ namespace loxx
   {
     Condition get_inverse_condition(const Condition condition)
     {
-      switch (condition) {
-      case Condition::ABOVE:
-        return Condition::BELOW_OR_EQUAL;
-      case Condition::ABOVE_OR_EQUAL:
-        return Condition::BELOW;
-      case Condition::BELOW:
-        return Condition::ABOVE_OR_EQUAL;
-      case Condition::BELOW_OR_EQUAL:
-        return Condition::ABOVE;
-      case Condition::EQUAL:
-        return Condition::NOT_EQUAL;
-      case Condition::NOT_EQUAL:
-        return Condition::EQUAL;
-      case Condition::GREATER:
-        return Condition::LESS_OR_EQUAL;
-      case Condition::GREATER_OR_EQUAL:
-        return Condition::LESS;
-      case Condition::LESS:
-        return Condition::GREATER_OR_EQUAL;
-      case Condition::LESS_OR_EQUAL:
-        return Condition::GREATER;
-      }
+      return static_cast<Condition>(static_cast<std::uint8_t>(condition) ^ 1);
     }
 
 
