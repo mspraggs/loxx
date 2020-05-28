@@ -58,7 +58,7 @@ namespace loxx
 
     void AssemblyWrapper::add_byte(const std::uint8_t byte)
     {
-      *(ptr_++) = byte;
+      *ptr_++ = byte;
     }
 
 
