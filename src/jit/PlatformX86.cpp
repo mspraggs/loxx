@@ -45,43 +45,28 @@ namespace loxx
 
     bool reg_is_64_bit(const RegisterX86 reg)
     {
-      return (
-          static_cast<std::uint8_t>(reg) >=
-          static_cast<std::uint8_t>(RegisterX86::R8) and
-          static_cast<std::uint8_t>(reg) <=
-          static_cast<std::uint8_t>(RegisterX86::R15)) or (
-          static_cast<std::uint8_t>(reg) >=
-          static_cast<std::uint8_t>(RegisterX86::XMM8) and
-          static_cast<std::uint8_t>(reg) <=
-          static_cast<std::uint8_t>(RegisterX86::XMM15));
+      return (static_cast<std::uint8_t>(reg) & 0x8) == 0x8;
     }
 
 
     bool reg_supports_float(const RegisterX86 reg)
     {
-      return
-          static_cast<std::uint8_t>(reg) >=
-          static_cast<std::uint8_t>(RegisterX86::XMM0) and
-          static_cast<std::uint8_t>(reg) <=
-          static_cast<std::uint8_t>(RegisterX86::XMM15);
+      return (static_cast<std::uint8_t>(reg) & 0x10) == 0x10;
     }
 
 
     bool reg_supports_int(const RegisterX86 reg)
     {
       return
+          (static_cast<std::uint8_t>(reg) & 0x10) == 0 and
           reg != RegisterX86::RSP and
-          reg != RegisterX86::RBP and
-          static_cast<std::uint8_t>(reg) <=
-          static_cast<std::uint8_t>(RegisterX86::R15);
+          reg != RegisterX86::RBP;
     }
 
 
     bool reg_supports_ptr(const RegisterX86 reg)
     {
-      return
-          static_cast<std::uint8_t>(reg) <=
-          static_cast<std::uint8_t>(RegisterX86::R15);
+      return (static_cast<std::uint8_t>(reg) & 0x10) == 0x00;
     }
 
 
