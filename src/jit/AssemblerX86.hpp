@@ -30,17 +30,18 @@ namespace loxx
     struct Trace;
 
 
-    enum class Condition {
-      ABOVE,
-      ABOVE_OR_EQUAL,
-      BELOW,
-      BELOW_OR_EQUAL,
-      EQUAL,
-      NOT_EQUAL,
-      GREATER,
-      GREATER_OR_EQUAL,
-      LESS,
-      LESS_OR_EQUAL,
+    enum class Condition : std::uint8_t
+    {
+      ABOVE = 0x07,
+      ABOVE_OR_EQUAL = 0x03,
+      BELOW = 0x02,
+      BELOW_OR_EQUAL = 0x06,
+      EQUAL = 0x04,
+      NOT_EQUAL = 0x05,
+      GREATER = 0x0f,
+      GREATER_OR_EQUAL = 0x0d,
+      LESS = 0x0c,
+      LESS_OR_EQUAL = 0x0e,
     };
 
 
