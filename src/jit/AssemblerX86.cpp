@@ -79,18 +79,7 @@ namespace loxx
     std::uint8_t get_rex_prefix_for_regs(
         const RegisterX86 reg0, const RegisterX86 reg1)
     {
-      std::uint8_t ret = 0;
-      std::array<std::pair<int, RegisterX86>, 2> shift_reg_mapping = {
-        std::make_pair(0, reg0), std::make_pair(2, reg1)
-      };
-
-      for (const auto& mapping : shift_reg_mapping) {
-        if (reg_is_64_bit(mapping.second)) {
-          ret |= (1 << mapping.first);
-        }
-      }
-
-      return ret;
+      return reg_is_64_bit(reg0) | (reg_is_64_bit(reg1) << 2);
     }
 
 
