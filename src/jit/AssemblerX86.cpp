@@ -735,31 +735,8 @@ namespace loxx
     {
       const auto is_short = offset <= 127 and offset >= -128;
 
-      const std::uint8_t opcode = [&] {
-        const auto near_offset = is_short ? 0x00 : 0x10;
-        switch (condition) {
-        case Condition::ABOVE:
-          return near_offset + 0x77;
-        case Condition::ABOVE_OR_EQUAL:
-          return near_offset + 0x73;
-        case Condition::BELOW:
-          return near_offset + 0x72;
-        case Condition::BELOW_OR_EQUAL:
-          return near_offset + 0x76;
-        case Condition::EQUAL:
-          return near_offset + 0x74;
-        case Condition::NOT_EQUAL:
-          return near_offset + 0x75;
-        case Condition::GREATER:
-          return near_offset + 0x7f;
-        case Condition::GREATER_OR_EQUAL:
-          return near_offset + 0x7d;
-        case Condition::LESS:
-          return near_offset + 0x7c;
-        case Condition::LESS_OR_EQUAL:
-          return near_offset + 0x7e;
-        }
-      } ();
+      const std::uint8_t opcode =
+          (not is_short << 4) + 0x70 + static_cast<std::uint8_t>(condition);
 
       if (not is_short) {
         trace_->assembly.add_byte(0x0f);
