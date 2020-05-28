@@ -219,7 +219,7 @@ namespace loxx
       // not_okay:
       //     ???
 
-      emit_move_reg_mem(
+      emit_move_reg_gp_mem(
           general_scratch_, stack_base_, get_stack_offset(location));
       emit_compare_reg_imm(general_scratch_, static_cast<std::size_t>(type));
 
@@ -329,7 +329,7 @@ namespace loxx
     {
       const auto address = get_stack_address(instruction.operand(0));
       const auto exit_num = instruction.operand(1).index();
-      emit_move_reg_mem(
+      emit_move_reg_gp_mem(
           general_scratch_, stack_base_, get_stack_offset(address));
       emit_compare_reg_imm(
           general_scratch_, static_cast<std::size_t>(instruction.type()));
@@ -387,7 +387,7 @@ namespace loxx
       const auto index = instruction.operand(0).index();
       const auto& value = trace_->code_object->constants[index];
       if (holds_alternative<double>(value)) {
-        const auto offset_pos = emit_move_reg_mem(
+        const auto offset_pos = emit_move_reg_fp_mem(
             *dst_reg, RegisterX86::RIP, 0x100);
         constant_map_[index].emplace_back(
             offset_pos, trace_->assembly.size());
@@ -396,7 +396,7 @@ namespace loxx
         emit_move_reg_imm(*dst_reg, unsafe_get<bool>(value));
       }
       else if (holds_alternative<ObjectPtr>(value)) {
-        const auto offset_pos = emit_move_reg_mem(
+        const auto offset_pos = emit_move_reg_gp_mem(
             *dst_reg, RegisterX86::RIP, 0x100);
         constant_map_[index].emplace_back(offset_pos, trace_->assembly.size());
       }
@@ -419,7 +419,14 @@ namespace loxx
 #endif
       }
 
-      emit_move_reg_mem(*dst_reg, stack_base_, get_stack_offset(address) + 8);
+      if (reg_supports_float(*dst_reg)) {
+        emit_move_reg_fp_mem(
+            *dst_reg, stack_base_, get_stack_offset(address) + 8);
+      }
+      else {
+        emit_move_reg_gp_mem(
+            *dst_reg, stack_base_, get_stack_offset(address) + 8);
+      }
     }
 
 
@@ -453,7 +460,12 @@ namespace loxx
       }
 
       emit_move_reg_imm(general_scratch_, address);
-      emit_move_mem_reg(general_scratch_, *src_reg, 8);
+      if (reg_supports_float(*src_reg)) {
+        emit_move_mem_reg_fp(general_scratch_, *src_reg, 8);
+      }
+      else {
+        emit_move_mem_reg_gp(general_scratch_, *src_reg, 8);
+      }
     }
 
 
@@ -627,35 +639,59 @@ namespace loxx
     }
 
 
-    std::size_t Assembler<Platform::X86_64>::emit_move_reg_mem(
+    std::size_t Assembler<Platform::X86_64>::emit_move_reg_gp_mem(
         const RegisterX86 dst, const RegisterX86 src,
         const unsigned int displacement)
     {
-      return emit_move_reg_to_from_mem(dst, src, displacement, true);
+      return emit_move_reg_gp_to_from_mem(dst, src, displacement, true);
     }
 
 
-    std::size_t Assembler<Platform::X86_64>::emit_move_reg_mem(
-        const RegisterX86 dst, const Value* src,
-        const unsigned int displacement)
-    {
-      return emit_move_reg_to_from_mem(dst, src, displacement, true);
-    }
-
-
-    std::size_t Assembler<Platform::X86_64>::emit_move_mem_reg(
+    std::size_t Assembler<Platform::X86_64>::emit_move_reg_fp_mem(
         const RegisterX86 dst, const RegisterX86 src,
         const unsigned int displacement)
     {
-      return emit_move_reg_to_from_mem(dst, src, displacement, false);
+      return emit_move_reg_fp_to_from_mem(dst, src, displacement, true);
     }
 
 
-    std::size_t Assembler<Platform::X86_64>::emit_move_mem_reg(
+    std::size_t Assembler<Platform::X86_64>::emit_move_reg_gp_mem(
         const RegisterX86 dst, const Value* src,
         const unsigned int displacement)
     {
-      return emit_move_reg_to_from_mem(dst, src, displacement, false);
+      return emit_move_reg_gp_to_from_mem(dst, src, displacement, true);
+    }
+
+
+    std::size_t Assembler<Platform::X86_64>::emit_move_mem_reg_gp(
+        const RegisterX86 dst, const RegisterX86 src,
+        const unsigned int displacement)
+    {
+      return emit_move_reg_fp_to_from_mem(dst, src, displacement, false);
+    }
+
+
+    std::size_t Assembler<Platform::X86_64>::emit_move_mem_reg_fp(
+        const RegisterX86 dst, const RegisterX86 src,
+        const unsigned int displacement)
+    {
+      return emit_move_reg_fp_to_from_mem(dst, src, displacement, false);
+    }
+
+
+    std::size_t Assembler<Platform::X86_64>::emit_move_mem_reg_gp(
+        const RegisterX86 dst, const Value* src,
+        const unsigned int displacement)
+    {
+      return emit_move_reg_gp_to_from_mem(dst, src, displacement, false);
+    }
+
+
+    std::size_t Assembler<Platform::X86_64>::emit_move_mem_reg_fp(
+        const RegisterX86 dst, const Value* src,
+        const unsigned int displacement)
+    {
+      return emit_move_reg_fp_to_from_mem(dst, src, displacement, false);
     }
 
 
@@ -792,90 +828,83 @@ namespace loxx
     }
 
 
-    std::size_t Assembler<Platform::X86_64>::emit_move_reg_to_from_mem(
+    std::size_t Assembler<Platform::X86_64>::emit_move_reg_fp_to_from_mem(
         const RegisterX86 dst, const RegisterX86 src,
         const unsigned int offset, const bool read)
     {
-      if (reg_supports_ptr(src) and reg_supports_ptr(dst)) {
-        const std::uint8_t offset_bits =
-            src != RegisterX86::RIP ? get_offset_bits(offset) : 0;
-        const std::uint8_t rex_prefix =
-            0b01001000 | get_rex_prefix_for_regs(src, dst);
-        const std::uint8_t opcode = 0x89 | (read << 1);
-        const std::uint8_t mod_rm_byte =
-            get_mod_rm_byte_for_regs(dst, src, offset_bits);
-        trace_->assembly.add_bytes({rex_prefix, opcode, mod_rm_byte});
-        return emit_displacement(offset);
-      }
-      else if (
-          (reg_supports_float(dst) and read) or
-          (reg_supports_float(src) and not read)) {
-        const auto reg0 = read ? src : dst;
-        const auto reg1 = read ? dst : src;
-        const std::uint8_t offset_bits =
-            reg0 != RegisterX86::RIP ? get_offset_bits(offset) : 0;
+      const auto reg0 = read ? src : dst;
+      const auto reg1 = read ? dst : src;
+      const std::uint8_t offset_bits =
+          reg0 != RegisterX86::RIP ? get_offset_bits(offset) : 0;
 
-        const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(reg0, reg1);
-        const std::uint8_t rex_prefix = 0x40 | rex_prefix_reg_bits;
-        const std::uint8_t opcode = 0x10 | (not read);
-        const auto mod_rm_byte =
-            get_mod_rm_byte_for_regs(reg1, reg0, offset_bits);
+      const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(reg0, reg1);
+      const std::uint8_t rex_prefix = 0x40 | rex_prefix_reg_bits;
+      const std::uint8_t opcode = 0x10 | (not read);
+      const auto mod_rm_byte =
+          get_mod_rm_byte_for_regs(reg1, reg0, offset_bits);
 
-        if (rex_prefix_reg_bits != 0) {
-          trace_->assembly.add_bytes({
-              0xf2, rex_prefix, 0x0f, opcode, mod_rm_byte});
-        }
-        else {
-          trace_->assembly.add_bytes({0xf2, 0x0f, opcode, mod_rm_byte});
-        }
-
-        return emit_displacement(offset);
+      if (rex_prefix_reg_bits != 0) {
+        trace_->assembly.add_bytes({
+            0xf2, rex_prefix, 0x0f, opcode, mod_rm_byte});
       }
       else {
-#ifndef NDEBUG
-        throw JITError("invalid move registers");
-#endif
+        trace_->assembly.add_bytes({0xf2, 0x0f, opcode, mod_rm_byte});
       }
+
+      return emit_displacement(offset);
     }
 
 
-    std::size_t Assembler<Platform::X86_64>::emit_move_reg_to_from_mem(
+    std::size_t Assembler<Platform::X86_64>::emit_move_reg_gp_to_from_mem(
+        const RegisterX86 dst, const RegisterX86 src,
+        const unsigned int offset, const bool read)
+    {
+      const std::uint8_t offset_bits =
+          src != RegisterX86::RIP ? get_offset_bits(offset) : 0;
+      const std::uint8_t rex_prefix =
+          0b01001000 | get_rex_prefix_for_regs(src, dst);
+      const std::uint8_t opcode = 0x89 | (read << 1);
+      const std::uint8_t mod_rm_byte =
+          get_mod_rm_byte_for_regs(dst, src, offset_bits);
+      trace_->assembly.add_bytes({rex_prefix, opcode, mod_rm_byte});
+      return emit_displacement(offset);
+    }
+
+
+    std::size_t Assembler<Platform::X86_64>::emit_move_reg_fp_to_from_mem(
         const RegisterX86 reg, const Value* address,
         const unsigned int displacement, const bool read)
     {
-      const auto is_float = reg_supports_float(reg);
-      const std::uint8_t rex_prefix = [&] {
-        if (is_float) {
-          return reg_is_64_bit(reg) * 0x44;
-        }
-        else {
-          return 0b01001000 | (reg_is_64_bit(reg) << 2);
-        }
-      } ();
+      const std::uint8_t rex_prefix = reg_is_64_bit(reg) * 0x44;
 
-      const std::uint8_t opcode = [&] {
-        if (is_float) {
-          return 0x10 | (not read);
-        }
-        else {
-          return 0x89 | (read << 1);
-        }
-      } ();
+      const std::uint8_t opcode = 0x10 | (not read);
       const std::uint8_t mod_rm_byte = (get_reg_rm_bits(reg) << 3) | 0b0100;
       const std::uint8_t sib_byte = 0x25;
 
-      if (is_float) {
-        trace_->assembly.add_byte(0xf2);
-        if (rex_prefix != 0) {
-          trace_->assembly.add_byte(rex_prefix);
-        }
-        trace_->assembly.add_bytes(
-            {0x0f, opcode, mod_rm_byte, sib_byte});
+      trace_->assembly.add_byte(0xf2);
+      if (rex_prefix != 0) {
+        trace_->assembly.add_byte(rex_prefix);
       }
-      else {
-        trace_->assembly.add_bytes(
-            {rex_prefix, opcode, mod_rm_byte, sib_byte});
-      }
+      trace_->assembly.add_bytes(
+          {0x0f, opcode, mod_rm_byte, sib_byte});
+
+      const auto ret = trace_->assembly.size();
+      auto value = reinterpret_cast<std::uint64_t>(address) + displacement;
+      emit_immediate(static_cast<std::uint32_t>(value));
+      return ret;
+    }
+
+
+    std::size_t Assembler<Platform::X86_64>::emit_move_reg_gp_to_from_mem(
+        const RegisterX86 reg, const Value* address,
+        const unsigned int displacement, const bool read)
+    {
+      const std::uint8_t rex_prefix = 0b01001000 | (reg_is_64_bit(reg) << 2);
+      const std::uint8_t opcode = 0x89 | (read << 1);
+      const std::uint8_t mod_rm_byte = (get_reg_rm_bits(reg) << 3) | 0b0100;
+      const std::uint8_t sib_byte = 0x25;
+
+      trace_->assembly.add_bytes({rex_prefix, opcode, mod_rm_byte, sib_byte});
 
       const auto ret = trace_->assembly.size();
       auto value = reinterpret_cast<std::uint64_t>(address) + displacement;

@@ -97,16 +97,28 @@ namespace loxx
       void emit_decrement(const RegisterX86 reg);
 
       void emit_move_reg_reg(const RegisterX86 dst, const RegisterX86 src);
-      std::size_t emit_move_reg_mem(
+      std::size_t emit_move_reg_gp_mem(
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int displacement = 0);
-      std::size_t emit_move_reg_mem(
+      std::size_t emit_move_reg_fp_mem(
+          const RegisterX86 dst, const RegisterX86 src,
+          const unsigned int displacement = 0);
+      std::size_t emit_move_reg_gp_mem(
           const RegisterX86 dst, const Value* src,
           const unsigned int displacement = 0);
-      std::size_t emit_move_mem_reg(
+      std::size_t emit_move_reg_fp_mem(
+          const RegisterX86 dst, const Value* src,
+          const unsigned int displacement = 0);
+      std::size_t emit_move_mem_reg_gp(
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int displacement = 0);
-      std::size_t emit_move_mem_reg(
+      std::size_t emit_move_mem_reg_fp(
+          const RegisterX86 dst, const RegisterX86 src,
+          const unsigned int displacement = 0);
+      std::size_t emit_move_mem_reg_gp(
+          const RegisterX86 dst, const Value* src,
+          const unsigned int displacement = 0);
+      std::size_t emit_move_mem_reg_fp(
           const RegisterX86 dst, const Value* src,
           const unsigned int displacement = 0);
       template <typename T>
@@ -134,10 +146,16 @@ namespace loxx
           const std::uint8_t opcode,
           const RegisterX86 reg0, const RegisterX86 reg1);
 
-      std::size_t emit_move_reg_to_from_mem(
+      std::size_t emit_move_reg_fp_to_from_mem(
           const RegisterX86 dst, const RegisterX86 src,
           const unsigned int offset, const bool read);
-      std::size_t emit_move_reg_to_from_mem(
+      std::size_t emit_move_reg_gp_to_from_mem(
+          const RegisterX86 dst, const RegisterX86 src,
+          const unsigned int offset, const bool read);
+      std::size_t emit_move_reg_fp_to_from_mem(
+          const RegisterX86 dst, const Value* address,
+          const unsigned int displacement, const bool read);
+      std::size_t emit_move_reg_gp_to_from_mem(
           const RegisterX86 dst, const Value* address,
           const unsigned int displacement, const bool read);
 
