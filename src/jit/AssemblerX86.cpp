@@ -199,7 +199,11 @@ namespace loxx
           break;
 
         default:
+#ifndef NDEBUG
           throw JITError("unsupported SSA opcode");
+#else
+          ;
+#endif
         }
       }
 
@@ -318,7 +322,9 @@ namespace loxx
         const IRIns& instruction, const bool invert_condition)
     {
       if (not last_condition_) {
+#ifndef NDEBUG
         throw JITError("invalid assembler state");
+#endif
       }
       const auto condition =
           invert_condition ?
@@ -394,7 +400,9 @@ namespace loxx
       const auto dst_reg = get_register(pos);
 
       if (not dst_reg) {
+#ifndef NDEBUG
         throw JITError("no destination register for literal");
+#endif
       }
 
       const auto index = instruction.operand(0).index();
@@ -427,7 +435,9 @@ namespace loxx
       }
 
       if (not address) {
+#ifndef NDEBUG
         throw JITError("invalid source address for load");
+#endif
       }
 
       emit_move_reg_mem(*dst_reg, stack_base_, get_stack_offset(address) + 8);
@@ -440,8 +450,10 @@ namespace loxx
       const auto src_reg = get_register(instruction.operand(1));
 
       if (not src_reg or not dst_reg) {
+#ifndef NDEBUG
         throw JITError(
             "invalid source register or destination address for store");
+#endif
       }
 
       emit_move_reg_reg(*dst_reg, *src_reg);
@@ -455,8 +467,10 @@ namespace loxx
       const auto src_reg = get_register(instruction.operand(1));
 
       if (not src_reg or not address) {
+#ifndef NDEBUG
         throw JITError(
             "invalid source register or destination address for store");
+#endif
       }
 
       emit_move_reg_imm(general_scratch_, address);
@@ -556,7 +570,9 @@ namespace loxx
 
       }
       else {
+#ifndef NDEBUG
         throw JITError("invalid registers for add");
+#endif
       }
     }
 
@@ -571,7 +587,9 @@ namespace loxx
 
       }
       else {
+#ifndef NDEBUG
         throw JITError("invalid registers for add");
+#endif
       }
     }
 
@@ -579,7 +597,9 @@ namespace loxx
     void Assembler<Platform::X86_64>::emit_decrement(const RegisterX86 reg)
     {
       if (reg_supports_float(reg)) {
+#ifndef NDEBUG
         throw JITError("invalid register for decrement");
+#endif
       }
       const std::uint8_t rex_prefix =
           0b01001000 | get_rex_prefix_for_regs(reg, RegisterX86::RAX);
@@ -621,7 +641,9 @@ namespace loxx
             0x66, 0x48 | rex_prefix_reg_bits, 0x0f, 0x6e, mod_rm_byte);
       }
       else {
+#ifndef NDEBUG
         throw JITError("invalid move registers");
+#endif
       }
     }
 
@@ -688,7 +710,9 @@ namespace loxx
           return 0x81;
         }
         else {
+#ifndef NDEBUG
           throw JITError("unsigned integer overflow");
+#endif
         }
       } ();
 
@@ -850,7 +874,9 @@ namespace loxx
         return emit_displacement(offset);
       }
       else {
+#ifndef NDEBUG
         throw JITError("invalid move registers");
+#endif
       }
     }
 
