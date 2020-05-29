@@ -724,6 +724,8 @@ namespace loxx
         else {
 #ifndef NDEBUG
           throw JITError("unsigned integer overflow");
+#else
+          abort();
 #endif
         }
       } ();
