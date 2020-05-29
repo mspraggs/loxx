@@ -610,9 +610,7 @@ namespace loxx
         const std::uint8_t rex_prefix =
             0b01001000 | get_rex_prefix_for_regs(dst, src);
         const std::uint8_t mod_rm_byte = get_mod_rm_byte_for_regs(src, dst);
-        trace_->assembly.add_byte(rex_prefix);
-        trace_->assembly.add_byte(0x89);
-        trace_->assembly.add_byte(mod_rm_byte);
+        trace_->assembly.add_bytes(rex_prefix, 0x89, mod_rm_byte);
       }
       else if (reg_supports_float(src) and reg_supports_float(dst)) {
         const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(src, dst);
@@ -620,16 +618,16 @@ namespace loxx
 
         trace_->assembly.add_byte(0xf2);
         if (rex_prefix_reg_bits != 0) {
-          trace_->assembly.add_bytes(0x40 | rex_prefix_reg_bits);
+          trace_->assembly.add_byte(0x40 | rex_prefix_reg_bits);
         }
-        trace_->assembly.add_bytes({0x0f, 0x10, mod_rm_byte});
+        trace_->assembly.add_bytes(0x0f, 0x10, mod_rm_byte);
       }
       else if (reg_supports_ptr(src) and reg_supports_float(dst)) {
         const auto rex_prefix_reg_bits = get_rex_prefix_for_regs(src, dst);
         const auto mod_rm_byte = get_mod_rm_byte_for_regs(dst, src);
 
         const std::uint8_t rex_prefx = 0x48 | rex_prefix_reg_bits;
-        trace_->assembly.add_bytes({0x66, rex_prefx, 0x0f, 0x6e, mod_rm_byte});
+        trace_->assembly.add_bytes(0x66, rex_prefx, 0x0f, 0x6e, mod_rm_byte);
       }
       else {
 #ifndef NDEBUG
@@ -732,7 +730,7 @@ namespace loxx
 
       const std::uint8_t mod_rm_byte = 0b11111000 | get_reg_rm_bits(reg);
 
-      trace_->assembly.add_bytes({rex_prefix, opcode, mod_rm_byte});
+      trace_->assembly.add_bytes(rex_prefix, opcode, mod_rm_byte);
 
       if (value > std::numeric_limits<std::uint8_t>::max()) {
         emit_immediate(static_cast<std::uint32_t>(value));
@@ -844,11 +842,11 @@ namespace loxx
           get_mod_rm_byte_for_regs(reg1, reg0, offset_bits);
 
       if (rex_prefix_reg_bits != 0) {
-        trace_->assembly.add_bytes({
-            0xf2, rex_prefix, 0x0f, opcode, mod_rm_byte});
+        trace_->assembly.add_bytes(
+            0xf2, rex_prefix, 0x0f, opcode, mod_rm_byte);
       }
       else {
-        trace_->assembly.add_bytes({0xf2, 0x0f, opcode, mod_rm_byte});
+        trace_->assembly.add_bytes(0xf2, 0x0f, opcode, mod_rm_byte);
       }
 
       return emit_displacement(offset);
@@ -866,7 +864,7 @@ namespace loxx
       const std::uint8_t opcode = 0x89 | (read << 1);
       const std::uint8_t mod_rm_byte =
           get_mod_rm_byte_for_regs(dst, src, offset_bits);
-      trace_->assembly.add_bytes({rex_prefix, opcode, mod_rm_byte});
+      trace_->assembly.add_bytes(rex_prefix, opcode, mod_rm_byte);
       return emit_displacement(offset);
     }
 
