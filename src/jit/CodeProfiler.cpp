@@ -277,6 +277,7 @@ namespace loxx
       trace_->init_ip = ip;
       trace_->stack_base = stack.data();
       trace_->code_object = code_object;
+      trace_->ir_buffer.reserve(code_object->bytecode.size() * 2);
       is_recording_ = true;
     }
 
