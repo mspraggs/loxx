@@ -737,7 +737,7 @@ namespace loxx
       if (value > std::numeric_limits<std::uint8_t>::max()) {
         emit_immediate(static_cast<std::uint32_t>(value));
       }
-      else if (value >= 0) {
+      else {
         emit_immediate(static_cast<std::uint8_t>(value));
       }
     }
