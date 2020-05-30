@@ -150,9 +150,12 @@ namespace loxx
     {
       const auto& snapshot = trace->snaps[exit_num];
 
-      for (const auto& stack_mapping : snapshot.stack_ir_map) {
-        const auto slot = stack_mapping.first;
-        const auto ir_ref = stack_mapping.second;
+      for (
+          auto it = snapshot.stack_map_begin;
+          it != snapshot.stack_map_end; ++it) {
+
+        const auto slot = it->slot;
+        const auto ir_ref = it->ir_ref;
         const auto& ir_instruction = trace->ir_buffer[ir_ref];
         const auto& allocation = trace->allocation_map[ir_ref];
         const auto reg = get<RegisterX86>(allocation.value());

@@ -43,6 +43,7 @@ namespace loxx
         IR_COMPLETE,
         ASSEMBLY_COMPLETE,
       };
+
       State state;
       CodeObject::InsPtr init_ip;
       CodeObject::InsPtr next_ip;
@@ -50,6 +51,7 @@ namespace loxx
       CodeObject::InsPtrHashTable<std::size_t> ir_map;
       std::vector<CodeObject::InsPtr> recorded_instructions;
       std::vector<Snapshot> snaps;
+      Snapshot::VStackIRMap vstack_ir_map;
       AssemblyWrapper assembly;
       AllocationMap<Register> allocation_map;
       Trace* chained_trace;

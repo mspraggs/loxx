@@ -39,18 +39,35 @@ namespace loxx
     };
 
 
+    constexpr std::size_t max_num_snapshots = 64;
+
+
     using VStackElem = TaggedElem<std::size_t, StackTag>;
+
+
+    struct Trace;
+
+
+    struct VStackIRPairing
+    {
+      std::size_t slot, ir_ref;
+    };
 
 
     struct Snapshot
     {
+      using VStackIRMap = std::array<
+          VStackIRPairing, max_stack_size * max_num_snapshots>;
+
       std::size_t ir_ref;
       CodeObject::InsPtr next_ip;
-      std::vector<std::pair<std::size_t, std::size_t>> stack_ir_map;
+      VStackIRMap::iterator stack_map_begin;
+      VStackIRMap::iterator stack_map_end;
     };
 
 
-    std::vector<std::pair<std::size_t, std::size_t>> compress_stack(
+    std::size_t create_snapshot(
+        Trace& trace, const CodeObject::InsPtr ip,
         const TaggedStack<std::size_t, StackTag, max_stack_size>& stack);
   }
 }

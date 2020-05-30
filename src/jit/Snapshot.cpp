@@ -17,28 +17,49 @@
  * Created by Matt Spraggs on 07/05/2020.
  */
 
+#include "JITError.hpp"
 #include "Snapshot.hpp"
+#include "TraceCache.hpp"
 
 
 namespace loxx
 {
   namespace jit
   {
-    std::vector<std::pair<std::size_t, std::size_t>> compress_stack(
+    std::size_t create_snapshot(
+        Trace& trace, const CodeObject::InsPtr ip,
         const TaggedStack<std::size_t, StackTag, max_stack_size>& stack)
     {
-      using Elem = TaggedStack<std::size_t, StackTag, max_stack_size>::Elem;
+      const auto exit_num = trace.snaps.size();
 
-      std::vector<std::pair<std::size_t, std::size_t>> compressed_stack;
-      compressed_stack.reserve(stack.size());
+      if (exit_num == max_num_snapshots) {
+        throw JITError("max num snapshots reached");
+      }
+
+      auto stack_map_it = [&] {
+        if (exit_num == 0) {
+          return trace.vstack_ir_map.begin();
+        }
+        return trace.snaps.back().stack_map_end;
+      } ();
+      const auto stack_map_begin = stack_map_it;
 
       for (std::size_t i = 0; i < stack.size(); ++i) {
         if (stack[i].has_tag(StackTag::WRITTEN)) {
-          compressed_stack.emplace_back(i, stack[i].value);
+          *stack_map_it++ = VStackIRPairing{i, stack[i].value};
         }
       }
 
-      return compressed_stack;
+      trace.snaps.emplace_back(
+          Snapshot{
+            .ir_ref = trace.ir_buffer.size(),
+            .next_ip = ip,
+            .stack_map_begin = stack_map_begin,
+            .stack_map_end = stack_map_it,
+          }
+      );
+
+      return exit_num;
     }
   }
 }

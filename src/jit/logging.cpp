@@ -139,14 +139,16 @@ namespace loxx
       std::cout << "....         SNAPSHOT       #" << std::setw(3)
                 << std::setfill(' ') << snap_num << "      ";
 
-      for (const auto& mapping : snapshot.stack_ir_map) {
-        while (stack_pos < mapping.first) {
+      for (
+          auto it = snapshot.stack_map_begin;
+          it != snapshot.stack_map_end; ++it) {
+        while (stack_pos < it->slot) {
           std::cout << "[ ---- ] ";
           ++stack_pos;
         }
 
         std::cout << "[ " << std::setw(4) << std::setfill('0') << std::right
-                  << mapping.second << " ] ";
+                  << it->ir_ref << " ] ";
         ++stack_pos;
       }
 

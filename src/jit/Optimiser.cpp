@@ -62,9 +62,11 @@ namespace loxx
 
       for (std::size_t ref = 0; ref < init_ir_size - 1; ++ref) {
         if (snap->ir_ref == ref) {
-          for (const auto& ir_mapping : snap->stack_ir_map) {
+          for (
+              auto it = snap->stack_map_begin;
+              it != snap->stack_map_end; ++it) {
             stack_->set(
-                ir_mapping.first, get_ref(ir_mapping.second),
+                it->slot, get_ref(it->ir_ref),
                 {StackTag::CACHED, StackTag::WRITTEN});
           }
           ++snap;
@@ -176,13 +178,13 @@ namespace loxx
     std::size_t Optimiser::create_snapshot(const Snapshot& prev_snapshot)
     {
       const auto snapshot_index = trace_->snaps.size();
-      trace_->snaps.emplace_back(Snapshot{
-          .ir_ref = trace_->ir_buffer.size(),
-          .next_ip = prev_snapshot.next_ip,
-          .stack_ir_map = compress_stack(*stack_)});
+      jit::create_snapshot(*trace_, prev_snapshot.next_ip, *stack_);
+      const auto& new_snap = trace_->snaps.back();
 
-      for (const auto& mapping : trace_->snaps.back().stack_ir_map) {
-        phi_flags_[mapping.second] = true;
+      for (
+          auto it = new_snap.stack_map_begin;
+          it != new_snap.stack_map_end; ++it) {
+        phi_flags_[it->ir_ref] = true;
       }
       return snapshot_index;
     }

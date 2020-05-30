@@ -316,17 +316,7 @@ namespace loxx
 
     std::size_t CodeProfiler::create_snapshot(const CodeObject::InsPtr ip) const
     {
-      const auto exit_num = trace_->snaps.size();
-
-      trace_->snaps.emplace_back(
-          Snapshot{
-            .ir_ref = trace_->ir_buffer.size(),
-            .next_ip = ip,
-            .stack_ir_map = compress_stack(stack_),
-          }
-      );
-
-      return exit_num;
+      return jit::create_snapshot(*trace_, ip, stack_);
     }
 
 
