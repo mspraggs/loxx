@@ -24,17 +24,17 @@ namespace loxx
 {
   namespace jit
   {
-    std::vector<std::pair<std::size_t, VStackElem>> compress_stack(
+    std::vector<std::pair<std::size_t, std::size_t>> compress_stack(
         const TaggedStack<std::size_t, StackTag, max_stack_size>& stack)
     {
       using Elem = TaggedStack<std::size_t, StackTag, max_stack_size>::Elem;
 
-      std::vector<std::pair<std::size_t, Elem>> compressed_stack;
+      std::vector<std::pair<std::size_t, std::size_t>> compressed_stack;
       compressed_stack.reserve(stack.size());
 
       for (std::size_t i = 0; i < stack.size(); ++i) {
-        if (stack[i].tags != 0) {
-          compressed_stack.emplace_back(i, stack[i]);
+        if (stack[i].has_tag(StackTag::WRITTEN)) {
+          compressed_stack.emplace_back(i, stack[i].value);
         }
       }
 

@@ -146,7 +146,7 @@ namespace loxx
         }
 
         std::cout << "[ " << std::setw(4) << std::setfill('0') << std::right
-                  << mapping.second.value << " ] ";
+                  << mapping.second << " ] ";
         ++stack_pos;
       }
 

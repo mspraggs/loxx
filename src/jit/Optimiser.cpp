@@ -64,7 +64,7 @@ namespace loxx
         if (snap->ir_ref == ref) {
           for (const auto& ir_mapping : snap->stack_ir_map) {
             stack_->set(
-                ir_mapping.first, get_ref(ir_mapping.second.value),
+                ir_mapping.first, get_ref(ir_mapping.second),
                 {StackTag::CACHED, StackTag::WRITTEN});
           }
           ++snap;
@@ -182,9 +182,7 @@ namespace loxx
           .stack_ir_map = compress_stack(*stack_)});
 
       for (const auto& mapping : trace_->snaps.back().stack_ir_map) {
-        if (mapping.second.tags != 0) {
-          phi_flags_[mapping.second.value] = true;
-        }
+        phi_flags_[mapping.second] = true;
       }
       return snapshot_index;
     }

@@ -46,11 +46,11 @@ namespace loxx
     {
       std::size_t ir_ref;
       CodeObject::InsPtr next_ip;
-      std::vector<std::pair<std::size_t, VStackElem>> stack_ir_map;
+      std::vector<std::pair<std::size_t, std::size_t>> stack_ir_map;
     };
 
 
-    std::vector<std::pair<std::size_t, VStackElem>> compress_stack(
+    std::vector<std::pair<std::size_t, std::size_t>> compress_stack(
         const TaggedStack<std::size_t, StackTag, max_stack_size>& stack);
   }
 }
