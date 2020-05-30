@@ -44,7 +44,6 @@ namespace loxx
       trace_->state = Trace::State::IR_COMPLETE;
 
       auto& ir_buffer = trace_->ir_buffer;
-      ir_refs_in_use_.resize(ir_buffer.size(), false);
 
       for (int i = ir_buffer.size() - 1; i > 0; --i) {
         try_eliminate_ir_ref(i);
@@ -56,8 +55,6 @@ namespace loxx
     {
       auto& ir_buffer = trace_->ir_buffer;
       const auto init_ir_size = ir_buffer.size();
-      copied_ir_refs_.resize(init_ir_size);
-      phi_flags_.resize(init_ir_size, false);
       auto snap = trace_->snaps.begin();
 
       for (std::size_t ref = 0; ref < init_ir_size - 1; ++ref) {

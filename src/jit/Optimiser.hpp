@@ -39,7 +39,10 @@ namespace loxx
       Optimiser(
           Trace& trace,
           TaggedStack<std::size_t, StackTag, max_stack_size>& stack)
-          : trace_(&trace), stack_(&stack)
+          : trace_(&trace), stack_(&stack),
+            ir_refs_in_use_(trace.ir_buffer.size(), false),
+            copied_ir_refs_(trace.ir_buffer.size()),
+            phi_flags_(trace.ir_buffer.size(), false)
       {}
 
       void optimise();
